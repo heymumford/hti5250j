@@ -1,0 +1,7 @@
+JUnit version 4.5
+.INFO [org.tn5250j.GlobalConfigure]  Information Message: /Users/vorthruna/.tn5250j/keymap (No such file or directory).  The file keymap will be created for first time use.
+........................
+Time: 0.073
+
+OK (25 tests)
+
