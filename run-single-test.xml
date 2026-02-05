@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="tn5250j-single-test" default="run-cursor-test" basedir=".">
+    <property file="${basedir}/build.properties"/>
+    <property name="build.classes.dir" value="${basedir}/build"/>
+    <property name="runtime.lib.dir" value="${basedir}/lib/runtime"/>
+    <property name="development.lib.dir" value="${basedir}/lib/development"/>
+
+    <path id="tests-classpath">
+        <pathelement path="${build.classes.dir}"/>
+        <fileset dir="${runtime.lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${development.lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="run-cursor-test" description="Run CursorMovementDeepPairwiseTest">
+        <junit printsummary="yes" haltonfailure="no" showoutput="yes">
+            <classpath refid="tests-classpath"/>
+            <test name="org.tn5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
+            <formatter type="plain" usefile="false"/>
+        </junit>
+    </target>
+</project>

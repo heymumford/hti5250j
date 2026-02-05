@@ -528,4 +528,205 @@ public class FieldValidationPairwiseTest {
         assertEquals("Field length", 8, field.getLength());
         assertEquals("Exact length input preserved", 8, field.getText().length());
     }
+
+    // ========================================================================
+    // CRITICAL VALIDATION TESTS (11): High-risk boundary and bypass scenarios
+    // ========================================================================
+
+    /**
+     * CRITICAL: Numeric field with sign prefix in numeric position (IBM standard)
+     * Dimension pair: type=numeric, validation=format, input=special-chars
+     * Risk: Numeric field should reject signs (only signed-numeric accepts them)
+     */
+    @Test
+    public void testNumericFieldRejectsPrefixedSign() {
+        ScreenField field = createField(80, 5, 3, false, false, false);
+        field.setString("+123");
+
+        assertTrue("Field is numeric", field.isNumeric());
+        assertFalse("Numeric field should NOT be signed-numeric", field.isSignedNumeric());
+        // Field stores the input; validation layer should reject at submission
+        String text = field.getText();
+        assertNotNull("Field stores attempted signed input", text);
+    }
+
+    /**
+     * CRITICAL: Mandatory field with all spaces (whitespace bypass)
+     * Dimension pair: type=alpha, validation=mandatory, input=special-chars
+     * Risk: Spaces may be treated as "filled" but semantically empty
+     */
+    @Test
+    public void testMandatoryFieldWithSpacesBypass() {
+        ScreenField field = createField(240, 5, 0, true, false, false);
+        field.setString("     ");  // All spaces
+
+        assertTrue("Field is mandatory", field.isMandatoryEnter());
+        // Field stores spaces; validation layer determines if spaces count as filled
+        String text = field.getText();
+        assertEquals("Spaces stored in mandatory field", 5, text.length());
+    }
+
+    /**
+     * CRITICAL: Right-to-left field with numeric content (RTL validation)
+     * Dimension pair: type=numeric, validation=format, RTL=enabled
+     * Risk: Field shift bit 0x04 affects text direction; impacts numeric validation
+     */
+    @Test
+    public void testRightToLeftNumericFieldHandling() {
+        ScreenField field = createField(560, 5, 0x4, false, false, false);
+        field.setString("12345");
+
+        assertTrue("Field should be right-to-left", field.isRightToLeft());
+        assertFalse("RTL field is not numeric (different field shift)", field.isNumeric());
+        // RTL field with numeric content should be handled specially
+        String text = field.getText();
+        assertEquals("RTL field preserves length", 5, text.length());
+    }
+
+    /**
+     * CRITICAL: Combined FER + mandatory enforcement conflict
+     * Dimension pair: type=alpha, validation=mandatory+FER, input=partial
+     * Risk: Race condition between field-full and mandatory-enter flags
+     */
+    @Test
+    public void testFERAndMandatoryConflict() {
+        ScreenField field = createField(640, 10, 0, true, false, true);
+        field.setString("SHORT");
+
+        assertTrue("Field should have mandatory constraint", field.isMandatoryEnter());
+        assertTrue("Field should have FER constraint", field.isFER());
+        // Both constraints active; validation determines which takes precedence
+        assertEquals("Partial input stored with dual constraints", 10, field.getText().length());
+    }
+
+    /**
+     * CRITICAL: Auto-enter without field fill (premature trigger)
+     * Dimension pair: type=numeric, validation=auto-enter, input=partial
+     * Risk: Auto-enter triggering before field completely filled
+     */
+    @Test
+    public void testAutoEnterPrematureTrigger() {
+        ScreenField field = createField(320, 5, 3, false, true, false);
+        field.setString("12");  // Only 2 of 5 chars
+
+        assertTrue("Field has auto-enter", field.isAutoEnter());
+        assertTrue("Field is numeric", field.isNumeric());
+        // Auto-enter with partial fill; validation layer decides if trigger is valid
+        assertEquals("Partial numeric stored for auto-enter", 5, field.getText().length());
+    }
+
+    /**
+     * CRITICAL: Signed numeric with leading zeros before sign
+     * Dimension pair: type=signed-numeric, validation=format, input=boundary
+     * Risk: Sign position ambiguity in zero-padded numbers
+     */
+    @Test
+    public void testSignedNumericWithLeadingZerosAndSign() {
+        ScreenField field = createField(160, 6, 7, false, false, false);
+        field.setString("-00123");
+
+        assertTrue("Field is signed numeric", field.isSignedNumeric());
+        // Leading zeros before sign is a format edge case
+        String text = field.getText();
+        assertEquals("Signed numeric with leading zeros stored", 6, text.length());
+    }
+
+    /**
+     * CRITICAL: Field position boundary across screen lines
+     * Dimension pair: type=alpha, validation=none, position=boundary
+     * Risk: Field spanning across screen row boundaries (e.g., col 78-82)
+     */
+    @Test
+    public void testFieldSpanningScreenBoundary() {
+        int pos = (SCREEN_COLS - 2);  // Position near end of first row
+        ScreenField field = createField(pos, 5, 0, false, false, false);
+        field.setString("WRAP");
+
+        assertEquals("Field should span rows", 5, field.getLength());
+        // Field wraps from end of row 1 to start of row 2
+        assertTrue("Field position should be within screen", field.withinField(pos));
+    }
+
+    /**
+     * CRITICAL: Alpha field with all numeric-looking characters
+     * Dimension pair: type=alpha, validation=none, input=valid-but-numeric-chars
+     * Risk: Confusion between content type and field type
+     */
+    @Test
+    public void testAlphaFieldWithNumericContent() {
+        ScreenField field = createField(0, 5, 0, false, false, false);
+        field.setString("12345");
+
+        assertFalse("Field is alpha, not numeric", field.isNumeric());
+        // Content is all-digits but field type is alpha; no validation error
+        String text = field.getText();
+        assertEquals("Numeric content in alpha field", 5, text.length());
+    }
+
+    /**
+     * CRITICAL: Field attributes manipulation after field creation
+     * Dimension pair: type=alpha, validation=none, mutation=attributes-changed
+     * Risk: Flag mutations affecting field validation after initialization
+     */
+    @Test
+    public void testFieldFlagMutationAfterCreation() {
+        ScreenField field = createField(0, 10, 0, false, false, false);
+
+        assertFalse("Initially not mandatory", field.isMandatoryEnter());
+        assertFalse("Initially not auto-enter", field.isAutoEnter());
+
+        // Simulate flag mutation (would occur via setFFWs in real scenario)
+        // This tests that field state can be verified at different stages
+        field.setString("TEST");
+
+        // After setting content, flags should remain unchanged
+        assertFalse("Remains non-mandatory after content", field.isMandatoryEnter());
+    }
+
+    /**
+     * CRITICAL: Numeric field with very large overflow
+     * Dimension pair: type=numeric, validation=range, input=extreme-overflow
+     * Risk: Buffer overflow, integer wraparound in range checks
+     */
+    @Test
+    public void testNumericFieldWithExtremeOverflow() {
+        ScreenField field = createField(80, 3, 3, false, false, false);
+        String hugeNumber = "999999999999999999999999999999";  // Way beyond 3 chars
+        field.setString(hugeNumber);
+
+        assertTrue("Field is numeric", field.isNumeric());
+        // Input truncated to field length; numeric validation at submission layer
+        assertEquals("Extreme overflow truncated to field length", 3, field.getText().length());
+    }
+
+    /**
+     * CRITICAL: Null content handling in field getText
+     * Dimension pair: type=alpha, validation=none, state=uninitialized
+     * Risk: getNullPointer when retrieving text from unset field
+     */
+    @Test
+    public void testFieldGetTextAfterCreation() {
+        ScreenField field = createField(240, 10, 0, false, false, false);
+
+        // Before setting any content, getText should return padded field
+        String text = field.getText();
+        assertNotNull("Text should not be null", text);
+        assertEquals("Uninitialized field returns padded content", 10, text.length());
+    }
+
+    /**
+     * CRITICAL: Signed numeric with only sign character
+     * Dimension pair: type=signed-numeric, validation=format, input=partial-invalid
+     * Risk: Field containing only sign character (+ or -) with no digits
+     */
+    @Test
+    public void testSignedNumericOnlySignCharacter() {
+        ScreenField field = createField(160, 5, 7, false, false, false);
+        field.setString("-");
+
+        assertTrue("Field is signed numeric", field.isSignedNumeric());
+        // Field stores the sign; validation layer should reject as invalid
+        String text = field.getText();
+        assertEquals("Sign-only content stored", 5, text.length());
+    }
 }

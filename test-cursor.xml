@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="tn5250j-cursor-test" basedir=".">
+    <target name="run-cursor-test">
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath>
+                <pathelement location="build"/>
+                <fileset dir="lib">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+            <test name="org.tn5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
+        </junit>
+    </target>
+</project>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="test-insert" default="test-insert" basedir=".">
+    <property file="${basedir}/build.properties"/>
+    <property name="build.classes.dir" value="${basedir}/build"/>
+    
+    <path id="tests-classpath">
+        <pathelement path="${build.classes.dir}"/>
+        <fileset dir="${basedir}/lib/development">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${basedir}/lib/runtime">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="test-insert">
+        <junit printsummary="yes" haltonfailure="no">
+            <classpath refid="tests-classpath"/>
+            <test name="org.tn5250j.framework.tn5250.InsertCharModePairwiseTest"/>
+        </junit>
+    </target>
+</project>

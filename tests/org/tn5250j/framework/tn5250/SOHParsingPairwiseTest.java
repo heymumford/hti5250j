@@ -19,14 +19,14 @@
  * Byte 6: Data included flags byte 2 (if length >= 6)
  * Byte 7: Data included flags byte 3 (if length >= 7)
  *
- * PAIRWISE TEST DIMENSIONS (5 dimensions x 5 values = 25 combinations, testing 28+):
+ * PAIRWISE TEST DIMENSIONS (5 dimensions x 5 values = 25+ combinations):
  *
  * 1. Record Length (controls which fields are parsed):
  *    - 0: Invalid (too short)
  *    - 1: Minimal valid (length byte only)
  *    - 5: Includes error row + first flag byte
- *    - 10: Extended (hypothetical, tests length validation)
- *    - 255, 256, 32767: Large lengths (boundary testing)
+ *    - 6: Extended (includes 2 flag bytes)
+ *    - 7: Maximum valid (all fields present)
  *
  * 2. Record Type (determined by context in data stream):
  *    - Escape sequence (0x04): Command escape
@@ -84,8 +84,6 @@ package org.tn5250j.framework.tn5250;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-
 import static org.junit.Assert.*;
 
 /**
@@ -135,59 +133,6 @@ public class SOHParsingPairwiseTest {
     private static final int ERROR_NONE = 0;
     private static final int ERROR_RETRY = 0x05;
     private static final int ERROR_ABORT = 0x0A;
-
-    // Mock classes for testing without full session state
-    private static class MockScreen5250 extends Screen5250 {
-        public int clearedTableCount = 0;
-        public int setErrorLineValue = -1;
-        public boolean[] lastDataIncluded = new boolean[24];
-
-        public MockScreen5250() {
-            super();
-        }
-
-        @Override
-        public int getScreenLength() {
-            return SCREEN_SIZE;
-        }
-
-        @Override
-        public void clearTable() {
-            clearedTableCount++;
-        }
-
-        @Override
-        public void setErrorLine(int row) {
-            setErrorLineValue = row;
-        }
-
-        @Override
-        public StringBuffer getHSMore() {
-            return new StringBuffer("More...");
-        }
-
-        @Override
-        public StringBuffer getHSBottom() {
-            return new StringBuffer("Bottom");
-        }
-
-        @Override
-        public void setDirty(int pos) {
-            // No-op
-        }
-
-        @Override
-        public boolean isInField(int pos, boolean checkAttr) {
-            return pos >= 0 && pos < SCREEN_SIZE;
-        }
-    }
-
-    private MockScreen5250 screen;
-
-    @Before
-    public void setUp() throws Exception {
-        screen = new MockScreen5250();
-    }
 
     // ============================================================
     // POSITIVE TESTS: Valid SOH records (15+ tests)
@@ -502,11 +447,6 @@ public class SOHParsingPairwiseTest {
      *
      * Verifies alternating bit pattern in flags.
      * 0x55 = 01010101 binary
-     * Extraction maps MSB to lowest index, so:
-     * bit7=0 -> dataIncluded[23]=false
-     * bit6=1 -> dataIncluded[22]=true
-     * bit5=0 -> dataIncluded[21]=false
-     * ... etc
      */
     @Test
     public void testSOHWithAlternatingFlagPattern() {
@@ -525,7 +465,6 @@ public class SOHParsingPairwiseTest {
         boolean[] dataIncluded = extractDataIncludedFlags(record);
 
         // Assert: Pattern 0x55 = 01010101
-        // Bit 7=0, 6=1, 5=0, 4=1, 3=0, 2=1, 1=0, 0=1
         assertEquals("Bit 7 (dataIncluded[23]) should be false", false, dataIncluded[23]);
         assertEquals("Bit 6 (dataIncluded[22]) should be true", true, dataIncluded[22]);
         assertEquals("Bit 5 (dataIncluded[21]) should be false", false, dataIncluded[21]);
@@ -543,11 +482,6 @@ public class SOHParsingPairwiseTest {
      *
      * Verifies inverse alternating bit pattern.
      * 0xAA = 10101010 binary
-     * Extraction maps MSB to lowest index, so:
-     * bit7=1 -> dataIncluded[23]=true
-     * bit6=0 -> dataIncluded[22]=false
-     * bit5=1 -> dataIncluded[21]=true
-     * ... etc
      */
     @Test
     public void testSOHWithInverseAlternatingPattern() {
@@ -566,7 +500,6 @@ public class SOHParsingPairwiseTest {
         boolean[] dataIncluded = extractDataIncludedFlags(record);
 
         // Assert: Pattern 0xAA = 10101010
-        // Bit 7=1, 6=0, 5=1, 4=0, 3=1, 2=0, 1=1, 0=0
         assertEquals("Bit 7 (dataIncluded[23]) should be true", true, dataIncluded[23]);
         assertEquals("Bit 6 (dataIncluded[22]) should be false", false, dataIncluded[22]);
         assertEquals("Bit 5 (dataIncluded[21]) should be true", true, dataIncluded[21]);
