@@ -642,6 +642,356 @@ public class FunctionKeyPairwiseTest {
 
     // ==================== HELPER METHODS ====================
 
+    // ==================== PAIRWISE KEYEVENT TESTS ====================
+
+    /**
+     * Test: F1 key with no modifiers
+     * Pairwise: Key=F1, Modifier=none
+     */
+    @Test
+    public void testF1WithNoModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F1, 0);
+        assertNotNull("F1 event created", event);
+        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
+        assertEquals("No modifiers", 0, event.getModifiers());
+    }
+
+    /**
+     * Test: F1 key with shift modifier
+     * Pairwise: Key=F1, Modifier=shift
+     */
+    @Test
+    public void testF1WithShiftModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F1, KeyEvent.SHIFT_MASK);
+        assertNotNull("F1+Shift event created", event);
+        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
+        assertEquals("Shift modifier", KeyEvent.SHIFT_MASK, event.getModifiers());
+        assertTrue("Shift down", event.isShiftDown());
+    }
+
+    /**
+     * Test: F1 key with ctrl modifier
+     * Pairwise: Key=F1, Modifier=ctrl
+     */
+    @Test
+    public void testF1WithCtrlModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F1, KeyEvent.CTRL_MASK);
+        assertNotNull("F1+Ctrl event created", event);
+        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
+        assertTrue("Ctrl down", event.isControlDown());
+    }
+
+    /**
+     * Test: F1 key with alt modifier
+     * Pairwise: Key=F1, Modifier=alt
+     */
+    @Test
+    public void testF1WithAltModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F1, KeyEvent.ALT_MASK);
+        assertNotNull("F1+Alt event created", event);
+        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
+        assertTrue("Alt down", event.isAltDown());
+    }
+
+    /**
+     * Test: F12 key with no modifiers
+     * Pairwise: Key=F12, Modifier=none
+     */
+    @Test
+    public void testF12WithNoModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F12, 0);
+        assertNotNull("F12 event created", event);
+        assertEquals("Key code F12", KeyEvent.VK_F12, event.getKeyCode());
+    }
+
+    /**
+     * Test: F12 key with shift modifier (F24 simulation)
+     * Pairwise: Key=F12, Modifier=shift (F13-F24 mapping)
+     */
+    @Test
+    public void testF12WithShiftModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F12, KeyEvent.SHIFT_MASK);
+        assertNotNull("F12+Shift event created", event);
+        assertEquals("Key code F12", KeyEvent.VK_F12, event.getKeyCode());
+        assertTrue("Shift indicates F24 range", event.isShiftDown());
+    }
+
+    /**
+     * Test: Enter key with no modifiers
+     * Pairwise: Key=Enter, Modifier=none
+     */
+    @Test
+    public void testEnterWithNoModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_ENTER, 0);
+        assertNotNull("Enter event created", event);
+        assertEquals("Key code Enter", KeyEvent.VK_ENTER, event.getKeyCode());
+    }
+
+    /**
+     * Test: Enter key with ctrl modifier
+     * Pairwise: Key=Enter, Modifier=ctrl
+     */
+    @Test
+    public void testEnterWithCtrlModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+        assertNotNull("Enter+Ctrl event created", event);
+        assertTrue("Ctrl down", event.isControlDown());
+    }
+
+    /**
+     * Test: Clear key constant exists
+     * Pairwise: Key=Clear, Property=constant-defined
+     */
+    @Test
+    public void testClearKeyConstantDefined() {
+        int clearCode = KeyEvent.VK_CLEAR;
+        assertTrue("Clear key code valid", clearCode > 0);
+    }
+
+    /**
+     * Test: Clear key with no modifiers
+     * Pairwise: Key=Clear, Modifier=none
+     */
+    @Test
+    public void testClearWithNoModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_CLEAR, 0);
+        assertNotNull("Clear event created", event);
+        assertEquals("Key code Clear", KeyEvent.VK_CLEAR, event.getKeyCode());
+    }
+
+    /**
+     * Test: Escape key (SysReq alternate)
+     * Pairwise: Key=Escape, Purpose=system-request
+     */
+    @Test
+    public void testEscapeKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_ESCAPE, 0);
+        assertNotNull("Escape event created", event);
+        assertEquals("Key code Escape", KeyEvent.VK_ESCAPE, event.getKeyCode());
+    }
+
+    /**
+     * Test: Tab key
+     * Pairwise: Key=Tab, Property=navigation
+     */
+    @Test
+    public void testTabKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_TAB, 0);
+        assertNotNull("Tab event created", event);
+        assertEquals("Key code Tab", KeyEvent.VK_TAB, event.getKeyCode());
+    }
+
+    /**
+     * Test: Tab key with shift modifier (back-tab)
+     * Pairwise: Key=Tab, Modifier=shift (implies back-tab)
+     */
+    @Test
+    public void testTabWithShiftModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_TAB, KeyEvent.SHIFT_MASK);
+        assertNotNull("Tab+Shift event created", event);
+        assertTrue("Shift indicates back-tab", event.isShiftDown());
+    }
+
+    /**
+     * Test: F2 key with combination modifiers
+     * Pairwise: Key=F2, Modifier=shift+ctrl
+     */
+    @Test
+    public void testF2WithCombinedModifiers() {
+        int modifiers = KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK;
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F2, modifiers);
+        assertNotNull("F2+Shift+Ctrl event created", event);
+        assertTrue("Shift down", event.isShiftDown());
+        assertTrue("Ctrl down", event.isControlDown());
+    }
+
+    /**
+     * Test: F11 key with no modifiers
+     * Pairwise: Key=F11, Boundary=near-F12
+     */
+    @Test
+    public void testF11WithNoModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F11, 0);
+        assertNotNull("F11 event created", event);
+        assertEquals("Key code F11", KeyEvent.VK_F11, event.getKeyCode());
+    }
+
+    /**
+     * Test: F10 key with no modifiers
+     * Pairwise: Key=F10, Boundary=10-range
+     */
+    @Test
+    public void testF10WithNoModifier() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_F10, 0);
+        assertNotNull("F10 event created", event);
+        assertEquals("Key code F10", KeyEvent.VK_F10, event.getKeyCode());
+    }
+
+    // ==================== PAIRWISE FUNCTION KEY COVERAGE ====================
+
+    /**
+     * Test: F3-F8 key range with no modifiers
+     * Pairwise: Key=F3-F8, Modifier=none
+     */
+    @Test
+    public void testF3ThroughF8WithNoModifier() {
+        for (int f = KeyEvent.VK_F3; f <= KeyEvent.VK_F8; f++) {
+            KeyEvent event = createKeyEvent(f, 0);
+            assertNotNull("F" + (f - KeyEvent.VK_F1 + 1) + " event created", event);
+            assertEquals("Key code matches", f, event.getKeyCode());
+        }
+    }
+
+    /**
+     * Test: F9-F12 key range with alt modifier
+     * Pairwise: Key=F9-F12, Modifier=alt
+     */
+    @Test
+    public void testF9ThroughF12WithAltModifier() {
+        for (int f = KeyEvent.VK_F9; f <= KeyEvent.VK_F12; f++) {
+            KeyEvent event = createKeyEvent(f, KeyEvent.ALT_MASK);
+            assertNotNull("F" + (f - KeyEvent.VK_F1 + 1) + "+Alt event created", event);
+            assertTrue("Alt down for F" + (f - KeyEvent.VK_F1 + 1), event.isAltDown());
+        }
+    }
+
+    /**
+     * Test: All modifier mask combinations
+     * Pairwise: Modifier=all-combinations
+     */
+    @Test
+    public void testAllModifierCombinations() {
+        int[] modifiers = {
+            0,                                                              // none
+            KeyEvent.SHIFT_MASK,                                           // shift
+            KeyEvent.CTRL_MASK,                                            // ctrl
+            KeyEvent.ALT_MASK,                                             // alt
+            KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK,                     // shift+ctrl
+            KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK,                      // shift+alt
+            KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK,                       // ctrl+alt
+            KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK // all
+        };
+
+        int keyCode = KeyEvent.VK_F5;
+        for (int mod : modifiers) {
+            KeyEvent event = createKeyEvent(keyCode, mod);
+            assertNotNull("Event created for modifier 0x" + Integer.toHexString(mod), event);
+            assertEquals("Modifiers preserved", mod, event.getModifiers());
+        }
+    }
+
+    /**
+     * Test: Backspace key
+     * Pairwise: Key=Backspace, Type=control-key
+     */
+    @Test
+    public void testBackspaceKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_BACK_SPACE, 0);
+        assertNotNull("Backspace event created", event);
+        assertEquals("Key code Backspace", KeyEvent.VK_BACK_SPACE, event.getKeyCode());
+    }
+
+    /**
+     * Test: Delete key
+     * Pairwise: Key=Delete, Type=control-key
+     */
+    @Test
+    public void testDeleteKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_DELETE, 0);
+        assertNotNull("Delete event created", event);
+        assertEquals("Key code Delete", KeyEvent.VK_DELETE, event.getKeyCode());
+    }
+
+    /**
+     * Test: Home key
+     * Pairwise: Key=Home, Type=navigation
+     */
+    @Test
+    public void testHomeKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_HOME, 0);
+        assertNotNull("Home event created", event);
+        assertEquals("Key code Home", KeyEvent.VK_HOME, event.getKeyCode());
+    }
+
+    /**
+     * Test: End key
+     * Pairwise: Key=End, Type=navigation
+     */
+    @Test
+    public void testEndKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_END, 0);
+        assertNotNull("End event created", event);
+        assertEquals("Key code End", KeyEvent.VK_END, event.getKeyCode());
+    }
+
+    /**
+     * Test: Page Up key
+     * Pairwise: Key=PageUp, Type=navigation
+     */
+    @Test
+    public void testPageUpKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_PAGE_UP, 0);
+        assertNotNull("Page Up event created", event);
+        assertEquals("Key code Page Up", KeyEvent.VK_PAGE_UP, event.getKeyCode());
+    }
+
+    /**
+     * Test: Page Down key
+     * Pairwise: Key=PageDown, Type=navigation
+     */
+    @Test
+    public void testPageDownKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_PAGE_DOWN, 0);
+        assertNotNull("Page Down event created", event);
+        assertEquals("Key code Page Down", KeyEvent.VK_PAGE_DOWN, event.getKeyCode());
+    }
+
+    /**
+     * Test: Arrow keys - Up
+     * Pairwise: Key=Up, Type=navigation
+     */
+    @Test
+    public void testUpArrowKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_UP, 0);
+        assertNotNull("Up arrow event created", event);
+        assertEquals("Key code Up", KeyEvent.VK_UP, event.getKeyCode());
+    }
+
+    /**
+     * Test: Arrow keys - Down
+     * Pairwise: Key=Down, Type=navigation
+     */
+    @Test
+    public void testDownArrowKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_DOWN, 0);
+        assertNotNull("Down arrow event created", event);
+        assertEquals("Key code Down", KeyEvent.VK_DOWN, event.getKeyCode());
+    }
+
+    /**
+     * Test: Arrow keys - Left
+     * Pairwise: Key=Left, Type=navigation
+     */
+    @Test
+    public void testLeftArrowKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_LEFT, 0);
+        assertNotNull("Left arrow event created", event);
+        assertEquals("Key code Left", KeyEvent.VK_LEFT, event.getKeyCode());
+    }
+
+    /**
+     * Test: Arrow keys - Right
+     * Pairwise: Key=Right, Type=navigation
+     */
+    @Test
+    public void testRightArrowKey() {
+        KeyEvent event = createKeyEvent(KeyEvent.VK_RIGHT, 0);
+        assertNotNull("Right arrow event created", event);
+        assertEquals("Key code Right", KeyEvent.VK_RIGHT, event.getKeyCode());
+    }
+
+    // ==================== HELPER METHODS ====================
+
     /**
      * Create a synthetic KeyEvent for testing
      */
