@@ -77,7 +77,7 @@ public class Screen5250 {
     public boolean cursorActive = false;
     public boolean cursorShown = false;
     private boolean keyProcessed = false;
-    private Rect dirtyScreen = new Rect();
+    private Rect dirtyScreen = new Rect(0, 0, 0, 0);
 
     public int homePos = 0;
     private int saveHomePos = 0;
@@ -199,18 +199,17 @@ public class Screen5250 {
      */
     public final String copyText(Rect area) {
         StringBuilder sb = new StringBuilder();
-        Rect workR = new Rect();
-        workR.setBounds(area);
-        log.debug("Copying " + workR);
+        log.debug("Copying " + area);
 
         // loop through all the screen characters to send them to the clip board
-        int m = workR.x;
+        int m = area.x();
         int i = 0;
         int t = 0;
+        int height = area.height();
 
-        while (workR.height-- > 0) {
-            t = workR.width;
-            i = workR.y;
+        while (height-- > 0) {
+            t = area.width();
+            i = area.y();
             while (t-- > 0) {
                 // only copy printable characters (in this case >= ' ')
                 char c = planes.getChar(getPos(m - 1, i - 1));
@@ -337,8 +336,6 @@ public class Screen5250 {
     public final Vector<Double> sumThem(boolean formatOption, Rect area) {
 
         StringBuilder sb = new StringBuilder();
-        Rect workR = new Rect();
-        workR.setBounds(area);
 
         log.debug("Summing");
 
@@ -360,15 +357,16 @@ public class Screen5250 {
         Vector<Double> sumVector = new Vector<Double>();
 
         // loop through all the screen characters to send them to the clip board
-        int m = workR.x;
+        int m = area.x();
         int i = 0;
         int t = 0;
 
         double sum = 0.0;
+        int height = area.height();
 
-        while (workR.height-- > 0) {
-            t = workR.width;
-            i = workR.y;
+        while (height-- > 0) {
+            t = area.width();
+            i = area.y();
             while (t-- > 0) {
 
                 // only copy printable numeric characters (in this case >= ' ')
@@ -3076,22 +3074,22 @@ public class Screen5250 {
 
     protected void setDirty(int pos) {
 
-        int minr = Math.min(getRow(pos), getRow(dirtyScreen.x));
-        int minc = Math.min(getCol(pos), getCol(dirtyScreen.x));
+        int minr = Math.min(getRow(pos), getRow(dirtyScreen.x()));
+        int minc = Math.min(getCol(pos), getCol(dirtyScreen.x()));
 
-        int maxr = Math.max(getRow(pos), getRow(dirtyScreen.y));
-        int maxc = Math.max(getCol(pos), getCol(dirtyScreen.y));
+        int maxr = Math.max(getRow(pos), getRow(dirtyScreen.y()));
+        int maxc = Math.max(getCol(pos), getCol(dirtyScreen.y()));
 
         int x1 = getPos(minr, minc);
         int x2 = getPos(maxr, maxc);
 
-        dirtyScreen.setBounds(x1, x2, 0, 0);
+        dirtyScreen = new Rect(x1, x2, 0, 0);
 
     }
 
     private void resetDirty(int pos) {
 
-        dirtyScreen.setBounds(pos, pos, 0, 0);
+        dirtyScreen = new Rect(pos, pos, 0, 0);
 
     }
 
@@ -3280,7 +3278,7 @@ public class Screen5250 {
         for (int x = 0; x < lenScreen; x++) {
             planes.setUseGUI(x, NO_GUI);
         }
-        dirtyScreen.setBounds(0, lenScreen - 1, 0, 0);
+        dirtyScreen = new Rect(0, lenScreen - 1, 0, 0);
     }
 
     /**
@@ -3291,7 +3289,7 @@ public class Screen5250 {
 
         planes.initalizePlanes();
 
-        dirtyScreen.setBounds(0, lenScreen - 1, 0, 0);
+        dirtyScreen = new Rect(0, lenScreen - 1, 0, 0);
 
         oia.clearScreen();
 
@@ -3300,7 +3298,7 @@ public class Screen5250 {
     protected void restoreScreen() {
 
         lastAttr = 32;
-        dirtyScreen.setBounds(0, lenScreen - 1, 0, 0);
+        dirtyScreen = new Rect(0, lenScreen - 1, 0, 0);
         updateDirty();
     }
 
@@ -3322,7 +3320,7 @@ public class Screen5250 {
                 target.onScreenChanged(1, startRow, startCol, endRow, endCol);
             }
         }
-        dirtyScreen.setBounds(lenScreen, 0, 0, 0);
+        dirtyScreen = new Rect(lenScreen, 0, 0, 0);
     }
 
     /**
@@ -3330,13 +3328,13 @@ public class Screen5250 {
      *
      */
     private synchronized void fireScreenChanged(int update) {
-        if (dirtyScreen.x > dirtyScreen.y) {
+        if (dirtyScreen.x() > dirtyScreen.y()) {
             //         log.info(" x < y " + dirtyScreen);
             return;
         }
 
-        fireScreenChanged(update, getRow(dirtyScreen.x), getCol(dirtyScreen.x),
-                getRow(dirtyScreen.y), getCol(dirtyScreen.y));
+        fireScreenChanged(update, getRow(dirtyScreen.x()), getCol(dirtyScreen.x()),
+                getRow(dirtyScreen.y()), getCol(dirtyScreen.y()));
 
     }
 
@@ -3415,7 +3413,7 @@ public class Screen5250 {
     public void repaintScreen() {
 
         setCursorOff();
-        dirtyScreen.setBounds(0, lenScreen - 1, 0, 0);
+        dirtyScreen = new Rect(0, lenScreen - 1, 0, 0);
         updateDirty();
         // restore statuses that were on the screen before resize
         if (oia.getLevel() == ScreenOIA.OIA_LEVEL_INPUT_ERROR) {

@@ -798,9 +798,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
     public Rect getBoundingArea() {
         Rectangle awt_rect = new Rectangle();
         guiGraBuf.getBoundingArea(awt_rect);
-        Rect result = new Rect();
-        result.setBounds(awt_rect.x, awt_rect.y, awt_rect.width, awt_rect.height);
-        return result;
+        return new Rect(awt_rect.x, awt_rect.y, awt_rect.width, awt_rect.height);
     }
 
     @Override

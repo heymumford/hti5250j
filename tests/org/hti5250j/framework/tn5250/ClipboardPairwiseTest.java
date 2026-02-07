@@ -80,7 +80,7 @@ public class ClipboardPairwiseTest {
     @Before
     public void setUp() {
         mockScreen = new MockScreen5250();
-        testRect = new Rect();
+        testRect = new Rect(0, 0, 0, 0);
     }
 
     @After
@@ -99,7 +99,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_CharacterSelectionSimpleText_ShouldExtractSingleCharacter() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(0, 0, 1, 1); // Single character selection
+        testRect = new Rect(0, 0, 1, 1); // Single character selection
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -118,7 +118,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_WordSelectionSimpleText_ShouldExtractWord() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(0, 0, 5, 1); // "Hello"
+        testRect = new Rect(0, 0, 5, 1); // "Hello"
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -136,7 +136,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_LineSelectionSimpleText_ShouldExtractEntireLine() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(0, 0, SCREEN_WIDTH, 1); // Full line
+        testRect = new Rect(0, 0, SCREEN_WIDTH, 1); // Full line
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -154,7 +154,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_RectangleSelectionMixedContent_ShouldExtractRect() {
         // ARRANGE
         mockScreen.setScreenData(MIXED_DATA);
-        testRect.setBounds(0, 0, 5, 2); // 5x2 rectangle
+        testRect = new Rect(0, 0, 5, 2); // 5x2 rectangle
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -172,7 +172,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_AllSelectionEmptyContent_ShouldReturnEmptyOrSpaces() {
         // ARRANGE
         mockScreen.setScreenData(EMPTY_STRING);
-        testRect.setBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT); // Full screen
+        testRect = new Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT); // Full screen
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -210,7 +210,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_MultilineSelection_ShouldPreserveLineBreaks() {
         // ARRANGE
         mockScreen.setScreenData(MULTILINE_TEXT);
-        testRect.setBounds(0, 0, SCREEN_WIDTH, 3); // 3 lines
+        testRect = new Rect(0, 0, SCREEN_WIDTH, 3); // 3 lines
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -333,7 +333,7 @@ public class ClipboardPairwiseTest {
         // ARRANGE
         String smallData = "0123456789".repeat(8); // 80 chars
         mockScreen.setScreenData(smallData);
-        testRect.setBounds(0, 0, SCREEN_WIDTH, 1);
+        testRect = new Rect(0, 0, SCREEN_WIDTH, 1);
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -356,7 +356,7 @@ public class ClipboardPairwiseTest {
             sb.append("0123456789".repeat(7)); // Fill to ~80 chars
         }
         mockScreen.setScreenData(sb.toString());
-        testRect.setBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        testRect = new Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -418,7 +418,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_BoundaryRectangleOrigin_ShouldExtractFromOrigin() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(0, 0, 5, 1); // Start at origin
+        testRect = new Rect(0, 0, 5, 1); // Start at origin
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -440,7 +440,7 @@ public class ClipboardPairwiseTest {
             sb.append("Row").append(i).append(" ");
         }
         mockScreen.setScreenData(sb.toString());
-        testRect.setBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        testRect = new Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -458,7 +458,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_SingleWidthRectangle_ShouldCopySingleColumn() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(5, 0, 1, 1); // Single column
+        testRect = new Rect(5, 0, 1, 1); // Single column
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -498,7 +498,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_NegativeBounds_ShouldHandleOrCorrect() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(-1, -1, 5, 5);
+        testRect = new Rect(-1, -1, 5, 5);
 
         // ACT & ASSERT: Should not crash
         try {
@@ -519,7 +519,7 @@ public class ClipboardPairwiseTest {
     public void testCopyText_OutOfBoundsBounds_ShouldHandleOrTrim() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(SCREEN_WIDTH + 10, SCREEN_HEIGHT + 10, 10, 10);
+        testRect = new Rect(SCREEN_WIDTH + 10, SCREEN_HEIGHT + 10, 10, 10);
 
         // ACT & ASSERT: Should not crash
         try {
@@ -605,7 +605,7 @@ public class ClipboardPairwiseTest {
     public void testCopyPasteRoundtrip_SimpleText_ShouldPreserveData() {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(0, 0, SIMPLE_TEXT.length(), 1);
+        testRect = new Rect(0, 0, SIMPLE_TEXT.length(), 1);
 
         // ACT: Copy
         String copied = mockScreen.copyText(testRect);
@@ -675,7 +675,7 @@ public class ClipboardPairwiseTest {
     public void testCopyPaste_ConcurrentOperations_ShouldBeThreadSafe() throws InterruptedException {
         // ARRANGE
         mockScreen.setScreenData(SIMPLE_TEXT);
-        testRect.setBounds(0, 0, 5, 1);
+        testRect = new Rect(0, 0, 5, 1);
 
         final AtomicReference<String> copiedResult = new AtomicReference<>();
         Thread copyThread = new Thread(new Runnable() {
@@ -715,7 +715,7 @@ public class ClipboardPairwiseTest {
         }
         String dataWithSpaces = sb.toString();
         mockScreen.setScreenData(dataWithSpaces);
-        testRect.setBounds(0, 0, 40, 1);
+        testRect = new Rect(0, 0, 40, 1);
 
         // ACT
         String copied = mockScreen.copyText(testRect);
@@ -782,10 +782,10 @@ public class ClipboardPairwiseTest {
             StringBuilder result = new StringBuilder();
 
             // Validate and constrain bounds
-            int x = Math.max(0, area.x);
-            int y = Math.max(0, area.y);
-            int width = Math.max(1, area.width);
-            int height = Math.max(1, area.height);
+            int x = Math.max(0, area.x());
+            int y = Math.max(0, area.y());
+            int width = Math.max(1, area.width());
+            int height = Math.max(1, area.height());
 
             // Constrain to screen bounds
             x = Math.min(x, SCREEN_WIDTH - 1);

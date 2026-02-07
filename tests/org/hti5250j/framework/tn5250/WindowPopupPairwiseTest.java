@@ -203,7 +203,7 @@ public class WindowPopupPairwiseTest {
     @Before
     public void setUp() {
         screen5250 = new Screen5250TestDouble();
-        windowRect = new Rect();
+        windowRect = new Rect(0, 0, 0, 0);
         testContext = new WindowTestContext();
     }
 
@@ -221,12 +221,12 @@ public class WindowPopupPairwiseTest {
         int width = getSizeWidth();
         int height = getSizeHeight();
 
-        windowRect.setBounds(x, y, width, height);
+        windowRect = new Rect(x, y, width, height);
 
-        assertEquals("Window X coordinate should match position", x, windowRect.x);
-        assertEquals("Window Y coordinate should match position", y, windowRect.y);
-        assertEquals("Window width should match size", width, windowRect.width);
-        assertEquals("Window height should match size", height, windowRect.height);
+        assertEquals("Window X coordinate should match position", x, windowRect.x());
+        assertEquals("Window Y coordinate should match position", y, windowRect.y());
+        assertEquals("Window width should match size", width, windowRect.width());
+        assertEquals("Window height should match size", height, windowRect.height());
     }
 
     /**
@@ -613,7 +613,7 @@ public class WindowPopupPairwiseTest {
             return;
         }
 
-        windowRect.setBounds(5, 5, 40, 12);
+        windowRect = new Rect(5, 5, 40, 12);
 
         // Verify corners would be rendered
         int expectedCornerChar = getBorderCornerCharacter();
@@ -711,15 +711,15 @@ public class WindowPopupPairwiseTest {
         }
 
         int borderWidth = 1; // Single character border
-        int contentX = windowRect.x + borderWidth;
-        int contentY = windowRect.y + borderWidth;
-        int contentWidth = windowRect.width - (2 * borderWidth);
-        int contentHeight = windowRect.height - (2 * borderWidth);
+        int contentX = windowRect.x() + borderWidth;
+        int contentY = windowRect.y() + borderWidth;
+        int contentWidth = windowRect.width() - (2 * borderWidth);
+        int contentHeight = windowRect.height() - (2 * borderWidth);
 
-        assertTrue("Content X should be after border", contentX > windowRect.x);
-        assertTrue("Content Y should be after border", contentY > windowRect.y);
-        assertTrue("Content width should account for borders", contentWidth < windowRect.width);
-        assertTrue("Content height should account for borders", contentHeight < windowRect.height);
+        assertTrue("Content X should be after border", contentX > windowRect.x());
+        assertTrue("Content Y should be after border", contentY > windowRect.y());
+        assertTrue("Content width should account for borders", contentWidth < windowRect.width());
+        assertTrue("Content height should account for borders", contentHeight < windowRect.height());
     }
 
     /**
