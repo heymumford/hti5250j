@@ -333,12 +333,10 @@ public class KeyConfigure extends JDialog implements ActionListener {
             } else {
                 if (macros) {
                     Object o = lm.getElementAt(index);
-                    if (o instanceof String) {
-                        System.out.println((String) o);
-                        setKeyInformation((String) o);
-                    } else if (o instanceof Macro) {
-
-                        Macro m = (Macro) o;
+                    if (o instanceof String str) {
+                        System.out.println(str);
+                        setKeyInformation(str);
+                    } else if (o instanceof Macro m) {
                         setKeyInformation(m.getFullName());
                     }
                 }
@@ -583,10 +581,10 @@ public class KeyConfigure extends JDialog implements ActionListener {
 
         String function;
 
-        if (functions.getSelectedValue() instanceof String)
-            function = (String) functions.getSelectedValue();
-        else if (functions.getSelectedValue() instanceof Macro) {
-            function = ((Macro) functions.getSelectedValue()).toString();
+        if (functions.getSelectedValue() instanceof String str)
+            function = str;
+        else if (functions.getSelectedValue() instanceof Macro m) {
+            function = m.toString();
         } else
             function = ((KeyDescription) functions.getSelectedValue()).toString();
 
@@ -699,8 +697,8 @@ public class KeyConfigure extends JDialog implements ActionListener {
             if (macros) {
                 Object o = functions.getSelectedValue();
                 String name;
-                if (o instanceof Macro) {
-                    name = ((Macro) o).getFullName();
+                if (o instanceof Macro m) {
+                    name = m.getFullName();
                 } else {
                     name = (String) o;
                 }
@@ -746,8 +744,8 @@ public class KeyConfigure extends JDialog implements ActionListener {
             if (macros) {
                 Object o = functions.getSelectedValue();
                 String macro;
-                if (o instanceof Macro)
-                    macro = ((Macro) o).getFullName();
+                if (o instanceof Macro m)
+                    macro = m.getFullName();
                 else
                     macro = (String) o;
 
@@ -901,23 +899,17 @@ public class KeyConfigure extends JDialog implements ActionListener {
 
         for (int i = start; i < vector.size(); i++) {
             Object obj = vector.elementAt(i);
-            if (obj instanceof Macro) {
-                Macro m = (Macro) obj;
+            if (obj instanceof Macro m) {
                 m.setPrefix(prefix);
                 lm.addElement(m);
-            } else if (obj instanceof Vector) {
-                Vector subvector = (Vector) obj;
+            } else if (obj instanceof Vector subvector) {
                 String name = (String) subvector.elementAt(0);
                 if (prefix != null)
                     loadListModel(lm, subvector, prefix + '/' + name + '/', 1);
                 else
                     loadListModel(lm, subvector, name + '/', 1);
-            } else {
-                if (obj instanceof String) {
-
-                    lm.addElement(obj);
-
-                }
+            } else if (obj instanceof String str) {
+                lm.addElement(str);
             }
         }
 

@@ -26,14 +26,10 @@ public class ColumnComparator implements Comparator {
     }
 
     public int compare(Object one, Object two) {
-        if (one instanceof Vector && two instanceof Vector) {
-            Vector vOne = (Vector) one;
-            Vector vTwo = (Vector) two;
+        if (one instanceof Vector vOne && two instanceof Vector vTwo) {
             Object oOne = vOne.elementAt(index);
             Object oTwo = vTwo.elementAt(index);
-            if (oOne instanceof Comparable && oTwo instanceof Comparable) {
-                Comparable cOne = (Comparable) oOne;
-                Comparable cTwo = (Comparable) oTwo;
+            if (oOne instanceof Comparable cOne && oTwo instanceof Comparable cTwo) {
                 if (ascending) {
                     return cOne.compareTo(cTwo);
                 } else {

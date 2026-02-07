@@ -739,24 +739,24 @@ public class EventDispatchingPairwiseTest {
         }
 
         private void invokeListener(Object listener, Object event) {
-            if (listener instanceof TestScreenListener) {
-                ((TestScreenListener) listener).onScreenChanged(event);
-            } else if (listener instanceof TestFieldListener) {
-                ((TestFieldListener) listener).onFieldChanged(event);
-            } else if (listener instanceof TestConnectionListener) {
-                ((TestConnectionListener) listener).onConnectionChanged(event);
-            } else if (listener instanceof TestErrorListener) {
-                ((TestErrorListener) listener).onError(event);
-            } else if (listener instanceof TestSlowScreenListener) {
-                ((TestSlowScreenListener) listener).onScreenChanged(event);
-            } else if (listener instanceof TestSlowFieldListener) {
-                ((TestSlowFieldListener) listener).onFieldChanged(event);
-            } else if (listener instanceof TestSlowErrorListener) {
-                ((TestSlowErrorListener) listener).onError(event);
-            } else if (listener instanceof TestThrowingListener) {
-                ((TestThrowingListener) listener).onScreenChanged(event);
-            } else if (listener instanceof TestSlowThrowingListener) {
-                ((TestSlowThrowingListener) listener).onScreenChanged(event);
+            if (listener instanceof TestScreenListener tsl) {
+                tsl.onScreenChanged(event);
+            } else if (listener instanceof TestFieldListener tfl) {
+                tfl.onFieldChanged(event);
+            } else if (listener instanceof TestConnectionListener tcl) {
+                tcl.onConnectionChanged(event);
+            } else if (listener instanceof TestErrorListener tel) {
+                tel.onError(event);
+            } else if (listener instanceof TestSlowScreenListener tssl) {
+                tssl.onScreenChanged(event);
+            } else if (listener instanceof TestSlowFieldListener tsfl) {
+                tsfl.onFieldChanged(event);
+            } else if (listener instanceof TestSlowErrorListener tsel) {
+                tsel.onError(event);
+            } else if (listener instanceof TestThrowingListener ttl) {
+                ttl.onScreenChanged(event);
+            } else if (listener instanceof TestSlowThrowingListener tstl) {
+                tstl.onScreenChanged(event);
             }
         }
 
@@ -784,24 +784,24 @@ public class EventDispatchingPairwiseTest {
             void execute() {
                 for (ListenerRegistration reg : regs) {
                     try {
-                        if (reg.listener instanceof TestScreenListener) {
-                            ((TestScreenListener) reg.listener).onScreenChanged(event);
-                        } else if (reg.listener instanceof TestFieldListener) {
-                            ((TestFieldListener) reg.listener).onFieldChanged(event);
-                        } else if (reg.listener instanceof TestConnectionListener) {
-                            ((TestConnectionListener) reg.listener).onConnectionChanged(event);
-                        } else if (reg.listener instanceof TestErrorListener) {
-                            ((TestErrorListener) reg.listener).onError(event);
-                        } else if (reg.listener instanceof TestSlowScreenListener) {
-                            ((TestSlowScreenListener) reg.listener).onScreenChanged(event);
-                        } else if (reg.listener instanceof TestSlowFieldListener) {
-                            ((TestSlowFieldListener) reg.listener).onFieldChanged(event);
-                        } else if (reg.listener instanceof TestSlowErrorListener) {
-                            ((TestSlowErrorListener) reg.listener).onError(event);
-                        } else if (reg.listener instanceof TestThrowingListener) {
-                            ((TestThrowingListener) reg.listener).onScreenChanged(event);
-                        } else if (reg.listener instanceof TestSlowThrowingListener) {
-                            ((TestSlowThrowingListener) reg.listener).onScreenChanged(event);
+                        if (reg.listener instanceof TestScreenListener tsl) {
+                            tsl.onScreenChanged(event);
+                        } else if (reg.listener instanceof TestFieldListener tfl) {
+                            tfl.onFieldChanged(event);
+                        } else if (reg.listener instanceof TestConnectionListener tcl) {
+                            tcl.onConnectionChanged(event);
+                        } else if (reg.listener instanceof TestErrorListener tel) {
+                            tel.onError(event);
+                        } else if (reg.listener instanceof TestSlowScreenListener tssl) {
+                            tssl.onScreenChanged(event);
+                        } else if (reg.listener instanceof TestSlowFieldListener tsfl) {
+                            tsfl.onFieldChanged(event);
+                        } else if (reg.listener instanceof TestSlowErrorListener tsel) {
+                            tsel.onError(event);
+                        } else if (reg.listener instanceof TestThrowingListener ttl) {
+                            ttl.onScreenChanged(event);
+                        } else if (reg.listener instanceof TestSlowThrowingListener tstl) {
+                            tstl.onScreenChanged(event);
                         }
                     } catch (RuntimeException e) {
                         // Queued mode logs but continues
@@ -862,8 +862,8 @@ public class EventDispatchingPairwiseTest {
 
         void onConnectionChanged(Object event) {
             eventCount.incrementAndGet();
-            if (event instanceof TestConnectionEvent) {
-                eventSequence.add(((TestConnectionEvent) event).host);
+            if (event instanceof TestConnectionEvent tce) {
+                eventSequence.add(tce.host);
             }
         }
     }

@@ -201,11 +201,7 @@ public final class tnvt implements Runnable {
      * @see {@link #isConnected()}
      */
     public boolean isSslSocket() {
-        if (this.connected && this.sock != null && this.sock instanceof SSLSocket) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.connected && this.sock instanceof SSLSocket;
     }
 
     public final void setProxy(String proxyHost, String proxyPort) {

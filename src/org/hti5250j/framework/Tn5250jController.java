@@ -192,8 +192,8 @@ public class Tn5250jController extends Thread {
 
     public void handleEvent(Tn5250jEvent e) {
         log.debug("Received event: " + e.getClass().toString());
-        if (e instanceof Tn5250jKeyEvents) {
-            log.debug("Keys: " + ((Tn5250jKeyEvents) e).getKeystrokes());
+        if (e instanceof Tn5250jKeyEvents keyEvent) {
+            log.debug("Keys: " + keyEvent.getKeystrokes());
         }
         eventList.add(e);
         synchronized (eventList) {
