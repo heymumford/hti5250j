@@ -1579,26 +1579,21 @@ public class Screen5250 {
         int adj = sf.getAdjustment();
 
         if (adj != 0) {
-
+            // Field attribute adjustment dispatch (bits 5-7 of FFW2)
+            // Cases 5,6: right-alignment; case 7: mandatory enter field
             switch (adj) {
-
-                case 5:
+                case 5 -> {
                     rightAdjustField('0');
                     sf.setRightAdjusted();
-                    break;
-                case 6:
+                }
+                case 6 -> {
                     rightAdjustField(' ');
                     sf.setRightAdjusted();
-
-                    break;
-                case 7:
-                    sf.setManditoryEntered();
-                    break;
-
+                }
+                case 7 -> sf.setManditoryEntered();
             }
         } else {
-
-            // we need to right adjust signed numeric fields as well.
+            // Signed numeric fields need right-adjustment padding
             if (sf.isSignedNumeric()) {
                 rightAdjustField(' ');
             }
@@ -2675,24 +2670,15 @@ public class Screen5250 {
 
         int len = title.length();
 
-        // get bit 0 and 1 for interrogation
-        switch (orientation & 0xc0) {
-            case 0x40: // right
-                pos += (4 + width - len);
-                break;
-            case 0x80: // left
-                pos += 2;
-                break;
-            default: // center
-                // this is to place the position to the first text position of the
-                // window
-                //    the position passed in is the first attribute position, the next
-                //    is the border character and then there is another attribute after
-                //    that.
-                pos += (3 + ((width / 2) - (len / 2)));
-                break;
-
-        }
+        // Extract text alignment from window orientation (bits 6-7)
+        // 0x40=right-aligned, 0x80=left-aligned, default=center
+        pos += switch (orientation & 0xc0) {
+            case 0x40 -> 4 + width - len;       // Right-align: position at end minus text length
+            case 0x80 -> 2;                      // Left-align: position after border
+            default -> 3 + ((width / 2) - (len / 2));  // Center: middle of window
+        };
+        // Note: pos passed in is first attribute position, +1 is border char, +2 is attribute
+        // Calculation moves position to first text position
 
         //  if bit 2 is on then this is a footer
         if ((orientation & 0x20) == 0x20)
@@ -2736,34 +2722,31 @@ public class Screen5250 {
         int end = this.getPos(bottomLine - 1, numCols - 1);
         int len = end - start;
 
-        //      System.out.println(" starting roll");
-        //      dumpScreen();
+        // Roll screen contents up or down within scrollable region
+        // updown: 0=roll UP (move lines toward top), 1=roll DOWN (move lines toward bottom)
         switch (updown) {
-            case 0:
-                //  Now round em up and head em UP.
+            case 0 -> {
+                // Roll UP: move each line up by 'lines' rows, clear bottom
                 for (int x = start; x < end + numCols; x++) {
                     if (x + lines * numCols >= lenScreen) {
-                        //Clear at the end
-                        planes.setChar(x, ' ');
+                        planes.setChar(x, ' ');  // Clear positions beyond screen end
                     } else {
                         planes.setChar(x, planes.getChar(x + lines * numCols));
                     }
                 }
-                break;
-            case 1:
-                //  Now round em up and head em DOWN.
+            }
+            case 1 -> {
+                // Roll DOWN: move each line down by 'lines' rows, clear top
                 for (int x = end + numCols; x > 0; x--) {
                     if ((x - lines * numCols) < 0) {
-                        //Do nothing ... tooo small!!!
+                        // Skip: position would be before screen start
                     } else {
                         planes.setChar(x - lines * numCols, planes.getChar(x));
-                        //and clear
-                        planes.setChar(x, ' ');
+                        planes.setChar(x, ' ');  // Clear vacated position
                     }
                 }
-                break;
-            default:
-                log.warn(" Invalid roll parameter - please report this");
+            }
+            default -> log.warn("Invalid roll direction parameter: " + updown + " — please report this");
         }
         //      System.out.println(" end roll");
         //      dumpScreen();

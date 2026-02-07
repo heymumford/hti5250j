@@ -495,63 +495,36 @@ public final class tnvt implements Runnable {
     }
 
     private boolean dataIncluded(int aid) {
-
-        switch (aid) {
-
-            case PF1:
-                return !dataIncluded[0];
-            case PF2:
-                return !dataIncluded[1];
-            case PF3:
-                return !dataIncluded[2];
-            case PF4:
-                return !dataIncluded[3];
-            case PF5:
-                return !dataIncluded[4];
-            case PF6:
-                return !dataIncluded[5];
-            case PF7:
-                return !dataIncluded[6];
-            case PF8:
-                return !dataIncluded[7];
-            case PF9:
-                return !dataIncluded[8];
-            case PF10:
-                return !dataIncluded[9];
-            case PF11:
-                return !dataIncluded[10];
-            case PF12:
-                return !dataIncluded[11];
-            case PF13:
-                return !dataIncluded[12];
-            case PF14:
-                return !dataIncluded[13];
-            case PF15:
-                return !dataIncluded[14];
-            case PF16:
-                return !dataIncluded[15];
-            case PF17:
-                return !dataIncluded[16];
-            case PF18:
-                return !dataIncluded[17];
-            case PF19:
-                return !dataIncluded[18];
-            case PF20:
-                return !dataIncluded[19];
-            case PF21:
-                return !dataIncluded[20];
-            case PF22:
-                return !dataIncluded[21];
-            case PF23:
-                return !dataIncluded[22];
-            case PF24:
-                return !dataIncluded[23];
-
-            default:
-                return true;
-
-        }
-
+        // Query whether this AID (Attention Identifier) requires data transmission
+        // PF1-PF24 map to array indices 0-23 in the dataIncluded boolean array
+        // Other AIDs default to true (always include data)
+        return switch (aid) {
+            case PF1 -> !dataIncluded[0];
+            case PF2 -> !dataIncluded[1];
+            case PF3 -> !dataIncluded[2];
+            case PF4 -> !dataIncluded[3];
+            case PF5 -> !dataIncluded[4];
+            case PF6 -> !dataIncluded[5];
+            case PF7 -> !dataIncluded[6];
+            case PF8 -> !dataIncluded[7];
+            case PF9 -> !dataIncluded[8];
+            case PF10 -> !dataIncluded[9];
+            case PF11 -> !dataIncluded[10];
+            case PF12 -> !dataIncluded[11];
+            case PF13 -> !dataIncluded[12];
+            case PF14 -> !dataIncluded[13];
+            case PF15 -> !dataIncluded[14];
+            case PF16 -> !dataIncluded[15];
+            case PF17 -> !dataIncluded[16];
+            case PF18 -> !dataIncluded[17];
+            case PF19 -> !dataIncluded[18];
+            case PF20 -> !dataIncluded[19];
+            case PF21 -> !dataIncluded[20];
+            case PF22 -> !dataIncluded[21];
+            case PF23 -> !dataIncluded[22];
+            case PF24 -> !dataIncluded[23];
+            default -> true;  // All other AIDs include data
+        };
     }
 
     /**

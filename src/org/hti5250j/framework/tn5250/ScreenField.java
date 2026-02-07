@@ -84,15 +84,11 @@ public class ScreenField {
         if (adj > 0) {
             checkCanSend = true;
 
+            // Field attribute adjustment dispatch
+            // Bits 5-6 indicate horizontal alignment; bit 7 indicates field mandatory
             switch (adj) {
-
-                case 5:
-                case 6:
-                    rightAdjd = false;
-                    break;
-                case 7:
-                    manditoried = false;
-                    break;
+                case 5, 6 -> rightAdjd = false;      // Right-aligned field
+                case 7 -> manditoried = false;        // Mandatory input field
             }
 
         }
@@ -422,18 +418,13 @@ public class ScreenField {
         }
 
         if (adj > 0) {
-
-            switch (adj) {
-
-                case 5:
-                case 6:
-                    return rightAdjd;
-                case 7:
-                    return manditoried;
-                default:
-                    return true;
-            }
-
+            // Determine field validation rule based on adjustment bits
+            // Bits 5-6: horizontal alignment; bit 7: mandatory marker
+            return switch (adj) {
+                case 5, 6 -> rightAdjd;       // Right-aligned validation
+                case 7 -> manditoried;         // Mandatory field validation
+                default -> true;               // Default: field is valid
+            };
         }
         return true;
     }

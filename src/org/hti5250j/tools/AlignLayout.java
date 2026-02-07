@@ -159,14 +159,13 @@ public class AlignLayout extends ENHGridLayout {
             }
         }
 
-        switch (getLabelVerticalAlignment(comp)) {
-            case MIDDLE:
-                y += (control_h - comp_h) / 2;
-                break;
-            case BOTTOM:
-                y += control_h - comp_h;
-                break;
-        }
+        // Adjust label vertical position relative to paired control component
+        // MIDDLE: centered between control bounds; BOTTOM: aligned to bottom
+        y += switch (getLabelVerticalAlignment(comp)) {
+            case MIDDLE -> (control_h - comp_h) / 2;  // Center label vertically
+            case BOTTOM -> control_h - comp_h;        // Bottom-align label
+            default -> 0;                              // TOP (default): no adjustment
+        };
         comp.setBounds(x, y, comp_w, comp_h);
     }
 

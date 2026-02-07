@@ -104,33 +104,16 @@ public final class Log4jLogger implements HTI5250jLogger {
     }
 
     public void setLevel(int newLevel) {
-
+        // Configure Log4j level based on internal logging constants
+        // Map HTI5250j log levels (OFF, DEBUG, INFO, WARN, ERROR, FATAL) to Log4j Level objects
         switch (newLevel) {
-            case OFF:
-                log.setLevel(Level.OFF);
-                break;
-
-            case DEBUG:
-                log.setLevel(Level.DEBUG);
-                break;
-
-            case INFO:
-                log.setLevel(Level.INFO);
-                break;
-
-            case WARN:
-                log.setLevel(Level.WARN);
-                break;
-
-            case ERROR:
-                log.setLevel(Level.ERROR);
-                break;
-
-            case FATAL:
-                log.setLevel(Level.FATAL);
-                break;
+            case OFF -> log.setLevel(Level.OFF);
+            case DEBUG -> log.setLevel(Level.DEBUG);
+            case INFO -> log.setLevel(Level.INFO);
+            case WARN -> log.setLevel(Level.WARN);
+            case ERROR -> log.setLevel(Level.ERROR);
+            case FATAL -> log.setLevel(Level.FATAL);
         }
-
     }
 
     public int getLevel() {
