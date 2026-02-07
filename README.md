@@ -1,18 +1,43 @@
-# TN5250J
-A 5250 terminal emulator for the IBM i (AS/400) written in Java.
+# TN5250J Headless Edition
 
-Documentation is available at: [tn5250j.github.io](https://tn5250j.github.io/)
+A 5250 terminal emulator for the IBM i (AS/400) written in Java — **specialized for headless operation, session management, and protocol extensions**.
 
-[![Build Status](https://travis-ci.org/tn5250j/tn5250j.svg?branch=travis)](https://travis-ci.org/tn5250j/tn5250j)
+> **Note:** This is a **maintained fork** of [TN5250J](https://github.com/tn5250j/tn5250j). See [FORK.md](./FORK.md) for attribution and differences.
 
-## History
+## Quick Start
 
-This project was created because there was no terminal emulator for Linux with features like continued edit fields, gui windows, cursor progression fields, etc.
+```bash
+git clone https://github.com/heymumford/tn5250j.git
+cd tn5250j
+ant build
+```
 
-It was then open sourced to give something back to all those hackers and code churners that work so hard to provide the Linux and Open Source communities with quality work and software.
+## Features
 
-The original developer wanted it to work on different operating systems, thus Java giving the “J” at the end.
+This fork adds:
+- **Headless Mode** — Full operation without GUI (server/daemon use)
+- **Session Pooling** — Concurrent session management with lifecycle validation
+- **Enhanced Testing** — 25+ pairwise test suites for protocol reliability
+- **Plugin Architecture** — Extensible protocol handlers
+- **Advanced Diagnostics** — Comprehensive logging and error reporting
+- **Protocol Extensions** — TN5250E and attribute plane operations
 
-## Hosting
+For base TN5250J features, see [tn5250j.github.io](https://tn5250j.github.io/)
 
-The project was previous hosted at [sourceforge.net](https://sourceforge.net/projects/tn5250j/). But since 2016 has been migrated to GitHub.
+## Documentation
+
+- [FORK.md](./FORK.md) — Fork declaration and attribution
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — Contribution guidelines
+- **Original Project:** [tn5250j/tn5250j](https://github.com/tn5250j/tn5250j)
+
+## License
+
+GNU General Public License v2 — See [LICENSE](./LICENSE)
+
+**Attribution:** Original TN5250J community. Headless extensions by Eric Mumford.
+
+## History (Original Project)
+
+Created to fill the gap for a Linux terminal emulator with advanced features (continued edit fields, GUI windows, cursor progression). Open-sourced to benefit the open-source community. Written in Java for cross-platform compatibility.
+
+**Original Project Hosting:** Previously at [sourceforge.net](https://sourceforge.net/projects/tn5250j/); migrated to GitHub in 2016.
