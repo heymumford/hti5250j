@@ -297,9 +297,10 @@ public final class tnvt implements Runnable {
             }
 
             producer = new DataStreamProducer(this, bin, dsq, abyte0);
-            pthread = new Thread(producer);
-            pthread.setPriority(Thread.NORM_PRIORITY);
-            pthread.start();
+            pthread = Thread.ofVirtual()
+                .name("datastream-" + session)
+                .start(producer);
+            // Note: Virtual threads ignore setPriority(); all run at normal priority
 
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -314,8 +315,9 @@ public final class tnvt implements Runnable {
             }
 
             keepTrucking = true;
-            me = new Thread(this);
-            me.start();
+            me = Thread.ofVirtual()
+                .name("tnvt-" + session)
+                .start(this);
 
         } catch (Exception exception) {
             if (exception.getMessage() == null)

@@ -41,6 +41,12 @@ public class DataStreamProducer implements Runnable {
 
         Thread me = Thread.currentThread();
 
+        // Development mode: verify we're running on virtual thread for optimal performance
+        if (!me.isVirtual()) {
+            log.warn("⚠️  DataStreamProducer should run on virtual thread for performance. " +
+                "Current: " + (me.isVirtual() ? "VIRTUAL" : "PLATFORM") + " thread");
+        }
+
         // load the first response screen
         loadStream(dataStream, 0);
 
