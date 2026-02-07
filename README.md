@@ -7,9 +7,9 @@ A 5250 terminal emulator for the IBM i (AS/400) written in Java — **specialize
 ## Quick Start
 
 ```bash
-git clone https://github.com/heymumford/tn5250j.git
-cd tn5250j
-ant build
+git clone https://github.com/heymumford/tn5250j-headless.git
+cd tn5250j-headless
+ant clean package
 ```
 
 ## Features
@@ -34,7 +34,7 @@ For base TN5250J features, see [tn5250j.github.io](https://tn5250j.github.io/)
 
 GNU General Public License v2 — See [LICENSE](./LICENSE)
 
-**Attribution:** Original TN5250J community. Headless extensions by Eric Mumford.
+**Attribution:** Original TN5250J community. Headless extensions by Eric C. Mumford (@heymumford).
 
 ## History (Original Project)
 

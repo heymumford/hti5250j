@@ -12,7 +12,7 @@ This project is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250
 
 ### This Fork
 **TN5250J Headless Edition** — Headless mode, session management, testing
-**Maintainer:** Eric Mumford (@heymumford)
+**Maintainer:** Eric C. Mumford (@heymumford)
 **Repository:** https://github.com/heymumford/tn5250j
 **License:** GNU General Public License v2
 

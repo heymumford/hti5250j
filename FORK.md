@@ -14,7 +14,7 @@ This is a **maintained fork** of the original [TN5250J](https://github.com/tn525
 ## This Fork
 
 **Purpose:** Headless mode support with enhanced session pooling, lifecycle management, and protocol extensions
-**Maintainer:** Eric Mumford (@heymumford)
+**Maintainer:** Eric C. Mumford (@heymumford)
 **Repository:** https://github.com/heymumford/tn5250j
 **License:** GNU General Public License v2 (inherited from original)
 
