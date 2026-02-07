@@ -21,6 +21,11 @@ build.*.properties
 *.key
 *.crt
 *.pfx
+*.jks
+*.p12
+*.keystore
+certs/
+certificates/
 
 # IDE
 .vscode/
