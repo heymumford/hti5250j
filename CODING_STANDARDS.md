@@ -6,6 +6,53 @@
 
 ---
 
+## EPISTEMOLOGICAL FOUNDATION
+
+### Code is Evidence, Not Art
+
+The fundamental purpose of HTI5250J code is to provide **evidence about what the system actually does**.
+
+A reader of HTI5250J code must be able to answer three questions:
+1. **"What does this code claim to do?"** — Stated in variable names, method names, comments
+2. **"How would I know if that claim is false?"** — Falsifiable against i5 behavior, testable
+3. **"Could i5 behavior break this code?"** — Explicit assumptions documented, verifiable
+
+If the code doesn't clearly answer these, it's not world-class.
+
+### Explicitness is Virtue; Implicitness is Debt
+
+Implicit behavior (framework magic, hidden conventions, undocumented assumptions) creates **knowledge debt**:
+- Someone must remember WHY it works
+- Someone must debug WHEN it breaks
+- New engineers must reverse-engineer the intent
+
+**Explicit code is self-documenting** — it contains its own explanation.
+
+### The Three-Way Contract
+
+HTI5250J code stands at the intersection of three realities:
+
+```
+┌──────────────────┐
+│   Client Code    │  ← What the test automation expects
+└────────┬─────────┘
+         │ "What are you promising?"
+┌────────▼──────────────────────┐
+│   HTI5250J (Translation Layer) │  ← The bridge implementation
+└────────┬──────────────────────┘
+         │ "Is that what i5 actually does?"
+┌────────▼──────────────────────┐
+│  IBM i5 PMTENT/LNINQ/etc.    │  ← The concrete reality
+└───────────────────────────────┘
+```
+
+**Code standards follow this structure:**
+- **Client-facing code** must be semantic (high-level, intent-clear, business language)
+- **Bridge code** must be explicit (low-level, assumption-visible, verifiable transformations)
+- **i5-facing code** must be auditable (verifiable against actual i5 protocol behavior)
+
+---
+
 ## Philosophy: Self-Documenting Code
 
 Code must be coherent to an entry-grade Java engineer without external documentation. This means:
@@ -441,6 +488,191 @@ public class SessionPanel extends JPanel {
 
 ---
 
+## File Length Standards
+
+### The Problem: Cognitive Load vs. Merge Conflicts
+
+Large files (1000+ lines) suffer from:
+- **Merge conflicts** — Multiple developers editing same file = constant conflicts
+- **Hard to understand** — Holding 1000 lines in working memory is impossible
+- **Hard to test** — Too many responsibilities, can't verify one thing
+- **Hard to review** — PR changes span 100+ lines, reviewers miss issues
+- **Hard to modify** — Change at line 250, break something at line 850
+
+### The Standards
+
+| Metric | Target | Rationale |
+|--------|--------|-----------|
+| **Optimal** | 250-350 lines | Fits one mental model; verifiable in one sitting |
+| **Warning** | 300 lines | Time to ask: "Should this be split?" |
+| **Maximum** | 400 lines | Hard limit; merge conflict risk still acceptable |
+| **Critical** | 600 lines | Must refactor or document exception |
+| **Emergency** | 1000+ lines | Refactor immediately (likely contains bugs) |
+
+### Why 300-400 Lines?
+
+**Test:** Can a new engineer verify the file's claims in one sitting (20 minutes)?
+
+✅ **GOOD — 280 lines, verifiable**
+```java
+public class SchemaRegistry {
+    /**
+     * ONE clear responsibility: "Know what fields PMTENT expects"
+     * Verification time: ~15 minutes
+     * - Read schema() method (15 lines)
+     * - Read register() method (20 lines)
+     * - Read validate() method (30 lines)
+     * - Read test alongside file
+     * - Understand: "SchemaRegistry is correct"
+     */
+    // ... 280 lines total
+}
+```
+
+❌ **BAD — 1200 lines, not verifiable**
+```java
+public class TerminalAutomationRuntimeMonolith {
+    // Lines 1-50: Constructor
+    // Lines 51-150: executeProgram()
+    // Lines 151-250: Protocol encoding
+    // Lines 251-350: Schema validation
+    // Lines 351-450: Queue management
+    // ... 11 more sections
+    // Can you verify this in one sitting? NO (2+ hours)
+}
+```
+
+### Merge Conflict Math
+
+Probability of merge conflicts increases with file size:
+
+| File Size | Conflict Prob | Weekly Impact |
+|-----------|--------------|---------------|
+| 100 lines | 2% | <30 min/week |
+| 300 lines | 6% | ~1 hour/week |
+| 600 lines | 12% | ~3 hours/week |
+| 1000 lines | 20% | 5-6 hours/week |
+
+**Standard:** Keep files ≤400 lines to maintain merge conflict overhead < 2 hours/week.
+
+### The Three-Tier Structure
+
+**Tier 1: Core Bridge Classes (250-350 lines)**
+- `TerminalAutomationRuntime.java` (280 lines)
+- `OperationQueue.java` (310 lines)
+- `SchemaRegistry.java` (290 lines)
+- `TN5250Protocol.java` (320 lines)
+
+These are HTI5250J's heart. One clear responsibility each. Verifiable in a single sitting.
+
+**Tier 2: Supporting Classes (150-250 lines)**
+- `FieldEncoder.java` (180 lines)
+- `EBCDICCodec.java` (220 lines)
+- `SchemaValidator.java` (210 lines)
+
+Helper classes. Focused, supporting core functionality.
+
+**Tier 3: Data Classes & Utilities (50-150 lines)**
+- `SchemaDefinition.java` (95 lines)
+- `FieldDefinition.java` (87 lines)
+- `ExecutionResult.java` (105 lines)
+
+Data carriers, exceptions, small utilities.
+
+### When a File Approaches 300 Lines: The Checklist
+
+Ask these questions in order:
+
+1. **Does this file have exactly ONE reason to change?**
+   - YES → Keep it (up to 400 lines is fine)
+   - NO → Split immediately (multiple responsibilities)
+
+2. **Can a new engineer understand it in 20 minutes?**
+   - YES → Keep it (good design)
+   - NO → Simplify or split
+
+3. **Does it need context from other files to verify?**
+   - YES → Refactor (move related code together)
+   - NO → Keep it (self-contained)
+
+4. **How many public methods?**
+   - 1-3 → Good size (keep it)
+   - 4-6 → Watch it (split at 350 lines)
+   - 7+ → Split immediately (too many responsibilities)
+
+5. **How many test files verify this class?**
+   - 1 → Good (cohesive)
+   - 2+ → Split (concerns are separate)
+
+### Acceptable Exceptions (Documented)
+
+Rarely, a file may exceed 400 lines if:
+- ONE clear, complex responsibility (cannot be cleanly split)
+- Well-documented with section comments every 50 lines
+- Full test suite alongside the file
+- Exception documented in header comment
+
+Example:
+```java
+/**
+ * WHY THIS FILE IS LARGE (520 lines):
+ * SchemaDriftDetector runs continuous verification against i5.
+ * It has multiple detection channels (field positions, enum values, type limits,
+ * performance profiles) that are too interdependent to split.
+ *
+ * WHEN TO SPLIT: If exceeds 600 lines, refactor into:
+ * - SchemaDriftDetector (orchestrator, ~200 lines)
+ * - FieldDriftDetector (specific checks, ~150 lines)
+ * - EnumDriftDetector (specific checks, ~130 lines)
+ * - PerformanceDriftDetector (specific checks, ~120 lines)
+ */
+public class SchemaDriftDetector {
+    // Complex logic documented in sections...
+}
+```
+
+---
+
+## The Covenant: Core Standards at a Glance
+
+| Standard | Purpose | Example |
+|----------|---------|---------|
+| **Minimal Code** | Clarity over cleverness | One function, one job |
+| **Entry-Level Readable** | Reduce knowledge debt | Explicit naming, no abbreviations |
+| **Expressive Where Critical** | Data loss prevention | Long names in PMTENT (payment system) |
+| **Explicit Over Implicit** | Auditable assumptions | Comments on WHY, not WHAT |
+| **Three-Level Bridge** | Clear responsibility | client → runtime → protocol |
+| **Why Comments** | Future maintainer understanding | Explain design decisions |
+| **Fail Loud** | Debugging ease | Detailed exception messages |
+| **Testable by Design** | Quality-first architecture | Dependency injection everywhere |
+| **Performance Comments** | Expectation setting | Document SLA, don't assume |
+| **File Length ≤400** | Merge conflict prevention | Verifiable in one sitting |
+
+### HTI5250J Coding Covenant
+
+"I will write code that:
+- Is **verifiable against i5 reality** (epistemology)
+- **Explicitly shows what it claims and why** (ontology)
+- Can be **understood by the person fixing bugs at 3am**
+- **Fails loudly with evidence**, not silently
+- **Prioritizes clarity over cleverness**
+- **Documents assumptions**, not obvious facts
+- **Is tested as an equal partner** to implementation
+- **Respects the reader's time and intelligence**
+
+I will not write code that:
+- Requires **framework magic** to understand
+- Hides **complexity in abbreviations or conventions**
+- Prioritizes **my ego over team understanding**
+- **Silently fails** or obscures error context
+- **Optimizes prematurely**
+- Treats **testing as an afterthought**
+- Comments on **what code obviously does**"
+
+This philosophy transforms HTI5250J from "a useful tool" into "a teaching artifact" — code that future engineers don't just use, but learn from.
+
+---
+
 ## Refactoring Checklist
 
 Before committing code changes:
@@ -453,6 +685,7 @@ Before committing code changes:
 - [ ] **Error handling**: Validates at boundaries, logs context
 - [ ] **Performance**: Virtual threads for I/O, no synchronization on immutables
 - [ ] **Coherence**: Entry-grade engineer can read without external docs
+- [ ] **File Length**: ≤400 lines (optimal 250-350), one clear responsibility
 
 ---
 
