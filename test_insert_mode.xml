@@ -16,7 +16,7 @@
     <target name="test-insert">
         <junit printsummary="yes" haltonfailure="no">
             <classpath refid="tests-classpath"/>
-            <test name="org.tn5250j.framework.tn5250.InsertCharModePairwiseTest"/>
+            <test name="org.hti5250j.framework.tn5250.InsertCharModePairwiseTest"/>
         </junit>
     </target>
 </project>

@@ -18,7 +18,7 @@
     <target name="run-cursor-test" description="Run CursorMovementDeepPairwiseTest">
         <junit printsummary="yes" haltonfailure="no" showoutput="yes">
             <classpath refid="tests-classpath"/>
-            <test name="org.tn5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
+            <test name="org.hti5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
             <formatter type="plain" usefile="false"/>
         </junit>
     </target>

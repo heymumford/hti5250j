@@ -1,6 +1,6 @@
 import java.lang.reflect.*;
 import java.util.Collection;
-import org.tn5250j.encoding.EBCDICPairwiseTest;
+import org.hti5250j.encoding.EBCDICPairwiseTest;
 
 public class RunEBCDICTest {
     public static void main(String[] args) throws Exception {

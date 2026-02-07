@@ -8,7 +8,7 @@
                     <include name="*.jar"/>
                 </fileset>
             </classpath>
-            <test name="org.tn5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
+            <test name="org.hti5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
         </junit>
     </target>
 </project>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<project name="tn5250j" default="info" basedir=".">
+<project name="hti5250j" default="info" basedir=".">
 
     <!-- import user preferences first -->
     <property file="${basedir}/build.${user.name}.properties"/>
@@ -377,11 +377,11 @@
         <jarbundler dir="${dist.dir}"
                     name="${Name}"
                     shortname="${Name}"
-                    mainclass="org.tn5250j.My5250"
+                    mainclass="org.hti5250j.My5250"
                     icon="${resource.dir}/tn5250j-icon.icns"
                     version="${version}"
                     copyright="${Name} ${version}, (c) ${year}"
-                    bundleid="org.tn5250j"
+                    bundleid="org.hti5250j"
                     jvmversion="1.8+"
                     vmoptions="-Xmx256m"
                     smalltabs="true"
