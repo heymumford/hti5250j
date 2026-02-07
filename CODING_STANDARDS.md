@@ -385,9 +385,357 @@ src/org/hti5250j/
 
 ## Testing Standards
 
-### Contract Tests (Before Refactoring)
+### Philosophical Foundation: Falsification Over Validation
 
-Every public interface needs a contract test:
+HTI5250J testing **inverts the traditional test pyramid** because traditional pyramids don't protect against silent data loss at system boundaries.
+
+**Core Insight:** Code passes unit tests but fails on i5 because the three sources of truth diverge:
+- **Schema Truth** — What fields the i5 actually has (drifts independently)
+- **Protocol Truth** — How telnet actually negotiates (discoverable only on wire)
+- **Execution Truth** — How i5 processes operations (found only in real workflows)
+
+**Testing Strategy:** Test against i5 reality, not against mocks. Catch drift continuously.
+
+### The Four-Domain Test Architecture
+
+Tests are organized into **four distinct domains**, each addressing a specific risk:
+
+#### Domain 1: Unit Tests (Isolation, No i5)
+
+**Purpose:** Fast feedback on logic errors in translation layer
+
+**Characteristics:**
+- ✅ No i5 connection required
+- ✅ Run in <5 seconds (pre-commit gate)
+- ✅ Test internal invariants: EBCDIC codec, decimal serialization, queue ordering
+- ✅ Use mocks for external dependencies
+
+**Example:**
+```java
+// ✅ Unit: EBCDIC round-trip (internal logic)
+@Test
+public void testEBCDICCodec_RoundTrip_ShouldPreserveUnicode() {
+    String original = "ABC123@#$";
+    byte[] encoded = EBCDICCodec.encode(original);
+    String decoded = EBCDICCodec.decode(encoded);
+    assertEquals(original, decoded);  // No i5 involved
+}
+
+// ✅ Unit: Decimal serialization edge case
+@Test
+public void testDecimalSerializer_MaxValue_ShouldNotOverflow() {
+    byte[] bytes = DecimalSerializer.toBytes(99999999.99, 10, 2);
+    assertEquals(10, bytes.length);  // Stays in field bounds
+}
+```
+
+**Acceptance Criteria:**
+- ≥80% line coverage of translation layer
+- All logic branches tested (positive, negative, boundary cases)
+- No flaky tests (deterministic results)
+
+#### Domain 2: Continuous Contracts (Reality Monitoring, Real i5)
+
+**Purpose:** Detect schema/protocol/execution drift in real-time
+
+**Characteristics:**
+- ✅ Runs against **real i5** (production or test environment)
+- ✅ Executes every 5-30 minutes, 24/7
+- ✅ Non-blocking (failures don't interrupt service)
+- ✅ Three contract channels: Schema, Protocol, Execution
+
+**Example:**
+```java
+// ✅ Continuous: Schema contract (detect field divergence)
+@Test
+public void schemaContract_PMTENT_FieldsMatch() throws Exception {
+    // Connect to real i5
+    Session session = realI5.connect("PMTENT");
+
+    // Query actual field layout
+    Map<String, Integer> actualFields = session.getFieldMap();
+
+    // Compare to declared schema
+    SchemaDefinition expected = SchemaRegistry.get("PMTENT");
+
+    // If mismatch detected, alert immediately (don't fail silently)
+    for (FieldDefinition field : expected.getFields()) {
+        assertTrue(actualFields.containsKey(field.name()),
+            "Field drift detected: " + field.name() +
+            " missing on i5 (schema changed?)");
+    }
+}
+
+// ✅ Continuous: Protocol contract (detect negotiation failure)
+@Test
+public void protocolContract_TelnetNegotiation_MatchesExpectation() throws Exception {
+    // Capture telnet negotiation bytes
+    byte[] negotiation = captureWireData(realI5.connect());
+
+    // Verify RFC 854 compliance
+    assertTrue(verifyTelnetStructure(negotiation),
+        "Protocol drift: Telnet negotiation doesn't match RFC 854");
+}
+
+// ✅ Continuous: Execution contract (detect operation ordering)
+@Test
+public void executionContract_FieldEntry_IsAtomic() throws Exception {
+    // Submit field entry + screen refresh as two operations
+    session.fieldEntry("FIELD1", "DATA");
+    session.refresh();
+
+    // Verify atomicity: no other session can read stale data
+    assertFalse(otherSession.getField("FIELD1").isEmpty(),
+        "Execution drift: Operation ordering broken");
+}
+```
+
+**Execution Frequency:**
+- Schema contracts: Every 5 minutes (schema rarely changes, but drift is catastrophic)
+- Protocol contracts: Every 30 seconds (negotiation should be fast)
+- Execution contracts: Every 30 seconds (operation ordering affects data consistency)
+
+**Acceptance Criteria:**
+- Zero schema drift detected
+- Protocol successfully negotiates <500ms
+- All operations maintain ordering guarantees
+
+#### Domain 3: Surface Tests (Critical Boundaries, Real i5)
+
+**Purpose:** Verify translation layer correctly handles i5 responses at system boundary
+
+**Characteristics:**
+- ✅ Runs on **real i5** for critical paths
+- ✅ Executes at every commit (protocol) or every 2 hours (schema)
+- ✅ Tests four critical surfaces: Protocol, Schema, Concurrency, Fallback
+
+**Example:**
+```java
+// ✅ Surface: Protocol round-trip (semantic → bytes → semantic)
+@Test
+public void surfaceTest_ProtocolRoundTrip_PaymentProcessing() throws Exception {
+    // Start with user intent (semantic)
+    PaymentOperation intent = new PaymentOperation(
+        "ACCOUNT", "USD 100.00", "AUTHORIZE");
+
+    // Translate to telnet bytes (protocol)
+    byte[] telnetFrame = ProtocolTranslator.encode(intent);
+
+    // Send to real i5, get response
+    byte[] response = realI5.execute(telnetFrame);
+
+    // Translate back to semantic
+    PaymentResult result = ProtocolTranslator.decode(response);
+
+    // Verify: semantic input → protocol → semantic output are consistent
+    assertEquals("AUTHORIZED", result.status);
+    assertEquals("100.00", result.amount);
+}
+
+// ✅ Surface: Schema contract boundary (verify field bounds)
+@Test
+public void surfaceTest_FieldBounds_PreventDataLoss() throws Exception {
+    Session session = realI5.connect("PRICING");
+
+    // Get declared schema
+    ScreenField priceField = session.getField("PRICE");
+    int maxLength = priceField.getLength();
+
+    // Try to write longer value (should truncate, not corrupt)
+    String longPrice = "999999999.99";  // Longer than field
+    session.fieldEntry("PRICE", longPrice);
+
+    // Verify: data fits within bounds
+    String readBack = session.getField("PRICE").getText();
+    assertTrue(readBack.length() <= maxLength,
+        "Data loss: " + longPrice + " doesn't fit in field");
+}
+
+// ✅ Surface: Concurrency (operation ordering, idempotency)
+@Test
+public void surfaceTest_ConcurrentFieldEntry_IsSerialized() throws Exception {
+    // Two sessions try to modify same field concurrently
+    session1.fieldEntry("SHARED_FIELD", "VALUE_1");
+    session2.fieldEntry("SHARED_FIELD", "VALUE_2");
+
+    // Verify: operations executed in order, no interleaving
+    String finalValue = session1.getField("SHARED_FIELD").getText();
+    assertTrue(finalValue.equals("VALUE_1") || finalValue.equals("VALUE_2"),
+        "Concurrency failure: interleaved operation detected");
+}
+
+// ✅ Surface: Fallback paths (what if protocol negotiation fails?)
+@Test
+public void surfaceTest_FallbackProtocol_WorksWhenNegotiationFails() throws Exception {
+    // Block telnet negotiation options
+    mockI5.blockTelnetOption(TIMING_MARK);
+
+    // Session should fall back to no-negotiation mode
+    Session session = new Session();
+    session.setFallbackMode(true);
+    session.connect();
+
+    // Verify: still works, just without timing marks
+    assertTrue(session.isConnected());
+}
+```
+
+**Execution Frequency:**
+- Protocol surface tests: Every commit (protocol is stable)
+- Schema surface tests: Every 2 hours (schema might drift slowly)
+- Concurrency surface tests: Every commit (ordering is critical)
+- Fallback surface tests: Every 4 hours (fallbacks rarely tested)
+
+**Acceptance Criteria:**
+- Round-trip protocol tests pass (semantic → bytes → semantic preserves intent)
+- Schema bounds verified (no truncation, no overflow)
+- Concurrent operations maintain ordering
+- Fallback paths work when primary fails
+
+#### Domain 4: Scenario Tests (Real Workflows, Real i5)
+
+**Purpose:** Verify complete user workflows end-to-end against real i5
+
+**Characteristics:**
+- ✅ Runs against **real i5** (production or test environment)
+- ✅ Executes every commit or nightly (user-visible workflows)
+- ✅ Tests complete business scenarios: payment processing, settlement, error recovery
+
+**Example:**
+```java
+// ✅ Scenario: Payment processing workflow (complete path)
+@Test
+public void scenarioTest_PaymentProcessing_EndToEnd() throws Exception {
+    Session session = realI5.connect("PAYMENTS");
+
+    // User opens payment screen
+    assertEquals("ENTER PAYMENT DETAILS", session.getTitle());
+
+    // User enters account number
+    session.fieldEntry("ACCOUNT", "123456789");
+    session.fieldEntry("AMOUNT", "1000.00");
+    session.sendKey(F5);  // Submit
+
+    // i5 validates, shows confirmation
+    Screen result = session.refreshScreen();
+    assertEquals("CONFIRM PAYMENT", result.getTitle());
+
+    // User confirms (F1)
+    session.sendKey(F1);
+
+    // i5 returns to main menu (success)
+    Screen final_screen = session.refreshScreen();
+    assertEquals("MAIN MENU", final_screen.getTitle());
+}
+
+// ✅ Scenario: Error recovery (payment declined, retry)
+@Test
+public void scenarioTest_PaymentRetryAfterDecline_ShouldShowRetryPrompt()
+        throws Exception {
+    Session session = realI5.connect("PAYMENTS");
+
+    // Try payment with invalid card
+    session.fieldEntry("ACCOUNT", "INVALID");
+    session.fieldEntry("AMOUNT", "100.00");
+    session.sendKey(F5);
+
+    // i5 shows error
+    Screen error = session.refreshScreen();
+    assertTrue(error.getText().contains("INVALID ACCOUNT"),
+        "Error message missing");
+
+    // User retries with valid account
+    session.fieldEntry("ACCOUNT", "123456789");
+    session.sendKey(F5);
+
+    // Should succeed
+    Screen success = session.refreshScreen();
+    assertEquals("MAIN MENU", success.getTitle());
+}
+
+// ✅ Scenario: Batch settlement (complex multi-step operation)
+@Test
+public void scenarioTest_BatchSettlement_ProcessesAllTransactions()
+        throws Exception {
+    Session session = realI5.connect("SETTLEMENT");
+
+    // Select batch job
+    session.fieldEntry("BATCH_ID", "BATCH_20260207");
+    session.sendKey(F5);
+
+    // i5 shows progress
+    for (int i = 0; i < 100; i++) {
+        Screen progress = session.refreshScreen();
+        String status = progress.getField("PROGRESS").getText();
+        assertTrue(Integer.parseInt(status) <= 100,
+            "Progress out of bounds: " + status);
+    }
+
+    // Final confirmation
+    Screen final_screen = session.refreshScreen();
+    assertTrue(final_screen.getText().contains("COMPLETE"),
+        "Batch didn't complete");
+}
+```
+
+**Execution Frequency:**
+- Commit scenarios: Every push (critical workflows)
+- Nightly scenarios: Full suite every 24 hours
+- Weekly scenarios: Load tests, stress tests
+
+**Acceptance Criteria:**
+- All business workflows complete successfully
+- Error paths show appropriate messages
+- Retry/recovery paths work
+- Complex multi-step operations succeed
+
+### Test Contract Naming Conventions
+
+```java
+// ✅ Clear naming: Domain + Focus + Scenario + Expected
+@Test
+public void unitTest_EBCDICCodec_RoundTrip_ShouldPreserveCharacters()
+
+@Test
+public void continuousTest_SchemaContract_PMTENT_FieldsMatch()
+
+@Test
+public void surfaceTest_ProtocolRoundTrip_PaymentProcessing_ShouldPreserveSemantic()
+
+@Test
+public void scenarioTest_PaymentProcessing_EndToEnd_ShouldCompleteSuccessfully()
+
+// ❌ Vague naming
+@Test
+public void testCodec()
+
+@Test
+public void testPayment()
+```
+
+### Test Execution Strategy
+
+| Phase | Tests | Duration | When | i5 Required |
+|-------|-------|----------|------|------------|
+| **Pre-commit** | Unit only | <5s | Before git add | NO |
+| **Pre-push** | Unit + Surface | ~60s | Before git push | YES (critical paths) |
+| **Pre-merge** | All 4 domains | 5-10 min | Before main merge | YES (full test) |
+| **Production** | Continuous monitors | 24/7 | Background | YES (real i5) |
+
+### Risk Mitigation Matrix
+
+| Risk | Detected By | Frequency | Alert Level |
+|------|------------|-----------|------------|
+| **Logic bug** (wrong EBCDIC) | Domain 1 (Unit) | Pre-commit | BLOCK |
+| **Schema drift** (i5 field missing) | Domain 2 (Continuous) | Every 5 min | WARN (24 hours) |
+| **Protocol mismatch** (negotiation fails) | Domain 2 + 3 (Continuous + Surface) | Every 30 sec | ALERT |
+| **Idempotency failure** (concurrent ops corrupt) | Domain 3 (Surface) | Per commit | BLOCK |
+| **Silent data loss** (field truncation) | Domain 3 (Surface) | Per commit | BLOCK |
+| **Latency SLA violation** (operations too slow) | Domain 4 (Scenario) | Nightly | WARN (1 hour) |
+
+### Contract Tests (Foundational)
+
+Every public interface has a contract test that establishes behavioral guarantees **before** refactoring:
 
 ```java
 // ✅ Contract test (establishes behavioral guarantee)
@@ -405,27 +753,41 @@ public void testConnect_ShouldSetConnectedFlag() {
 }
 ```
 
-### Test Naming
+### Test Ownership and Responsibilities
 
-```java
-// ✅ Clear behavior (testMethod_Scenario_ExpectedOutcome)
-public void testCopyText_RectangleSelection_ShouldReturnSelectedCharacters()
+| Domain | Owner | Frequency | Environment | Tool |
+|--------|-------|-----------|-------------|------|
+| **Domain 1 (Unit)** | Developer | Per commit | Local | JUnit 5 |
+| **Domain 2 (Continuous)** | Platform/SRE | Every 5-30 min | Background | JUnit 5 + i5 connector |
+| **Domain 3 (Surface)** | QA + Dev | Per commit | CI/CD | JUnit 5 + i5 test env |
+| **Domain 4 (Scenario)** | QA | Per commit (critical) / nightly | CI/CD + production | JUnit 5 + i5 production |
 
-// ❌ Vague
-public void testCopy1()
+### Test Metrics Dashboard
 
-// ✅ Parametrized (data-driven)
-@ParameterizedTest
-@ValueSource(ints = {0, -1, Integer.MAX_VALUE})
-public void testGetRow_EdgeCases_ShouldHandleWithoutCrash(int position)
+Track confidence metrics across all domains:
 
-// ❌ Multiple assertions (test one thing)
-@Test
-public void testScreenUpdate() {
-    screen.update(data);
-    assertTrue(screen.isDirty());       // ❌ Assertion 2
-    assertEquals(10, screen.cursorPos()); // ❌ Assertion 3
-}
+```
+Domain 1 (Unit):           Code Logic Confidence
+  - Coverage: 82% lines
+  - Passing: 487/487 tests
+  - Status: ✅ GREEN
+
+Domain 2 (Continuous):     Reality Match Confidence
+  - Schema drift: 0 detected
+  - Protocol failures: 0 in 24h
+  - Status: ✅ GREEN
+
+Domain 3 (Surface):        Interface Confidence
+  - Protocol round-trips: 98% success
+  - Schema bounds: verified
+  - Concurrency: ordering maintained
+  - Status: ✅ GREEN
+
+Domain 4 (Scenario):       Workflow Confidence
+  - Payment processing: 100% (50 runs)
+  - Error recovery: 100% (25 runs)
+  - Settlement batch: 100% (10 runs)
+  - Status: ✅ GREEN
 ```
 
 ---
