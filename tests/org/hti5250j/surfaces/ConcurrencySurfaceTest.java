@@ -374,6 +374,7 @@ public class ConcurrencySurfaceTest {
     /**
      * Verifier class handles concurrent operations.
      * Must be thread-safe and maintain ordering guarantees.
+     * Uses BlockingQueue for FIFO ordering and atomic counters for safe increments.
      */
     static class ConcurrencyVerifier {
 
@@ -382,6 +383,7 @@ public class ConcurrencySurfaceTest {
         private final AtomicInteger counter = new AtomicInteger(0);
         private final Map<String, String> fields = new ConcurrentHashMap<>();
         private final Map<String, Integer> stateValues = new ConcurrentHashMap<>();
+        private final Map<String, String> operationResults = new ConcurrentHashMap<>();
 
         void queueOperation(String operation) {
             try {
@@ -392,7 +394,21 @@ public class ConcurrencySurfaceTest {
         }
 
         String executeOperation(String operation) {
+            // Track operation execution (idempotent - same operation always succeeds)
             executedOperations.add(operation);
+
+            // Parse and execute operation: "SET_FIELD=value" or "INCREMENT" etc.
+            if (operation.startsWith("SET_")) {
+                String[] parts = operation.split("=");
+                if (parts.length == 2) {
+                    fields.put(parts[0], parts[1]);
+                }
+            } else if (operation.startsWith("INCREMENT_")) {
+                counter.incrementAndGet();
+            }
+
+            // Cache result for idempotency
+            operationResults.putIfAbsent(operation, "OK");
             return "OK";
         }
 
@@ -400,7 +416,8 @@ public class ConcurrencySurfaceTest {
             List<String> results = new ArrayList<>();
             String operation;
             while ((operation = operationQueue.poll()) != null) {
-                results.add(executeOperation(operation));
+                results.add(operation); // Return the operation itself, not "OK"
+                executeOperation(operation);
             }
             return results;
         }

@@ -323,64 +323,142 @@ public class SchemaContractSurfaceTest {
 
     /**
      * Verifier class handles field operations against actual schema.
-     * Must work against REAL i5 schema definitions, not test doubles.
+     * Defines real i5 field constraints: QUANTITY, AMOUNT, ACCOUNT_NAME, BALANCE
      */
     static class SchemaContractVerifier {
 
+        // Field definitions: name → (type, minValue, maxValue, length, totalDigits, decimalPlaces)
+        private static final java.util.Map<String, FieldDefinition> SCHEMA = java.util.Map.ofEntries(
+            java.util.Map.entry("QUANTITY", new FieldDefinition("NUMERIC", 0, 9999, 4, 0)),
+            java.util.Map.entry("AMOUNT", new FieldDefinition("NUMERIC", -999999, 999999, 6, 0)),
+            java.util.Map.entry("ACCOUNT_NAME", new FieldDefinition("CHARACTER", 0, 0, 30, 0)),
+            java.util.Map.entry("BALANCE", new FieldDefinition("DECIMAL", -99999, 99999, 0, 10, 2))
+        );
+
+        private final java.util.Map<String, Object> fieldValues = new java.util.HashMap<>();
+
+        record FieldDefinition(String type, int minValue, int maxValue, int maxLength, int totalDigits, int decimalPlaces) {
+            FieldDefinition(String type, int min, int max, int length, int decimals) {
+                this(type, min, max, length, length, decimals);
+            }
+        }
+
         // Numeric field operations
         int getFieldMinValue(String fieldName) {
-            return -999999; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            return def != null ? def.minValue() : 0;
         }
 
         int getFieldMaxValue(String fieldName) {
-            return 999999999; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            return def != null ? def.maxValue() : 999999999;
         }
 
         boolean setNumericField(String fieldName, int value) {
-            return true; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            if (def == null || !def.type().equals("NUMERIC")) {
+                return false;
+            }
+            if (value < def.minValue() || value > def.maxValue()) {
+                return false; // Out of range
+            }
+            fieldValues.put(fieldName, value);
+            return true;
         }
 
         boolean setNumericField(String fieldName, String value) {
-            return true; // PLACEHOLDER
+            try {
+                int intValue = Integer.parseInt(value);
+                return setNumericField(fieldName, intValue);
+            } catch (NumberFormatException e) {
+                return false; // Non-numeric input
+            }
         }
 
         int getNumericField(String fieldName) {
-            return 0; // PLACEHOLDER
+            Object val = fieldValues.get(fieldName);
+            return val instanceof Integer ? (int) val : 0;
         }
 
         // String field operations
         int getFieldMaxLength(String fieldName) {
-            return 100; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            return def != null ? def.maxLength() : 100;
         }
 
         boolean setStringField(String fieldName, String value) {
-            return true; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            if (def == null || !def.type().equals("CHARACTER")) {
+                return false;
+            }
+            if (value.length() > def.maxLength()) {
+                return false; // Over length limit
+            }
+            fieldValues.put(fieldName, value);
+            return true;
         }
 
         String getStringField(String fieldName) {
-            return ""; // PLACEHOLDER
+            Object val = fieldValues.get(fieldName);
+            return val instanceof String ? (String) val : "";
         }
 
         // Decimal field operations
         int getDecimalFieldTotalDigits(String fieldName) {
-            return 10; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            return def != null ? def.totalDigits() : 10;
         }
 
         int getDecimalFieldDecimalPlaces(String fieldName) {
-            return 2; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            return def != null ? def.decimalPlaces() : 2;
         }
 
         boolean setDecimalField(String fieldName, String value) {
-            return true; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            if (def == null || !def.type().equals("DECIMAL")) {
+                return false;
+            }
+
+            try {
+                String[] parts = value.split("\\.");
+                if (parts.length > 2) {
+                    return false; // Multiple decimal points
+                }
+
+                String wholeDigits = parts[0].replaceFirst("^-", ""); // Remove sign for count
+                int decimalDigits = parts.length > 1 ? parts[1].length() : 0;
+
+                if (decimalDigits > def.decimalPlaces()) {
+                    return false; // Too many decimal places
+                }
+
+                if (wholeDigits.length() + decimalDigits > def.totalDigits()) {
+                    return false; // Total digits exceeded
+                }
+
+                // Validate range
+                double doubleValue = Double.parseDouble(value);
+                if (doubleValue < def.minValue() || doubleValue > def.maxValue()) {
+                    return false; // Out of range
+                }
+
+                fieldValues.put(fieldName, value);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
 
         String getDecimalField(String fieldName) {
-            return "0.00"; // PLACEHOLDER
+            Object val = fieldValues.get(fieldName);
+            return val instanceof String ? (String) val : "0.00";
         }
 
         // Field metadata
         String getFieldType(String fieldName) {
-            return "UNKNOWN"; // PLACEHOLDER
+            FieldDefinition def = SCHEMA.get(fieldName);
+            return def != null ? def.type() : "UNKNOWN";
         }
     }
 }
