@@ -5,6 +5,7 @@
 .gradle/
 .gradle-home/
 *.class
+*.log
 build.*.properties
 *.iml
 .idea
