@@ -1,0 +1,33 @@
+name: Payment Processing Workflow
+description: End-to-end payment processing with data binding from CSV
+environment: prod
+
+steps:
+  - action: LOGIN
+    host: i5.prod.com
+    user: ${env.SYSTEM_USER}
+    password: ${env.SYSTEM_PASSWORD}
+    name: Authenticate to production system
+
+  - action: NAVIGATE
+    screen: payment_entry
+    timeout: 5000
+
+  - action: FILL
+    fields:
+      account_number: ${data.account_id}
+      transaction_amount: ${data.amount}
+      transaction_description: ${data.description}
+
+  - action: SUBMIT
+    key: ENTER
+
+  - action: WAIT
+    timeout: 2000
+
+  - action: ASSERT
+    screen: confirmation
+    text: "Transaction processed successfully"
+
+  - action: CAPTURE
+    name: confirmation_screen

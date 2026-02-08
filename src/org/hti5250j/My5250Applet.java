@@ -26,6 +26,14 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
 
 //import org.hti5250j.swing.JTerminal;
 
+/**
+ * Legacy JApplet-based interface. Deprecated: Java applets were removed in Java 9.
+ * This class exists for historical compatibility only. HTI5250j is headless;
+ * new development should use headless APIs or Swing components directly.
+ *
+ * @deprecated JApplet has been removed from modern Java. Use SessionManager directly.
+ */
+@Deprecated(since = "0.8.0", forRemoval = true)
 public class My5250Applet extends JApplet {
 
     private static final long serialVersionUID = 1L;

@@ -17,7 +17,7 @@
 
 - Purpose: Headless mode, session pooling, lifecycle management, and protocol extensions
 - Maintainer: Eric C. Mumford (@heymumford)
-- Repository: https://github.com/heymumford/tn5250j
+- Repository: https://github.com/heymumford/hti5250j
 
 ## Key Differences
 

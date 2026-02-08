@@ -1,0 +1,14 @@
+name: Simple Login
+description: Basic login workflow to demonstrate authentication
+environment: dev
+
+steps:
+  - action: LOGIN
+    host: i5.example.com
+    user: testuser
+    password: testpass
+    name: Connect to system
+
+  - action: ASSERT
+    screen: main_menu
+    text: "Welcome to Main Menu"
