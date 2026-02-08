@@ -1,0 +1,32 @@
+---
+# Semgrep Configuration for HTI5250J
+# Security rule rulesets for Java code scanning
+
+rulesets:
+  - p/security-audit          # OWASP Top 10 and security best practices
+  - p/java                    # Java-specific rules
+  - p/owasp-top-ten          # OWASP security patterns
+
+# Custom configuration
+options:
+  paths:
+    include:
+      - src
+      - tests
+    exclude:
+      - build
+      - ".git"
+      - ".gradle"
+      - target
+
+# Specific severity configurations
+severity:
+  HIGH:
+    - java-unsafe-reflection
+    - java-unsafe-serialization
+    - insecure-tls-config
+  MEDIUM:
+    - unvalidated-redirect
+    - null-dereference
+  LOW:
+    - deprecated-method
