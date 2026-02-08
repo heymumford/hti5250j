@@ -30,13 +30,10 @@ jobs:
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          generateSarif: true
           config: >-
             p/security-audit
             p/owasp-top-ten
             p/java
-            p/ci
-          onFailure: warn
 
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
