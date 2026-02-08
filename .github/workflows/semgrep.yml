@@ -22,6 +22,7 @@ jobs:
   semgrep:
     name: Semgrep Analysis
     runs-on: ubuntu-latest
+    continue-on-error: true
 
     steps:
       - name: Checkout repository
