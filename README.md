@@ -7,8 +7,8 @@ Note: This is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250j)
 ## Quick Start
 
 ```bash
-git clone https://github.com/heymumford/tn5250j-headless.git
-cd tn5250j-headless
+git clone https://github.com/heymumford/hti5250j.git
+cd hti5250j
 ./gradlew clean test
 ```
 
