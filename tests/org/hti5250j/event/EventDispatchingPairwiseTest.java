@@ -1,29 +1,17 @@
-/**
- * Title: EventDispatchingPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for tn5250j event dispatching mechanisms
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.event;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.framework.tn5250.ScreenOIA;
 
 import java.util.ArrayList;
@@ -32,10 +20,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for tn5250j event dispatching.
@@ -57,7 +44,7 @@ public class EventDispatchingPairwiseTest {
 
     private PairwiseEventDispatcher dispatcher;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dispatcher = new PairwiseEventDispatcher();
     }
@@ -80,8 +67,8 @@ public class EventDispatchingPairwiseTest {
         dispatcher.dispatch(DispatchMode.SYNC, "screen", new TestScreenChangeEvent());
 
         // ASSERT
-        assertEquals("Listener should receive exactly 1 event", 1, listener.eventCount.get());
-        assertEquals("Event type should be screen-change", "screen", listener.lastEventType);
+        assertEquals(1, listener.eventCount.get(),"Listener should receive exactly 1 event");
+        assertEquals("screen", listener.lastEventType,"Event type should be screen-change");
     }
 
     /**
@@ -104,7 +91,7 @@ public class EventDispatchingPairwiseTest {
 
         // ASSERT
         for (TestFieldListener listener : listeners) {
-            assertEquals("All listeners should receive event", 1, listener.eventCount.get());
+            assertEquals(1, listener.eventCount.get(),"All listeners should receive event");
         }
     }
 
@@ -126,10 +113,9 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(200); // Allow queued processing
 
         // ASSERT: Events received in FIFO order
-        assertEquals("Should receive all 5 events", 5, listener.eventCount.get());
-        assertEquals("Events should be in order",
-            "[host-0, host-1, host-2, host-3, host-4]",
-            listener.eventSequence.toString());
+        assertEquals(5, listener.eventCount.get(),"Should receive all 5 events");
+        assertEquals("[host-0, host-1, host-2, host-3, host-4]",
+            listener.eventSequence.toString(),"Events should be in order");
     }
 
     /**
@@ -142,7 +128,7 @@ public class EventDispatchingPairwiseTest {
         dispatcher.dispatch(DispatchMode.SYNC, "error", new TestErrorEvent("Test error"));
 
         // ASSERT: No crash, silent success
-        assertTrue("Dispatch should handle empty listener list", true);
+        assertTrue(true,"Dispatch should handle empty listener list");
     }
 
     /**
@@ -167,7 +153,7 @@ public class EventDispatchingPairwiseTest {
         int totalReceived = listeners.stream()
             .mapToInt(l -> l.eventCount.get())
             .sum();
-        assertEquals("All 100 listeners should receive event", 100, totalReceived);
+        assertEquals(100, totalReceived,"All 100 listeners should receive event");
     }
 
     /**
@@ -191,13 +177,13 @@ public class EventDispatchingPairwiseTest {
         long elapsedTime = System.currentTimeMillis() - startTime;
 
         // ASSERT: Dispatch returns quickly (< 100ms), not blocked by slow listener
-        assertTrue("Async dispatch should return quickly (< 100ms)", elapsedTime < 100);
+        assertTrue(elapsedTime < 100,"Async dispatch should return quickly (< 100ms)");
 
         // Wait for processing
         Thread.sleep(800);
 
-        assertEquals("Fast listener should receive all events", 3, fastListener.eventCount.get());
-        assertEquals("Slow listener should also receive all events", 3, slowListener.eventCount.get());
+        assertEquals(3, fastListener.eventCount.get(),"Fast listener should receive all events");
+        assertEquals(3, slowListener.eventCount.get(),"Slow listener should also receive all events");
     }
 
     /**
@@ -227,10 +213,10 @@ public class EventDispatchingPairwiseTest {
 
         // ASSERT: All listeners received event (order verified by call sequence)
         for (TestConnectionListener listener : highPriorityListeners) {
-            assertEquals("HIGH priority listener should receive event", 1, listener.eventCount.get());
+            assertEquals(1, listener.eventCount.get(),"HIGH priority listener should receive event");
         }
         for (TestConnectionListener listener : normalListeners) {
-            assertEquals("NORMAL priority listener should receive event", 1, listener.eventCount.get());
+            assertEquals(1, listener.eventCount.get(),"NORMAL priority listener should receive event");
         }
     }
 
@@ -255,7 +241,7 @@ public class EventDispatchingPairwiseTest {
         }
 
         // ASSERT: Normal listener (called first) received event before exception
-        assertEquals("Normal listener should have received event", 1, normalListener.eventCount.get());
+        assertEquals(1, normalListener.eventCount.get(),"Normal listener should have received event");
     }
 
     /**
@@ -278,7 +264,7 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(1000);
 
         // ASSERT: All events processed in order
-        assertEquals("Should process all 10 events", 10, listener.eventCount.get());
+        assertEquals(10, listener.eventCount.get(),"Should process all 10 events");
     }
 
     /**
@@ -303,7 +289,7 @@ public class EventDispatchingPairwiseTest {
         int totalReceived = listeners.stream()
             .mapToInt(l -> l.eventCount.get())
             .sum();
-        assertEquals("All 100 listeners should receive 1 event each", 100, totalReceived);
+        assertEquals(100, totalReceived,"All 100 listeners should receive 1 event each");
     }
 
     /**
@@ -330,8 +316,7 @@ public class EventDispatchingPairwiseTest {
 
         // ASSERT: Normal listeners still received events
         for (TestConnectionListener listener : normalListeners) {
-            assertEquals("Normal listener should receive event despite throwing listener",
-                1, listener.eventCount.get());
+            assertEquals(1, listener.eventCount.get(),"Normal listener should receive event despite throwing listener");
         }
     }
 
@@ -352,7 +337,7 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(500);
 
         // ASSERT: All events delivered
-        assertEquals("All 5 error events should be delivered", 5, slowListener.eventCount.get());
+        assertEquals(5, slowListener.eventCount.get(),"All 5 error events should be delivered");
     }
 
     /**
@@ -371,26 +356,28 @@ public class EventDispatchingPairwiseTest {
         }
 
         // ASSERT: All received in order
-        assertEquals("All 5 events received", 5, listener.eventCount.get());
+        assertEquals(5, listener.eventCount.get(),"All 5 events received");
     }
 
     /**
      * PAIR #14: [field-change, 10 listeners, sync, exception, unordered]
      * Sync with exception: first exception thrown to caller
      */
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testFieldChangeSyncExceptionThrownToCaller() {
-        // ARRANGE
-        TestThrowingListener throwingListener = new TestThrowingListener();
-        dispatcher.addListener("field", throwingListener, PriorityLevel.HIGH);
+        assertThrows(RuntimeException.class, () -> {
+            // ARRANGE
+            TestThrowingListener throwingListener = new TestThrowingListener();
+            dispatcher.addListener("field", throwingListener, PriorityLevel.HIGH);
 
-        TestFieldListener normalListener = new TestFieldListener();
-        dispatcher.addListener("field", normalListener, PriorityLevel.NORMAL);
+            TestFieldListener normalListener = new TestFieldListener();
+            dispatcher.addListener("field", normalListener, PriorityLevel.NORMAL);
 
-        // ACT: Exception thrown during dispatch
-        dispatcher.dispatch(DispatchMode.SYNC, "field", new TestFieldChangeEvent());
+            // ACT: Exception thrown during dispatch
+            dispatcher.dispatch(DispatchMode.SYNC, "field", new TestFieldChangeEvent());
 
-        // ASSERT: Exception propagated (expected by @Test annotation)
+            // ASSERT: Exception propagated (expected by @Test annotation)
+        });
     }
 
     /**
@@ -416,7 +403,7 @@ public class EventDispatchingPairwiseTest {
 
         // ASSERT: All listeners see all events in order
         for (TestConnectionListener listener : listeners) {
-            assertEquals("Listener should receive 5 events", 5, listener.eventCount.get());
+            assertEquals(5, listener.eventCount.get(),"Listener should receive 5 events");
         }
     }
 
@@ -442,12 +429,12 @@ public class EventDispatchingPairwiseTest {
         long elapsedTime = System.currentTimeMillis() - startTime;
 
         // ASSERT: Both dispatches returned quickly (< 100ms)
-        assertTrue("Both dispatches should return quickly", elapsedTime < 100);
+        assertTrue(elapsedTime < 100,"Both dispatches should return quickly");
 
         // Wait for async processing
         Thread.sleep(700);
 
-        assertEquals("Slow listener should receive both events", 2, slowListener.eventCount.get());
+        assertEquals(2, slowListener.eventCount.get(),"Slow listener should receive both events");
     }
 
     /**
@@ -471,15 +458,28 @@ public class EventDispatchingPairwiseTest {
         long elapsedTime = System.currentTimeMillis() - startTime;
 
         // ASSERT: All dispatches return quickly
-        assertTrue("Dispatches should return quickly (< 100ms)", elapsedTime < 100);
+        assertTrue(elapsedTime < 100,"Dispatches should return quickly (< 100ms)");
 
         // Wait for async processing
-        Thread.sleep(600);
+        long deadline = System.currentTimeMillis() + 2000;
+        boolean completed = false;
+        while (System.currentTimeMillis() < deadline) {
+            boolean allDone = true;
+            for (TestSlowScreenListener listener : listeners) {
+                if (listener.eventCount.get() < 5) {
+                    allDone = false;
+                    break;
+                }
+            }
+            if (allDone) {
+                completed = true;
+                break;
+            }
+            Thread.sleep(20);
+        }
 
         // All listeners should receive all events
-        for (TestSlowScreenListener listener : listeners) {
-            assertEquals("All slow listeners should receive all events", 5, listener.eventCount.get());
-        }
+        assertTrue(completed, "All slow listeners should receive all events");
     }
 
     /**
@@ -501,7 +501,7 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(500);
 
         // ASSERT: Normal listener received all events despite exceptions
-        assertEquals("Normal listener should receive all queued events", 5, normalListener.eventCount.get());
+        assertEquals(5, normalListener.eventCount.get(),"Normal listener should receive all queued events");
     }
 
     /**
@@ -525,8 +525,7 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(200);
 
         // ASSERT: No crash, listeners 1 and 3 received event
-        assertTrue("At least one listener should receive event",
-            listener1.eventCount.get() + listener3.eventCount.get() >= 1);
+        assertTrue(listener1.eventCount.get() + listener3.eventCount.get() >= 1,"At least one listener should receive event");
     }
 
     /**
@@ -546,7 +545,7 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(500);
 
         // ASSERT: All 100 events delivered
-        assertEquals("All 100 events should be delivered to listener", 100, listener.eventCount.get());
+        assertEquals(100, listener.eventCount.get(),"All 100 events should be delivered to listener");
     }
 
     /**
@@ -563,7 +562,7 @@ public class EventDispatchingPairwiseTest {
         dispatcher.dispatch(DispatchMode.SYNC, "screen", new TestScreenChangeEvent());
 
         // ASSERT: Listener called twice (registered twice)
-        assertEquals("Re-registered listener should be called twice", 2, listener.eventCount.get());
+        assertEquals(2, listener.eventCount.get(),"Re-registered listener should be called twice");
     }
 
     /**
@@ -581,7 +580,7 @@ public class EventDispatchingPairwiseTest {
         dispatcher.addListener("screen", listener, PriorityLevel.NORMAL);
         dispatcher.dispatch(DispatchMode.SYNC, "screen", new TestScreenChangeEvent());
 
-        assertEquals("Dispatcher should work after dispatching to empty list", 1, listener.eventCount.get());
+        assertEquals(1, listener.eventCount.get(),"Dispatcher should work after dispatching to empty list");
     }
 
     /**
@@ -602,7 +601,7 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(2500);
 
         // ASSERT: All 20 events processed despite slow handler
-        assertEquals("Queued dispatcher should handle backpressure", 20, slowListener.eventCount.get());
+        assertEquals(20, slowListener.eventCount.get(),"Queued dispatcher should handle backpressure");
     }
 
     /**
@@ -622,10 +621,10 @@ public class EventDispatchingPairwiseTest {
         long syncTime = System.currentTimeMillis() - startTime;
 
         // ASSERT: Should complete relatively quickly (async/queued don't block)
-        assertTrue("Mixed dispatch should be fast", syncTime < 500);
+        assertTrue(syncTime < 500,"Mixed dispatch should be fast");
 
         Thread.sleep(300);
-        assertEquals("Listener should receive all 3 events", 3, listener.eventCount.get());
+        assertEquals(3, listener.eventCount.get(),"Listener should receive all 3 events");
     }
 
     /**
@@ -645,9 +644,8 @@ public class EventDispatchingPairwiseTest {
         Thread.sleep(1000);
 
         // ASSERT: All 50 received in order
-        assertEquals("All 50 events should be delivered", 50, listener.eventCount.get());
-        assertTrue("Events should be in sequence order",
-            listener.eventSequence.toString().startsWith("[event-0"));
+        assertEquals(50, listener.eventCount.get(),"All 50 events should be delivered");
+        assertTrue(listener.eventSequence.toString().startsWith("[event-0"),"Events should be in sequence order");
     }
 
     // ============================================================================

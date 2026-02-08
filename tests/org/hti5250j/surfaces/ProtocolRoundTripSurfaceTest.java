@@ -1,16 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Surface Test Suite
- * Protocol Round-Trip Surface - Data Translation Verification
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests the translation layer boundary where data enters/exits the system:
- * - Semantic Java objects → Telnet protocol bytes → Semantic Java objects
- * - Field data integrity during serialization/deserialization
- * - Edge cases and boundary conditions
- * - Invariant preservation across round-trips
- *
- * This surface is CRITICAL because bugs here cause silent data loss in production.
- * Schema changes on the i5 side can silently corrupt data if not caught here.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.surfaces;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -357,35 +353,59 @@ public class ProtocolRoundTripSurfaceTest {
         // Decimal: COMP-3 (packed decimal) format
         // 12345.67 → packed digits with scale
         byte[] serializeDecimal(String decimal) {
-            String[] parts = decimal.split("\\.");
+            boolean negative = decimal.startsWith("-");
+            String normalized = negative ? decimal.substring(1) : decimal;
+            String[] parts = normalized.split("\\.");
             String digits = parts[0] + (parts.length > 1 ? parts[1] : "");
-            byte[] packed = new byte[(digits.length() + 1) / 2 + 1];
-
-            for (int i = 0; i < digits.length(); i++) {
-                int digit = digits.charAt(i) - '0';
-                int byteIndex = i / 2;
-                if (i % 2 == 0) {
-                    packed[byteIndex] = (byte)(digit << 4);
-                } else {
-                    packed[byteIndex] |= digit;
-                }
+            if (digits.isEmpty()) {
+                digits = "0";
             }
-            packed[packed.length - 1] |= 0x0C; // Positive sign
+            if (digits.length() % 2 == 0) {
+                digits = "0" + digits;
+            }
+
+            int byteLen = (digits.length() + 1) / 2;
+            byte[] packed = new byte[byteLen];
+            int digitIndex = 0;
+            for (int i = 0; i < byteLen; i++) {
+                int high = digits.charAt(digitIndex++) - '0';
+                int low;
+                if (i == byteLen - 1) {
+                    low = negative ? 0x0D : 0x0C;
+                } else {
+                    low = digits.charAt(digitIndex++) - '0';
+                }
+                packed[i] = (byte) ((high << 4) | low);
+            }
             return packed;
         }
 
         String deserializeDecimal(byte[] bytes) {
             if (bytes.length == 0) return "0.00";
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < bytes.length - 1; i++) {
-                sb.append((bytes[i] >> 4) & 0x0F);
-                sb.append(bytes[i] & 0x0F);
+            boolean negative = false;
+            for (int i = 0; i < bytes.length; i++) {
+                int high = (bytes[i] >> 4) & 0x0F;
+                int low = bytes[i] & 0x0F;
+                if (i == bytes.length - 1) {
+                    sb.append(high);
+                    negative = (low == 0x0D);
+                } else {
+                    sb.append(high);
+                    sb.append(low);
+                }
             }
-            String digits = sb.toString();
+            String digits = sb.toString().replaceFirst("^0+(?!$)", "");
             // Assume 2 decimal places (adjust based on schema)
-            if (digits.length() <= 2) return "0." + digits;
-            return digits.substring(0, digits.length() - 2) + "." +
-                   digits.substring(digits.length() - 2);
+            String value;
+            if (digits.length() <= 2) {
+                String padded = String.format("%02d", digits.isEmpty() ? 0 : Integer.parseInt(digits));
+                value = "0." + padded;
+            } else {
+                value = digits.substring(0, digits.length() - 2) + "." +
+                        digits.substring(digits.length() - 2);
+            }
+            return negative ? "-" + value : value;
         }
 
         // Cursor position: 2 bytes (row, column) within 24×80 grid

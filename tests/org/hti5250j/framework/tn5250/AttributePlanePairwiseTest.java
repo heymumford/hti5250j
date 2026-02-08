@@ -1,37 +1,23 @@
-/**
- * Title: AttributePlanePairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for ScreenPlanes attribute plane operations
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for ScreenPlanes attribute plane operations.
@@ -45,16 +31,15 @@ import static org.junit.Assert.*;
  *
  * Discovers: Attribute mapping bugs, conflicting attribute handling, invalid state transitions
  */
-@RunWith(Parameterized.class)
 public class AttributePlanePairwiseTest {
 
     // Test parameters
-    private final int attributeValue;
-    private final String attributeType;
-    private final String colorValue;
-    private final String highlightType;
-    private final String columnSeparator;
-    private final String positionType;
+    private int attributeValue;
+    private String attributeType;
+    private String colorValue;
+    private String highlightType;
+    private String columnSeparator;
+    private String positionType;
 
     // Instance variables
     private ScreenPlanes screenPlanes;
@@ -112,8 +97,7 @@ public class AttributePlanePairwiseTest {
      *
      * Total: 25+ test combinations
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // Basic attribute tests: attribute type x color value
                 { ATTR_GREEN_NORMAL, "color", "default", "none", "none", "single-cell" },
@@ -171,7 +155,7 @@ public class AttributePlanePairwiseTest {
         });
     }
 
-    public AttributePlanePairwiseTest(int attributeValue, String attributeType, String colorValue,
+    private void setParameters(int attributeValue, String attributeType, String colorValue,
                                       String highlightType, String columnSeparator, String positionType) {
         this.attributeValue = attributeValue;
         this.attributeType = attributeType;
@@ -181,8 +165,7 @@ public class AttributePlanePairwiseTest {
         this.positionType = positionType;
     }
 
-    @Before
-    public void setUp() throws NoSuchFieldException, IllegalAccessException {
+        public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble(SIZE_24);
         screenPlanes = new ScreenPlanes(screen5250, SIZE_24);
 
@@ -218,8 +201,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify color attributes map correctly to screenColor plane
      */
-    @Test
-    public void testColorAttributeSetAndRetrieve() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testColorAttributeSetAndRetrieve(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!attributeType.equals("color")) {
             return;
         }
@@ -231,11 +217,9 @@ public class AttributePlanePairwiseTest {
 
         screenPlanes.setScreenAttr(pos, attributeValue);
 
-        assertEquals(
-            String.format("Color attribute %d not set at pos %d", attributeValue, pos),
-            attributeValue,
-            screenPlanes.getCharAttr(pos)
-        );
+        assertEquals(attributeValue,screenPlanes.getCharAttr(pos)
+        ,
+            String.format("Color attribute %d not set at pos %d", attributeValue, pos));
     }
 
     /**
@@ -243,8 +227,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify underscore/reverse flags are set in screenExtended
      */
-    @Test
-    public void testExtendedHighlightAttributeDispersal() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExtendedHighlightAttributeDispersal(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!attributeType.equals("extended-highlight")) {
             return;
         }
@@ -257,11 +244,9 @@ public class AttributePlanePairwiseTest {
         screenPlanes.setScreenAttr(pos, attributeValue);
 
         // Verify attribute was stored
-        assertEquals(
-            String.format("Extended attribute %d not stored at pos %d", attributeValue, pos),
-            attributeValue,
-            screenPlanes.getCharAttr(pos)
-        );
+        assertEquals(attributeValue,screenPlanes.getCharAttr(pos)
+        ,
+            String.format("Extended attribute %d not stored at pos %d", attributeValue, pos));
 
         // For underscore attributes (36, 38, 44, 46, 52, 53, 54), verify extended plane updated
         if (attributeValue == ATTR_GREEN_UNDERLINE || attributeValue == ATTR_WHITE_UNDERLINE ||
@@ -269,10 +254,9 @@ public class AttributePlanePairwiseTest {
             attributeValue == ATTR_COL_SEP_UL || attributeValue == ATTR_COL_SEP_UL_ALT ||
             attributeValue == ATTR_COL_SEP_BLUE_UL) {
             // Extended plane should have underline flag set (0x08)
-            assertTrue(
-                String.format("Underline flag not set for attr %d at pos %d", attributeValue, pos),
-                (screenExtended[pos] & 0x08) == 0x08
-            );
+            assertTrue((screenExtended[pos] & 0x08) == 0x08
+            ,
+                String.format("Underline flag not set for attr %d at pos %d", attributeValue, pos));
         }
     }
 
@@ -282,8 +266,11 @@ public class AttributePlanePairwiseTest {
      * Positive test: Verify column separator flag is set in screenExtended (for 48-51, 63)
      *              or underline flag is set (for 52-54)
      */
-    @Test
-    public void testCharacterSetColumnSeparatorDispersal() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCharacterSetColumnSeparatorDispersal(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!attributeType.equals("character-set")) {
             return;
         }
@@ -298,18 +285,16 @@ public class AttributePlanePairwiseTest {
         // For column separator attributes (48-51), verify column separator flag (0x02)
         if (attributeValue == ATTR_COL_SEP_CYAN || attributeValue == ATTR_COL_SEP_CYAN_ALT ||
             attributeValue == ATTR_COL_SEP_BLUE || attributeValue == ATTR_COL_SEP_YELLOW) {
-            assertTrue(
-                String.format("Column separator flag not set for attr %d at pos %d", attributeValue, pos),
-                (screenExtended[pos] & 0x02) == 0x02
-            );
+            assertTrue((screenExtended[pos] & 0x02) == 0x02
+            ,
+                String.format("Column separator flag not set for attr %d at pos %d", attributeValue, pos));
         }
         // For underline column separator attributes (52-54), verify underline flag (0x08)
         if (attributeValue == ATTR_COL_SEP_UL || attributeValue == ATTR_COL_SEP_UL_ALT ||
             attributeValue == ATTR_COL_SEP_BLUE_UL) {
-            assertTrue(
-                String.format("Underline flag not set for attr %d at pos %d", attributeValue, pos),
-                (screenExtended[pos] & 0x08) == 0x08
-            );
+            assertTrue((screenExtended[pos] & 0x08) == 0x08
+            ,
+                String.format("Underline flag not set for attr %d at pos %d", attributeValue, pos));
         }
     }
 
@@ -318,8 +303,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify position changes don't affect other cells
      */
-    @Test
-    public void testAttributeIsolationByPosition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeIsolationByPosition(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         int singleCellPos = positionForType("single-cell");
         int fieldWidePos = positionForType("field-wide");
 
@@ -335,17 +323,15 @@ public class AttributePlanePairwiseTest {
         screenPlanes.setScreenAttr(fieldWidePos, testAttr2);
 
         // Verify they remain isolated
-        assertEquals(
-            "Attribute at single-cell corrupted by field-wide change",
-            testAttr1,
+        assertEquals(testAttr1,
             screenPlanes.getCharAttr(singleCellPos)
-        );
+        ,
+            "Attribute at single-cell corrupted by field-wide change");
 
-        assertEquals(
-            "Attribute at field-wide corrupted by single-cell change",
-            testAttr2,
+        assertEquals(testAttr2,
             screenPlanes.getCharAttr(fieldWidePos)
-        );
+        ,
+            "Attribute at field-wide corrupted by single-cell change");
     }
 
     /**
@@ -353,8 +339,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify non-display flag is set for attribute 39, 47, 55, 63
      */
-    @Test
-    public void testNonDisplayAttributeHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNonDisplayAttributeHandling(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (attributeValue != ATTR_WHITE_NON_DSP && attributeValue != ATTR_RED_NON_DSP &&
             attributeValue != ATTR_COL_SEP_NON_DSP && attributeValue != ATTR_NONDISPLAY) {
             return;
@@ -368,10 +357,9 @@ public class AttributePlanePairwiseTest {
         screenPlanes.setScreenAttr(pos, attributeValue);
 
         // Non-display flag (0x01) should be set
-        assertTrue(
-            String.format("Non-display flag not set for attr %d at pos %d", attributeValue, pos),
-            (screenExtended[pos] & 0x01) == 0x01
-        );
+        assertTrue((screenExtended[pos] & 0x01) == 0x01
+        ,
+            String.format("Non-display flag not set for attr %d at pos %d", attributeValue, pos));
     }
 
     /**
@@ -379,8 +367,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify screen-wide attribute changes don't affect other positions
      */
-    @Test
-    public void testMultipleAttributesScreenWideIndependence() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleAttributesScreenWideIndependence(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         int pos1 = 0;
         int pos2 = COLS_24 - 1;
         int pos3 = (ROWS_24 - 1) * COLS_24;
@@ -389,9 +380,9 @@ public class AttributePlanePairwiseTest {
         screenPlanes.setScreenAttr(pos2, ATTR_RED_NORMAL);
         screenPlanes.setScreenAttr(pos3, ATTR_WHITE_NORMAL);
 
-        assertEquals("Pos 0 attribute corrupted", ATTR_GREEN_NORMAL, screenPlanes.getCharAttr(pos1));
-        assertEquals("Pos EOL attribute corrupted", ATTR_RED_NORMAL, screenPlanes.getCharAttr(pos2));
-        assertEquals("Pos EOF attribute corrupted", ATTR_WHITE_NORMAL, screenPlanes.getCharAttr(pos3));
+        assertEquals(ATTR_GREEN_NORMAL, screenPlanes.getCharAttr(pos1),"Pos 0 attribute corrupted");
+        assertEquals(ATTR_RED_NORMAL, screenPlanes.getCharAttr(pos2),"Pos EOL attribute corrupted");
+        assertEquals(ATTR_WHITE_NORMAL, screenPlanes.getCharAttr(pos3),"Pos EOF attribute corrupted");
     }
 
     /**
@@ -399,8 +390,11 @@ public class AttributePlanePairwiseTest {
      *
      * Adversarial test: Verify system handles conflicting attribute combinations
      */
-    @Test
-    public void testConflictingAttributeCombinations() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConflictingAttributeCombinations(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!attributeType.equals("conflict")) {
             return;
         }
@@ -414,11 +408,9 @@ public class AttributePlanePairwiseTest {
         screenPlanes.setScreenAttr(pos, attributeValue);
 
         // Verify it was stored (conflict resolution is implementation-dependent)
-        assertEquals(
-            String.format("Conflicting attribute %d not stored", attributeValue),
-            attributeValue,
-            screenPlanes.getCharAttr(pos)
-        );
+        assertEquals(attributeValue,screenPlanes.getCharAttr(pos)
+        ,
+            String.format("Conflicting attribute %d not stored", attributeValue));
     }
 
     /**
@@ -426,8 +418,11 @@ public class AttributePlanePairwiseTest {
      *
      * Adversarial test: Verify system doesn't crash on invalid attribute values
      */
-    @Test
-    public void testInvalidAttributeValueHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInvalidAttributeValueHandling(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!attributeType.equals("invalid")) {
             return;
         }
@@ -458,8 +453,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify set/get consistency for all valid attributes
      */
-    @Test
-    public void testAttributeRoundTripPreservation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeRoundTripPreservation(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         // Skip invalid attributes
         if (attributeValue < 0 || attributeValue > 63) {
             return;
@@ -473,11 +471,9 @@ public class AttributePlanePairwiseTest {
         screenPlanes.setScreenAttr(pos, attributeValue);
         int retrieved = screenPlanes.getCharAttr(pos);
 
-        assertEquals(
-            String.format("Attribute %d lost in round-trip at pos %d", attributeValue, pos),
-            attributeValue,
-            retrieved
-        );
+        assertEquals(attributeValue,retrieved
+        ,
+            String.format("Attribute %d lost in round-trip at pos %d", attributeValue, pos));
     }
 
     /**
@@ -485,8 +481,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify green color range is properly handled
      */
-    @Test
-    public void testGreenColorAttributeRange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testGreenColorAttributeRange(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!colorValue.equals("green") && !colorValue.equals("default")) {
             return;
         }
@@ -502,11 +501,9 @@ public class AttributePlanePairwiseTest {
                 }
 
                 screenPlanes.setScreenAttr(pos, attr);
-                assertEquals(
-                    String.format("Green attribute %d not stored at pos %d", attr, pos),
-                    attr,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attr,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Green attribute %d not stored at pos %d", attr, pos));
                 return;
             }
         }
@@ -517,8 +514,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify red color range is properly handled
      */
-    @Test
-    public void testRedColorAttributeRange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRedColorAttributeRange(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!colorValue.equals("red")) {
             return;
         }
@@ -535,11 +535,9 @@ public class AttributePlanePairwiseTest {
                 }
 
                 screenPlanes.setScreenAttr(pos, attr);
-                assertEquals(
-                    String.format("Red attribute %d not stored at pos %d", attr, pos),
-                    attr,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attr,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Red attribute %d not stored at pos %d", attr, pos));
                 return;
             }
         }
@@ -550,8 +548,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify white color range is properly handled
      */
-    @Test
-    public void testWhiteColorAttributeRange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWhiteColorAttributeRange(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!colorValue.equals("white")) {
             return;
         }
@@ -567,11 +568,9 @@ public class AttributePlanePairwiseTest {
                 }
 
                 screenPlanes.setScreenAttr(pos, attr);
-                assertEquals(
-                    String.format("White attribute %d not stored at pos %d", attr, pos),
-                    attr,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attr,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("White attribute %d not stored at pos %d", attr, pos));
                 return;
             }
         }
@@ -582,8 +581,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify blue/cyan color range is properly handled
      */
-    @Test
-    public void testBlueColorAttributeRange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBlueColorAttributeRange(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!colorValue.equals("blue") && !colorValue.equals("cyan")) {
             return;
         }
@@ -599,11 +601,9 @@ public class AttributePlanePairwiseTest {
                 }
 
                 screenPlanes.setScreenAttr(pos, attr);
-                assertEquals(
-                    String.format("Blue attribute %d not stored at pos %d", attr, pos),
-                    attr,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attr,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Blue attribute %d not stored at pos %d", attr, pos));
                 return;
             }
         }
@@ -614,8 +614,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify reverse attributes are stored and retrieved correctly
      */
-    @Test
-    public void testReverseHighlightBitSetting() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testReverseHighlightBitSetting(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!highlightType.equals("reverse")) {
             return;
         }
@@ -634,11 +637,9 @@ public class AttributePlanePairwiseTest {
             attributeValue == ATTR_GREEN_REV_UNDERLINE || attributeValue == ATTR_RED_REV_UNDERLINE ||
             attributeValue == ATTR_PINK_REVERSE || attributeValue == ATTR_BLUE_REVERSE ||
             attributeValue == ATTR_MAGENTA_REVERSE) {
-            assertEquals(
-                String.format("Reverse attribute %d not stored at pos %d", attributeValue, pos),
-                attributeValue,
-                screenPlanes.getCharAttr(pos)
-            );
+            assertEquals(attributeValue,screenPlanes.getCharAttr(pos)
+            ,
+                String.format("Reverse attribute %d not stored at pos %d", attributeValue, pos));
         }
     }
 
@@ -647,8 +648,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify underscore attributes set correct bit in screenExtended
      */
-    @Test
-    public void testUnderscoreHighlightBitSetting() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testUnderscoreHighlightBitSetting(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!highlightType.equals("underscore")) {
             return;
         }
@@ -666,10 +670,9 @@ public class AttributePlanePairwiseTest {
             attributeValue == ATTR_GREEN_REV_UNDERLINE || attributeValue == ATTR_RED_REV_UNDERLINE ||
             attributeValue == ATTR_COL_SEP_UL || attributeValue == ATTR_COL_SEP_UL_ALT ||
             attributeValue == ATTR_COL_SEP_BLUE_UL) {
-            assertTrue(
-                String.format("Underscore bit 0x08 not set for attr %d at pos %d", attributeValue, pos),
-                (screenExtended[pos] & 0x08) == 0x08
-            );
+            assertTrue((screenExtended[pos] & 0x08) == 0x08
+            ,
+                String.format("Underscore bit 0x08 not set for attr %d at pos %d", attributeValue, pos));
         }
     }
 
@@ -678,8 +681,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify column separator flag in screenExtended for correct attributes
      */
-    @Test
-    public void testColumnSeparatorFlagSetting() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testColumnSeparatorFlagSetting(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!columnSeparator.equals("single")) {
             return;
         }
@@ -696,10 +702,9 @@ public class AttributePlanePairwiseTest {
         if (attributeValue == ATTR_COL_SEP_CYAN || attributeValue == ATTR_COL_SEP_CYAN_ALT ||
             attributeValue == ATTR_COL_SEP_BLUE || attributeValue == ATTR_COL_SEP_YELLOW ||
             attributeValue == ATTR_COL_SEP_NON_DSP || attributeValue == 63) {
-            assertTrue(
-                String.format("Column separator bit 0x02 not set for attr %d at pos %d", attributeValue, pos),
-                (screenExtended[pos] & 0x02) == 0x02
-            );
+            assertTrue((screenExtended[pos] & 0x02) == 0x02
+            ,
+                String.format("Column separator bit 0x02 not set for attr %d at pos %d", attributeValue, pos));
         }
     }
 
@@ -708,8 +713,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify last attribute value wins when updates are sequential
      */
-    @Test
-    public void testSequentialAttributeUpdates() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSequentialAttributeUpdates(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         int pos = positionForType(positionType);
         if (pos >= screenAttr.length) {
             return;
@@ -722,13 +730,13 @@ public class AttributePlanePairwiseTest {
 
         // Set attributes in sequence
         screenPlanes.setScreenAttr(pos, ATTR_GREEN_NORMAL);
-        assertEquals("First update failed", ATTR_GREEN_NORMAL, screenPlanes.getCharAttr(pos));
+        assertEquals(ATTR_GREEN_NORMAL, screenPlanes.getCharAttr(pos),"First update failed");
 
         screenPlanes.setScreenAttr(pos, ATTR_RED_NORMAL);
-        assertEquals("Second update failed", ATTR_RED_NORMAL, screenPlanes.getCharAttr(pos));
+        assertEquals(ATTR_RED_NORMAL, screenPlanes.getCharAttr(pos),"Second update failed");
 
         screenPlanes.setScreenAttr(pos, attributeValue);
-        assertEquals("Final update failed", attributeValue, screenPlanes.getCharAttr(pos));
+        assertEquals(attributeValue, screenPlanes.getCharAttr(pos),"Final update failed");
     }
 
     /**
@@ -736,8 +744,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify pink color handling
      */
-    @Test
-    public void testPinkColorAttributeRange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPinkColorAttributeRange(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!colorValue.equals("pink")) {
             return;
         }
@@ -752,11 +763,9 @@ public class AttributePlanePairwiseTest {
                 }
 
                 screenPlanes.setScreenAttr(pos, attr);
-                assertEquals(
-                    String.format("Pink attribute %d not stored at pos %d", attr, pos),
-                    attr,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attr,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Pink attribute %d not stored at pos %d", attr, pos));
                 return;
             }
         }
@@ -767,8 +776,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify magenta color handling
      */
-    @Test
-    public void testMagentaColorAttributeRange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMagentaColorAttributeRange(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!colorValue.equals("magenta")) {
             return;
         }
@@ -783,11 +795,9 @@ public class AttributePlanePairwiseTest {
                 }
 
                 screenPlanes.setScreenAttr(pos, attr);
-                assertEquals(
-                    String.format("Magenta attribute %d not stored at pos %d", attr, pos),
-                    attr,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attr,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Magenta attribute %d not stored at pos %d", attr, pos));
                 return;
             }
         }
@@ -798,8 +808,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify blue color handling for normal/reverse
      */
-    @Test
-    public void testBlueStandardColorAttributeRange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBlueStandardColorAttributeRange(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (!colorValue.equals("blue")) {
             return;
         }
@@ -814,11 +827,9 @@ public class AttributePlanePairwiseTest {
                 }
 
                 screenPlanes.setScreenAttr(pos, attr);
-                assertEquals(
-                    String.format("Blue attribute %d not stored at pos %d", attr, pos),
-                    attr,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attr,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Blue attribute %d not stored at pos %d", attr, pos));
                 return;
             }
         }
@@ -829,8 +840,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify setting attributes doesn't modify characters
      */
-    @Test
-    public void testAttributePlaneCharacterIndependence() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributePlaneCharacterIndependence(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         int pos = positionForType(positionType);
         if (pos >= screenAttr.length) {
             return;
@@ -847,11 +861,9 @@ public class AttributePlanePairwiseTest {
             screenPlanes.setScreenAttr(pos, attrs[i]);
 
             // Character should remain unchanged
-            assertEquals(
-                String.format("Character corrupted after attr %d", attrs[i]),
-                expectedChar,
-                screenPlanes.getChar(pos)
-            );
+            assertEquals(expectedChar,screenPlanes.getChar(pos)
+            ,
+                String.format("Character corrupted after attr %d", attrs[i]));
         }
     }
 
@@ -860,8 +872,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify change tracking when attributes are updated
      */
-    @Test
-    public void testAttributeChangeTracking() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeChangeTracking(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         int pos = positionForType(positionType);
         if (pos >= screenAttr.length) {
             return;
@@ -891,8 +906,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify attribute aliases work correctly
      */
-    @Test
-    public void testAlternativeAttributeForms() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAlternativeAttributeForms(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         // 42 is alias for 40 (red/normal)
         // 43 is alias for 41 (red/reverse)
         // 46 is alias for 44 (red/underline)
@@ -911,11 +929,9 @@ public class AttributePlanePairwiseTest {
         for (int[] alias : aliases) {
             if (attributeValue == alias[0] || attributeValue == alias[1]) {
                 screenPlanes.setScreenAttr(pos, attributeValue);
-                assertEquals(
-                    String.format("Attribute %d not stored at pos %d", attributeValue, pos),
-                    attributeValue,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attributeValue,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Attribute %d not stored at pos %d", attributeValue, pos));
                 return;
             }
         }
@@ -926,8 +942,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify attributes work at screen boundaries
      */
-    @Test
-    public void testBoundaryPositionAttributes() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBoundaryPositionAttributes(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         int[] boundaryPositions = {
             0,                                          // Top-left
             COLS_24 - 1,                                // Top-right
@@ -943,11 +962,9 @@ public class AttributePlanePairwiseTest {
             screenPlanes.setScreenAttr(pos, attributeValue);
 
             if (attributeValue > 0) {
-                assertEquals(
-                    String.format("Attribute %d not stored at boundary pos %d", attributeValue, pos),
-                    attributeValue,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attributeValue,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Attribute %d not stored at boundary pos %d", attributeValue, pos));
             }
         }
     }
@@ -957,8 +974,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify attributes can be set at any position without corruption
      */
-    @Test
-    public void testFullScreenAttributeCoverage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFullScreenAttributeCoverage(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         // Sample positions across screen: every 100 cells
         int totalSize = ROWS_24 * COLS_24;
 
@@ -970,11 +990,9 @@ public class AttributePlanePairwiseTest {
             screenPlanes.setScreenAttr(pos, attributeValue);
 
             if (attributeValue > 0) {
-                assertEquals(
-                    String.format("Attribute %d not stored at sampled pos %d", attributeValue, pos),
-                    attributeValue,
-                    screenPlanes.getCharAttr(pos)
-                );
+                assertEquals(attributeValue,screenPlanes.getCharAttr(pos)
+                ,
+                    String.format("Attribute %d not stored at sampled pos %d", attributeValue, pos));
             }
         }
     }
@@ -984,8 +1002,11 @@ public class AttributePlanePairwiseTest {
      *
      * Positive test: Verify zero attribute doesn't cause issues
      */
-    @Test
-    public void testZeroAttributeHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testZeroAttributeHandling(int attributeValue, String attributeType, String colorValue, String highlightType, String columnSeparator, String positionType) throws Exception {
+        setParameters(attributeValue, attributeType, colorValue, highlightType, columnSeparator, positionType);
+        setUp();
         if (attributeValue != 0) {
             return;
         }
@@ -997,7 +1018,7 @@ public class AttributePlanePairwiseTest {
 
         // Set non-zero first
         screenPlanes.setScreenAttr(pos, ATTR_GREEN_NORMAL);
-        assertEquals("Setup failed", ATTR_GREEN_NORMAL, screenPlanes.getCharAttr(pos));
+        assertEquals(ATTR_GREEN_NORMAL, screenPlanes.getCharAttr(pos),"Setup failed");
 
         // Then set zero (should be no-op or clear)
         try {

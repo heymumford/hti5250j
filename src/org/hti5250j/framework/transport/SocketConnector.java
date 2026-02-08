@@ -1,25 +1,14 @@
-
-/**
- * @(#)SocketConnector.java
- * @author Stephen M. Kennedy
- * <p>
- * Copyright:    Copyright (c) 2001
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Stephen M. Kennedy
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.transport;
 
 import java.net.Socket;
@@ -62,6 +51,13 @@ public class SocketConnector {
      */
     public Socket createSocket(String destination, int port) {
 
+        if (destination == null || destination.trim().isEmpty()) {
+            throw new IllegalArgumentException("Destination host must be provided");
+        }
+        if (port <= 0 || port > 65535) {
+            throw new IllegalArgumentException("Port must be in range 1-65535");
+        }
+
         Socket socket = null;
         Exception ex = null;
 
@@ -91,8 +87,12 @@ public class SocketConnector {
             }
 
             if (sslIf != null) {
-                sslIf.init(sslType);
-                socket = sslIf.createSSLSocket(destination, port);
+                try {
+                    sslIf.init(sslType);
+                    socket = sslIf.createSSLSocket(destination, port);
+                } catch (Exception e) {
+                    ex = e;
+                }
             }
         }
 

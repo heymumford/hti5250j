@@ -1,34 +1,19 @@
-/**
- * Title: WTDOrderPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD test suite for HTI5250j WTD (Write To Display) order parsing
- *
- * This test suite covers high-risk areas identified in WTD command handling:
- * - WTD command type parsing (0x11, 0x01, 0xF1)
- * - Control character boundary conditions (0x00-0x3F range)
- * - Data length handling (empty, minimal, boundary, large)
- * - Buffer position navigation (start, middle, end, wrap-around)
- * - Field attribute combinations (input, output, protected, modified)
- * - Structured field parsing and GUI construct creation
- * - Adversarial malformed orders and truncation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise parameter testing for TN5250 WTD (Write To Display) order parsing.
@@ -95,7 +80,7 @@ public class WTDOrderPairwiseTest {
 
     private byte[] testBuffer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testBuffer = new byte[MAX_BUFFER_SIZE];
     }
@@ -131,10 +116,10 @@ public class WTDOrderPairwiseTest {
         int dataLen = testBuffer[bufPos + 2] & 0xFF;
 
         // Assert: Verify parsing results
-        assertEquals("Command type should be WTD standard", WTD_NORMAL, cmdType);
-        assertEquals("Control character should be space", CTRL_CHAR_SPACE, ctrlChar);
-        assertEquals("Data length should be 1", DATA_LENGTH_ONE, dataLen);
-        assertTrue("Buffer position should be valid", bufPos >= 0 && bufPos < MAX_BUFFER_SIZE);
+        assertEquals(WTD_NORMAL, cmdType,"Command type should be WTD standard");
+        assertEquals(CTRL_CHAR_SPACE, ctrlChar,"Control character should be space");
+        assertEquals(DATA_LENGTH_ONE, dataLen,"Data length should be 1");
+        assertTrue(bufPos >= 0 && bufPos < MAX_BUFFER_SIZE,"Buffer position should be valid");
     }
 
     /**
@@ -170,10 +155,10 @@ public class WTDOrderPairwiseTest {
         byte fieldAttr = testBuffer[bufPos + 3];
 
         // Assert: Verify all components
-        assertEquals("Command type should be WTD immediate", WTD_IMMEDIATE, cmdType);
-        assertEquals("Control char should be low control", CTRL_CHAR_LOW, ctrlChar);
-        assertEquals("Data length should be 127", DATA_LENGTH_127, dataLen);
-        assertEquals("Field attribute should be protected", FIELD_ATTR_PROTECTED, fieldAttr);
+        assertEquals(WTD_IMMEDIATE, cmdType,"Command type should be WTD immediate");
+        assertEquals(CTRL_CHAR_LOW, ctrlChar,"Control char should be low control");
+        assertEquals(DATA_LENGTH_127, dataLen,"Data length should be 127");
+        assertEquals(FIELD_ATTR_PROTECTED, fieldAttr,"Field attribute should be protected");
     }
 
     /**
@@ -210,11 +195,11 @@ public class WTDOrderPairwiseTest {
         byte sfSubcmd = testBuffer[bufPos + 5];
 
         // Assert: Verify SF parsing
-        assertEquals("Command type should be WTD SF", WTD_STRUCTURED_FIELD, cmdType);
-        assertEquals("Control char should be high normal", CTRL_CHAR_HIGH, ctrlChar);
-        assertEquals("SF length should be 255", DATA_LENGTH_255, sfLen);
-        assertEquals("SF class should be 0xD9", SF_CLASS_D9, sfClass);
-        assertEquals("SF subcommand should be create window", SF_CREATE_WINDOW_51, sfSubcmd);
+        assertEquals(WTD_STRUCTURED_FIELD, cmdType,"Command type should be WTD SF");
+        assertEquals(CTRL_CHAR_HIGH, ctrlChar,"Control char should be high normal");
+        assertEquals(DATA_LENGTH_255, sfLen,"SF length should be 255");
+        assertEquals(SF_CLASS_D9, sfClass,"SF class should be 0xD9");
+        assertEquals(SF_CREATE_WINDOW_51, sfSubcmd,"SF subcommand should be create window");
     }
 
     /**
@@ -243,8 +228,8 @@ public class WTDOrderPairwiseTest {
         int dataLen = testBuffer[2] & 0xFF;
 
         // Assert: Verify handling of empty payload
-        assertEquals("Command type should be valid", WTD_NORMAL, cmdType);
-        assertEquals("Data length should be zero", DATA_LENGTH_ZERO, dataLen);
+        assertEquals(WTD_NORMAL, cmdType,"Command type should be valid");
+        assertEquals(DATA_LENGTH_ZERO, dataLen,"Data length should be zero");
     }
 
     /**
@@ -275,8 +260,8 @@ public class WTDOrderPairwiseTest {
         int dataLen = ((testBuffer[bufPos + 2] & 0xFF) << 8) | (testBuffer[bufPos + 3] & 0xFF);
 
         // Assert: Verify 256-byte boundary handling
-        assertEquals("Data length should be 256", DATA_LENGTH_256, dataLen);
-        assertTrue("Length should be at boundary", dataLen >= DATA_LENGTH_256);
+        assertEquals(DATA_LENGTH_256, dataLen,"Data length should be 256");
+        assertTrue(dataLen >= DATA_LENGTH_256,"Length should be at boundary");
     }
 
     /**
@@ -308,8 +293,8 @@ public class WTDOrderPairwiseTest {
         byte sfSubcmd = testBuffer[5];
 
         // Assert: Verify scrollbar SF
-        assertEquals("SF class should be 0xD9", SF_CLASS_D9, sfClass);
-        assertEquals("SF subcommand should be scrollbar", SF_SCROLLBAR_53, sfSubcmd);
+        assertEquals(SF_CLASS_D9, sfClass,"SF class should be 0xD9");
+        assertEquals(SF_SCROLLBAR_53, sfSubcmd,"SF subcommand should be scrollbar");
     }
 
     /**
@@ -342,7 +327,7 @@ public class WTDOrderPairwiseTest {
         byte sfSubcmd = testBuffer[bufPos + 5];
 
         // Assert: Verify remove-all-GUI command
-        assertEquals("SF subcommand should be remove all GUI", SF_REMOVE_ALL_GUI_5F, sfSubcmd);
+        assertEquals(SF_REMOVE_ALL_GUI_5F, sfSubcmd,"SF subcommand should be remove all GUI");
     }
 
     /**
@@ -371,8 +356,8 @@ public class WTDOrderPairwiseTest {
         byte fieldAttr = testBuffer[bufPos + 3];
 
         // Assert: Verify input attribute
-        assertEquals("Field attribute should be input", FIELD_ATTR_INPUT, fieldAttr);
-        assertTrue("Input attribute should be set", (fieldAttr & FIELD_ATTR_INPUT) != 0);
+        assertEquals(FIELD_ATTR_INPUT, fieldAttr,"Field attribute should be input");
+        assertTrue((fieldAttr & FIELD_ATTR_INPUT) != 0,"Input attribute should be set");
     }
 
     // ========== BOUNDARY TESTS ==========
@@ -403,8 +388,8 @@ public class WTDOrderPairwiseTest {
         boolean isValidStart = bufPos >= 0;
 
         // Assert: Ensure no underflow
-        assertTrue("Start position should be valid", isValidStart);
-        assertEquals("Position should be zero", BUFFER_POS_START, bufPos);
+        assertTrue(isValidStart,"Start position should be valid");
+        assertEquals(BUFFER_POS_START, bufPos,"Position should be zero");
     }
 
     /**
@@ -434,8 +419,8 @@ public class WTDOrderPairwiseTest {
         boolean isWithinBounds = expectedEndPos <= MAX_BUFFER_SIZE; // Should be true: 1023 <= 1024
 
         // Assert: Ensure no overflow
-        assertTrue("End position should be within bounds", isWithinBounds);
-        assertTrue("Order should fit in remaining buffer", (bufPos + 4) < MAX_BUFFER_SIZE);
+        assertTrue(isWithinBounds,"End position should be within bounds");
+        assertTrue((bufPos + 4) < MAX_BUFFER_SIZE,"Order should fit in remaining buffer");
     }
 
     /**
@@ -464,8 +449,8 @@ public class WTDOrderPairwiseTest {
         int dataLen = ((testBuffer[2] & 0x7F) << 8) | (testBuffer[3] & 0xFF);
 
         // Assert: Verify max length handling
-        assertEquals("Data length should be 32767", DATA_LENGTH_32767, dataLen);
-        assertTrue("Length should not exceed max short", dataLen <= 32767);
+        assertEquals(DATA_LENGTH_32767, dataLen,"Data length should be 32767");
+        assertTrue(dataLen <= 32767,"Length should not exceed max short");
     }
 
     // ========== ADVERSARIAL TESTS: Malformed orders ==========
@@ -494,7 +479,7 @@ public class WTDOrderPairwiseTest {
         boolean canAccessHeader = (1 + headerSize) <= MAX_BUFFER_SIZE;
 
         // Assert: Verify truncation detection
-        assertTrue("Buffer check should prevent overrun", canAccessHeader);
+        assertTrue(canAccessHeader,"Buffer check should prevent overrun");
         // In actual code, would check: if (pos + headerSize > bufferLength) throw error
     }
 
@@ -525,7 +510,7 @@ public class WTDOrderPairwiseTest {
         boolean isHighValueControl = (ctrlChar & 0xFF) > 0x3F;
 
         // Assert: Detect suspicious control character
-        assertTrue("Should detect high-value control char", isHighValueControl);
+        assertTrue(isHighValueControl,"Should detect high-value control char");
         // In actual code, would validate: if (ctrlChar > 0x3F) log warning or reject
     }
 
@@ -564,8 +549,8 @@ public class WTDOrderPairwiseTest {
         boolean isLengthMismatch = declaredLen > availableData;
 
         // Assert: Verify mismatch detection
-        assertTrue("Should detect length mismatch", isLengthMismatch);
-        assertEquals("Declared length should be 255", 255, declaredLen);
+        assertTrue(isLengthMismatch,"Should detect length mismatch");
+        assertEquals(255, declaredLen,"Declared length should be 255");
     }
 
     /**
@@ -597,8 +582,8 @@ public class WTDOrderPairwiseTest {
         boolean isValidSFClass = (sfClass == SF_CLASS_D9);
 
         // Assert: Detect invalid SF class
-        assertFalse("Should detect invalid SF class", isValidSFClass);
-        assertEquals("Invalid SF class should be 0xAA", (byte) 0xAA, sfClass);
+        assertFalse(isValidSFClass,"Should detect invalid SF class");
+        assertEquals((byte) 0xAA, sfClass,"Invalid SF class should be 0xAA");
     }
 
     /**
@@ -633,8 +618,8 @@ public class WTDOrderPairwiseTest {
                                 sfSubcmd == SF_REMOVE_ALL_GUI_5F);
 
         // Assert: Detect invalid subcommand
-        assertFalse("Should detect invalid SF subcommand", isValidSubcmd);
-        assertEquals("Invalid subcommand should be 0x99", (byte) 0x99, sfSubcmd);
+        assertFalse(isValidSubcmd,"Should detect invalid SF subcommand");
+        assertEquals((byte) 0x99, sfSubcmd,"Invalid subcommand should be 0x99");
     }
 
     /**
@@ -665,8 +650,8 @@ public class WTDOrderPairwiseTest {
         boolean isValidLength = dataLen >= 0; // Unsigned guarantees non-negative
 
         // Assert: Verify safe unsigned handling
-        assertTrue("Unsigned parsing should produce positive value", isValidLength);
-        assertEquals("Length should be 32768 (unsigned)", 0x8000, dataLen);
+        assertTrue(isValidLength,"Unsigned parsing should produce positive value");
+        assertEquals(0x8000, dataLen,"Length should be 32768 (unsigned)");
     }
 
     /**
@@ -698,7 +683,7 @@ public class WTDOrderPairwiseTest {
                                       (FIELD_ATTR_PROTECTED | FIELD_ATTR_INPUT); // Both set = invalid
 
         // Assert: Verify handling of corrupted attribute
-        assertEquals("Attribute should be 0xFF", (byte) 0xFF, fieldAttr);
+        assertEquals((byte) 0xFF, fieldAttr,"Attribute should be 0xFF");
         // In actual code, would validate: if ((attr & 0x03) == 0x03) log warning
     }
 
@@ -730,8 +715,8 @@ public class WTDOrderPairwiseTest {
         boolean wouldWrapAround = endPos > MAX_BUFFER_SIZE;
 
         // Assert: Detect wrap-around attempt
-        assertTrue("Should detect wrap-around attempt", wouldWrapAround);
-        assertTrue("End position should exceed buffer", endPos > MAX_BUFFER_SIZE);
+        assertTrue(wouldWrapAround,"Should detect wrap-around attempt");
+        assertTrue(endPos > MAX_BUFFER_SIZE,"End position should exceed buffer");
     }
 
     /**
@@ -762,8 +747,8 @@ public class WTDOrderPairwiseTest {
         boolean isValidSFLength = sfLen >= minSFSize;
 
         // Assert: Verify minimum length requirement
-        assertFalse("Zero-length SF should be invalid", isValidSFLength);
-        assertEquals("SF length should be 0", 0, sfLen);
+        assertFalse(isValidSFLength,"Zero-length SF should be invalid");
+        assertEquals(0, sfLen,"SF length should be 0");
     }
 
     /**
@@ -809,11 +794,11 @@ public class WTDOrderPairwiseTest {
         int len2 = testBuffer[pos2 + 2] & 0xFF;
 
         // Assert: Verify chaining
-        assertEquals("First command should be WTD standard", WTD_NORMAL, cmd1);
-        assertEquals("First length should be 32", 32, len1);
-        assertEquals("Second order should start at position 36", 36, expectedPos2);
-        assertEquals("Second command should be WTD immediate", WTD_IMMEDIATE, cmd2);
-        assertEquals("Second length should be 16", 16, len2);
+        assertEquals(WTD_NORMAL, cmd1,"First command should be WTD standard");
+        assertEquals(32, len1,"First length should be 32");
+        assertEquals(36, expectedPos2,"Second order should start at position 36");
+        assertEquals(WTD_IMMEDIATE, cmd2,"Second command should be WTD immediate");
+        assertEquals(16, len2,"Second length should be 16");
     }
 
     /**
@@ -844,9 +829,9 @@ public class WTDOrderPairwiseTest {
         boolean hasModified = (fieldAttr & FIELD_ATTR_MODIFIED) != 0;
 
         // Assert: Verify attribute extraction
-        assertTrue("Should detect protected attribute", hasProtected);
-        assertTrue("Should detect modified attribute", hasModified);
-        assertEquals("Combined attribute should be 0x06", 0x06, fieldAttr & 0xFF);
+        assertTrue(hasProtected,"Should detect protected attribute");
+        assertTrue(hasModified,"Should detect modified attribute");
+        assertEquals(0x06, fieldAttr & 0xFF,"Combined attribute should be 0x06");
     }
 
     /**
@@ -875,8 +860,8 @@ public class WTDOrderPairwiseTest {
         boolean isNullControl = (ctrlChar == 0x00);
 
         // Assert: Verify null handling
-        assertTrue("Should handle null control character", isNullControl);
-        assertEquals("Control char should be null", 0x00, ctrlChar & 0xFF);
+        assertTrue(isNullControl,"Should handle null control character");
+        assertEquals(0x00, ctrlChar & 0xFF,"Control char should be null");
     }
 
     /**
@@ -911,8 +896,8 @@ public class WTDOrderPairwiseTest {
         boolean isInsufficientLength = sfLen < minBorderStructSize;
 
         // Assert: Detect insufficient data
-        assertTrue("Should detect insufficient SF data", isInsufficientLength);
-        assertEquals("SF length should be 3", 3, sfLen);
+        assertTrue(isInsufficientLength,"Should detect insufficient SF data");
+        assertEquals(3, sfLen,"SF length should be 3");
     }
 
 }

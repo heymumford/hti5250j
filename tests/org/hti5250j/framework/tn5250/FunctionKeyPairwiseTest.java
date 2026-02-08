@@ -1,12 +1,24 @@
+/*
+ * SPDX-FileCopyrightText: TN5250J Community
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Test Generator - TDD Phase 1
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.event.KeyEvent;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise JUnit 4 tests for HTI5250j function key handling in KeyboardHandler.
@@ -34,13 +46,13 @@ public class FunctionKeyPairwiseTest {
     private Screen5250 screen;
     private ScreenOIA oia;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         screen = new Screen5250();
         oia = screen.getOIA();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         screen = null;
         oia = null;
@@ -57,9 +69,9 @@ public class FunctionKeyPairwiseTest {
         oia.setKeyBoardLocked(false);
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
 
-        assertFalse("Keyboard should be unlocked", oia.isKeyBoardLocked());
-        assertEquals("Should be not inhibited", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-                     oia.getInputInhibited());
+        assertFalse(oia.isKeyBoardLocked(),"Keyboard should be unlocked");
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+                     oia.getInputInhibited(),"Should be not inhibited");
     }
 
     /**
@@ -68,8 +80,8 @@ public class FunctionKeyPairwiseTest {
      */
     @Test
     public void testF1KeyCodeValid() {
-        assertTrue("F1 should be valid key", KeyEvent.VK_F1 > 0);
-        assertEquals("F1 code", KeyEvent.VK_F1, 112);
+        assertTrue(KeyEvent.VK_F1 > 0,"F1 should be valid key");
+        assertEquals(KeyEvent.VK_F1, 112,"F1 code");
     }
 
     /**
@@ -78,8 +90,8 @@ public class FunctionKeyPairwiseTest {
      */
     @Test
     public void testF12KeyCodeValid() {
-        assertTrue("F12 should be valid key", KeyEvent.VK_F12 > 0);
-        assertEquals("F12 code", KeyEvent.VK_F12, 123);
+        assertTrue(KeyEvent.VK_F12 > 0,"F12 should be valid key");
+        assertEquals(KeyEvent.VK_F12, 123,"F12 code");
     }
 
     /**
@@ -88,8 +100,8 @@ public class FunctionKeyPairwiseTest {
      */
     @Test
     public void testEnterKeyCodeValid() {
-        assertTrue("Enter should be valid key", KeyEvent.VK_ENTER > 0);
-        assertEquals("Enter code", KeyEvent.VK_ENTER, 10);
+        assertTrue(KeyEvent.VK_ENTER > 0,"Enter should be valid key");
+        assertEquals(KeyEvent.VK_ENTER, 10,"Enter code");
     }
 
     /**
@@ -99,8 +111,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testShiftModifierValid() {
         int shiftMask = KeyEvent.SHIFT_MASK;
-        assertTrue("Shift mask should be positive", shiftMask > 0);
-        assertEquals("Shift mask value", 1, shiftMask);
+        assertTrue(shiftMask > 0,"Shift mask should be positive");
+        assertEquals(1, shiftMask,"Shift mask value");
     }
 
     /**
@@ -110,8 +122,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testCtrlModifierValid() {
         int ctrlMask = KeyEvent.CTRL_MASK;
-        assertTrue("Ctrl mask should be positive", ctrlMask > 0);
-        assertEquals("Ctrl mask value", 2, ctrlMask);
+        assertTrue(ctrlMask > 0,"Ctrl mask should be positive");
+        assertEquals(2, ctrlMask,"Ctrl mask value");
     }
 
     /**
@@ -121,8 +133,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testAltModifierValid() {
         int altMask = KeyEvent.ALT_MASK;
-        assertTrue("Alt mask should be positive", altMask > 0);
-        assertEquals("Alt mask value", 8, altMask);
+        assertTrue(altMask > 0,"Alt mask should be positive");
+        assertEquals(8, altMask,"Alt mask value");
     }
 
     /**
@@ -134,9 +146,9 @@ public class FunctionKeyPairwiseTest {
         oia.setKeyBoardLocked(true);
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0);
 
-        assertTrue("Keyboard should be locked", oia.isKeyBoardLocked());
-        assertEquals("Should be system wait", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-                     oia.getInputInhibited());
+        assertTrue(oia.isKeyBoardLocked(),"Keyboard should be locked");
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+                     oia.getInputInhibited(),"Should be system wait");
     }
 
     /**
@@ -148,9 +160,9 @@ public class FunctionKeyPairwiseTest {
         oia.setKeyBoardLocked(true);
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_PROGCHECK, 0);
 
-        assertTrue("Keyboard should be locked", oia.isKeyBoardLocked());
-        assertEquals("Should be prog check", ScreenOIA.INPUTINHIBITED_PROGCHECK,
-                     oia.getInputInhibited());
+        assertTrue(oia.isKeyBoardLocked(),"Keyboard should be locked");
+        assertEquals(ScreenOIA.INPUTINHIBITED_PROGCHECK,
+                     oia.getInputInhibited(),"Should be prog check");
     }
 
     /**
@@ -162,9 +174,9 @@ public class FunctionKeyPairwiseTest {
         oia.setKeyBoardLocked(true);
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_MACHINECHECK, 0);
 
-        assertTrue("Keyboard should be locked", oia.isKeyBoardLocked());
-        assertEquals("Should be machine check", ScreenOIA.INPUTINHIBITED_MACHINECHECK,
-                     oia.getInputInhibited());
+        assertTrue(oia.isKeyBoardLocked(),"Keyboard should be locked");
+        assertEquals(ScreenOIA.INPUTINHIBITED_MACHINECHECK,
+                     oia.getInputInhibited(),"Should be machine check");
     }
 
     /**
@@ -176,9 +188,9 @@ public class FunctionKeyPairwiseTest {
         oia.setKeyBoardLocked(true);
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_COMMCHECK, 0);
 
-        assertTrue("Keyboard should be locked", oia.isKeyBoardLocked());
-        assertEquals("Should be comm check", ScreenOIA.INPUTINHIBITED_COMMCHECK,
-                     oia.getInputInhibited());
+        assertTrue(oia.isKeyBoardLocked(),"Keyboard should be locked");
+        assertEquals(ScreenOIA.INPUTINHIBITED_COMMCHECK,
+                     oia.getInputInhibited(),"Should be comm check");
     }
 
     /**
@@ -188,10 +200,10 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testKeyboardLockStateTransitionUnlock() {
         oia.setKeyBoardLocked(true);
-        assertTrue("Initially locked", oia.isKeyBoardLocked());
+        assertTrue(oia.isKeyBoardLocked(),"Initially locked");
 
         oia.setKeyBoardLocked(false);
-        assertFalse("Should be unlocked", oia.isKeyBoardLocked());
+        assertFalse(oia.isKeyBoardLocked(),"Should be unlocked");
     }
 
     /**
@@ -201,10 +213,10 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testKeyboardLockStateTransitionLock() {
         oia.setKeyBoardLocked(false);
-        assertFalse("Initially unlocked", oia.isKeyBoardLocked());
+        assertFalse(oia.isKeyBoardLocked(),"Initially unlocked");
 
         oia.setKeyBoardLocked(true);
-        assertTrue("Should be locked", oia.isKeyBoardLocked());
+        assertTrue(oia.isKeyBoardLocked(),"Should be locked");
     }
 
     /**
@@ -214,12 +226,12 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testInputStateTransitionReadyToInhibited() {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
-        assertEquals("Start: not inhibited", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-                     oia.getInputInhibited());
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+                     oia.getInputInhibited(),"Start: not inhibited");
 
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0);
-        assertEquals("End: system wait", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-                     oia.getInputInhibited());
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+                     oia.getInputInhibited(),"End: system wait");
     }
 
     /**
@@ -229,12 +241,12 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testInputStateTransitionInhibitedToReady() {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0);
-        assertEquals("Start: system wait", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-                     oia.getInputInhibited());
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+                     oia.getInputInhibited(),"Start: system wait");
 
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
-        assertEquals("End: not inhibited", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-                     oia.getInputInhibited());
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+                     oia.getInputInhibited(),"End: not inhibited");
     }
 
     /**
@@ -247,9 +259,9 @@ public class FunctionKeyPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
 
         for (int i = 0; i < 10; i++) {
-            assertFalse("Read " + i + ": unlocked", oia.isKeyBoardLocked());
-            assertEquals("Read " + i + ": not inhibited", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-                         oia.getInputInhibited());
+            assertFalse(oia.isKeyBoardLocked(),"Read " + i + ": unlocked");
+            assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+                         oia.getInputInhibited(),"Read " + i + ": not inhibited");
         }
     }
 
@@ -262,7 +274,7 @@ public class FunctionKeyPairwiseTest {
         for (int i = 0; i < 10; i++) {
             boolean shouldLock = (i % 2 == 0);
             oia.setKeyBoardLocked(shouldLock);
-            assertEquals("Transition " + i + ": lock state", shouldLock, oia.isKeyBoardLocked());
+            assertEquals(shouldLock, oia.isKeyBoardLocked(),"Transition " + i + ": lock state");
         }
     }
 
@@ -274,8 +286,8 @@ public class FunctionKeyPairwiseTest {
      */
     @Test
     public void testF1FirstFunctionKeyBoundary() {
-        assertTrue("F1 > 0", KeyEvent.VK_F1 > 0);
-        assertTrue("F1 is in valid range", KeyEvent.VK_F1 >= 112 && KeyEvent.VK_F1 <= 123);
+        assertTrue(KeyEvent.VK_F1 > 0,"F1 > 0");
+        assertTrue(KeyEvent.VK_F1 >= 112 && KeyEvent.VK_F1 <= 123,"F1 is in valid range");
     }
 
     /**
@@ -287,9 +299,9 @@ public class FunctionKeyPairwiseTest {
         int f12Code = KeyEvent.VK_F12;
         int shiftMask = KeyEvent.SHIFT_MASK;
 
-        assertTrue("F12 valid", f12Code > 0);
-        assertTrue("Shift valid", shiftMask > 0);
-        assertTrue("Combined valid", (f12Code + shiftMask) > 0);
+        assertTrue(f12Code > 0,"F12 valid");
+        assertTrue(shiftMask > 0,"Shift valid");
+        assertTrue((f12Code + shiftMask) > 0,"Combined valid");
     }
 
     /**
@@ -299,7 +311,7 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testNoModifiersBoundary() {
         int noModifiers = 0;
-        assertEquals("No modifiers = 0", 0, noModifiers);
+        assertEquals(0, noModifiers,"No modifiers = 0");
     }
 
     /**
@@ -309,8 +321,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testAllModifiersCombinedBoundary() {
         int allMods = KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK;
-        assertTrue("Combined modifiers > 0", allMods > 0);
-        assertEquals("All modifiers value", 11, allMods);
+        assertTrue(allMods > 0,"Combined modifiers > 0");
+        assertEquals(11, allMods,"All modifiers value");
     }
 
     /**
@@ -325,10 +337,10 @@ public class FunctionKeyPairwiseTest {
         int progCheck = ScreenOIA.INPUTINHIBITED_PROGCHECK;
         int machineCheck = ScreenOIA.INPUTINHIBITED_MACHINECHECK;
 
-        assertTrue("Not inhibited != system wait", notInhibited != systemWait);
-        assertTrue("System wait != comm check", systemWait != commCheck);
-        assertTrue("Comm check != prog check", commCheck != progCheck);
-        assertTrue("Prog check != machine check", progCheck != machineCheck);
+        assertTrue(notInhibited != systemWait,"Not inhibited != system wait");
+        assertTrue(systemWait != commCheck,"System wait != comm check");
+        assertTrue(commCheck != progCheck,"Comm check != prog check");
+        assertTrue(progCheck != machineCheck,"Prog check != machine check");
     }
 
     // ==================== ADVERSARIAL TESTS ====================
@@ -346,7 +358,7 @@ public class FunctionKeyPairwiseTest {
         }
 
         // Final state after 1000 iterations (i=999, 999 % 2 == 1, so shouldLock=false)
-        assertFalse("Final state should be unlocked", oia.isKeyBoardLocked());
+        assertFalse(oia.isKeyBoardLocked(),"Final state should be unlocked");
     }
 
     /**
@@ -370,7 +382,7 @@ public class FunctionKeyPairwiseTest {
 
         // Final state
         int finalState = ScreenOIA.INPUTINHIBITED_MACHINECHECK;
-        assertEquals("Final state", finalState, oia.getInputInhibited());
+        assertEquals(finalState, oia.getInputInhibited(),"Final state");
     }
 
     /**
@@ -389,8 +401,8 @@ public class FunctionKeyPairwiseTest {
         }
 
         // Verify final state is valid
-        assertTrue("Final state valid", oia.isKeyBoardLocked() || !oia.isKeyBoardLocked());
-        assertTrue("Final inhibited state valid", oia.getInputInhibited() >= 0);
+        assertTrue(oia.isKeyBoardLocked() || !oia.isKeyBoardLocked(),"Final state valid");
+        assertTrue(oia.getInputInhibited() >= 0,"Final inhibited state valid");
     }
 
     /**
@@ -407,9 +419,9 @@ public class FunctionKeyPairwiseTest {
             oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
         }
 
-        assertFalse("Final lock state", oia.isKeyBoardLocked());
-        assertEquals("Final inhibit state", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-                     oia.getInputInhibited());
+        assertFalse(oia.isKeyBoardLocked(),"Final lock state");
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+                     oia.getInputInhibited(),"Final inhibit state");
     }
 
     /**
@@ -420,8 +432,8 @@ public class FunctionKeyPairwiseTest {
     public void testNullInputInhibitedMessage() {
         try {
             oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, null);
-            assertEquals("State should be set", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-                         oia.getInputInhibited());
+            assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+                         oia.getInputInhibited(),"State should be set");
         } catch (NullPointerException e) {
             fail("Should handle null message: " + e.getMessage());
         }
@@ -435,8 +447,8 @@ public class FunctionKeyPairwiseTest {
     public void testEmptyInputInhibitedMessage() {
         try {
             oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, "");
-            assertEquals("State should be set", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-                         oia.getInputInhibited());
+            assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+                         oia.getInputInhibited(),"State should be set");
         } catch (Exception e) {
             fail("Should handle empty message: " + e.getMessage());
         }
@@ -455,8 +467,8 @@ public class FunctionKeyPairwiseTest {
 
         try {
             oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, sb.toString());
-            assertEquals("State should be set", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-                         oia.getInputInhibited());
+            assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+                         oia.getInputInhibited(),"State should be set");
         } catch (Exception e) {
             fail("Should handle long message: " + e.getMessage());
         }
@@ -471,7 +483,7 @@ public class FunctionKeyPairwiseTest {
         try {
             // Try to set with unusual value
             oia.setKeyBoardLocked(false);
-            assertFalse("Should be unlocked", oia.isKeyBoardLocked());
+            assertFalse(oia.isKeyBoardLocked(),"Should be unlocked");
         } catch (Exception e) {
             fail("Should handle boolean lock: " + e.getMessage());
         }
@@ -488,8 +500,8 @@ public class FunctionKeyPairwiseTest {
         for (int code : unusualCodes) {
             try {
                 oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, code);
-                assertEquals("State should be set", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-                             oia.getInputInhibited());
+                assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+                             oia.getInputInhibited(),"State should be set");
             } catch (Exception e) {
                 fail("Should handle what-code " + code + ": " + e.getMessage());
             }
@@ -510,7 +522,7 @@ public class FunctionKeyPairwiseTest {
                 // Should set without exception (no validation assumed)
             } catch (Exception e) {
                 // Some implementations may validate
-                assertTrue("Exception acceptable for invalid state", true);
+                assertTrue(true,"Exception acceptable for invalid state");
             }
         }
     }
@@ -528,8 +540,8 @@ public class FunctionKeyPairwiseTest {
         int inhibitState = oia.getInputInhibited();
 
         for (int i = 0; i < 10000; i++) {
-            assertEquals("Lock state should not change", lockState, oia.isKeyBoardLocked());
-            assertEquals("Inhibit state should not change", inhibitState, oia.getInputInhibited());
+            assertEquals(lockState, oia.isKeyBoardLocked(),"Lock state should not change");
+            assertEquals(inhibitState, oia.getInputInhibited(),"Inhibit state should not change");
         }
     }
 
@@ -541,10 +553,10 @@ public class FunctionKeyPairwiseTest {
     public void testStateChangeFollowedByImmediateQuery() {
         for (int i = 0; i < 1000; i++) {
             oia.setKeyBoardLocked(true);
-            assertTrue("Should read back true", oia.isKeyBoardLocked());
+            assertTrue(oia.isKeyBoardLocked(),"Should read back true");
 
             oia.setKeyBoardLocked(false);
-            assertFalse("Should read back false", oia.isKeyBoardLocked());
+            assertFalse(oia.isKeyBoardLocked(),"Should read back false");
         }
     }
 
@@ -554,11 +566,11 @@ public class FunctionKeyPairwiseTest {
      */
     @Test
     public void testAllStateConstantsNonNegative() {
-        assertTrue("NOTINHIBITED >= 0", ScreenOIA.INPUTINHIBITED_NOTINHIBITED >= 0);
-        assertTrue("SYSTEM_WAIT >= 0", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT >= 0);
-        assertTrue("COMMCHECK >= 0", ScreenOIA.INPUTINHIBITED_COMMCHECK >= 0);
-        assertTrue("PROGCHECK >= 0", ScreenOIA.INPUTINHIBITED_PROGCHECK >= 0);
-        assertTrue("MACHINECHECK >= 0", ScreenOIA.INPUTINHIBITED_MACHINECHECK >= 0);
+        assertTrue(ScreenOIA.INPUTINHIBITED_NOTINHIBITED >= 0,"NOTINHIBITED >= 0");
+        assertTrue(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT >= 0,"SYSTEM_WAIT >= 0");
+        assertTrue(ScreenOIA.INPUTINHIBITED_COMMCHECK >= 0,"COMMCHECK >= 0");
+        assertTrue(ScreenOIA.INPUTINHIBITED_PROGCHECK >= 0,"PROGCHECK >= 0");
+        assertTrue(ScreenOIA.INPUTINHIBITED_MACHINECHECK >= 0,"MACHINECHECK >= 0");
     }
 
     /**
@@ -568,15 +580,15 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testScreen5250InitializesValidOIA() {
         Screen5250 screen2 = new Screen5250();
-        assertNotNull("Screen should initialize", screen2);
+        assertNotNull(screen2,"Screen should initialize");
 
         ScreenOIA oia2 = screen2.getOIA();
-        assertNotNull("OIA should be created", oia2);
+        assertNotNull(oia2,"OIA should be created");
 
         // Initial keyboard state is locked (per jbInit() in Screen5250)
-        assertTrue("Initial lock state", oia2.isKeyBoardLocked());
-        assertEquals("Initial inhibit state", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-                     oia2.getInputInhibited());
+        assertTrue(oia2.isKeyBoardLocked(),"Initial lock state");
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+                     oia2.getInputInhibited(),"Initial inhibit state");
     }
 
     /**
@@ -594,8 +606,8 @@ public class FunctionKeyPairwiseTest {
         oia1.setKeyBoardLocked(true);
         oia2.setKeyBoardLocked(false);
 
-        assertTrue("Screen1 locked", oia1.isKeyBoardLocked());
-        assertFalse("Screen2 unlocked", oia2.isKeyBoardLocked());
+        assertTrue(oia1.isKeyBoardLocked(),"Screen1 locked");
+        assertFalse(oia2.isKeyBoardLocked(),"Screen2 unlocked");
     }
 
     /**
@@ -615,9 +627,9 @@ public class FunctionKeyPairwiseTest {
         oia2.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0);
 
         // Verify original unchanged
-        assertFalse("Original still unlocked", oia.isKeyBoardLocked());
-        assertEquals("Original still not inhibited", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-                     oia.getInputInhibited());
+        assertFalse(oia.isKeyBoardLocked(),"Original still unlocked");
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+                     oia.getInputInhibited(),"Original still not inhibited");
     }
 
     /**
@@ -635,8 +647,8 @@ public class FunctionKeyPairwiseTest {
 
         for (int keyCode : keyCodes) {
             KeyEvent event = createKeyEvent(keyCode, 0);
-            assertNotNull("Event created for code " + keyCode, event);
-            assertEquals("Event key code", keyCode, event.getKeyCode());
+            assertNotNull(event,"Event created for code " + keyCode);
+            assertEquals(keyCode, event.getKeyCode(),"Event key code");
         }
     }
 
@@ -651,9 +663,9 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF1WithNoModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F1, 0);
-        assertNotNull("F1 event created", event);
-        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
-        assertEquals("No modifiers", 0, event.getModifiers());
+        assertNotNull(event,"F1 event created");
+        assertEquals(KeyEvent.VK_F1, event.getKeyCode(),"Key code F1");
+        assertEquals(0, event.getModifiers(),"No modifiers");
     }
 
     /**
@@ -663,10 +675,10 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF1WithShiftModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F1, KeyEvent.SHIFT_MASK);
-        assertNotNull("F1+Shift event created", event);
-        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
-        assertEquals("Shift modifier", KeyEvent.SHIFT_MASK, event.getModifiers());
-        assertTrue("Shift down", event.isShiftDown());
+        assertNotNull(event,"F1+Shift event created");
+        assertEquals(KeyEvent.VK_F1, event.getKeyCode(),"Key code F1");
+        assertEquals(KeyEvent.SHIFT_MASK, event.getModifiers(),"Shift modifier");
+        assertTrue(event.isShiftDown(),"Shift down");
     }
 
     /**
@@ -676,9 +688,9 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF1WithCtrlModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F1, KeyEvent.CTRL_MASK);
-        assertNotNull("F1+Ctrl event created", event);
-        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
-        assertTrue("Ctrl down", event.isControlDown());
+        assertNotNull(event,"F1+Ctrl event created");
+        assertEquals(KeyEvent.VK_F1, event.getKeyCode(),"Key code F1");
+        assertTrue(event.isControlDown(),"Ctrl down");
     }
 
     /**
@@ -688,9 +700,9 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF1WithAltModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F1, KeyEvent.ALT_MASK);
-        assertNotNull("F1+Alt event created", event);
-        assertEquals("Key code F1", KeyEvent.VK_F1, event.getKeyCode());
-        assertTrue("Alt down", event.isAltDown());
+        assertNotNull(event,"F1+Alt event created");
+        assertEquals(KeyEvent.VK_F1, event.getKeyCode(),"Key code F1");
+        assertTrue(event.isAltDown(),"Alt down");
     }
 
     /**
@@ -700,8 +712,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF12WithNoModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F12, 0);
-        assertNotNull("F12 event created", event);
-        assertEquals("Key code F12", KeyEvent.VK_F12, event.getKeyCode());
+        assertNotNull(event,"F12 event created");
+        assertEquals(KeyEvent.VK_F12, event.getKeyCode(),"Key code F12");
     }
 
     /**
@@ -711,9 +723,9 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF12WithShiftModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F12, KeyEvent.SHIFT_MASK);
-        assertNotNull("F12+Shift event created", event);
-        assertEquals("Key code F12", KeyEvent.VK_F12, event.getKeyCode());
-        assertTrue("Shift indicates F24 range", event.isShiftDown());
+        assertNotNull(event,"F12+Shift event created");
+        assertEquals(KeyEvent.VK_F12, event.getKeyCode(),"Key code F12");
+        assertTrue(event.isShiftDown(),"Shift indicates F24 range");
     }
 
     /**
@@ -723,8 +735,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testEnterWithNoModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_ENTER, 0);
-        assertNotNull("Enter event created", event);
-        assertEquals("Key code Enter", KeyEvent.VK_ENTER, event.getKeyCode());
+        assertNotNull(event,"Enter event created");
+        assertEquals(KeyEvent.VK_ENTER, event.getKeyCode(),"Key code Enter");
     }
 
     /**
@@ -734,8 +746,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testEnterWithCtrlModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
-        assertNotNull("Enter+Ctrl event created", event);
-        assertTrue("Ctrl down", event.isControlDown());
+        assertNotNull(event,"Enter+Ctrl event created");
+        assertTrue(event.isControlDown(),"Ctrl down");
     }
 
     /**
@@ -745,7 +757,7 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testClearKeyConstantDefined() {
         int clearCode = KeyEvent.VK_CLEAR;
-        assertTrue("Clear key code valid", clearCode > 0);
+        assertTrue(clearCode > 0,"Clear key code valid");
     }
 
     /**
@@ -755,8 +767,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testClearWithNoModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_CLEAR, 0);
-        assertNotNull("Clear event created", event);
-        assertEquals("Key code Clear", KeyEvent.VK_CLEAR, event.getKeyCode());
+        assertNotNull(event,"Clear event created");
+        assertEquals(KeyEvent.VK_CLEAR, event.getKeyCode(),"Key code Clear");
     }
 
     /**
@@ -766,8 +778,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testEscapeKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_ESCAPE, 0);
-        assertNotNull("Escape event created", event);
-        assertEquals("Key code Escape", KeyEvent.VK_ESCAPE, event.getKeyCode());
+        assertNotNull(event,"Escape event created");
+        assertEquals(KeyEvent.VK_ESCAPE, event.getKeyCode(),"Key code Escape");
     }
 
     /**
@@ -777,8 +789,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testTabKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_TAB, 0);
-        assertNotNull("Tab event created", event);
-        assertEquals("Key code Tab", KeyEvent.VK_TAB, event.getKeyCode());
+        assertNotNull(event,"Tab event created");
+        assertEquals(KeyEvent.VK_TAB, event.getKeyCode(),"Key code Tab");
     }
 
     /**
@@ -788,8 +800,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testTabWithShiftModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_TAB, KeyEvent.SHIFT_MASK);
-        assertNotNull("Tab+Shift event created", event);
-        assertTrue("Shift indicates back-tab", event.isShiftDown());
+        assertNotNull(event,"Tab+Shift event created");
+        assertTrue(event.isShiftDown(),"Shift indicates back-tab");
     }
 
     /**
@@ -800,9 +812,9 @@ public class FunctionKeyPairwiseTest {
     public void testF2WithCombinedModifiers() {
         int modifiers = KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK;
         KeyEvent event = createKeyEvent(KeyEvent.VK_F2, modifiers);
-        assertNotNull("F2+Shift+Ctrl event created", event);
-        assertTrue("Shift down", event.isShiftDown());
-        assertTrue("Ctrl down", event.isControlDown());
+        assertNotNull(event,"F2+Shift+Ctrl event created");
+        assertTrue(event.isShiftDown(),"Shift down");
+        assertTrue(event.isControlDown(),"Ctrl down");
     }
 
     /**
@@ -812,8 +824,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF11WithNoModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F11, 0);
-        assertNotNull("F11 event created", event);
-        assertEquals("Key code F11", KeyEvent.VK_F11, event.getKeyCode());
+        assertNotNull(event,"F11 event created");
+        assertEquals(KeyEvent.VK_F11, event.getKeyCode(),"Key code F11");
     }
 
     /**
@@ -823,8 +835,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testF10WithNoModifier() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_F10, 0);
-        assertNotNull("F10 event created", event);
-        assertEquals("Key code F10", KeyEvent.VK_F10, event.getKeyCode());
+        assertNotNull(event,"F10 event created");
+        assertEquals(KeyEvent.VK_F10, event.getKeyCode(),"Key code F10");
     }
 
     // ==================== PAIRWISE FUNCTION KEY COVERAGE ====================
@@ -837,8 +849,8 @@ public class FunctionKeyPairwiseTest {
     public void testF3ThroughF8WithNoModifier() {
         for (int f = KeyEvent.VK_F3; f <= KeyEvent.VK_F8; f++) {
             KeyEvent event = createKeyEvent(f, 0);
-            assertNotNull("F" + (f - KeyEvent.VK_F1 + 1) + " event created", event);
-            assertEquals("Key code matches", f, event.getKeyCode());
+            assertNotNull(event,"F" + (f - KeyEvent.VK_F1 + 1) + " event created");
+            assertEquals(f, event.getKeyCode(),"Key code matches");
         }
     }
 
@@ -850,8 +862,8 @@ public class FunctionKeyPairwiseTest {
     public void testF9ThroughF12WithAltModifier() {
         for (int f = KeyEvent.VK_F9; f <= KeyEvent.VK_F12; f++) {
             KeyEvent event = createKeyEvent(f, KeyEvent.ALT_MASK);
-            assertNotNull("F" + (f - KeyEvent.VK_F1 + 1) + "+Alt event created", event);
-            assertTrue("Alt down for F" + (f - KeyEvent.VK_F1 + 1), event.isAltDown());
+            assertNotNull(event,"F" + (f - KeyEvent.VK_F1 + 1) + "+Alt event created");
+            assertTrue(event.isAltDown(),"Alt down for F" + (f - KeyEvent.VK_F1 + 1));
         }
     }
 
@@ -875,8 +887,8 @@ public class FunctionKeyPairwiseTest {
         int keyCode = KeyEvent.VK_F5;
         for (int mod : modifiers) {
             KeyEvent event = createKeyEvent(keyCode, mod);
-            assertNotNull("Event created for modifier 0x" + Integer.toHexString(mod), event);
-            assertEquals("Modifiers preserved", mod, event.getModifiers());
+            assertNotNull(event,"Event created for modifier 0x" + Integer.toHexString(mod));
+            assertEquals(mod, event.getModifiers(),"Modifiers preserved");
         }
     }
 
@@ -887,8 +899,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testBackspaceKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_BACK_SPACE, 0);
-        assertNotNull("Backspace event created", event);
-        assertEquals("Key code Backspace", KeyEvent.VK_BACK_SPACE, event.getKeyCode());
+        assertNotNull(event,"Backspace event created");
+        assertEquals(KeyEvent.VK_BACK_SPACE, event.getKeyCode(),"Key code Backspace");
     }
 
     /**
@@ -898,8 +910,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testDeleteKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_DELETE, 0);
-        assertNotNull("Delete event created", event);
-        assertEquals("Key code Delete", KeyEvent.VK_DELETE, event.getKeyCode());
+        assertNotNull(event,"Delete event created");
+        assertEquals(KeyEvent.VK_DELETE, event.getKeyCode(),"Key code Delete");
     }
 
     /**
@@ -909,8 +921,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testHomeKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_HOME, 0);
-        assertNotNull("Home event created", event);
-        assertEquals("Key code Home", KeyEvent.VK_HOME, event.getKeyCode());
+        assertNotNull(event,"Home event created");
+        assertEquals(KeyEvent.VK_HOME, event.getKeyCode(),"Key code Home");
     }
 
     /**
@@ -920,8 +932,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testEndKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_END, 0);
-        assertNotNull("End event created", event);
-        assertEquals("Key code End", KeyEvent.VK_END, event.getKeyCode());
+        assertNotNull(event,"End event created");
+        assertEquals(KeyEvent.VK_END, event.getKeyCode(),"Key code End");
     }
 
     /**
@@ -931,8 +943,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testPageUpKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_PAGE_UP, 0);
-        assertNotNull("Page Up event created", event);
-        assertEquals("Key code Page Up", KeyEvent.VK_PAGE_UP, event.getKeyCode());
+        assertNotNull(event,"Page Up event created");
+        assertEquals(KeyEvent.VK_PAGE_UP, event.getKeyCode(),"Key code Page Up");
     }
 
     /**
@@ -942,8 +954,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testPageDownKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_PAGE_DOWN, 0);
-        assertNotNull("Page Down event created", event);
-        assertEquals("Key code Page Down", KeyEvent.VK_PAGE_DOWN, event.getKeyCode());
+        assertNotNull(event,"Page Down event created");
+        assertEquals(KeyEvent.VK_PAGE_DOWN, event.getKeyCode(),"Key code Page Down");
     }
 
     /**
@@ -953,8 +965,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testUpArrowKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_UP, 0);
-        assertNotNull("Up arrow event created", event);
-        assertEquals("Key code Up", KeyEvent.VK_UP, event.getKeyCode());
+        assertNotNull(event,"Up arrow event created");
+        assertEquals(KeyEvent.VK_UP, event.getKeyCode(),"Key code Up");
     }
 
     /**
@@ -964,8 +976,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testDownArrowKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_DOWN, 0);
-        assertNotNull("Down arrow event created", event);
-        assertEquals("Key code Down", KeyEvent.VK_DOWN, event.getKeyCode());
+        assertNotNull(event,"Down arrow event created");
+        assertEquals(KeyEvent.VK_DOWN, event.getKeyCode(),"Key code Down");
     }
 
     /**
@@ -975,8 +987,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testLeftArrowKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_LEFT, 0);
-        assertNotNull("Left arrow event created", event);
-        assertEquals("Key code Left", KeyEvent.VK_LEFT, event.getKeyCode());
+        assertNotNull(event,"Left arrow event created");
+        assertEquals(KeyEvent.VK_LEFT, event.getKeyCode(),"Key code Left");
     }
 
     /**
@@ -986,8 +998,8 @@ public class FunctionKeyPairwiseTest {
     @Test
     public void testRightArrowKey() {
         KeyEvent event = createKeyEvent(KeyEvent.VK_RIGHT, 0);
-        assertNotNull("Right arrow event created", event);
-        assertEquals("Key code Right", KeyEvent.VK_RIGHT, event.getKeyCode());
+        assertNotNull(event,"Right arrow event created");
+        assertEquals(KeyEvent.VK_RIGHT, event.getKeyCode(),"Key code Right");
     }
 
     // ==================== HELPER METHODS ====================

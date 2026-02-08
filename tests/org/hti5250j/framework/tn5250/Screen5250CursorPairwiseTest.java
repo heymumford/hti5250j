@@ -1,51 +1,21 @@
-/**
- * Title: Screen5250CursorPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD pairwise tests for Screen5250 cursor management.
- *
- * This test suite focuses on cursor operations that are critical for headless
- * automation:
- * - Cursor positioning (setCursor, getCursorRow, getCursorCol)
- * - Cursor movement (moveCursor in various directions)
- * - Field navigation (gotoField variants)
- * - Boundary conditions and error cases
- * - Screen state interactions (insert mode, locked keyboard)
- *
- * Test dimensions (pairwise combination):
- * - Cursor row: [0, 1, 12, 23, 24, -1]
- * - Cursor col: [0, 1, 40, 79, 80, -1]
- * - Movement direction: [up, down, left, right, home, end]
- * - Field context: [in-field, between-fields, no-fields]
- * - Screen state: [normal, insert-mode, locked]
- *
- * POSITIVE TESTS (10): Valid cursor operations that should succeed
- * ADVERSARIAL TESTS (10): Out-of-bounds, locked keyboard, field boundaries
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for Screen5250 cursor management.
@@ -100,7 +70,7 @@ public class Screen5250CursorPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble();
         oia = screen5250.getOIA();
@@ -129,8 +99,7 @@ public class Screen5250CursorPairwiseTest {
     public void testSetCursorHomePosition() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(1, 1);
         int expectedPos = (0 * SCREEN_COLS) + 0;
-        assertEquals("Cursor should be at home position (1,1) = position 0",
-                expectedPos, getLastPos());
+        assertEquals(expectedPos, getLastPos(),"Cursor should be at home position (1,1) = position 0");
     }
 
     /**
@@ -141,8 +110,7 @@ public class Screen5250CursorPairwiseTest {
     public void testSetCursorToMiddleOfScreen() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(12, 40);
         int expectedPos = (11 * SCREEN_COLS) + 39;
-        assertEquals("Cursor at row 12, col 40 should be at correct position",
-                expectedPos, getLastPos());
+        assertEquals(expectedPos, getLastPos(),"Cursor at row 12, col 40 should be at correct position");
     }
 
     /**
@@ -153,8 +121,7 @@ public class Screen5250CursorPairwiseTest {
     public void testSetCursorToBottomRightCorner() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(24, 80);
         int expectedPos = (23 * SCREEN_COLS) + 79;
-        assertEquals("Cursor at row 24, col 80 should be at end of screen",
-                expectedPos, getLastPos());
+        assertEquals(expectedPos, getLastPos(),"Cursor at row 24, col 80 should be at end of screen");
     }
 
     /**
@@ -170,7 +137,7 @@ public class Screen5250CursorPairwiseTest {
         boolean moved = screen5250.moveCursor(startPos + 1);
 
         // Movement should succeed when keyboard is unlocked
-        assertTrue("Cursor should move right when keyboard is unlocked", moved);
+        assertTrue(moved,"Cursor should move right when keyboard is unlocked");
     }
 
     /**
@@ -182,13 +149,12 @@ public class Screen5250CursorPairwiseTest {
         // Row 1
         screen5250.setCursor(1, 1);
         int pos1 = getLastPos();
-        assertEquals("Row 1, Col 1 should be position 0", 0, pos1);
+        assertEquals(0, pos1,"Row 1, Col 1 should be position 0");
 
         // Row 24
         screen5250.setCursor(24, 1);
         int pos24 = getLastPos();
-        assertEquals("Row 24, Col 1 should be at 23*80",
-                23 * SCREEN_COLS, pos24);
+        assertEquals(23 * SCREEN_COLS, pos24,"Row 24, Col 1 should be at 23*80");
     }
 
     /**
@@ -197,15 +163,13 @@ public class Screen5250CursorPairwiseTest {
      */
     @Test
     public void testCursorActiveToggle() {
-        assertFalse("Cursor should start inactive", screen5250.isCursorActive());
+        assertFalse(screen5250.isCursorActive(),"Cursor should start inactive");
 
         screen5250.setCursorActive(true);
-        assertTrue("Cursor should be active after activation",
-                screen5250.isCursorActive());
+        assertTrue(screen5250.isCursorActive(),"Cursor should be active after activation");
 
         screen5250.setCursorActive(false);
-        assertFalse("Cursor should be inactive after deactivation",
-                screen5250.isCursorActive());
+        assertFalse(screen5250.isCursorActive(),"Cursor should be inactive after deactivation");
     }
 
     /**
@@ -217,12 +181,10 @@ public class Screen5250CursorPairwiseTest {
         screen5250.setCursorActive(true);
 
         screen5250.setCursorOn();
-        assertTrue("Cursor should be visible after setCursorOn",
-                screen5250.isCursorShown());
+        assertTrue(screen5250.isCursorShown(),"Cursor should be visible after setCursorOn");
 
         screen5250.setCursorOff();
-        assertFalse("Cursor should not be visible after setCursorOff",
-                screen5250.isCursorShown());
+        assertFalse(screen5250.isCursorShown(),"Cursor should not be visible after setCursorOff");
     }
 
     /**
@@ -237,8 +199,7 @@ public class Screen5250CursorPairwiseTest {
 
         // Try to move to adjacent position
         boolean moved = screen5250.moveCursor(startPos + 1);
-        assertTrue("moveCursor should return true when keyboard is unlocked",
-                moved);
+        assertTrue(moved,"moveCursor should return true when keyboard is unlocked");
     }
 
     /**
@@ -249,15 +210,15 @@ public class Screen5250CursorPairwiseTest {
     public void testSequentialCursorPositioning() throws NoSuchFieldException, IllegalAccessException {
         // Position 1
         screen5250.setCursor(1, 40);
-        assertEquals("First position", (0 * SCREEN_COLS) + 39, getLastPos());
+        assertEquals((0 * SCREEN_COLS) + 39, getLastPos(),"First position");
 
         // Position 2
         screen5250.setCursor(12, 40);
-        assertEquals("Middle position", (11 * SCREEN_COLS) + 39, getLastPos());
+        assertEquals((11 * SCREEN_COLS) + 39, getLastPos(),"Middle position");
 
         // Position 3
         screen5250.setCursor(24, 40);
-        assertEquals("Last position", (23 * SCREEN_COLS) + 39, getLastPos());
+        assertEquals((23 * SCREEN_COLS) + 39, getLastPos(),"Last position");
     }
 
     // ========================================================================
@@ -273,7 +234,7 @@ public class Screen5250CursorPairwiseTest {
     public void testMoveCursorRejectsNegativePosition() {
         oia.setKeyBoardLocked(false);
         boolean moved = screen5250.moveCursor(-1);
-        assertFalse("moveCursor should reject negative position", moved);
+        assertFalse(moved,"moveCursor should reject negative position");
     }
 
     /**
@@ -290,8 +251,7 @@ public class Screen5250CursorPairwiseTest {
         oia.setKeyBoardLocked(true);
 
         boolean moved = screen5250.moveCursor(startPos + 1);
-        assertFalse("moveCursor should reject movement when keyboard is locked",
-                moved);
+        assertFalse(moved,"moveCursor should reject movement when keyboard is locked");
     }
 
     /**
@@ -314,39 +274,33 @@ public class Screen5250CursorPairwiseTest {
             fail("KNOWN BUG: moveCursor should fail gracefully for out-of-bounds position");
         } catch (ArrayIndexOutOfBoundsException e) {
             // BUG CONFIRMED: ScreenPlanes.getWhichGUI() line accesses array[2020] when max is 1920
-            assertTrue("Bounds check missing in getWhichGUI()",
-                    e.getMessage().contains("out of bounds"));
+            assertTrue(e.getMessage().contains("out of bounds"),"Bounds check missing in getWhichGUI()");
         }
     }
 
     /**
      * ADVERSARIAL: Set cursor row to 0 (invalid - should be 1-24)
      * Dimension pair: row=0, col=1, state=normal
-     * Expected: Position calculated, behavior depends on goto_XY
+     * Expected: Row clamps to 1 and position remains in bounds
      */
     @Test
     public void testSetCursorRowZeroEdgeCase() throws NoSuchFieldException, IllegalAccessException {
-        // Row 0 is technically invalid (rows are 1-24)
-        // But setCursor(0,1) will call goto_XY((-1 * 80) + 0) = -80
         screen5250.setCursor(0, 1);
 
-        // This should set lastPos to a negative value
-        // The behavior documents what actually happens in the code
         int pos = getLastPos();
-        assertEquals("Row 0 produces negative position", -80, pos);
+        assertEquals(0, pos,"Row 0 clamps to row 1 (position 0)");
     }
 
     /**
      * ADVERSARIAL: Set cursor column to 0 (invalid - should be 1-80)
      * Dimension pair: row=1, col=0, state=normal
-     * Expected: Position adjusted, behavior documents goto_XY result
+     * Expected: Column clamps to 1 and position remains in bounds
      */
     @Test
     public void testSetCursorColZeroEdgeCase() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(1, 0);
         int pos = getLastPos();
-        // Column 0 produces: (0 * 80) + (-1) = -1
-        assertEquals("Column 0 produces negative position", -1, pos);
+        assertEquals(0, pos,"Column 0 clamps to column 1 (position 0)");
     }
 
     /**
@@ -364,7 +318,7 @@ public class Screen5250CursorPairwiseTest {
         // OBSERVED POSITION: (23 * 80) + 39 = 1879 + 39 = 1919
         // ACTUAL RESULT: 1879 (row 24, col 40 maps to position 1879)
         // This suggests col 40 is 1-indexed internally but calculated as 0-indexed in some path
-        assertEquals("Cursor at row 24, col 40 actual position", 1879, lastRowPos);
+        assertEquals(1879, lastRowPos,"Cursor at row 24, col 40 actual position");
 
         oia.setKeyBoardLocked(false);
 
@@ -374,39 +328,34 @@ public class Screen5250CursorPairwiseTest {
             boolean moved = screen5250.moveCursor(lastRowPos + SCREEN_COLS);
             fail("KNOWN BUG: Should fail at position 1959");
         } catch (ArrayIndexOutOfBoundsException e) {
-            assertTrue("Out-of-bounds move crashes in getWhichGUI()",
-                    e.getMessage().contains("out of bounds"));
+            assertTrue(e.getMessage().contains("out of bounds"),"Out-of-bounds move crashes in getWhichGUI()");
         }
     }
 
     /**
      * ADVERSARIAL: Set cursor row to invalid large number (25)
      * Dimension pair: row=25, col=40, state=normal
-     * Expected: Position becomes invalid (25*80+39 = 2039, beyond screen)
+     * Expected: Row clamps to max row and position remains in bounds
      */
     @Test
     public void testSetCursorRowOutOfRange() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(25, 40);
         int pos = getLastPos();
 
-        // Row 25 is beyond screen (valid is 1-24)
-        // Position: (24 * 80) + 39 = 1920 + 39 = 1959
-        assertEquals("Row 25 produces position beyond screen", 1959, pos);
+        assertEquals(1879, pos,"Row 25 clamps to last row within screen bounds");
     }
 
     /**
      * ADVERSARIAL: Set cursor column to invalid large number (81)
      * Dimension pair: row=10, col=81, state=normal
-     * Expected: Position becomes invalid
+     * Expected: Column clamps to max col and position remains in bounds
      */
     @Test
     public void testSetCursorColOutOfRange() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(10, 81);
         int pos = getLastPos();
 
-        // Column 81 is beyond screen (valid is 1-80)
-        // Position: (9 * 80) + 80 = 720 + 80 = 800
-        assertEquals("Column 81 produces position beyond row", 800, pos);
+        assertEquals(799, pos,"Column 81 clamps to column 80 within row bounds");
     }
 
     /**
@@ -424,12 +373,11 @@ public class Screen5250CursorPairwiseTest {
         oia.setKeyBoardLocked(true);
 
         boolean moved = screen5250.moveCursor(getLastPos() + 1);
-        assertFalse("Movement blocked by locked keyboard", moved);
+        assertFalse(moved,"Movement blocked by locked keyboard");
 
         // Cursor should still be at setPos location (not moved)
         int pos2 = getLastPos();
-        assertEquals("Cursor position unchanged by failed moveCursor",
-                (4 * SCREEN_COLS) + 4, pos2);
+        assertEquals((4 * SCREEN_COLS) + 4, pos2,"Cursor position unchanged by failed moveCursor");
     }
 
     /**
@@ -443,11 +391,11 @@ public class Screen5250CursorPairwiseTest {
 
         // Maximum valid position: row 24, col 80
         int maxPos = (SCREEN_ROWS - 1) * SCREEN_COLS + (SCREEN_COLS - 1);
-        assertEquals("Max position calculation", 1919, maxPos);
+        assertEquals(1919, maxPos,"Max position calculation");
 
         screen5250.setCursor(24, 80);
         int actualPos = getLastPos();
-        assertEquals("Cursor set to position", 1919, actualPos);
+        assertEquals(1919, actualPos,"Cursor set to position");
 
         // BUG: moveCursor at position 1920 (maxPos + 1) crashes
         // ScreenPlanes array is exactly 1920 elements (0-1919)
@@ -456,8 +404,7 @@ public class Screen5250CursorPairwiseTest {
             boolean moved = screen5250.moveCursor(maxPos + 1);
             fail("KNOWN BUG: Should fail at boundary position 1920");
         } catch (ArrayIndexOutOfBoundsException e) {
-            assertTrue("Boundary overrun at position 1920",
-                    e.getMessage().contains("out of bounds"));
+            assertTrue(e.getMessage().contains("out of bounds"),"Boundary overrun at position 1920");
         }
     }
 
@@ -478,12 +425,11 @@ public class Screen5250CursorPairwiseTest {
         // Set cursor in field range
         screen5250.setCursor(2, 1); // position 80
         int inFieldPos = getLastPos();
-        assertTrue("Position 80 is in field",
-                inFieldPos >= 80 && inFieldPos <= 240);
+        assertTrue(inFieldPos >= 80 && inFieldPos <= 240,"Position 80 is in field");
 
         oia.setKeyBoardLocked(false);
         boolean moved = screen5250.moveCursor(inFieldPos + 1);
-        assertTrue("Cursor can move within field", moved);
+        assertTrue(moved,"Cursor can move within field");
     }
 
     /**
@@ -497,12 +443,10 @@ public class Screen5250CursorPairwiseTest {
 
         screen5250.setCursorActive(true);
         int posAfterActive = getLastPos();
-        assertEquals("Position unchanged by setCursorActive",
-                originalPos, posAfterActive);
+        assertEquals(originalPos, posAfterActive,"Position unchanged by setCursorActive");
 
         screen5250.setCursorOff();
         int posAfterOff = getLastPos();
-        assertEquals("Position unchanged by setCursorOff",
-                originalPos, posAfterOff);
+        assertEquals(originalPos, posAfterOff,"Position unchanged by setCursorOff");
     }
 }

@@ -1,44 +1,17 @@
-/**
- * ResourceExhaustionPairwiseTest.java - Pairwise TDD Tests for Memory/Resource Exhaustion
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover memory leaks,
- * buffer overflows, resource exhaustion, and allocation failure bugs in HTI5250j
- * by combining multiple adversarial dimensions:
- *
- * PAIRWISE DIMENSIONS:
- * 1. Buffer size: normal (256B), large (4MB), max (512MB), overflow (1GB+)
- * 2. Allocation pattern: steady (linear), burst (exponential), leak (non-release)
- * 3. Resource type: heap, direct buffer, file handles
- * 4. Session count: 1, 10, 100
- * 5. Duration: short (100ms), medium (1s), long-running (10s)
- *
- * TEST CATEGORIES:
- * 1. POSITIVE: Normal memory usage, bounded buffers, proper cleanup
- * 2. ADVERSARIAL: Oversized allocations, burst patterns, resource starvation
- * 3. BOUNDARY: Max buffer sizes, edge-case counts, timeout scenarios
- * 4. LEAK DETECTION: Verify cleanup in success and failure paths
- *
- * Test Strategy:
- * - Monitor heap memory before/after each test
- * - Track file descriptors and direct buffer counts
- * - Verify cleanup with post-test assertions
- * - Use pairwise combinations to expose interaction bugs
- *
- * Example Patterns Tested:
- *   - Allocate normal buffer, steady pattern, heap, 1 session, short → success
- *   - Allocate large buffer, burst pattern, heap, 10 sessions, medium → memory spike
- *   - Allocate max buffer, leak pattern, direct, 100 sessions, long → OOM
- *   - Allocate overflow buffer, leak pattern, file handles, 100 sessions → FD exhaustion
- *
- * Writing Style: RED phase tests that expose resource exhaustion bugs
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.lang.management.*;
@@ -52,7 +25,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Comprehensive pairwise resource exhaustion tests for HTI5250j.
@@ -67,7 +42,6 @@ import static org.junit.Assert.*;
  *   - Long-running stability
  *   - Recovery from resource limits
  */
-@RunWith(JUnit4.class)
 public class ResourceExhaustionPairwiseTest {
 
     // ============================================================================
@@ -85,7 +59,7 @@ public class ResourceExhaustionPairwiseTest {
     private List<ByteBuffer> leakedBuffers;
     private List<File> leakedFiles;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         memoryBean = ManagementFactory.getMemoryMXBean();
         runtimeBean = ManagementFactory.getRuntimeMXBean();
@@ -99,7 +73,7 @@ public class ResourceExhaustionPairwiseTest {
         Thread.yield();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Cleanup all resources
         leakedBuffers.clear();
@@ -193,7 +167,8 @@ public class ResourceExhaustionPairwiseTest {
      * Dimension pair: normal buffer size + steady allocation pattern
      * Expected: Controlled memory growth, cleanup verified
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testNormalBufferSteadyPatternHeapSingleSessionShort() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -213,13 +188,12 @@ public class ResourceExhaustionPairwiseTest {
 
         // ASSERT: Memory growth should be minimal
         long growth = context.getHeapGrowthMB();
-        assertTrue("Memory growth should be < " + MEMORY_THRESHOLD_MB + "MB, was " + growth + "MB",
-                   growth < MEMORY_THRESHOLD_MB);
+        assertTrue(growth < MEMORY_THRESHOLD_MB,"Memory growth should be < " + MEMORY_THRESHOLD_MB + "MB, was " + growth + "MB");
 
         // ASSERT: Buffers should be readable
-        assertEquals("Expected 10 allocated buffers", 10, buffers.size());
-        assertEquals("Buffer 0 should contain value 0", 0, buffers.get(0).getInt(0));
-        assertEquals("Buffer 9 should contain value 9", 9, buffers.get(9).getInt(0));
+        assertEquals(10, buffers.size(),"Expected 10 allocated buffers");
+        assertEquals(0, buffers.get(0).getInt(0),"Buffer 0 should contain value 0");
+        assertEquals(9, buffers.get(9).getInt(0),"Buffer 9 should contain value 9");
     }
 
     /**
@@ -228,7 +202,8 @@ public class ResourceExhaustionPairwiseTest {
      * Dimension pair: large buffer (4MB) + steady pattern
      * Expected: Predictable single allocation
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testLargeBufferSteadyPatternHeapSingleSessionShort() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -243,11 +218,11 @@ public class ResourceExhaustionPairwiseTest {
 
         // ASSERT: Memory growth should be roughly 4MB
         long growth = context.getHeapGrowthMB();
-        assertTrue("Memory growth should be > 2MB, was " + growth + "MB", growth > 2);
-        assertTrue("Memory growth should be <= 10MB, was " + growth + "MB", growth <= 10);
+        assertTrue(growth > 2,"Memory growth should be > 2MB, was " + growth + "MB");
+        assertTrue(growth <= 10,"Memory growth should be <= 10MB, was " + growth + "MB");
 
         // ASSERT: Buffer should be accessible
-        assertEquals("Buffer should contain written value", 42, buffer.getInt(0));
+        assertEquals(42, buffer.getInt(0),"Buffer should contain written value");
     }
 
     /**
@@ -256,7 +231,8 @@ public class ResourceExhaustionPairwiseTest {
      * Dimension pair: normal buffer + steady pattern + 10 sessions
      * Expected: Linear growth scaled by session count
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testNormalBufferSteadyMultipleSessions10Short() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -286,14 +262,14 @@ public class ResourceExhaustionPairwiseTest {
         }
 
         boolean completed = latch.await(5, TimeUnit.SECONDS);
-        assertTrue("All sessions should complete", completed);
+        assertTrue(completed,"All sessions should complete");
 
         context.capture(this);
 
         // ASSERT: Should have 10 sessions × 5 buffers = 50 buffers
-        assertEquals("Should have allocated 10 session buffer lists", 10, sessionBuffers.size());
+        assertEquals(10, sessionBuffers.size(),"Should have allocated 10 session buffer lists");
         long totalBuffers = sessionBuffers.stream().mapToLong(List::size).sum();
-        assertEquals("Should have 50 total buffers", 50, totalBuffers);
+        assertEquals(50, totalBuffers,"Should have 50 total buffers");
     }
 
     /**
@@ -302,7 +278,8 @@ public class ResourceExhaustionPairwiseTest {
      * Dimension pair: normal buffer + file resource type
      * Expected: Proper file handle cleanup
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testNormalBufferFileHandlesSingleSessionShort() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -321,14 +298,14 @@ public class ResourceExhaustionPairwiseTest {
             try (FileInputStream fis = new FileInputStream(f)) {
                 byte[] data = new byte[256];
                 int read = fis.read(data);
-                assertTrue("Should read data from file", read > 0);
+                assertTrue(read > 0,"Should read data from file");
             }
         }
 
         context.capture(this);
 
         // ASSERT: All files should be accessible and cleaned up
-        assertEquals("All files should exist", fileCount, files.size());
+        assertEquals(fileCount, files.size(),"All files should exist");
     }
 
     // ============================================================================
@@ -341,7 +318,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests behavior at practical memory limit
      * Expected: Allocation succeeds, monitored for cleanup
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testMaxBufferSizeAllocation() throws Exception {
         // Note: This test may skip on systems with < 1GB heap
         MemoryContext context = new MemoryContext(this);
@@ -357,7 +335,7 @@ public class ResourceExhaustionPairwiseTest {
 
             // ASSERT: Buffer should be allocated and writable
             buffer.putInt(0, 0xDEADBEEF);
-            assertEquals("Buffer should contain written value", 0xDEADBEEF, buffer.getInt(0));
+            assertEquals(0xDEADBEEF, buffer.getInt(0),"Buffer should contain written value");
 
         } catch (OutOfMemoryError e) {
             // Expected on systems with < 1GB heap, skip gracefully
@@ -372,7 +350,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests direct (off-heap) buffer allocation limits
      * Expected: Bounded by MaxDirectMemorySize JVM parameter
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDirectBufferAllocation() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -391,11 +370,11 @@ public class ResourceExhaustionPairwiseTest {
         context.capture(this);
 
         // ASSERT: All buffers allocated successfully
-        assertEquals("Should allocate " + bufferCount + " direct buffers", bufferCount, directBuffers.size());
+        assertEquals(bufferCount, directBuffers.size(),"Should allocate " + bufferCount + " direct buffers");
 
         // ASSERT: All buffers should be direct
         for (ByteBuffer buf : directBuffers) {
-            assertTrue("Buffer should be direct", buf.isDirect());
+            assertTrue(buf.isDirect(),"Buffer should be direct");
         }
     }
 
@@ -405,7 +384,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests system resource limits for file handles
      * Expected: Fails gracefully when FD limit reached
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testFileDescriptorExhaustion() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -431,7 +411,7 @@ public class ResourceExhaustionPairwiseTest {
         context.capture(this);
 
         // ASSERT: Should have opened many files before hitting limit
-        assertTrue("Should open at least 10 files", openStreams.size() >= 10);
+        assertTrue(openStreams.size() >= 10,"Should open at least 10 files");
 
         // CLEANUP: Close all streams
         for (FileInputStream fis : openStreams) {
@@ -453,7 +433,8 @@ public class ResourceExhaustionPairwiseTest {
      * Dimension pair: large buffer (4MB) + burst pattern + leak
      * Expected: Detects memory not released
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testLargeBufferBurstPatternHeapLeakMultipleSessions() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -481,18 +462,17 @@ public class ResourceExhaustionPairwiseTest {
         }
 
         boolean completed = latch.await(10, TimeUnit.SECONDS);
-        assertTrue("All burst allocations should complete", completed);
+        assertTrue(completed,"All burst allocations should complete");
 
         context.capture(this);
 
         // ASSERT: Memory should show significant growth (30 buffers × 4MB = 120MB+)
         long growth = context.getHeapGrowthMB();
-        assertTrue("Burst allocation should show growth, was " + growth + "MB", growth > 20);
+        assertTrue(growth > 20,"Burst allocation should show growth, was " + growth + "MB");
 
         // ASSERT: Leaked buffers should be tracked (verify at least some buffers leaked)
         int burstAllocations = burstCount.get();
-        assertTrue("Should have allocated buffers in burst, got " + burstAllocations,
-                   burstAllocations >= 10);  // At least some sessions completed
+        assertTrue(burstAllocations >= 10,"Should have allocated buffers in burst, got " + burstAllocations);  // At least some sessions completed
     }
 
     /**
@@ -501,7 +481,8 @@ public class ResourceExhaustionPairwiseTest {
      * Dimension pair: normal buffer + leak pattern + 100 sessions + long duration
      * Expected: Detects cumulative leak over time
      */
-    @Test(timeout = 15000)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testNormalBufferLeakPattern100SessionsLongRunning() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -533,13 +514,13 @@ public class ResourceExhaustionPairwiseTest {
         }
 
         boolean completed = latch.await(15, TimeUnit.SECONDS);
-        assertTrue("Long-running leak test should complete", completed);
+        assertTrue(completed,"Long-running leak test should complete");
 
         context.capture(this);
 
         // ASSERT: Should have created many buffers over time
         int finalLeakCount = leakCount.get();
-        assertTrue("Leak test should allocate > 100 buffers, was " + finalLeakCount, finalLeakCount > 100);
+        assertTrue(finalLeakCount > 100,"Leak test should allocate > 100 buffers, was " + finalLeakCount);
 
         // ASSERT: Memory growth should be observable
         long growth = context.getHeapGrowthMB();
@@ -552,7 +533,8 @@ public class ResourceExhaustionPairwiseTest {
      * Dimension pair: direct buffer + file handles + leak pattern
      * Expected: Detects resource leaks in mixed resource types
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDirectBufferAndFileHandleLeakScenario() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -583,8 +565,8 @@ public class ResourceExhaustionPairwiseTest {
         context.capture(this);
 
         // ASSERT: Should have leaked both types of resources
-        assertEquals("Should have 10 leaked direct buffers", 10, leakedDirectBuffers.size());
-        assertTrue("Should have leaked some file handles, got " + leakedStreams.size(), leakedStreams.size() > 0);
+        assertEquals(10, leakedDirectBuffers.size(),"Should have 10 leaked direct buffers");
+        assertTrue(leakedStreams.size() > 0,"Should have leaked some file handles, got " + leakedStreams.size());
 
         // CLEANUP: Close what we can
         for (FileInputStream fis : leakedStreams) {
@@ -606,7 +588,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests that test infrastructure properly cleans up leaked resources
      * Expected: No file descriptor leaks visible after test
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testResourceCleanupAfterLeak() throws Exception {
         // ARRANGE: Create leak scenario
         List<ByteBuffer> leaks = new ArrayList<>();
@@ -626,8 +609,8 @@ public class ResourceExhaustionPairwiseTest {
         }
 
         // ASSERT: Leaks should be tracked
-        assertEquals("Should have 20 leaked buffers", 20, leakedBuffers.size());
-        assertEquals("Should have 20 temp files", 20, tempFiles.size());
+        assertEquals(20, leakedBuffers.size(),"Should have 20 leaked buffers");
+        assertEquals(20, tempFiles.size(),"Should have 20 temp files");
 
         // Note: tearDown() will clean these up
     }
@@ -638,7 +621,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests garbage collection effectiveness with many allocations
      * Expected: Memory should stabilize after GC
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testRapidAllocationDeallocationCycle() throws Exception {
         // ARRANGE: Track memory before cycle
         System.gc();
@@ -663,8 +647,7 @@ public class ResourceExhaustionPairwiseTest {
 
         // ASSERT: Heap should return to baseline (within threshold)
         long growth = heapAfter - heapBefore;
-        assertTrue("Rapid cycle should not cause unbounded growth, growth was " + growth + "MB",
-                   growth < MEMORY_THRESHOLD_MB);
+        assertTrue(growth < MEMORY_THRESHOLD_MB,"Rapid cycle should not cause unbounded growth, growth was " + growth + "MB");
     }
 
     /**
@@ -673,7 +656,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests resource cleanup during exception scenarios
      * Expected: Resources cleaned up even if exceptions occur
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConcurrentAllocationWithExceptions() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -710,14 +694,14 @@ public class ResourceExhaustionPairwiseTest {
         }
 
         boolean completed = latch.await(10, TimeUnit.SECONDS);
-        assertTrue("All sessions should complete (with/without exceptions)", completed);
+        assertTrue(completed,"All sessions should complete (with/without exceptions)");
 
         context.capture(this);
 
         // ASSERT: Some sessions should have succeeded, some failed
-        assertTrue("Should have some successes", successCount.get() > 0);
-        assertTrue("Should have some failures", exceptionCount.get() > 0);
-        assertEquals("Total should equal session count", sessionCount, successCount.get() + exceptionCount.get());
+        assertTrue(successCount.get() > 0,"Should have some successes");
+        assertTrue(exceptionCount.get() > 0,"Should have some failures");
+        assertEquals(sessionCount, successCount.get() + exceptionCount.get(),"Total should equal session count");
     }
 
     // ============================================================================
@@ -730,7 +714,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests system behavior under extreme resource pressure
      * Expected: Graceful degradation or failure, not crash
      */
-    @Test(timeout = 30000)
+    @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testExtremeResourcePressure() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -765,14 +750,13 @@ public class ResourceExhaustionPairwiseTest {
         }
 
         boolean completed = latch.await(30, TimeUnit.SECONDS);
-        assertTrue("Stress test should complete", completed);
+        assertTrue(completed,"Stress test should complete");
 
         context.capture(this);
 
         // ASSERT: Some allocations should succeed
         int totalAttempts = sessionCount * 2;
-        assertTrue("Should have some successful allocations, got " + allocationSuccess.get() + "/" + totalAttempts,
-                   allocationSuccess.get() > 0);
+        assertTrue(allocationSuccess.get() > 0,"Should have some successful allocations, got " + allocationSuccess.get() + "/" + totalAttempts);
 
         System.out.println("Extreme pressure: succeeded " + allocationSuccess.get() + "/" + totalAttempts +
                            " allocations, failures " + allocationFailure.get());
@@ -784,7 +768,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests stability over extended periods
      * Expected: No unbounded growth, controlled resource usage
      */
-    @Test(timeout = 25000)
+    @Timeout(value = 25000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testVeryLongRunningAllocationStability() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -815,18 +800,17 @@ public class ResourceExhaustionPairwiseTest {
         }
 
         boolean completed = latch.await(25, TimeUnit.SECONDS);
-        assertTrue("Long-running test should complete", completed);
+        assertTrue(completed,"Long-running test should complete");
 
         context.capture(this);
 
         // ASSERT: Should have allocated many buffers
         long allocations = allocationCount.get();
-        assertTrue("Should allocate > 1000 buffers over 20s, got " + allocations, allocations > 1000);
+        assertTrue(allocations > 1000,"Should allocate > 1000 buffers over 20s, got " + allocations);
 
         // ASSERT: Memory growth should be controlled (< 50MB for GC'd buffers)
         long growth = context.getHeapGrowthMB();
-        assertTrue("Memory growth should be controlled for non-leaking allocations, was " + growth + "MB",
-                   growth < MEMORY_THRESHOLD_MB);
+        assertTrue(growth < MEMORY_THRESHOLD_MB,"Memory growth should be controlled for non-leaking allocations, was " + growth + "MB");
 
         System.out.println("Long-running stability: allocated " + allocations + " buffers in " + duration + "ms, " +
                            "heap growth " + growth + "MB");
@@ -842,7 +826,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests realistic session creation/destruction patterns
      * Expected: Resources properly released on session close
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSessionLifecycleResourceCleanup() throws Exception {
         MemoryContext context = new MemoryContext(this);
 
@@ -902,8 +887,8 @@ public class ResourceExhaustionPairwiseTest {
         boolean createCompleted = createLatch.await(10, TimeUnit.SECONDS);
         boolean closeCompleted = closeLatch.await(10, TimeUnit.SECONDS);
 
-        assertTrue("All sessions should create", createCompleted);
-        assertTrue("All sessions should close", closeCompleted);
+        assertTrue(createCompleted,"All sessions should create");
+        assertTrue(closeCompleted,"All sessions should close");
 
         context.capture(this);
 
@@ -918,7 +903,8 @@ public class ResourceExhaustionPairwiseTest {
      * Tests session churn patterns
      * Expected: No resource leak with rapid cycling
      */
-    @Test(timeout = 15000)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testRapidSessionChurn() throws Exception {
         MemoryContext context = new MemoryContext(this);
 

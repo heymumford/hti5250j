@@ -1,9 +1,12 @@
-#*******************************************************************
-#  Show Session Information in a split screen
-#  -----------------------------
-#  Author : jorjun@mac.com
+# SPDX-FileCopyrightText: TN5250J Community
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+# SPDX-FileContributor: jorjun@mac.com
 #
-#*******************************************************************
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+
+
+
 from java.lang import *
 import java.io as io
 import java.awt as awt

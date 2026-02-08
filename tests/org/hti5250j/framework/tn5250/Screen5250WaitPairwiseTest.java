@@ -1,39 +1,26 @@
-/**
- * Title: Screen5250WaitPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company: Guild Mortgage
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise combinatorial test suite for Screen5250 WAIT/SYNC methods.
- * Critical for headless automation timing and synchronization.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING. If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Pairwise combinatorial test suite for Screen5250 wait/synchronization methods.
@@ -61,7 +48,6 @@ import static org.junit.Assert.*;
  * CRITICAL FOR AUTOMATION: These methods enable reliable headless testing without
  * polling loops. Proper synchronization prevents race conditions and flaky tests.
  */
-@RunWith(JUnit4.class)
 public class Screen5250WaitPairwiseTest {
 
     private Screen5250WaitTestDouble screen;
@@ -316,13 +302,13 @@ public class Screen5250WaitPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         screen = new Screen5250WaitTestDouble();
         executor = Executors.newSingleThreadExecutor();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         executor.shutdownNow();
         if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
@@ -345,7 +331,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForText returns true
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_ExactMatchImmediate_ReturnsTrue() {
         // Arrange
         screen.setScreenText("WELCOME", 0);
@@ -355,9 +342,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("WELCOME", 1000);
 
         // Assert
-        assertTrue("Should find text immediately", result);
+        assertTrue(result,"Should find text immediately");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should not wait full timeout", elapsed < 500);
+        assertTrue(elapsed < 500,"Should not wait full timeout");
     }
 
     /**
@@ -371,7 +358,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForText returns true after text appears
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_ContainsMatchDelayed_ReturnsTrue() throws InterruptedException {
         // Arrange
         final String fullText = "System ready for input";
@@ -388,7 +376,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("ready", 2000);
 
         // Assert
-        assertTrue("Should find substring after delay", result);
+        assertTrue(result,"Should find substring after delay");
     }
 
     /**
@@ -401,7 +389,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForCursor returns true immediately
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForCursor_PositionMatched_ReturnsTrue() {
         // Arrange
         screen.setCursorPosition(5, 10);
@@ -410,7 +399,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForCursor(5, 10, 100);
 
         // Assert
-        assertTrue("Should find cursor at position", result);
+        assertTrue(result,"Should find cursor at position");
     }
 
     /**
@@ -422,7 +411,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForUnlock returns true when unlock occurs
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForUnlock_KeyboardUnlocksDelayed_ReturnsTrue() throws InterruptedException {
         // Arrange
         screen.setKeyboardLocked(true);
@@ -439,7 +429,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForUnlock(1000);
 
         // Assert
-        assertTrue("Should return true when keyboard unlocks", result);
+        assertTrue(result,"Should return true when keyboard unlocks");
     }
 
     /**
@@ -450,7 +440,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: isKeyboardLocked returns accurate boolean state
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testIsKeyboardLocked_LockedState_ReturnsTrue() {
         // Arrange
         screen.setKeyboardLocked(true);
@@ -459,7 +450,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.isKeyboardLocked();
 
         // Assert
-        assertTrue("Should report keyboard locked", result);
+        assertTrue(result,"Should report keyboard locked");
     }
 
     /**
@@ -471,7 +462,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForOIAClear returns true immediately
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForOIAClear_NotInhibited_ReturnsTrue() {
         // Arrange
         screen.setOIAInputInhibited(false);
@@ -480,7 +472,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForOIAClear(100);
 
         // Assert
-        assertTrue("Should succeed when OIA already clear", result);
+        assertTrue(result,"Should succeed when OIA already clear");
     }
 
     /**
@@ -492,7 +484,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForTextDisappear returns true when text disappears
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForTextDisappear_TextRemovedDelayed_ReturnsTrue() throws InterruptedException {
         // Arrange
         screen.setScreenText("Processing...", 50);
@@ -509,7 +502,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForTextDisappear("Processing", 1000);
 
         // Assert
-        assertTrue("Should detect text disappearance", result);
+        assertTrue(result,"Should detect text disappearance");
     }
 
     /**
@@ -521,7 +514,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForCursor returns true after cursor movement
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForCursor_CursorMovesDelayed_ReturnsTrue() throws InterruptedException {
         // Arrange
         screen.setCursorPosition(0, 0);
@@ -538,7 +532,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForCursor(12, 40, 1000);
 
         // Assert
-        assertTrue("Should find cursor after movement", result);
+        assertTrue(result,"Should find cursor after movement");
     }
 
     /**
@@ -551,7 +545,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForText finds text despite concurrent modifications
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_RapidConcurrentUpdates_ReturnsTrue() throws InterruptedException {
         // Arrange
         executor.submit(() -> {
@@ -570,7 +565,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("COMPLETE", 2000);
 
         // Assert
-        assertTrue("Should find text despite rapid concurrent updates", result);
+        assertTrue(result,"Should find text despite rapid concurrent updates");
     }
 
     /**
@@ -582,7 +577,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: Proper state synchronization, returns true
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForUnlock_WithOIAStateChange_ReturnsTrue() throws InterruptedException {
         // Arrange
         screen.setKeyboardLocked(true);
@@ -602,7 +598,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForUnlock(1000);
 
         // Assert
-        assertTrue("Should unlock despite OIA state changes", result);
+        assertTrue(result,"Should unlock despite OIA state changes");
     }
 
     // ============================================================================
@@ -620,7 +616,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForText returns false after timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_NeverMatches_TimeoutReturnsFalse() {
         // Arrange
         screen.setScreenText("Initial screen content", 0);
@@ -630,10 +627,10 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("NEVER_APPEARS", 100);
 
         // Assert
-        assertFalse("Should timeout and return false", result);
+        assertFalse(result,"Should timeout and return false");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should wait for full timeout", elapsed >= 100);
-        assertTrue("Should not exceed timeout by much", elapsed < 300);
+        assertTrue(elapsed >= 100,"Should wait for full timeout");
+        assertTrue(elapsed < 300,"Should not exceed timeout by much");
     }
 
     /**
@@ -646,7 +643,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForText returns false immediately
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_ZeroTimeout_ReturnsImmediately() {
         // Arrange
         screen.setScreenText("Some content", 0);
@@ -656,9 +654,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("Not here", 0);
 
         // Assert
-        assertFalse("Should fail with zero timeout", result);
+        assertFalse(result,"Should fail with zero timeout");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should return immediately (< 50ms)", elapsed < 50);
+        assertTrue(elapsed < 50,"Should return immediately (< 50ms)");
     }
 
     /**
@@ -670,7 +668,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForCursor returns false after timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForCursor_WrongPosition_TimeoutReturnsFalse() {
         // Arrange
         screen.setCursorPosition(5, 10);
@@ -680,9 +679,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForCursor(20, 40, 150);
 
         // Assert
-        assertFalse("Should timeout waiting for wrong position", result);
+        assertFalse(result,"Should timeout waiting for wrong position");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should wait for full timeout", elapsed >= 150);
+        assertTrue(elapsed >= 150,"Should wait for full timeout");
     }
 
     /**
@@ -694,7 +693,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForUnlock returns false after timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForUnlock_RemainsLocked_TimeoutReturnsFalse() {
         // Arrange
         screen.setKeyboardLocked(true);
@@ -704,9 +704,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForUnlock(100);
 
         // Assert
-        assertFalse("Should timeout while locked", result);
+        assertFalse(result,"Should timeout while locked");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should wait for timeout period", elapsed >= 100);
+        assertTrue(elapsed >= 100,"Should wait for timeout period");
     }
 
     /**
@@ -718,7 +718,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForTextDisappear returns false after timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForTextDisappear_PersistsOnScreen_TimeoutReturnsFalse() {
         // Arrange
         screen.setScreenText("Persistent text", 100);
@@ -728,9 +729,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForTextDisappear("Persistent", 100);
 
         // Assert
-        assertFalse("Should timeout while text persists", result);
+        assertFalse(result,"Should timeout while text persists");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should wait for full timeout", elapsed >= 100);
+        assertTrue(elapsed >= 100,"Should wait for full timeout");
     }
 
     /**
@@ -742,7 +743,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForOIAClear returns false after timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForOIAClear_RemainsInhibited_TimeoutReturnsFalse() {
         // Arrange
         screen.setOIAInputInhibited(true);
@@ -752,9 +754,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForOIAClear(120);
 
         // Assert
-        assertFalse("Should timeout while inhibited", result);
+        assertFalse(result,"Should timeout while inhibited");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should wait for timeout period", elapsed >= 120);
+        assertTrue(elapsed >= 120,"Should wait for timeout period");
     }
 
     /**
@@ -767,7 +769,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForText returns false (case mismatch)
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_CaseMismatch_TimeoutReturnsFalse() {
         // Arrange
         screen.setScreenText("HELLO WORLD", 0);
@@ -777,9 +780,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("hello world", 200);
 
         // Assert
-        assertFalse("Should fail on case mismatch", result);
+        assertFalse(result,"Should fail on case mismatch");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should wait approximately 200ms", elapsed >= 200);
+        assertTrue(elapsed >= 200,"Should wait approximately 200ms");
     }
 
     /**
@@ -792,7 +795,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForText returns false due to continuous changes
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_RapidContentChanges_TimeoutReturnsFalse() throws InterruptedException {
         // Arrange
         executor.submit(() -> {
@@ -811,7 +815,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("STABLE_PATTERN", 200);
 
         // Assert
-        assertFalse("Should timeout due to unstable content", result);
+        assertFalse(result,"Should timeout due to unstable content");
     }
 
     /**
@@ -824,7 +828,8 @@ public class Screen5250WaitPairwiseTest {
      *
      * Expected: waitForCursor returns false, target never matched
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForCursor_RapidMovementMissesTarget_TimeoutReturnsFalse() throws InterruptedException {
         // Arrange
         executor.submit(() -> {
@@ -842,7 +847,7 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForCursor(15, 30, 250);
 
         // Assert
-        assertFalse("Should timeout as cursor never reaches target", result);
+        assertFalse(result,"Should timeout as cursor never reaches target");
     }
 
     /**
@@ -855,7 +860,8 @@ public class Screen5250WaitPairwiseTest {
      * Expected: waitForUnlock handles interruption, returns false
      * Verification: Thread interrupt flag restored
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForUnlock_InterruptedException_ReturnsFalse() throws InterruptedException {
         // Arrange
         screen.setKeyboardLocked(true);
@@ -872,7 +878,7 @@ public class Screen5250WaitPairwiseTest {
         waitThread.join(1000);
 
         // Assert
-        assertFalse("Should return false on interruption", result[0]);
+        assertFalse(result[0],"Should return false on interruption");
     }
 
     // ============================================================================
@@ -885,7 +891,8 @@ public class Screen5250WaitPairwiseTest {
      * Scenario: Negative timeout provided (invalid)
      * Expected: Should treat as 0ms timeout (immediate)
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_NegativeTimeout_TreatsAsZero() {
         // Arrange
         screen.setScreenText("Test content", 0);
@@ -896,9 +903,9 @@ public class Screen5250WaitPairwiseTest {
 
         // Assert
         // Implementation treats -1 as 0 (immediate timeout)
-        assertFalse("Negative timeout should fail immediately", result);
+        assertFalse(result,"Negative timeout should fail immediately");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should return immediately", elapsed < 100);
+        assertTrue(elapsed < 100,"Should return immediately");
     }
 
     /**
@@ -907,7 +914,8 @@ public class Screen5250WaitPairwiseTest {
      * Scenario: Timeout of 30000ms (30 seconds) but text appears immediately
      * Expected: Should return true without waiting full timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForText_LargeTimeout_ExitsEarly_OnMatch() {
         // Arrange
         screen.setScreenText("IMMEDIATE_TEXT", 200);
@@ -917,9 +925,9 @@ public class Screen5250WaitPairwiseTest {
         boolean result = screen.waitForText("IMMEDIATE_TEXT", 30000);
 
         // Assert
-        assertTrue("Should find text", result);
+        assertTrue(result,"Should find text");
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Should exit immediately on match, not wait 30s", elapsed < 500);
+        assertTrue(elapsed < 500,"Should exit immediately on match, not wait 30s");
     }
 
     /**
@@ -928,7 +936,8 @@ public class Screen5250WaitPairwiseTest {
      * Scenario: Wait for cursor at screen corners and edges
      * Expected: Should handle boundary positions correctly
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWaitForCursor_BoundaryPositions_SuccessfulMatch() {
         // Arrange
         int maxRow = screen.getRows() - 1;
@@ -936,14 +945,14 @@ public class Screen5250WaitPairwiseTest {
 
         // Test top-left
         screen.setCursorPosition(0, 0);
-        assertTrue("Should match top-left corner", screen.waitForCursor(0, 0, 100));
+        assertTrue(screen.waitForCursor(0, 0, 100),"Should match top-left corner");
 
         // Test bottom-right
         screen.setCursorPosition(maxRow, maxCol);
-        assertTrue("Should match bottom-right corner", screen.waitForCursor(maxRow, maxCol, 100));
+        assertTrue(screen.waitForCursor(maxRow, maxCol, 100),"Should match bottom-right corner");
 
         // Test center
         screen.setCursorPosition(12, 40);
-        assertTrue("Should match center position", screen.waitForCursor(12, 40, 100));
+        assertTrue(screen.waitForCursor(12, 40, 100),"Should match center position");
     }
 }

@@ -1,21 +1,17 @@
-/**
- * SessionLifecyclePairwiseTest.java - Pairwise TDD for Session Lifecycle Management
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests session lifecycle under varying dimensions:
- * - Session count: [0, 1, 2, 10, MAX]
- * - Connection states: [new, connecting, connected, disconnecting, disconnected, error]
- * - Transition sequences: [normal, rapid, concurrent, interrupted]
- * - Configuration: [default, custom, invalid, null]
- * - Events: [connect, disconnect, error, timeout, data]
- *
- * Focus: State corruption, race conditions, event ordering violations
- * Test classes: Session5250, SessionPanel, Sessions (multi-session manager), SessionConfig
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.event.SessionChangeEvent;
 import org.hti5250j.event.SessionListener;
 import org.hti5250j.event.SessionConfigListener;
@@ -30,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PAIRWISE TEST MATRIX:
@@ -61,7 +57,7 @@ public class SessionLifecyclePairwiseTest {
     private Properties customProps;
     private MockSessionListener mockListener;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         sessions = new Sessions();
         mockListener = new MockSessionListener();
@@ -80,7 +76,7 @@ public class SessionLifecyclePairwiseTest {
         customConfig = new SessionConfig("TestCustom.props", "CustomSession");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Cleanup all sessions
         if (sessions != null) {
@@ -115,7 +111,7 @@ public class SessionLifecyclePairwiseTest {
         // ASSERT
         assertNotNull(session.getScreen());
         assertNotNull(session.getConfiguration());
-        assertFalse("Session should not be connected initially", session.isConnected());
+        assertFalse(session.isConnected(),"Session should not be connected initially");
     }
 
     /**
@@ -139,10 +135,8 @@ public class SessionLifecyclePairwiseTest {
 
         // ASSERT
         assertNotNull(retrieved);
-        assertTrue("Custom host should be preserved",
-            retrieved.containsKey("Session.host"));
-        assertTrue("Custom SSL should be preserved",
-            retrieved.containsKey("Session.ssl"));
+        assertTrue(retrieved.containsKey("Session.host"),"Custom host should be preserved");
+        assertTrue(retrieved.containsKey("Session.ssl"),"Custom SSL should be preserved");
     }
 
     /**
@@ -172,7 +166,7 @@ public class SessionLifecyclePairwiseTest {
         String name2 = session2.getSessionName();
 
         // ASSERT
-        assertTrue("Session names should differ", !name1.equals(name2));
+        assertTrue(!name1.equals(name2),"Session names should differ");
         assertEquals("Session1", name1);
         assertEquals("Session2", name2);
     }
@@ -203,10 +197,10 @@ public class SessionLifecyclePairwiseTest {
         }
 
         // ASSERT
-        assertEquals("All sessions should be created", SESSION_COUNT, sessionList.size());
+        assertEquals(SESSION_COUNT, sessionList.size(),"All sessions should be created");
         for (int i = 0; i < SESSION_COUNT; i++) {
             assertEquals("Session" + i, sessionList.get(i).getSessionName());
-            assertFalse("Session should not be connected", sessionList.get(i).isConnected());
+            assertFalse(sessionList.get(i).isConnected(),"Session should not be connected");
         }
     }
 
@@ -233,7 +227,7 @@ public class SessionLifecyclePairwiseTest {
 
         // ASSERT
         assertEquals("AtomicSession", name);
-        assertEquals("No state changes should occur before connect", 0, stateChanges.get());
+        assertEquals(0, stateChanges.get(),"No state changes should occur before connect");
     }
 
     /**
@@ -264,8 +258,7 @@ public class SessionLifecyclePairwiseTest {
         assertNotNull(session1.getConfiguration());
         assertNotNull(session2.getConfiguration());
         // Each session should have independent listeners
-        assertTrue("Sessions should be distinct",
-            !session1.getSessionName().equals(session2.getSessionName()));
+        assertTrue(!session1.getSessionName().equals(session2.getSessionName()),"Sessions should be distinct");
     }
 
     /**
@@ -288,8 +281,8 @@ public class SessionLifecyclePairwiseTest {
         SessionConfig config = session.getConfiguration();
 
         // ASSERT
-        assertNotNull("Configuration should not be null", config);
-        assertNotNull("Session name should be retrievable", session.getSessionName());
+        assertNotNull(config,"Configuration should not be null");
+        assertNotNull(session.getSessionName(),"Session name should be retrievable");
     }
 
     /**
@@ -312,8 +305,8 @@ public class SessionLifecyclePairwiseTest {
         boolean connected = session.isConnected();
 
         // ASSERT
-        assertFalse("Session should start disconnected", connected);
-        assertNotNull("Session configuration should survive", session.getConfiguration());
+        assertFalse(connected,"Session should start disconnected");
+        assertNotNull(session.getConfiguration(),"Session configuration should survive");
         assertEquals("DisconnectSession", session.getSessionName());
     }
 
@@ -365,15 +358,14 @@ public class SessionLifecyclePairwiseTest {
         boolean completed = endLatch.await(5, TimeUnit.SECONDS);
 
         // ASSERT
-        assertTrue("All concurrent creations should complete", completed);
-        assertEquals("All sessions should be created", THREAD_COUNT, concurrentSessions.size());
+        assertTrue(completed,"All concurrent creations should complete");
+        assertEquals(THREAD_COUNT, concurrentSessions.size(),"All sessions should be created");
 
         // Verify no duplicates
         for (int i = 0; i < concurrentSessions.size(); i++) {
             for (int j = i + 1; j < concurrentSessions.size(); j++) {
-                assertTrue("Session names should differ",
-                    !concurrentSessions.get(i).getSessionName().equals(
-                        concurrentSessions.get(j).getSessionName()));
+                assertTrue(!concurrentSessions.get(i).getSessionName().equals(
+                        concurrentSessions.get(j).getSessionName()),"Session names should differ");
             }
         }
     }
@@ -404,7 +396,7 @@ public class SessionLifecyclePairwiseTest {
 
         // ASSERT
         // Verify sessions maintain distinct identities even under rapid creation
-        assertTrue("Sessions created successfully", true);
+        assertTrue(true,"Sessions created successfully");
     }
 
     /**
@@ -429,7 +421,7 @@ public class SessionLifecyclePairwiseTest {
 
         // ASSERT
         assertEquals("ErrorSession", name);
-        assertFalse("Session should not be connected", connected);
+        assertFalse(connected,"Session should not be connected");
         // Session should remain identifiable even in error state
         assertNotNull(session.getConfiguration());
     }
@@ -461,8 +453,8 @@ public class SessionLifecyclePairwiseTest {
         boolean session2Connected = session2.isConnected();
 
         // ASSERT
-        assertFalse("Session 1 should not be connected", session1Connected);
-        assertFalse("Session 2 should not be connected", session2Connected);
+        assertFalse(session1Connected,"Session 1 should not be connected");
+        assertFalse(session2Connected,"Session 2 should not be connected");
         assertEquals("GoodSession", session1.getSessionName());
         assertEquals("ErrorSession", session2.getSessionName());
     }
@@ -492,10 +484,9 @@ public class SessionLifecyclePairwiseTest {
         // ASSERT
         boolean firstResult = results[0];
         for (int i = 1; i < 100; i++) {
-            assertEquals("All rapid queries should return same value",
-                firstResult, results[i]);
+            assertEquals(firstResult, results[i],"All rapid queries should return same value");
         }
-        assertFalse("Session should remain disconnected", firstResult);
+        assertFalse(firstResult,"Session should remain disconnected");
     }
 
     /**
@@ -523,13 +514,12 @@ public class SessionLifecyclePairwiseTest {
         }
 
         // ASSERT
-        assertEquals("All sessions should be created", SESSION_COUNT, names.size());
+        assertEquals(SESSION_COUNT, names.size(),"All sessions should be created");
 
         // Verify uniqueness: each name should appear exactly once
         for (int i = 0; i < names.size(); i++) {
             for (int j = i + 1; j < names.size(); j++) {
-                assertTrue("Session names should differ",
-                    !names.get(i).equals(names.get(j)));
+                assertTrue(!names.get(i).equals(names.get(j)),"Session names should differ");
             }
         }
     }
@@ -558,7 +548,7 @@ public class SessionLifecyclePairwiseTest {
         // ASSERT
         assertEquals("RecoverableSession", name);
         assertNotNull(config);
-        assertFalse("Should remain disconnected", connected);
+        assertFalse(connected,"Should remain disconnected");
     }
 
     /**
@@ -627,8 +617,8 @@ public class SessionLifecyclePairwiseTest {
         boolean completed = endLatch.await(5, TimeUnit.SECONDS);
 
         // ASSERT
-        assertTrue("Concurrent queries should complete", completed);
-        assertTrue("Results should be consistent across concurrent reads", resultsConsistent.get());
+        assertTrue(completed,"Concurrent queries should complete");
+        assertTrue(resultsConsistent.get(),"Results should be consistent across concurrent reads");
     }
 
     /**
@@ -688,10 +678,9 @@ public class SessionLifecyclePairwiseTest {
         boolean completed = endLatch.await(10, TimeUnit.SECONDS);
 
         // ASSERT
-        assertTrue("All operations should complete without deadlock", completed);
-        assertEquals("All operations should succeed",
-            THREAD_COUNT * OPERATIONS_PER_THREAD,
-            operationCount.get());
+        assertTrue(completed,"All operations should complete without deadlock");
+        assertEquals(THREAD_COUNT * OPERATIONS_PER_THREAD,
+            operationCount.get(),"All operations should succeed");
     }
 
     /**
@@ -720,7 +709,7 @@ public class SessionLifecyclePairwiseTest {
 
         // ASSERT
         assertEquals("RepeatedQuerySession", session.getSessionName());
-        assertFalse("Session should remain disconnected", session.isConnected());
+        assertFalse(session.isConnected(),"Session should remain disconnected");
     }
 
     /**
@@ -750,11 +739,10 @@ public class SessionLifecyclePairwiseTest {
         );
 
         // ASSERT
-        assertEquals("Original session name should not change", originalName, session1.getSessionName());
-        assertEquals("Original connection state should not change", originalConnected, session1.isConnected());
+        assertEquals(originalName, session1.getSessionName(),"Original session name should not change");
+        assertEquals(originalConnected, session1.isConnected(),"Original connection state should not change");
         assertEquals("NewSession", session2.getSessionName());
-        assertTrue("Session names should differ",
-            !session1.getSessionName().equals(session2.getSessionName()));
+        assertTrue(!session1.getSessionName().equals(session2.getSessionName()),"Session names should differ");
     }
 
     /**
@@ -788,9 +776,9 @@ public class SessionLifecyclePairwiseTest {
         // ASSERT - All sessions should remain functional
         for (int i = 0; i < SESSION_COUNT; i++) {
             Session5250 session = sessionList.get(i);
-            assertNotNull("Session should exist", session);
-            assertNotNull("Session name should be valid", session.getSessionName());
-            assertNotNull("Session config should exist", session.getConfiguration());
+            assertNotNull(session,"Session should exist");
+            assertNotNull(session.getSessionName(),"Session name should be valid");
+            assertNotNull(session.getConfiguration(),"Session config should exist");
         }
     }
 

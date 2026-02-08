@@ -1,35 +1,21 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Test Suite
  *
- * @author Test Suite
- * @version 0.5
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Test Suite for ScreenFields.isCurrentField() inverted null check bug
@@ -42,7 +28,7 @@ public class ScreenFieldsTest {
     private ScreenFields screenFields;
     private TestScreen5250 testScreen;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Initialize test screen
         testScreen = new TestScreen5250();
@@ -64,16 +50,15 @@ public class ScreenFieldsTest {
         screenFields.setCurrentField(field);
 
         // Verify field is actually set
-        assertNotNull("Test precondition: currentField should not be null", screenFields.getCurrentField());
+        assertNotNull(screenFields.getCurrentField(),"Test precondition: currentField should not be null");
 
         // ACT: Check if current field is set
         boolean result = screenFields.isCurrentField();
 
         // ASSERT: Should return TRUE when field is set
-        assertTrue(
-            "isCurrentField() should return TRUE when currentField is set (not null)",
-            result
-        );
+        assertTrue(result
+        ,
+            "isCurrentField() should return TRUE when currentField is set (not null)");
     }
 
     /**
@@ -88,16 +73,15 @@ public class ScreenFieldsTest {
         screenFields.clearFFT();
 
         // Verify currentField is null
-        assertNull("Initial state should have null currentField", screenFields.getCurrentField());
+        assertNull(screenFields.getCurrentField(),"Initial state should have null currentField");
 
         // ACT: Check if current field is set
         boolean result = screenFields.isCurrentField();
 
         // ASSERT: Should return FALSE when field is null
-        assertFalse(
-            "isCurrentField() should return FALSE when currentField is null",
-            result
-        );
+        assertFalse(result
+        ,
+            "isCurrentField() should return FALSE when currentField is null");
     }
 
     /**
@@ -113,13 +97,13 @@ public class ScreenFieldsTest {
         screenFields.clearFFT();
 
         // Verify currentField is null
-        assertNull("currentField should be null", screenFields.getCurrentField());
+        assertNull(screenFields.getCurrentField(),"currentField should be null");
 
         // ACT & ASSERT: This should not throw NullPointerException
         try {
             boolean result = screenFields.isCurrentFieldFER();
             // If we get here without exception, the method handles null properly
-            assertFalse("isCurrentFieldFER() should return false when field is null", result);
+            assertFalse(result,"isCurrentFieldFER() should return false when field is null");
         } catch (NullPointerException e) {
             fail(
                 "isCurrentFieldFER() should not throw NullPointerException when currentField is null. " +
@@ -138,12 +122,12 @@ public class ScreenFieldsTest {
         screenFields.clearFFT();
 
         // Verify currentField is null
-        assertNull("currentField should be null", screenFields.getCurrentField());
+        assertNull(screenFields.getCurrentField(),"currentField should be null");
 
         // ACT & ASSERT: This should not throw NullPointerException
         try {
             boolean result = screenFields.isCurrentFieldDupEnabled();
-            assertFalse("isCurrentFieldDupEnabled() should return false when field is null", result);
+            assertFalse(result,"isCurrentFieldDupEnabled() should return false when field is null");
         } catch (NullPointerException e) {
             fail(
                 "isCurrentFieldDupEnabled() should not throw NullPointerException when currentField is null. " +
@@ -163,7 +147,7 @@ public class ScreenFieldsTest {
         // ACT & ASSERT: This should not throw NullPointerException
         try {
             boolean result = screenFields.isCurrentFieldToUpper();
-            assertFalse("isCurrentFieldToUpper() should return false when field is null", result);
+            assertFalse(result,"isCurrentFieldToUpper() should return false when field is null");
         } catch (NullPointerException e) {
             fail(
                 "isCurrentFieldToUpper() should not throw NullPointerException when currentField is null. " +
@@ -183,7 +167,7 @@ public class ScreenFieldsTest {
         // ACT & ASSERT: This should not throw NullPointerException
         try {
             boolean result = screenFields.isCurrentFieldBypassField();
-            assertFalse("isCurrentFieldBypassField() should return false when field is null", result);
+            assertFalse(result,"isCurrentFieldBypassField() should return false when field is null");
         } catch (NullPointerException e) {
             fail(
                 "isCurrentFieldBypassField() should not throw NullPointerException when currentField is null. " +

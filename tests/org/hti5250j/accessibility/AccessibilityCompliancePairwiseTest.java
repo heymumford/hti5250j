@@ -1,50 +1,21 @@
-/**
- * AccessibilityCompliancePairwiseTest.java - Pairwise TDD Tests for A11y Compliance
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover bugs in
- * accessibility (a11y) handling across keyboard navigation, screen reader support,
- * focus management, and ARIA compliance by combining multiple test dimensions:
- *
- * Dimensions tested:
- * - Accessibility feature: [screen-reader, keyboard-only, high-contrast]
- * - Navigation mode: [tab, arrow, shortcut]
- * - Focus target: [field, button, menu, status]
- * - Announcement type: [label, value, state-change]
- * - User preference: [default, customized]
- *
- * Test strategy: Combine pairs of dimensions to create adversarial scenarios that
- * expose keyboard-trap bugs, missing ARIA attributes, focus loss conditions, and
- * state-change announcement failures.
- *
- * Critical scenarios for terminal accessibility:
- * - Screen reader announces field labels and current values in 5250 grids
- * - Keyboard navigation without mouse for form entry and data access
- * - Focus doesn't trap when navigating status lines or menu bars
- * - ARIA roles/states reflect actual component state changes
- * - High contrast mode readable for visually impaired users
- * - Custom announcements preserve screen reader support
- * - Rapid navigation (repeated Tab/arrow) doesn't lose focus or announce stale data
- *
- * WCAG 2.1 AA Coverage:
- * - 2.1.1 Keyboard (A): All functionality via keyboard
- * - 2.1.2 No Keyboard Trap (A): User can navigate away from any component
- * - 2.1.4 Character Key Shortcuts (A): Shortcuts have disable option
- * - 2.4.3 Focus Order (A): Focus order logical and meaningful
- * - 2.4.7 Focus Visible (AA): Visual indicator of keyboard focus
- * - 3.2.2 On Input (A): No unexpected context changes on input
- * - 3.3.4 Error Prevention (AA): Errors identified and suggested corrections
- * - 4.1.2 Name, Role, Value (A): ARIA attributes correct and current
- * - 4.1.3 Status Messages (AA): Status changes announced to screen readers
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.accessibility;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Pairwise Tests for Accessibility Compliance
@@ -362,7 +333,7 @@ public class AccessibilityCompliancePairwiseTest {
     private MockARIAProvider ariaProvider;
     private List<MockAccessibilityComponent> components;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         screenReader = new MockScreenReaderAnnouncer();
         keyboardNav = new MockKeyboardNavigator();
@@ -406,7 +377,7 @@ public class AccessibilityCompliancePairwiseTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         screenReader.reset();
         keyboardNav.reset();
@@ -424,8 +395,8 @@ public class AccessibilityCompliancePairwiseTest {
         focusManager.setFocus(1, "Tab navigation");
         screenReader.announce(components.get(0).getFullAriaDescription());
 
-        assertTrue("Screen reader should announce component", screenReader.wasAnnouncementMade("Account Number"));
-        assertEquals("Focus should be on field", 1, focusManager.getCurrentFocus());
+        assertTrue(screenReader.wasAnnouncementMade("Account Number"),"Screen reader should announce component");
+        assertEquals(1, focusManager.getCurrentFocus(),"Focus should be on field");
     }
 
     @Test
@@ -436,8 +407,8 @@ public class AccessibilityCompliancePairwiseTest {
         focusManager.setFocus(2, "Arrow navigation");
         screenReader.announce(components.get(1).getAriaLabel());
 
-        assertEquals("Focus should move with arrow key", 2, focusManager.getCurrentFocus());
-        assertTrue("Screen reader should announce new focus", screenReader.wasAnnouncementMade("Submit"));
+        assertEquals(2, focusManager.getCurrentFocus(),"Focus should move with arrow key");
+        assertTrue(screenReader.wasAnnouncementMade("Submit"),"Screen reader should announce new focus");
     }
 
     @Test
@@ -448,8 +419,7 @@ public class AccessibilityCompliancePairwiseTest {
         }
         keyboardNav.navigateTab(0);
         focusManager.setFocus(1, "High contrast enabled");
-        assertTrue("Component should support high contrast preference",
-                   "true".equals(components.get(0).getCustomPreference("highContrast")));
+        assertTrue("true".equals(components.get(0).getCustomPreference("highContrast")),"Component should support high contrast preference");
     }
 
     @Test
@@ -460,8 +430,7 @@ public class AccessibilityCompliancePairwiseTest {
         ariaProvider.updateLiveRegion("Status changed to Disconnected");
         screenReader.announce("Status changed to Disconnected");
 
-        assertTrue("Status change should be announced",
-                   screenReader.wasAnnouncementMade("Disconnected"));
+        assertTrue(screenReader.wasAnnouncementMade("Disconnected"),"Status change should be announced");
     }
 
     @Test
@@ -469,7 +438,7 @@ public class AccessibilityCompliancePairwiseTest {
         // KO + Shortcut + Button + Label + Default
         focusManager.setFocus(2, "Keyboard focus");
         ariaProvider.setAriaState(2, "focused");
-        assertTrue("Focus should be visible on button", focusManager.isFocusVisible(2));
+        assertTrue(focusManager.isFocusVisible(2),"Focus should be visible on button");
     }
 
     @Test
@@ -480,8 +449,8 @@ public class AccessibilityCompliancePairwiseTest {
         ariaProvider.setAriaState(3, "expanded");
         screenReader.announce("Menu expanded");
 
-        assertEquals("Focus should be on menu", 3, focusManager.getCurrentFocus());
-        assertTrue("Menu state should be announced", screenReader.wasAnnouncementMade("expanded"));
+        assertEquals(3, focusManager.getCurrentFocus(),"Focus should be on menu");
+        assertTrue(screenReader.wasAnnouncementMade("expanded"),"Menu state should be announced");
     }
 
     @Test
@@ -491,10 +460,8 @@ public class AccessibilityCompliancePairwiseTest {
         focusManager.setFocus(1, "Focus with custom prefs");
         screenReader.announce(components.get(0).getLabel() + " " + components.get(0).getValue());
 
-        assertEquals("Custom preference should be set",
-                     "high", components.get(0).getCustomPreference("screenReaderVerbosity"));
-        assertTrue("Full announcement with custom verbosity",
-                   screenReader.wasAnnouncementMade("Account Number 123456"));
+        assertEquals("high", components.get(0).getCustomPreference("screenReaderVerbosity"),"Custom preference should be set");
+        assertTrue(screenReader.wasAnnouncementMade("Account Number 123456"),"Full announcement with custom verbosity");
     }
 
     @Test
@@ -505,7 +472,7 @@ public class AccessibilityCompliancePairwiseTest {
         focusManager.setFocus(2, "Shortcut navigation");
         screenReader.announce(components.get(1).getAriaLabel());
 
-        assertEquals("Shortcut should jump to button", 2, focusManager.getCurrentFocus());
+        assertEquals(2, focusManager.getCurrentFocus(),"Shortcut should jump to button");
     }
 
     @Test
@@ -513,7 +480,7 @@ public class AccessibilityCompliancePairwiseTest {
         // SR + Tab + Diverse targets + Label + Default
         components.forEach(comp -> {
             String expectedRole = comp.getComponentType().name().toLowerCase();
-            assertNotNull("ARIA role should be set", comp.getAriaRole());
+            assertNotNull(comp.getAriaRole(),"ARIA role should be set");
         });
     }
 
@@ -525,8 +492,7 @@ public class AccessibilityCompliancePairwiseTest {
         ariaProvider.updateLiveRegion("Field value changed to 987654");
         screenReader.announce("Field value changed to 987654");
 
-        assertTrue("Field value change should be announced",
-                   screenReader.wasAnnouncementMade("987654"));
+        assertTrue(screenReader.wasAnnouncementMade("987654"),"Field value change should be announced");
     }
 
     @Test
@@ -537,8 +503,7 @@ public class AccessibilityCompliancePairwiseTest {
         ariaProvider.updateLiveRegion("Menu collapsed");
         screenReader.announce("Menu collapsed");
 
-        assertTrue("Menu collapse should be announced",
-                   screenReader.wasAnnouncementMade("collapsed"));
+        assertTrue(screenReader.wasAnnouncementMade("collapsed"),"Menu collapse should be announced");
     }
 
     @Test
@@ -547,7 +512,7 @@ public class AccessibilityCompliancePairwiseTest {
         components.get(0).setDisabled(true);
         keyboardNav.registerFocusableElement(components.get(0).getId());
         focusManager.setFocus(1, "Check disabled");
-        assertTrue("Disabled field detected", components.get(0).isDisabled());
+        assertTrue(components.get(0).isDisabled(),"Disabled field detected");
     }
 
     @Test
@@ -558,7 +523,7 @@ public class AccessibilityCompliancePairwiseTest {
             keyboardNav.navigateTab(i);
             sequence.add(components.get(i).getId());
         }
-        assertTrue("Focus sequence should be in order", sequence.size() >= 3);
+        assertTrue(sequence.size() >= 3,"Focus sequence should be in order");
     }
 
     // ========== ADVERSARIAL TEST CASES ==========
@@ -571,7 +536,7 @@ public class AccessibilityCompliancePairwiseTest {
             keyboardNav.navigateArrow(1);
             fail("Trapped focus should throw exception");
         } catch (FocusTrapException e) {
-            assertTrue("Should detect keyboard trap", keyboardNav.isCurrentlyTrapped());
+            assertTrue(keyboardNav.isCurrentlyTrapped(),"Should detect keyboard trap");
         }
     }
 
@@ -580,7 +545,7 @@ public class AccessibilityCompliancePairwiseTest {
         // SR + Tab + Status + State-change + Adversarial
         focusManager.setFocus(4, "Status focus");
         focusManager.loseFocus(); // Simulate focus loss on state change
-        assertTrue("Focus should be lost after state change", focusManager.isFocusLost());
+        assertTrue(focusManager.isFocusLost(),"Focus should be lost after state change");
     }
 
     @Test
@@ -598,8 +563,7 @@ public class AccessibilityCompliancePairwiseTest {
         screenReader.announce("Field value: 1234");
         // Expected behavior: all changes announced
         // Adversarial test: verify announcements were made (bugs revealed by missing announcements)
-        assertEquals("Screen reader should track 4 rapid value changes",
-                     4, screenReader.getAllAnnouncements().size());
+        assertEquals(4, screenReader.getAllAnnouncements().size(),"Screen reader should track 4 rapid value changes");
     }
 
     @Test
@@ -610,8 +574,8 @@ public class AccessibilityCompliancePairwiseTest {
         // Contrast ratio ~1.1 (fails WCAG AA minimum of 4.5:1)
         String fg = components.get(0).getCustomPreference("customForeground");
         String bg = components.get(0).getCustomPreference("customBackground");
-        assertNotNull("Should detect contrast problem", fg);
-        assertNotNull("Should detect contrast problem", bg);
+        assertNotNull(fg,"Should detect contrast problem");
+        assertNotNull(bg,"Should detect contrast problem");
     }
 
     @Test
@@ -621,8 +585,7 @@ public class AccessibilityCompliancePairwiseTest {
         int focusBeforeCollapse = focusManager.getCurrentFocus();
         // Menu collapses - should restore focus to menu button
         focusManager.loseFocus();
-        assertTrue("Focus should be lost after collapse without proper handler",
-                   focusManager.isFocusLost());
+        assertTrue(focusManager.isFocusLost(),"Focus should be lost after collapse without proper handler");
     }
 
     @Test
@@ -630,8 +593,7 @@ public class AccessibilityCompliancePairwiseTest {
         // SR + Shortcut + Button + Label + Adversarial
         // Simulate Alt+H shortcut conflict with screen reader
         keyboardNav.setTrapped(true); // Screen reader can't navigate past shortcut
-        assertTrue("Shortcut should conflict with SR nav",
-                   keyboardNav.isCurrentlyTrapped());
+        assertTrue(keyboardNav.isCurrentlyTrapped(),"Shortcut should conflict with SR nav");
     }
 
     @Test
@@ -641,8 +603,7 @@ public class AccessibilityCompliancePairwiseTest {
             keyboardNav.navigateTab(i);
         }
         List<Integer> sequence = keyboardNav.getFocusSequence();
-        assertTrue("Tab wrapping should cycle through components",
-                   sequence.size() > components.size());
+        assertTrue(sequence.size() > components.size(),"Tab wrapping should cycle through components");
     }
 
     @Test
@@ -652,8 +613,7 @@ public class AccessibilityCompliancePairwiseTest {
         status.setValue("New Status");
         // Bug: ariaLive not updated
         ariaProvider.setAriaState(4, "pending");
-        assertTrue("Status change reflected in state",
-                   ariaProvider.hasAriaState(4, "pending"));
+        assertTrue(ariaProvider.hasAriaState(4, "pending"),"Status change reflected in state");
     }
 
     @Test
@@ -661,8 +621,8 @@ public class AccessibilityCompliancePairwiseTest {
         // KO + Tab + Button + Label + Adversarial
         components.get(1).setDisabled(true);
         focusManager.setFocus(2, "Disabled focus");
-        assertEquals("Focus reached disabled button", 2, focusManager.getCurrentFocus());
-        assertTrue("Button is disabled", components.get(1).isDisabled());
+        assertEquals(2, focusManager.getCurrentFocus(),"Focus reached disabled button");
+        assertTrue(components.get(1).isDisabled(),"Button is disabled");
     }
 
     @Test
@@ -670,7 +630,7 @@ public class AccessibilityCompliancePairwiseTest {
         // KO + Tab + Field + Label + Adversarial
         components.get(0).setHidden(true);
         keyboardNav.navigateTab(0);
-        assertTrue("Hidden field should not be in tab order", components.get(0).isHidden());
+        assertTrue(components.get(0).isHidden(),"Hidden field should not be in tab order");
     }
 
     @Test
@@ -679,8 +639,7 @@ public class AccessibilityCompliancePairwiseTest {
         focusManager.setFocus(1, "Keyboard focus");
         // Bug: Label not announced for keyboard-only users
         screenReader.announce(components.get(0).getValue()); // Only announces value
-        assertFalse("Label should be announced but only value is",
-                    screenReader.wasAnnouncementMade("Account Number"));
+        assertFalse(screenReader.wasAnnouncementMade("Account Number"),"Label should be announced but only value is");
     }
 
     @Test
@@ -691,8 +650,7 @@ public class AccessibilityCompliancePairwiseTest {
             keyboardNav.navigateArrow(1);
         }
         // Arrow should not wrap in linear navigation (unlike tab)
-        assertFalse("Arrow should not create wrap-around like tab",
-                    keyboardNav.getFocusSequence().size() > 20);
+        assertFalse(keyboardNav.getFocusSequence().size() > 20,"Arrow should not create wrap-around like tab");
     }
 
     @Test
@@ -702,8 +660,7 @@ public class AccessibilityCompliancePairwiseTest {
         int focusBeforeStatus = focusManager.getCurrentFocus();
         ariaProvider.updateLiveRegion("Status message");
         screenReader.announce("Status message");
-        assertEquals("Focus should remain on field, not move to status",
-                     focusBeforeStatus, focusManager.getCurrentFocus());
+        assertEquals(focusBeforeStatus, focusManager.getCurrentFocus(),"Focus should remain on field, not move to status");
     }
 
     @Test
@@ -712,10 +669,8 @@ public class AccessibilityCompliancePairwiseTest {
         components.get(1).setDisabled(true);
         // Bug: aria-disabled not updated
         ariaProvider.setAriaState(2, "enabled");
-        assertTrue("ARIA state not synced with actual state",
-                   ariaProvider.hasAriaState(2, "enabled"));
-        assertTrue("But component is actually disabled",
-                   components.get(1).isDisabled());
+        assertTrue(ariaProvider.hasAriaState(2, "enabled"),"ARIA state not synced with actual state");
+        assertTrue(components.get(1).isDisabled(),"But component is actually disabled");
     }
 
     @Test
@@ -726,8 +681,7 @@ public class AccessibilityCompliancePairwiseTest {
             screenReader.announce("Navigating...");
         }
         // Screen reader may lag behind actual focus
-        assertTrue("Screen reader announcements should track navigation",
-                   screenReader.getAllAnnouncements().size() > 0);
+        assertTrue(screenReader.getAllAnnouncements().size() > 0,"Screen reader announcements should track navigation");
     }
 
     @Test
@@ -736,8 +690,7 @@ public class AccessibilityCompliancePairwiseTest {
         components.get(0).addCustomPreference("skipLabel", "true");
         focusManager.setFocus(1, "Custom prefs");
         // If implementation honors skipLabel incorrectly
-        assertTrue("Custom preference set but may break SR",
-                   "true".equals(components.get(0).getCustomPreference("skipLabel")));
+        assertTrue("true".equals(components.get(0).getCustomPreference("skipLabel")),"Custom preference set but may break SR");
     }
 
     // ========== FOCUS TRAP ADVERSARIAL SCENARIOS ==========
@@ -749,8 +702,7 @@ public class AccessibilityCompliancePairwiseTest {
         focusManager.setFocus(1, "First element");
         keyboardNav.navigateArrow(-1); // Try to go before first
         // Should either wrap or prevent - not trap
-        assertFalse("Should not trap when navigating back from first",
-                    keyboardNav.isCurrentlyTrapped());
+        assertFalse(keyboardNav.isCurrentlyTrapped(),"Should not trap when navigating back from first");
     }
 
     @Test
@@ -762,8 +714,7 @@ public class AccessibilityCompliancePairwiseTest {
             keyboardNav.navigateTab(i);
             focusPath.add(i + 1);
         }
-        assertEquals("Should navigate all components in order",
-                     components.size(), focusPath.size());
+        assertEquals(components.size(), focusPath.size(),"Should navigate all components in order");
     }
 
     @Test
@@ -773,7 +724,7 @@ public class AccessibilityCompliancePairwiseTest {
         ariaProvider.updateLiveRegion("Update 2");
         ariaProvider.updateLiveRegion("Update 3");
         List<String> updates = ariaProvider.getLiveRegionUpdates();
-        assertEquals("All live region updates should be queued", 3, updates.size());
+        assertEquals(3, updates.size(),"All live region updates should be queued");
     }
 
     @Test
@@ -784,8 +735,7 @@ public class AccessibilityCompliancePairwiseTest {
             keyboardNav.navigateTab(i);
         }
         long elapsed = System.currentTimeMillis() - startTime;
-        assertTrue("Navigation should be fast even with 1000 iterations",
-                   elapsed < 5000); // 5 seconds for 1000 iterations
+        assertTrue(elapsed < 5000,"Navigation should be fast even with 1000 iterations"); // 5 seconds for 1000 iterations
     }
 
     @Test
@@ -796,7 +746,7 @@ public class AccessibilityCompliancePairwiseTest {
         field.setValue("ACC123");
         String fullDescription = field.getFullAriaDescription();
         screenReader.announce(fullDescription);
-        assertTrue("Should announce label", screenReader.wasAnnouncementMade("Account"));
-        assertTrue("Should announce value", screenReader.wasAnnouncementMade("ACC123"));
+        assertTrue(screenReader.wasAnnouncementMade("Account"),"Should announce label");
+        assertTrue(screenReader.wasAnnouncementMade("ACC123"),"Should announce value");
     }
 }

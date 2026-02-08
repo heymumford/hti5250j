@@ -1,53 +1,21 @@
-/**
- * Title: GraphicCharSetPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD pairwise tests for HTI5250j graphic character set handling.
- *
- * This test suite focuses on rendering and copy/paste behavior for graphic
- * characters including APL symbols, line-drawing, and box characters that
- * are critical for terminal emulation fidelity:
- * - APL character set (mathematical symbols)
- * - Line-drawing characters (horizontal, vertical, corners)
- * - Box-drawing characters (corners, crosses, T-junctions)
- * - Special graphics in different rendering modes
- * - Font substitution when native fonts unavailable
- * - Copy/paste preservation or conversion of graphic chars
- *
- * Test dimensions (pairwise combination):
- * 1. Character type: [line-drawing, box, APL, special]
- * 2. Rendering mode: [text, graphic, mixed]
- * 3. Font support: [available, missing, substituted]
- * 4. Display context: [field, screen, window-border]
- * 5. Copy/paste: [preserve, convert, strip]
- *
- * POSITIVE TESTS (15): Valid graphic rendering with proper fonts and contexts
- * ADVERSARIAL TESTS (12): Unsupported chars, missing fonts, paste conflicts
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for Screen5250 graphic character set handling.
@@ -133,7 +101,7 @@ public class GraphicCharSetPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble();
         oia = screen5250.getOIA();
@@ -243,8 +211,7 @@ public class GraphicCharSetPairwiseTest {
     @Test
     public void testRenderLineDrawingHorizontal() {
         setCharAt(FIELD_START_POS, APL_BOX_HORIZONTAL);
-        assertEquals("Horizontal line character rendered",
-                APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS));
+        assertEquals(APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS),"Horizontal line character rendered");
     }
 
     /**
@@ -255,8 +222,7 @@ public class GraphicCharSetPairwiseTest {
     @Test
     public void testRenderLineDrawingVertical() {
         setCharAt(FIELD_START_POS, APL_BOX_VERTICAL);
-        assertEquals("Vertical line character rendered",
-                APL_BOX_VERTICAL, getCharAt(FIELD_START_POS));
+        assertEquals(APL_BOX_VERTICAL, getCharAt(FIELD_START_POS),"Vertical line character rendered");
     }
 
     /**
@@ -267,8 +233,7 @@ public class GraphicCharSetPairwiseTest {
     @Test
     public void testRenderBoxCornerTopLeft() {
         setCharAt(FIELD_START_POS, APL_BOX_CORNER_TL);
-        assertEquals("Box corner (TL) rendered",
-                APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS));
+        assertEquals(APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS),"Box corner (TL) rendered");
     }
 
     /**
@@ -279,8 +244,7 @@ public class GraphicCharSetPairwiseTest {
     @Test
     public void testRenderBoxCornerBottomRight() {
         setCharAt(FIELD_START_POS, APL_BOX_CORNER_BR);
-        assertEquals("Box corner (BR) rendered",
-                APL_BOX_CORNER_BR, getCharAt(FIELD_START_POS));
+        assertEquals(APL_BOX_CORNER_BR, getCharAt(FIELD_START_POS),"Box corner (BR) rendered");
     }
 
     /**
@@ -291,8 +255,7 @@ public class GraphicCharSetPairwiseTest {
     @Test
     public void testRenderBoxCross() {
         setCharAt(FIELD_START_POS, APL_BOX_CROSS);
-        assertEquals("Box cross character rendered",
-                APL_BOX_CROSS, getCharAt(FIELD_START_POS));
+        assertEquals(APL_BOX_CROSS, getCharAt(FIELD_START_POS),"Box cross character rendered");
     }
 
     /**
@@ -307,10 +270,10 @@ public class GraphicCharSetPairwiseTest {
         setCharAt(FIELD_START_POS + 2, APL_BOX_T_RIGHT);
         setCharAt(FIELD_START_POS + 3, APL_BOX_T_LEFT);
 
-        assertEquals("T-down rendered", APL_BOX_T_DOWN, getCharAt(FIELD_START_POS));
-        assertEquals("T-up rendered", APL_BOX_T_UP, getCharAt(FIELD_START_POS + 1));
-        assertEquals("T-right rendered", APL_BOX_T_RIGHT, getCharAt(FIELD_START_POS + 2));
-        assertEquals("T-left rendered", APL_BOX_T_LEFT, getCharAt(FIELD_START_POS + 3));
+        assertEquals(APL_BOX_T_DOWN, getCharAt(FIELD_START_POS),"T-down rendered");
+        assertEquals(APL_BOX_T_UP, getCharAt(FIELD_START_POS + 1),"T-up rendered");
+        assertEquals(APL_BOX_T_RIGHT, getCharAt(FIELD_START_POS + 2),"T-right rendered");
+        assertEquals(APL_BOX_T_LEFT, getCharAt(FIELD_START_POS + 3),"T-left rendered");
     }
 
     /**
@@ -325,10 +288,10 @@ public class GraphicCharSetPairwiseTest {
         setCharAt(FIELD_START_POS + 2, APL_DBL_CORNER_TL);
         setCharAt(FIELD_START_POS + 3, APL_DBL_CORNER_TR);
 
-        assertEquals("Double horizontal rendered", APL_DBL_HORIZONTAL, getCharAt(FIELD_START_POS));
-        assertEquals("Double vertical rendered", APL_DBL_VERTICAL, getCharAt(FIELD_START_POS + 1));
-        assertEquals("Double corner TL rendered", APL_DBL_CORNER_TL, getCharAt(FIELD_START_POS + 2));
-        assertEquals("Double corner TR rendered", APL_DBL_CORNER_TR, getCharAt(FIELD_START_POS + 3));
+        assertEquals(APL_DBL_HORIZONTAL, getCharAt(FIELD_START_POS),"Double horizontal rendered");
+        assertEquals(APL_DBL_VERTICAL, getCharAt(FIELD_START_POS + 1),"Double vertical rendered");
+        assertEquals(APL_DBL_CORNER_TL, getCharAt(FIELD_START_POS + 2),"Double corner TL rendered");
+        assertEquals(APL_DBL_CORNER_TR, getCharAt(FIELD_START_POS + 3),"Double corner TR rendered");
     }
 
     /**
@@ -341,14 +304,14 @@ public class GraphicCharSetPairwiseTest {
         drawBoxFrame(FIELD_START_POS, 10, 5);
 
         // Verify corners
-        assertEquals("Corner TL", APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS));
-        assertEquals("Corner TR", APL_BOX_CORNER_TR, getCharAt(FIELD_START_POS + 9));
+        assertEquals(APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS),"Corner TL");
+        assertEquals(APL_BOX_CORNER_TR, getCharAt(FIELD_START_POS + 9),"Corner TR");
 
         // Verify horizontal edges
-        assertEquals("Top horizontal", APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS + 1));
+        assertEquals(APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS + 1),"Top horizontal");
 
         // Verify vertical edges
-        assertEquals("Left vertical", APL_BOX_VERTICAL, getCharAt(FIELD_START_POS + SCREEN_COLS));
+        assertEquals(APL_BOX_VERTICAL, getCharAt(FIELD_START_POS + SCREEN_COLS),"Left vertical");
     }
 
     /**
@@ -364,9 +327,9 @@ public class GraphicCharSetPairwiseTest {
         setCharAt(FIELD_START_POS + 3, 'l');
         setCharAt(FIELD_START_POS + 4, 'o');
 
-        assertEquals("Text 'He' before graphic", 'e', getCharAt(FIELD_START_POS + 1));
-        assertEquals("Graphic char in middle", APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS + 2));
-        assertEquals("Text 'lo' after graphic", 'l', getCharAt(FIELD_START_POS + 3));
+        assertEquals('e', getCharAt(FIELD_START_POS + 1),"Text 'He' before graphic");
+        assertEquals(APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS + 2),"Graphic char in middle");
+        assertEquals('l', getCharAt(FIELD_START_POS + 3),"Text 'lo' after graphic");
     }
 
     /**
@@ -376,14 +339,14 @@ public class GraphicCharSetPairwiseTest {
      */
     @Test
     public void testDetectGraphicCharacterInStream() {
-        assertTrue("Horizontal line is graphic", isGraphicChar(APL_BOX_HORIZONTAL));
-        assertTrue("Vertical line is graphic", isGraphicChar(APL_BOX_VERTICAL));
-        assertTrue("Box corner is graphic", isGraphicChar(APL_BOX_CORNER_TL));
-        assertTrue("Box cross is graphic", isGraphicChar(APL_BOX_CROSS));
+        assertTrue(isGraphicChar(APL_BOX_HORIZONTAL),"Horizontal line is graphic");
+        assertTrue(isGraphicChar(APL_BOX_VERTICAL),"Vertical line is graphic");
+        assertTrue(isGraphicChar(APL_BOX_CORNER_TL),"Box corner is graphic");
+        assertTrue(isGraphicChar(APL_BOX_CROSS),"Box cross is graphic");
 
-        assertFalse("Letter 'A' is not graphic", isGraphicChar('A'));
-        assertFalse("Space is not graphic", isGraphicChar(' '));
-        assertFalse("Digit '5' is not graphic", isGraphicChar('5'));
+        assertFalse(isGraphicChar('A'),"Letter 'A' is not graphic");
+        assertFalse(isGraphicChar(' '),"Space is not graphic");
+        assertFalse(isGraphicChar('5'),"Digit '5' is not graphic");
     }
 
     /**
@@ -396,8 +359,7 @@ public class GraphicCharSetPairwiseTest {
         setCharAt(FIELD_START_POS, APL_BOX_CORNER_TL);
         char copied = getCharAt(FIELD_START_POS);
 
-        assertEquals("Graphic char preserved in copy",
-                APL_BOX_CORNER_TL, copied);
+        assertEquals(APL_BOX_CORNER_TL, copied,"Graphic char preserved in copy");
     }
 
     /**
@@ -411,8 +373,7 @@ public class GraphicCharSetPairwiseTest {
 
         setCharAt(FIELD_START_POS + 5, toPaste);
 
-        assertEquals("Pasted graphic char in field",
-                toPaste, getCharAt(FIELD_START_POS + 5));
+        assertEquals(toPaste, getCharAt(FIELD_START_POS + 5),"Pasted graphic char in field");
     }
 
     /**
@@ -428,8 +389,7 @@ public class GraphicCharSetPairwiseTest {
         }
 
         for (int i = 0; i < graphicSequence.length(); i++) {
-            assertEquals("Graphic char #" + i + " preserved",
-                    graphicSequence.charAt(i), getCharAt(FIELD_START_POS + i));
+            assertEquals(graphicSequence.charAt(i), getCharAt(FIELD_START_POS + i),"Graphic char #" + i + " preserved");
         }
     }
 
@@ -449,8 +409,7 @@ public class GraphicCharSetPairwiseTest {
 
         for (int i = 0; i < aplChars.length; i++) {
             setCharAt(FIELD_START_POS + i, aplChars[i]);
-            assertEquals("APL symbol #" + i + " rendered",
-                    aplChars[i], getCharAt(FIELD_START_POS + i));
+            assertEquals(aplChars[i], getCharAt(FIELD_START_POS + i),"APL symbol #" + i + " rendered");
         }
     }
 
@@ -471,10 +430,10 @@ public class GraphicCharSetPairwiseTest {
             setCharAt(FIELD_START_POS, undefined);
             // If no exception, verify character was stored
             char result = getCharAt(FIELD_START_POS);
-            assertTrue("Undefined char handled", result == undefined || result == ' ');
+            assertTrue(result == undefined || result == ' ',"Undefined char handled");
         } catch (Exception e) {
             // Expected: validation may reject undefined char
-            assertTrue("Exception expected for undefined char", true);
+            assertTrue(true,"Exception expected for undefined char");
         }
     }
 
@@ -490,8 +449,7 @@ public class GraphicCharSetPairwiseTest {
         char rendered = getCharAt(FIELD_START_POS);
 
         // Character should be stored (actual substitution happens in renderer)
-        assertEquals("Graphic char stored (substitution in renderer)",
-                APL_BOX_HORIZONTAL, rendered);
+        assertEquals(APL_BOX_HORIZONTAL, rendered,"Graphic char stored (substitution in renderer)");
     }
 
     /**
@@ -506,8 +464,7 @@ public class GraphicCharSetPairwiseTest {
 
         // In headless mode, copy/paste may convert graphic → ASCII
         // This test verifies the conversion is deterministic
-        assertTrue("Character is graphic or fallback",
-                original == APL_BOX_HORIZONTAL || original == FALLBACK_HORIZONTAL);
+        assertTrue(original == APL_BOX_HORIZONTAL || original == FALLBACK_HORIZONTAL,"Character is graphic or fallback");
     }
 
     /**
@@ -521,7 +478,7 @@ public class GraphicCharSetPairwiseTest {
         setCharAt(FIELD_START_POS, FALLBACK_HORIZONTAL);
 
         char rendered = getCharAt(FIELD_START_POS);
-        assertEquals("Fallback character in field", FALLBACK_HORIZONTAL, rendered);
+        assertEquals(FALLBACK_HORIZONTAL, rendered,"Fallback character in field");
     }
 
     /**
@@ -536,8 +493,8 @@ public class GraphicCharSetPairwiseTest {
         // Double line adjacent
         setCharAt(FIELD_START_POS + 1, APL_DBL_HORIZONTAL);
 
-        assertEquals("Single line placed", APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS));
-        assertEquals("Double line placed adjacent", APL_DBL_HORIZONTAL, getCharAt(FIELD_START_POS + 1));
+        assertEquals(APL_BOX_HORIZONTAL, getCharAt(FIELD_START_POS),"Single line placed");
+        assertEquals(APL_DBL_HORIZONTAL, getCharAt(FIELD_START_POS + 1),"Double line placed adjacent");
     }
 
     /**
@@ -550,7 +507,7 @@ public class GraphicCharSetPairwiseTest {
         // Field protection check happens in Screen5250, not in planes
         setCharAt(FIELD_START_POS, APL_BOX_CORNER_TL);
 
-        assertEquals("Graphic char in protected field", APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS));
+        assertEquals(APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS),"Graphic char in protected field");
     }
 
     /**
@@ -564,7 +521,7 @@ public class GraphicCharSetPairwiseTest {
 
         setCharAt(lastPos, APL_BOX_CORNER_BR);
 
-        assertEquals("Graphic at screen boundary", APL_BOX_CORNER_BR, getCharAt(lastPos));
+        assertEquals(APL_BOX_CORNER_BR, getCharAt(lastPos),"Graphic at screen boundary");
     }
 
     /**
@@ -581,7 +538,7 @@ public class GraphicCharSetPairwiseTest {
 
         String copied = getFieldContent(FIELD_START_POS, mixed.length());
 
-        assertEquals("Mixed line styles copied", mixed, copied);
+        assertEquals(mixed, copied,"Mixed line styles copied");
     }
 
     /**
@@ -596,8 +553,8 @@ public class GraphicCharSetPairwiseTest {
 
         setCharAt(FIELD_START_POS, APL_BOX_CORNER_TL);
 
-        assertEquals("Graphic char inserted at start", APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS));
-        assertEquals("Insert mode active", true, oia.isInsertMode());
+        assertEquals(APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS),"Graphic char inserted at start");
+        assertEquals(true, oia.isInsertMode(),"Insert mode active");
     }
 
     /**
@@ -613,9 +570,9 @@ public class GraphicCharSetPairwiseTest {
         // Paste would be blocked at input level, not in planes
         setCharAt(FIELD_START_POS, APL_BOX_CORNER_TL);
 
-        assertTrue("Keyboard locked during paste", oia.isKeyBoardLocked());
+        assertTrue(oia.isKeyBoardLocked(),"Keyboard locked during paste");
         // Character can still be set in planes, but input layer would block it
-        assertEquals("Graphic char in locked mode", APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS));
+        assertEquals(APL_BOX_CORNER_TL, getCharAt(FIELD_START_POS),"Graphic char in locked mode");
     }
 
     /**
@@ -634,7 +591,7 @@ public class GraphicCharSetPairwiseTest {
         // Verify content within field bounds
         for (int i = FIELD_START_POS; i <= FIELD_END_POS; i++) {
             char c = getCharAt(i);
-            assertTrue("Content within field", c > 0); // Any valid char
+            assertTrue(c > 0,"Content within field"); // Any valid char
         }
     }
 
@@ -650,6 +607,6 @@ public class GraphicCharSetPairwiseTest {
         setCharAt(FIELD_START_POS, aplChar);
         char rendered = getCharAt(FIELD_START_POS);
 
-        assertEquals("APL char stored (substitution in renderer)", aplChar, rendered);
+        assertEquals(aplChar, rendered,"APL char stored (substitution in renderer)");
     }
 }

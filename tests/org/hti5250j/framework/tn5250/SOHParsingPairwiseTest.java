@@ -1,90 +1,18 @@
-/**
- * Title: SOHParsingPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise TDD tests for HTI5250j SOH (Start of Header) record parsing.
- *
- * The SOH (Start of Header) command initializes the 5250 terminal session state
- * and establishes protocol parameters for the data stream.
- *
- * COMMAND STRUCTURE:
- * SOH = 0x01 (Start of Header order)
- * Byte 0: Length (1-7 bytes) - determines which optional fields are present
- * Byte 1: Flag byte (header flags)
- * Byte 2: Reserved
- * Byte 3: Resequence fields flag
- * Byte 4: Error row (if length >= 4)
- * Byte 5: Data included flags byte 1 (if length >= 5)
- * Byte 6: Data included flags byte 2 (if length >= 6)
- * Byte 7: Data included flags byte 3 (if length >= 7)
- *
- * PAIRWISE TEST DIMENSIONS (5 dimensions x 5 values = 25+ combinations):
- *
- * 1. Record Length (controls which fields are parsed):
- *    - 0: Invalid (too short)
- *    - 1: Minimal valid (length byte only)
- *    - 5: Includes error row + first flag byte
- *    - 6: Extended (includes 2 flag bytes)
- *    - 7: Maximum valid (all fields present)
- *
- * 2. Record Type (determined by context in data stream):
- *    - Escape sequence (0x04): Command escape
- *    - Data record (0x00): Regular data
- *    - Structured field (0x11): Complex command
- *    - SNA (Systems Network Architecture): Network data
- *
- * 3. Header Flags (Byte 1 - controls options):
- *    - 0x00: No flags set (minimal)
- *    - 0x01: Extended 5250 non-DSP flag
- *    - 0x40: Data/stream flag
- *    - 0x80: Error condition flag
- *    - 0xFF: All flags set (adversarial)
- *
- * 4. Sequence Numbers (protocol flow control):
- *    - 0: Initial sequence
- *    - 1: Normal increment
- *    - 254: Near max
- *    - 255: Max value
- *    - Wrap-around: 255 -> 0 transition
- *
- * 5. Error Response Indicators (error handling):
- *    - None: No errors (normal path)
- *    - Retry: Recoverable error (0x05)
- *    - Abort: Fatal error (0x0A)
- *
- * ADVERSARIAL SCENARIOS:
- * - Truncated headers (missing length byte, incomplete records)
- * - Malformed records (length beyond buffer, invalid length ranges)
- * - Null/empty buffers
- * - Boundary length values (0, 1, 256, 32767)
- * - Corrupt flag bytes (0xFF, invalid combinations)
- * - Record type mismatches
- *
- * POSITIVE TESTS (15+): Valid SOH records with all supported lengths
- * ADVERSARIAL TESTS (13+): Truncated, malformed, boundary, and injection cases
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for HTI5250j SOH (Start of Header) parsing.
@@ -159,7 +87,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 1);
 
         // Assert: Should be valid
-        assertTrue("SOH length=1 should be valid", valid);
+        assertTrue(valid,"SOH length=1 should be valid");
     }
 
     /**
@@ -185,7 +113,7 @@ public class SOHParsingPairwiseTest {
         int errorRow = extractErrorRow(record);
 
         // Assert: Error row should be 5
-        assertEquals("Error row should be extracted correctly", 5, errorRow);
+        assertEquals(5, errorRow,"Error row should be extracted correctly");
     }
 
     /**
@@ -212,9 +140,9 @@ public class SOHParsingPairwiseTest {
         boolean[] dataIncluded = extractDataIncludedFlags(record);
 
         // Assert: Byte 1 bits should match 0xAA pattern
-        assertEquals("Bit 0 of byte 1 should be 0", false, dataIncluded[16]);
-        assertEquals("Bit 1 of byte 1 should be 1", true, dataIncluded[17]);
-        assertEquals("Bit 7 of byte 1 should be 1", true, dataIncluded[23]);
+        assertEquals(false, dataIncluded[16],"Bit 0 of byte 1 should be 0");
+        assertEquals(true, dataIncluded[17],"Bit 1 of byte 1 should be 1");
+        assertEquals(true, dataIncluded[23],"Bit 7 of byte 1 should be 1");
     }
 
     /**
@@ -242,8 +170,7 @@ public class SOHParsingPairwiseTest {
         boolean[] dataIncluded = extractDataIncludedFlags(record);
 
         // Assert: Byte 2 bits should all be set
-        assertTrue("Byte 2 flags should be set",
-                dataIncluded[8] && dataIncluded[9] && dataIncluded[10]);
+        assertTrue(dataIncluded[8] && dataIncluded[9] && dataIncluded[10],"Byte 2 flags should be set");
     }
 
     /**
@@ -271,7 +198,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 7);
 
         // Assert: Should parse without error
-        assertTrue("Complete SOH should be valid", valid);
+        assertTrue(valid,"Complete SOH should be valid");
     }
 
     /**
@@ -298,8 +225,7 @@ public class SOHParsingPairwiseTest {
         byte flagByte = record[2];
 
         // Assert: Extended flag should be set
-        assertTrue("Extended 5250 flag should be set",
-                (flagByte & FLAG_EXTENDED_5250) == FLAG_EXTENDED_5250);
+        assertTrue((flagByte & FLAG_EXTENDED_5250) == FLAG_EXTENDED_5250,"Extended 5250 flag should be set");
     }
 
     /**
@@ -326,8 +252,7 @@ public class SOHParsingPairwiseTest {
         byte flagByte = record[2];
 
         // Assert: Data stream flag should be set
-        assertTrue("Data stream flag should be set",
-                (flagByte & FLAG_DATA_STREAM) == FLAG_DATA_STREAM);
+        assertTrue((flagByte & FLAG_DATA_STREAM) == FLAG_DATA_STREAM,"Data stream flag should be set");
     }
 
     /**
@@ -354,8 +279,7 @@ public class SOHParsingPairwiseTest {
         byte flagByte = record[2];
 
         // Assert: Error condition flag should be set
-        assertTrue("Error condition flag should be set",
-                (flagByte & FLAG_ERROR_CONDITION) == FLAG_ERROR_CONDITION);
+        assertTrue((flagByte & FLAG_ERROR_CONDITION) == FLAG_ERROR_CONDITION,"Error condition flag should be set");
     }
 
     /**
@@ -382,10 +306,8 @@ public class SOHParsingPairwiseTest {
         byte flagByte = record[2];
 
         // Assert: Both flags should be set
-        assertTrue("Extended flag should be set",
-                (flagByte & FLAG_EXTENDED_5250) == FLAG_EXTENDED_5250);
-        assertTrue("Data stream flag should be set",
-                (flagByte & FLAG_DATA_STREAM) == FLAG_DATA_STREAM);
+        assertTrue((flagByte & FLAG_EXTENDED_5250) == FLAG_EXTENDED_5250,"Extended flag should be set");
+        assertTrue((flagByte & FLAG_DATA_STREAM) == FLAG_DATA_STREAM,"Data stream flag should be set");
     }
 
     /**
@@ -411,7 +333,7 @@ public class SOHParsingPairwiseTest {
         int errorRow = extractErrorRow(record);
 
         // Assert: Should accept 0
-        assertEquals("Error row 0 should be valid", 0, errorRow);
+        assertEquals(0, errorRow,"Error row 0 should be valid");
     }
 
     /**
@@ -437,7 +359,7 @@ public class SOHParsingPairwiseTest {
         int errorRow = extractErrorRow(record);
 
         // Assert: Should accept 255
-        assertEquals("Error row 255 should be valid", 0xFF, errorRow & 0xFF);
+        assertEquals(0xFF, errorRow & 0xFF,"Error row 255 should be valid");
     }
 
     /**
@@ -465,14 +387,14 @@ public class SOHParsingPairwiseTest {
         boolean[] dataIncluded = extractDataIncludedFlags(record);
 
         // Assert: Pattern 0x55 = 01010101
-        assertEquals("Bit 7 (dataIncluded[23]) should be false", false, dataIncluded[23]);
-        assertEquals("Bit 6 (dataIncluded[22]) should be true", true, dataIncluded[22]);
-        assertEquals("Bit 5 (dataIncluded[21]) should be false", false, dataIncluded[21]);
-        assertEquals("Bit 4 (dataIncluded[20]) should be true", true, dataIncluded[20]);
-        assertEquals("Bit 3 (dataIncluded[19]) should be false", false, dataIncluded[19]);
-        assertEquals("Bit 2 (dataIncluded[18]) should be true", true, dataIncluded[18]);
-        assertEquals("Bit 1 (dataIncluded[17]) should be false", false, dataIncluded[17]);
-        assertEquals("Bit 0 (dataIncluded[16]) should be true", true, dataIncluded[16]);
+        assertEquals(false, dataIncluded[23],"Bit 7 (dataIncluded[23]) should be false");
+        assertEquals(true, dataIncluded[22],"Bit 6 (dataIncluded[22]) should be true");
+        assertEquals(false, dataIncluded[21],"Bit 5 (dataIncluded[21]) should be false");
+        assertEquals(true, dataIncluded[20],"Bit 4 (dataIncluded[20]) should be true");
+        assertEquals(false, dataIncluded[19],"Bit 3 (dataIncluded[19]) should be false");
+        assertEquals(true, dataIncluded[18],"Bit 2 (dataIncluded[18]) should be true");
+        assertEquals(false, dataIncluded[17],"Bit 1 (dataIncluded[17]) should be false");
+        assertEquals(true, dataIncluded[16],"Bit 0 (dataIncluded[16]) should be true");
     }
 
     /**
@@ -500,14 +422,14 @@ public class SOHParsingPairwiseTest {
         boolean[] dataIncluded = extractDataIncludedFlags(record);
 
         // Assert: Pattern 0xAA = 10101010
-        assertEquals("Bit 7 (dataIncluded[23]) should be true", true, dataIncluded[23]);
-        assertEquals("Bit 6 (dataIncluded[22]) should be false", false, dataIncluded[22]);
-        assertEquals("Bit 5 (dataIncluded[21]) should be true", true, dataIncluded[21]);
-        assertEquals("Bit 4 (dataIncluded[20]) should be false", false, dataIncluded[20]);
-        assertEquals("Bit 3 (dataIncluded[19]) should be true", true, dataIncluded[19]);
-        assertEquals("Bit 2 (dataIncluded[18]) should be false", false, dataIncluded[18]);
-        assertEquals("Bit 1 (dataIncluded[17]) should be true", true, dataIncluded[17]);
-        assertEquals("Bit 0 (dataIncluded[16]) should be false", false, dataIncluded[16]);
+        assertEquals(true, dataIncluded[23],"Bit 7 (dataIncluded[23]) should be true");
+        assertEquals(false, dataIncluded[22],"Bit 6 (dataIncluded[22]) should be false");
+        assertEquals(true, dataIncluded[21],"Bit 5 (dataIncluded[21]) should be true");
+        assertEquals(false, dataIncluded[20],"Bit 4 (dataIncluded[20]) should be false");
+        assertEquals(true, dataIncluded[19],"Bit 3 (dataIncluded[19]) should be true");
+        assertEquals(false, dataIncluded[18],"Bit 2 (dataIncluded[18]) should be false");
+        assertEquals(true, dataIncluded[17],"Bit 1 (dataIncluded[17]) should be true");
+        assertEquals(false, dataIncluded[16],"Bit 0 (dataIncluded[16]) should be false");
     }
 
     /**
@@ -535,7 +457,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 7);
 
         // Assert: Should be valid
-        assertTrue("All-zero flags should be valid", valid);
+        assertTrue(valid,"All-zero flags should be valid");
     }
 
     /**
@@ -563,7 +485,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 7);
 
         // Assert: Should be valid
-        assertTrue("All-one flags should be valid", valid);
+        assertTrue(valid,"All-one flags should be valid");
     }
 
     // ============================================================
@@ -590,7 +512,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 0);
 
         // Assert: Should be invalid
-        assertFalse("SOH length=0 should be invalid", valid);
+        assertFalse(valid,"SOH length=0 should be invalid");
     }
 
     /**
@@ -613,7 +535,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 8);
 
         // Assert: Should be invalid
-        assertFalse("SOH length=8 should be invalid", valid);
+        assertFalse(valid,"SOH length=8 should be invalid");
     }
 
     /**
@@ -636,7 +558,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 255);
 
         // Assert: Should be invalid
-        assertFalse("SOH length=255 should be invalid", valid);
+        assertFalse(valid,"SOH length=255 should be invalid");
     }
 
     /**
@@ -657,7 +579,7 @@ public class SOHParsingPairwiseTest {
         boolean canExtractLength = (record.length > 1);
 
         // Assert: Should fail gracefully
-        assertFalse("Truncated SOH should not parse", canExtractLength);
+        assertFalse(canExtractLength,"Truncated SOH should not parse");
     }
 
     /**
@@ -681,7 +603,7 @@ public class SOHParsingPairwiseTest {
         boolean hasEnoughData = (record.length >= 6);
 
         // Assert: Should detect underrun
-        assertFalse("Truncated buffer should be detected", hasEnoughData);
+        assertFalse(hasEnoughData,"Truncated buffer should be detected");
     }
 
     /**
@@ -706,7 +628,7 @@ public class SOHParsingPairwiseTest {
         }
 
         // Assert: Should not crash
-        assertFalse("Null buffer should not validate", valid);
+        assertFalse(valid,"Null buffer should not validate");
     }
 
     /**
@@ -725,7 +647,7 @@ public class SOHParsingPairwiseTest {
         boolean isEmpty = (record.length == 0);
 
         // Assert: Should be detected
-        assertTrue("Empty buffer should be detected", isEmpty);
+        assertTrue(isEmpty,"Empty buffer should be detected");
     }
 
     /**
@@ -754,7 +676,7 @@ public class SOHParsingPairwiseTest {
 
         // Assert: All should be true
         for (boolean flag : dataIncluded) {
-            assertTrue("Flag should be set", flag);
+            assertTrue(flag,"Flag should be set");
         }
     }
 
@@ -783,7 +705,7 @@ public class SOHParsingPairwiseTest {
         int errorRow = extractErrorRow(record) & 0xFF;
 
         // Assert: Should handle unsigned correctly
-        assertEquals("High-order bytes should be unsigned masked", 0xFE, errorRow);
+        assertEquals(0xFE, errorRow,"High-order bytes should be unsigned masked");
     }
 
     /**
@@ -807,8 +729,8 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, length);
 
         // Assert: Should treat as unsigned (255), not signed (-1)
-        assertEquals("Length should be unsigned", 255, length);
-        assertFalse("Oversized unsigned length should be invalid", valid);
+        assertEquals(255, length,"Length should be unsigned");
+        assertFalse(valid,"Oversized unsigned length should be invalid");
     }
 
     /**
@@ -829,7 +751,7 @@ public class SOHParsingPairwiseTest {
         int wrapped = seq3;
 
         // Assert: Should wrap to 0
-        assertEquals("Sequence should wrap from 255 to 0", 0, wrapped);
+        assertEquals(0, wrapped,"Sequence should wrap from 255 to 0");
     }
 
     /**
@@ -856,7 +778,7 @@ public class SOHParsingPairwiseTest {
         boolean valid = validateSOHRecord(record, 4);
 
         // Assert: Should be valid (garbage is outside length)
-        assertTrue("Valid SOH length=4 should be valid despite trailing data", valid);
+        assertTrue(valid,"Valid SOH length=4 should be valid despite trailing data");
     }
 
     /**
@@ -886,9 +808,9 @@ public class SOHParsingPairwiseTest {
         boolean dataSet = (flagByte & FLAG_DATA_STREAM) == FLAG_DATA_STREAM;
 
         // Assert: Verify each flag independently
-        assertTrue("Extended flag should be set", extendedSet);
-        assertTrue("Error flag should be set", errorSet);
-        assertTrue("Data flag should be set", dataSet);
+        assertTrue(extendedSet,"Extended flag should be set");
+        assertTrue(errorSet,"Error flag should be set");
+        assertTrue(dataSet,"Data flag should be set");
     }
 
     // ============================================================

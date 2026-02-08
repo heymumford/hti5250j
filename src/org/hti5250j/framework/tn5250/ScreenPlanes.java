@@ -1,28 +1,14 @@
-/**
- * Title: ScreenPlanes.java
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.5
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
 import static org.hti5250j.HTI5250jConstants.*;
@@ -67,6 +53,18 @@ public class ScreenPlanes {
 
     protected void setSize(int newSize) {
 
+        char[] oldScreen = screen;
+        char[] oldAttr = screenAttr;
+        char[] oldIsAttr = screenIsAttr;
+        char[] oldGui = screenGUI;
+        char[] oldColor = screenColor;
+        char[] oldExtended = screenExtended;
+        char[] oldFieldExtended = fieldExtended;
+        char[] oldField = screenField;
+        char[] oldIsChanged = screenIsChanged;
+        int oldRows = numRows;
+        int oldCols = numCols;
+
         screenSize = newSize;
 
         numCols = 80;
@@ -77,6 +75,17 @@ public class ScreenPlanes {
             case 27:
                 numRows = 27;
                 numCols = 132;
+                break;
+            case 43:
+                numRows = 43;
+                break;
+            case 99:
+                numRows = 43;
+                numCols = 132;
+                break;
+            default:
+                numRows = 24;
+                numCols = 80;
                 break;
 
         }
@@ -98,6 +107,39 @@ public class ScreenPlanes {
         initArray = new char[screenSize];
 
         initalizePlanes();
+
+        if (oldScreen != null && oldAttr != null) {
+            int rowsToCopy = Math.min(oldRows, numRows);
+            int colsToCopy = Math.min(oldCols, numCols);
+
+            for (int row = 0; row < rowsToCopy; row++) {
+                int oldOffset = row * oldCols;
+                int newOffset = row * numCols;
+                System.arraycopy(oldScreen, oldOffset, screen, newOffset, colsToCopy);
+                System.arraycopy(oldAttr, oldOffset, screenAttr, newOffset, colsToCopy);
+                if (oldIsAttr != null) {
+                    System.arraycopy(oldIsAttr, oldOffset, screenIsAttr, newOffset, colsToCopy);
+                }
+                if (oldGui != null) {
+                    System.arraycopy(oldGui, oldOffset, screenGUI, newOffset, colsToCopy);
+                }
+                if (oldColor != null) {
+                    System.arraycopy(oldColor, oldOffset, screenColor, newOffset, colsToCopy);
+                }
+                if (oldExtended != null) {
+                    System.arraycopy(oldExtended, oldOffset, screenExtended, newOffset, colsToCopy);
+                }
+                if (oldFieldExtended != null) {
+                    System.arraycopy(oldFieldExtended, oldOffset, fieldExtended, newOffset, colsToCopy);
+                }
+                if (oldField != null) {
+                    System.arraycopy(oldField, oldOffset, screenField, newOffset, colsToCopy);
+                }
+                if (oldIsChanged != null) {
+                    System.arraycopy(oldIsChanged, oldOffset, screenIsChanged, newOffset, colsToCopy);
+                }
+            }
+        }
     }
 
     protected void setErrorLine(int line) {
@@ -152,10 +194,10 @@ public class ScreenPlanes {
         if (errorLine != null) {
             int r = scr.getPos(errorLineNum - 1, 0);
 
-            for (int x = 0; x < numCols - 1; x++) {
+            for (int x = 0; x < numCols; x++) {
                 setScreenCharAndAttr(r + x, errorLine[x], errorLineAttr[x],
-                        (errorLineIsAttr[x] == '1' ? true : false));
-                screenGUI[x] = errorLineGui[x];
+                        (errorLineIsAttr[x] != 0));
+                screenGUI[r + x] = errorLineGui[x];
             }
 
             errorLine = null;
@@ -243,8 +285,8 @@ public class ScreenPlanes {
                 c = ATTR_32;
                 break;
 
-            case 33: // green/revers
-                c = ATTR_33;
+            case 33: // green/reverse
+                c = (char) ((COLOR_BG_GREEN << 8 & 0xff00) | (COLOR_FG_GREEN & 0xff));
                 break;
 
             case 34: // white normal
@@ -252,7 +294,7 @@ public class ScreenPlanes {
                 break;
 
             case 35: // white/reverse
-                c = ATTR_35;
+                c = ATTR_34;
                 break;
 
             case 36: // green/underline
@@ -261,7 +303,7 @@ public class ScreenPlanes {
                 break;
 
             case 37: // green/reverse/underline
-                c = ATTR_37;
+                c = (char) ((COLOR_BG_GREEN << 8 & 0xff00) | (COLOR_FG_GREEN & 0xff));
                 ul = EXTENDED_5250_UNDERLINE;
                 break;
 
@@ -271,6 +313,7 @@ public class ScreenPlanes {
                 break;
 
             case 39:
+                c = ATTR_34;
                 nd = EXTENDED_5250_NON_DSP;
                 break;
 
@@ -281,7 +324,7 @@ public class ScreenPlanes {
 
             case 41:
             case 43: // red/reverse
-                c = ATTR_41;
+                c = ATTR_40;
                 break;
 
             case 44:
@@ -291,11 +334,12 @@ public class ScreenPlanes {
                 break;
 
             case 45: // red/reverse/underline
-                c = ATTR_45;
+                c = ATTR_40;
                 ul = EXTENDED_5250_UNDERLINE;
                 break;
 
             case 47:
+                c = ATTR_40;
                 nd = EXTENDED_5250_NON_DSP;
                 break;
 
@@ -305,12 +349,12 @@ public class ScreenPlanes {
                 break;
 
             case 49:
-                c = ATTR_49;
+                c = ATTR_48;
                 cs = EXTENDED_5250_COL_SEP;
                 break;
 
             case 50:
-                c = ATTR_50;
+                c = ATTR_58;
                 cs = EXTENDED_5250_COL_SEP;
                 break;
 
@@ -321,23 +365,25 @@ public class ScreenPlanes {
 
             case 52:
                 c = ATTR_52;
-                //            colSep = true;
+                cs = EXTENDED_5250_COL_SEP;
                 ul = EXTENDED_5250_UNDERLINE;
                 break;
 
             case 53:
-                c = ATTR_53;
-                //            colSep = true;
+                c = ATTR_52;
+                cs = EXTENDED_5250_COL_SEP;
                 ul = EXTENDED_5250_UNDERLINE;
                 break;
 
             case 54:
-                c = ATTR_54;
-                //            colSep = true;
+                c = ATTR_58;
+                cs = EXTENDED_5250_COL_SEP;
                 ul = EXTENDED_5250_UNDERLINE;
                 break;
 
             case 55:
+                c = ATTR_32;
+                cs = EXTENDED_5250_COL_SEP;
                 nd = EXTENDED_5250_NON_DSP;
                 break;
 
@@ -346,15 +392,16 @@ public class ScreenPlanes {
                 break;
 
             case 57: // pink/reverse
-                c = ATTR_57;
+                c = ATTR_56;
                 break;
 
             case 58: // blue/reverse
-                c = ATTR_58;
+                c = ATTR_56;
                 break;
 
             case 59: // blue
-                c = ATTR_59;
+                c = ATTR_58;
+                cs = EXTENDED_5250_COL_SEP;
                 break;
 
             case 60: // pink/underline
@@ -363,16 +410,17 @@ public class ScreenPlanes {
                 break;
 
             case 61: // pink/reverse/underline
-                c = ATTR_61;
+                c = ATTR_56;
                 ul = EXTENDED_5250_UNDERLINE;
                 break;
 
             case 62: // blue/underline
-                c = ATTR_62;
+                c = ATTR_58;
                 ul = EXTENDED_5250_UNDERLINE;
                 break;
 
             case 63:  // nondisplay
+                c = ATTR_32;
                 nd = EXTENDED_5250_NON_DSP;
                 cs = EXTENDED_5250_COL_SEP;
                 break;

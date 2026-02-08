@@ -1,22 +1,15 @@
 /*
- * HTI5250j Logging & Diagnostics Pairwise Test Suite
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests log levels, trace output, debug capture, error reporting
- * Covers all pairwise combinations of:
- * - Log levels: debug, info, warn, error, fatal
- * - Targets: console, file, memory, network
- * - Content: protocol, screen, user-action, error
- * - Formats: plain-text, structured, binary
- * - Filtering: none, category, severity, regex
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.logging;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
 
 import org.hti5250j.tools.logging.*;
 
@@ -26,13 +19,16 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 /**
  * Pairwise JUnit 4 test suite for HTI5250j logging and diagnostics.
  * Tests 25+ combinations covering all log levels, targets, content types, formats, and filters.
  */
-@RunWith(Parameterized.class)
+@ResourceLock("HTI5250jLogFactory")
 public class LoggingDiagnosticsPairwiseTest {
 
     // ========== Enum Definitions for Pairwise Dimensions ==========
@@ -106,11 +102,11 @@ public class LoggingDiagnosticsPairwiseTest {
 
     // ========== Test Parameters ==========
 
-    private final LogLevel logLevel;
-    private final LogTarget logTarget;
-    private final ContentType contentType;
-    private final Format format;
-    private final FilterType filterType;
+    private LogLevel logLevel;
+    private LogTarget logTarget;
+    private ContentType contentType;
+    private Format format;
+    private FilterType filterType;
 
     // ========== Capture Infrastructure ==========
 
@@ -127,7 +123,7 @@ public class LoggingDiagnosticsPairwiseTest {
 
     // ========== Constructor ==========
 
-    public LoggingDiagnosticsPairwiseTest(LogLevel level, LogTarget target,
+    private void setParameters(LogLevel level, LogTarget target,
                                           ContentType content, Format format, FilterType filter) {
         this.logLevel = level;
         this.logTarget = target;
@@ -138,8 +134,7 @@ public class LoggingDiagnosticsPairwiseTest {
 
     // ========== Parameterized Test Data ==========
 
-    @Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return generatePairwiseTestCombinations();
     }
 
@@ -191,8 +186,7 @@ public class LoggingDiagnosticsPairwiseTest {
 
     // ========== Setup & Teardown ==========
 
-    @Before
-    public void setUp() throws Exception {
+        public void setUp() throws Exception {
         // Capture standard streams
         originalOut = System.out;
         originalErr = System.err;
@@ -207,14 +201,16 @@ public class LoggingDiagnosticsPairwiseTest {
         networkLogTarget = new TestNetworkLogTarget();
 
         // Create test logger with unique name to avoid caching issues
+        String uniqueSuffix = Long.toHexString(System.nanoTime());
         testClassName = "org.hti5250j.logging.LoggingDiagnosticsPairwiseTest-" +
                        logLevel.name + "-" + logTarget.target + "-" +
-                       contentType.type + "-" + format.format + "-" + filterType.type;
+                       contentType.type + "-" + format.format + "-" + filterType.type +
+                       "-" + uniqueSuffix;
         logger = HTI5250jLogFactory.getLogger(testClassName);
         logger.setLevel(logLevel.level);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         // Flush captured streams
         try {
@@ -243,8 +239,11 @@ public class LoggingDiagnosticsPairwiseTest {
      * Test: Verify log message routing to specified target with correct level
      * Validates: logLevel × logTarget pairing
      */
-    @Test
-    public void testLogMessageRoutingByTargetAndLevel() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLogMessageRoutingByTargetAndLevel(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logTarget != LogTarget.CONSOLE) {
             return; // This test focuses on console routing
         }
@@ -273,85 +272,99 @@ public class LoggingDiagnosticsPairwiseTest {
      * Test: Verify log level can be set and retrieved
      * Validates: logLevel × format pairing
      */
-    @Test
-    public void testLogLevelGates() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLogLevelGates(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         // Test that setLevel works correctly
         logger.setLevel(HTI5250jLogger.DEBUG);
-        assertEquals("Debug level can be set", HTI5250jLogger.DEBUG, logger.getLevel());
+        assertEquals(HTI5250jLogger.DEBUG, logger.getLevel(),"Debug level can be set");
 
         logger.setLevel(HTI5250jLogger.ERROR);
-        assertEquals("Error level can be set", HTI5250jLogger.ERROR, logger.getLevel());
+        assertEquals(HTI5250jLogger.ERROR, logger.getLevel(),"Error level can be set");
 
         logger.setLevel(HTI5250jLogger.INFO);
-        assertEquals("Info level can be set", HTI5250jLogger.INFO, logger.getLevel());
+        assertEquals(HTI5250jLogger.INFO, logger.getLevel(),"Info level can be set");
 
         // Verify enable checks work for set level
         logger.setLevel(HTI5250jLogger.ERROR);
-        assertFalse("DEBUG should be disabled at ERROR level", logger.isDebugEnabled());
-        assertFalse("INFO should be disabled at ERROR level", logger.isInfoEnabled());
-        assertFalse("WARN should be disabled at ERROR level", logger.isWarnEnabled());
-        assertTrue("ERROR should be enabled at ERROR level", logger.isErrorEnabled());
+        assertFalse(logger.isDebugEnabled(),"DEBUG should be disabled at ERROR level");
+        assertFalse(logger.isInfoEnabled(),"INFO should be disabled at ERROR level");
+        assertFalse(logger.isWarnEnabled(),"WARN should be disabled at ERROR level");
+        assertTrue(logger.isErrorEnabled(),"ERROR should be enabled at ERROR level");
     }
 
     /**
      * Test: Verify plain text format
      * Validates: format=PLAIN_TEXT × contentType pairing
      */
-    @Test
-    public void testPlainTextFormatting() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPlainTextFormatting(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (format != Format.PLAIN_TEXT) {
             return;
         }
 
-        String content = generateContent(contentType);
-        assertEquals("Plain text should be unchanged", content, formatContent(content, Format.PLAIN_TEXT));
+        String contentValue = generateContent(contentType);
+        assertEquals(contentValue, formatContent(contentValue, Format.PLAIN_TEXT),"Plain text should be unchanged");
     }
 
     /**
      * Test: Verify structured JSON format contains required fields
      * Validates: format=STRUCTURED × logLevel pairing
      */
-    @Test
-    public void testStructuredFormatFields() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testStructuredFormatFields(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (format != Format.STRUCTURED) {
             return;
         }
 
-        String content = generateContent(contentType);
-        String structured = formatContent(content, Format.STRUCTURED);
+        String contentValue = generateContent(contentType);
+        String structured = formatContent(contentValue, Format.STRUCTURED);
 
-        assertTrue("Should have timestamp", structured.contains("timestamp"));
-        assertTrue("Should have level", structured.contains(logLevel.name));
-        assertTrue("Should have content", structured.contains(content));
-        assertTrue("Should have type", structured.contains(contentType.type));
+        assertTrue(structured.contains("timestamp"),"Should have timestamp");
+        assertTrue(structured.contains(logLevel.name),"Should have level");
+        assertTrue(structured.contains(contentValue),"Should have contentValue");
+        assertTrue(structured.contains(contentType.type),"Should have type");
     }
 
     /**
      * Test: Verify binary format is serializable
      * Validates: format=BINARY × logLevel pairing
      */
-    @Test
-    public void testBinaryFormatSerialization() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBinaryFormatSerialization(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (format != Format.BINARY) {
             return;
         }
 
-        String content = generateContent(contentType);
-        byte[] binary = formatContentBinary(content, logLevel);
+        String contentValue = generateContent(contentType);
+        byte[] binary = formatContentBinary(contentValue, logLevel);
 
-        assertTrue("Binary should have header", binary.length >= 16);
+        assertTrue(binary.length >= 16,"Binary should have header");
 
         String deserialized = deserializeBinary(binary);
-        assertTrue("Deserialized should contain original content",
-                  deserialized.contains(content));
+        assertTrue(deserialized.contains(contentValue),"Deserialized should contain original contentValue");
     }
 
     /**
      * Test: Verify console target uses stdout/stderr appropriately
      * Validates: logTarget=CONSOLE × logLevel pairing
      */
-    @Test
-    public void testConsoleTargetRouting() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConsoleTargetRouting(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logTarget != LogTarget.CONSOLE) {
             return;
         }
@@ -376,18 +389,18 @@ public class LoggingDiagnosticsPairwiseTest {
 
         // Debug and Info should go to stdout
         if (stdout.contains("DEBUG")) {
-            assertTrue("Debug should go to stdout", true);
+            assertTrue(true,"Debug should go to stdout");
         }
         if (stdout.contains("INFO")) {
-            assertTrue("Info should go to stdout", true);
+            assertTrue(true,"Info should go to stdout");
         }
 
         // Warn, Error should go to stderr
         if (stderr.contains("WARN")) {
-            assertTrue("Warn should go to stderr", true);
+            assertTrue(true,"Warn should go to stderr");
         }
         if (stderr.contains("ERROR")) {
-            assertTrue("Error should go to stderr", true);
+            assertTrue(true,"Error should go to stderr");
         }
     }
 
@@ -395,15 +408,18 @@ public class LoggingDiagnosticsPairwiseTest {
      * Test: Verify file target persists logs
      * Validates: logTarget=FILE × format pairing
      */
-    @Test
-    public void testFileTargetPersistence() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFileTargetPersistence(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logTarget != LogTarget.FILE) {
             return;
         }
 
         try {
-            String content = generateContent(contentType);
-            String formatted = formatContent(content, format);
+            String contentValue = generateContent(contentType);
+            String formatted = formatContent(contentValue, format);
 
             fileLogTarget.write(formatted);
 
@@ -415,13 +431,13 @@ public class LoggingDiagnosticsPairwiseTest {
             }
             // For binary format, just check that we got SOMETHING
             if (format == Format.BINARY) {
-                assertTrue("File should contain binary data", fileContent.contains("BINARY"));
+                assertTrue(fileContent.contains("BINARY"),"File should contain binary data");
             } else {
-                assertTrue("File should contain logged message", fileContent.contains(content));
+                assertTrue(fileContent.contains(contentValue),"File should contain logged message");
             }
         } catch (Exception e) {
             // File I/O might not work in all test environments - just ensure no unexpected exceptions
-            assertTrue("File target test executed", true);
+            assertTrue(true,"File target test executed");
         }
     }
 
@@ -429,47 +445,54 @@ public class LoggingDiagnosticsPairwiseTest {
      * Test: Verify memory target stores logs in memory
      * Validates: logTarget=MEMORY × filterType pairing
      */
-    @Test
-    public void testMemoryTargetStorage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMemoryTargetStorage(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logTarget != LogTarget.MEMORY) {
             return;
         }
 
-        String content = generateContent(contentType);
-        String formatted = formatContent(content, format);
+        String contentValue = generateContent(contentType);
+        String formatted = formatContent(contentValue, format);
 
         memoryCapture.log(formatted);
 
         List<String> logs = memoryCapture.getLogs();
-        assertTrue("Memory should store logged message",
-                  !logs.isEmpty() && (logs.stream().anyMatch(l -> l.contains(content)) ||
-                                     logs.stream().anyMatch(l -> l.contains(content.hashCode() + ""))));
+        assertTrue(!logs.isEmpty() && (logs.stream().anyMatch(l -> l.contains(contentValue)) ||
+                                     logs.stream().anyMatch(l -> l.contains(contentValue.hashCode() + ""))),"Memory should store logged message");
     }
 
     /**
      * Test: Verify network target records transmissions
      * Validates: logTarget=NETWORK × contentType pairing
      */
-    @Test
-    public void testNetworkTargetTransmission() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNetworkTargetTransmission(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logTarget != LogTarget.NETWORK) {
             return;
         }
 
-        String content = generateContent(contentType);
-        networkLogTarget.send(content);
+        String contentValue = generateContent(contentType);
+        networkLogTarget.send(contentValue);
 
         List<String> transmitted = networkLogTarget.getTransmitted();
-        assertTrue("Network should record transmission",
-                  transmitted.stream().anyMatch(t -> t.contains(content)));
+        assertTrue(transmitted.stream().anyMatch(t -> t.contains(contentValue)),"Network should record transmission");
     }
 
     /**
      * Test: Verify category-based filtering
      * Validates: filterType=CATEGORY × contentType pairing
      */
-    @Test
-    public void testCategoryFiltering() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCategoryFiltering(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (filterType != FilterType.CATEGORY) {
             return;
         }
@@ -481,16 +504,18 @@ public class LoggingDiagnosticsPairwiseTest {
         memoryCapture.logWithCategory("org.hti5250j.screen", screenContent);
 
         List<String> protocolLogs = memoryCapture.filterByCategory("org.hti5250j.protocol");
-        assertTrue("Should find protocol logs",
-                  protocolLogs.stream().anyMatch(l -> l.contains(protocolContent)));
+        assertTrue(protocolLogs.stream().anyMatch(l -> l.contains(protocolContent)),"Should find protocol logs");
     }
 
     /**
      * Test: Verify severity-based filtering
      * Validates: filterType=SEVERITY × logLevel pairing
      */
-    @Test
-    public void testSeverityFiltering() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSeverityFiltering(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (filterType != FilterType.SEVERITY) {
             return;
         }
@@ -505,7 +530,7 @@ public class LoggingDiagnosticsPairwiseTest {
             logger.error("Error");
 
             // Just verify all methods executed without exception
-            assertTrue("All severity levels handled successfully", true);
+            assertTrue(true,"All severity levels handled successfully");
         } catch (Exception e) {
             fail("Logger should handle all severity levels: " + e);
         }
@@ -515,25 +540,31 @@ public class LoggingDiagnosticsPairwiseTest {
      * Test: Verify regex-based filtering
      * Validates: filterType=REGEX × contentType pairing
      */
-    @Test
-    public void testRegexFiltering() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRegexFiltering(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (filterType != FilterType.REGEX) {
             return;
         }
 
-        String content = generateContent(contentType);
+        String contentValue = generateContent(contentType);
         String pattern = extractRegexPattern(contentType);
 
         Pattern p = Pattern.compile(pattern);
-        assertTrue("Content should match pattern", p.matcher(content).matches());
+        assertTrue(p.matcher(contentValue).matches(),"Content should match pattern");
     }
 
     /**
      * Test: Verify no filtering when filterType=NONE
      * Validates: filterType=NONE × logLevel pairing
      */
-    @Test
-    public void testNoFiltering() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNoFiltering(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (filterType != FilterType.NONE) {
             return;
         }
@@ -550,7 +581,7 @@ public class LoggingDiagnosticsPairwiseTest {
         if (!captured.contains("Test message") && captured.isEmpty()) {
             return; // Output capture not working in this environment
         }
-        assertTrue("Message should be unfiltered", captured.contains("Test message"));
+        assertTrue(captured.contains("Test message"),"Message should be unfiltered");
     }
 
     // ========== Adversarial Tests ==========
@@ -558,8 +589,11 @@ public class LoggingDiagnosticsPairwiseTest {
     /**
      * Test: Log injection with control characters
      */
-    @Test
-    public void testLogInjectionPrevention() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLogInjectionPrevention(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logLevel.level > HTI5250jLogger.INFO) {
             return; // Skip if log level is too high to log INFO
         }
@@ -570,7 +604,7 @@ public class LoggingDiagnosticsPairwiseTest {
         try {
             logger.info(injection);
             // Just verify no exception - capturing may not work
-            assertTrue("Log injection handled without exception", true);
+            assertTrue(true,"Log injection handled without exception");
         } catch (Exception e) {
             fail("Logger should handle injection safely");
         }
@@ -579,8 +613,11 @@ public class LoggingDiagnosticsPairwiseTest {
     /**
      * Test: Handle large log messages
      */
-    @Test
-    public void testLargeMessageHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLargeMessageHandling(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logLevel.level > HTI5250jLogger.INFO) {
             return; // Skip if log level is too high
         }
@@ -591,7 +628,7 @@ public class LoggingDiagnosticsPairwiseTest {
         try {
             logger.info(largeMessage);
             // Should complete without throwing
-            assertTrue("Large message handling succeeded", true);
+            assertTrue(true,"Large message handling succeeded");
         } catch (OutOfMemoryError e) {
             fail("Logger should not cause OOM");
         }
@@ -600,8 +637,11 @@ public class LoggingDiagnosticsPairwiseTest {
     /**
      * Test: Null message handling
      */
-    @Test
-    public void testNullMessageHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNullMessageHandling(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         logger.setLevel(HTI5250jLogger.DEBUG);
         try {
             logger.debug((Object) null);
@@ -609,7 +649,7 @@ public class LoggingDiagnosticsPairwiseTest {
             logger.warn((Object) null);
             logger.error((Object) null);
             // Should not throw
-            assertTrue("Null message handling succeeded", true);
+            assertTrue(true,"Null message handling succeeded");
         } catch (NullPointerException e) {
             fail("Logger should handle null gracefully");
         }
@@ -618,8 +658,11 @@ public class LoggingDiagnosticsPairwiseTest {
     /**
      * Test: Exception in throwable logging
      */
-    @Test
-    public void testThrowableLogging() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testThrowableLogging(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logLevel.level > HTI5250jLogger.ERROR) {
             return; // Skip if level too high
         }
@@ -631,7 +674,7 @@ public class LoggingDiagnosticsPairwiseTest {
             logger.error("Error occurred", testException);
             String captured = capturedErr.toString();
             // Just verify no exception was thrown - capturing may not work in all environments
-            assertTrue("Throwable logging succeeded", true);
+            assertTrue(true,"Throwable logging succeeded");
         } catch (NullPointerException e) {
             fail("Logger should handle throwables");
         }
@@ -640,8 +683,11 @@ public class LoggingDiagnosticsPairwiseTest {
     /**
      * Test: Rapid-fire logging (burst stress test)
      */
-    @Test
-    public void testRapidLogging() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRapidLogging(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logLevel.level > HTI5250jLogger.DEBUG) {
             return; // Skip if log level is too high
         }
@@ -652,7 +698,7 @@ public class LoggingDiagnosticsPairwiseTest {
                 logger.debug("Message " + i);
             }
             // Just verify no exception was thrown
-            assertTrue("Rapid logging handled successfully", true);
+            assertTrue(true,"Rapid logging handled successfully");
         } catch (Exception e) {
             fail("Logger should handle rapid logging: " + e);
         }
@@ -661,8 +707,11 @@ public class LoggingDiagnosticsPairwiseTest {
     /**
      * Test: Concurrent logging from multiple threads
      */
-    @Test
-    public void testConcurrentLogging() throws InterruptedException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConcurrentLogging(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logLevel.level > HTI5250jLogger.INFO) {
             return; // Skip if log level is too high
         }
@@ -688,7 +737,7 @@ public class LoggingDiagnosticsPairwiseTest {
             t2.join(5000);
 
             // Just verify no exception
-            assertTrue("Concurrent logging handled successfully", true);
+            assertTrue(true,"Concurrent logging handled successfully");
         } catch (Exception e) {
             fail("Logger should handle concurrent logging: " + e);
         }
@@ -697,24 +746,30 @@ public class LoggingDiagnosticsPairwiseTest {
     /**
      * Test: Dynamic log level switching
      */
-    @Test
-    public void testDynamicLevelSwitching() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testDynamicLevelSwitching(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         logger.setLevel(HTI5250jLogger.ERROR);
-        assertFalse("Debug should be disabled at ERROR level", logger.isDebugEnabled());
+        assertFalse(logger.isDebugEnabled(),"Debug should be disabled at ERROR level");
 
         logger.setLevel(HTI5250jLogger.DEBUG);
-        assertTrue("Debug should be enabled at DEBUG level", logger.isDebugEnabled());
+        assertTrue(logger.isDebugEnabled(),"Debug should be enabled at DEBUG level");
 
         logger.setLevel(HTI5250jLogger.INFO);
-        assertTrue("Info should be enabled at INFO level", logger.isInfoEnabled());
-        assertFalse("Debug should still be disabled", logger.isDebugEnabled());
+        assertTrue(logger.isInfoEnabled(),"Info should be enabled at INFO level");
+        assertFalse(logger.isDebugEnabled(),"Debug should still be disabled");
     }
 
     /**
      * Test: Log format consistency across calls
      */
-    @Test
-    public void testLogFormatConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLogFormatConsistency(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         logger.setLevel(HTI5250jLogger.DEBUG);
         logger.debug("Message 1");
         logger.info("Message 2");
@@ -730,7 +785,7 @@ public class LoggingDiagnosticsPairwiseTest {
                 // Each line should have a level prefix
                 boolean hasLevel = line.contains("DEBUG") || line.contains("INFO") ||
                                  line.contains("WARN") || line.contains("ERROR");
-                assertTrue("Each log line should have level prefix", hasLevel);
+                assertTrue(hasLevel,"Each log line should have level prefix");
             }
         }
     }
@@ -739,8 +794,11 @@ public class LoggingDiagnosticsPairwiseTest {
      * Test: All content types are loggable
      * Validates: contentType coverage
      */
-    @Test
-    public void testContentTypeLogging() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testContentTypeLogging(LogLevel level, LogTarget target, ContentType content, Format format, FilterType filter) throws Exception {
+        setParameters(level, target, content, format, filter);
+        setUp();
         if (logLevel.level > HTI5250jLogger.ERROR) {
             return; // Skip if log level is too high
         }
@@ -759,7 +817,7 @@ public class LoggingDiagnosticsPairwiseTest {
             logger.error(errorMsg);
 
             // Just verify all messages were processed without exception
-            assertTrue("All content types logged successfully", true);
+            assertTrue(true,"All content types logged successfully");
         } catch (Exception e) {
             fail("Logger should handle all content types: " + e);
         }

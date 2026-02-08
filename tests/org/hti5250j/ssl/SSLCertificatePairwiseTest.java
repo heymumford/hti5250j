@@ -1,29 +1,21 @@
-/**
- * <p>
- * Title: tn5250J SSL Certificate Pairwise Tests
- * Copyright: Copyright (c) 2026
- * Company:
- * <p>
- * Description: Comprehensive TDD pairwise tests for SSL certificate validation,
- * chain verification, and hostname checking. Tests adversarial MITM and forgery scenarios.
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: ized CA acceptance)
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.ssl;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
@@ -32,8 +24,8 @@ import java.util.Date;
 
 import javax.net.ssl.X509TrustManager;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Pairwise TDD test suite for HTI5250j SSL certificate handling.
@@ -57,7 +49,7 @@ public class SSLCertificatePairwiseTest {
     private MockTrustManager trustManager;
     private MockX509CertificateFactory certFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         trustManager = new MockTrustManager();
         certFactory = new MockX509CertificateFactory();
@@ -80,10 +72,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertTrue(
-            "Valid cert with exact hostname should match",
-            trustManager.validateHostname(chain[0], "example.com")
-        );
+        assertTrue(trustManager.validateHostname(chain[0], "example.com")
+        ,
+            "Valid cert with exact hostname should match");
     }
 
     /**
@@ -101,10 +92,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertTrue(
-            "Valid cert with wildcard should match subdomain",
-            trustManager.validateHostname(chain[0], "api.example.com")
-        );
+        assertTrue(trustManager.validateHostname(chain[0], "api.example.com")
+        ,
+            "Valid cert with wildcard should match subdomain");
     }
 
     /**
@@ -124,10 +114,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertFalse(
-            "Valid cert with wrong hostname must be rejected (MITM prevention)",
-            trustManager.validateHostname(chain[0], "example.com")
-        );
+        assertFalse(trustManager.validateHostname(chain[0], "example.com")
+        ,
+            "Valid cert with wrong hostname must be rejected (MITM prevention)");
     }
 
     /**
@@ -146,10 +135,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertFalse(
-            "Expired cert must be rejected even with hostname match",
-            trustManager.validateCertificateValidity(chain[0])
-        );
+        assertFalse(trustManager.validateCertificateValidity(chain[0])
+        ,
+            "Expired cert must be rejected even with hostname match");
     }
 
     /**
@@ -168,10 +156,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertFalse(
-            "Not-yet-valid cert must be rejected",
-            trustManager.validateCertificateValidity(chain[0])
-        );
+        assertFalse(trustManager.validateCertificateValidity(chain[0])
+        ,
+            "Not-yet-valid cert must be rejected");
     }
 
     // ========== PAIRWISE 2: Chain Completeness × Trust Store ==========
@@ -203,10 +190,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertTrue(
-            "Complete chain should verify with system trust store",
-            trustManager.validateChainCompleteness(chain)
-        );
+        assertTrue(trustManager.validateChainCompleteness(chain)
+        ,
+            "Complete chain should verify with system trust store");
     }
 
     /**
@@ -232,10 +218,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertFalse(
-            "Missing intermediate should cause chain verification to fail",
-            trustManager.validateChainCompleteness(chain)
-        );
+        assertFalse(trustManager.validateChainCompleteness(chain)
+        ,
+            "Missing intermediate should cause chain verification to fail");
     }
 
     /**
@@ -255,10 +240,9 @@ public class SSLCertificatePairwiseTest {
 
         // Self-signed certs can be trusted if in custom trust store
         trustManager.addToCustomTrustStore(chain[0]);
-        assertTrue(
-            "Self-signed cert in custom trust store should be trusted",
-            trustManager.isTrustedByCustomStore(chain[0])
-        );
+        assertTrue(trustManager.isTrustedByCustomStore(chain[0])
+        ,
+            "Self-signed cert in custom trust store should be trusted");
     }
 
     /**
@@ -276,10 +260,9 @@ public class SSLCertificatePairwiseTest {
         );
 
         // Not added to custom trust store
-        assertFalse(
-            "Self-signed cert not in trust store should be rejected",
-            trustManager.isTrustedByCustomStore(cert)
-        );
+        assertFalse(trustManager.isTrustedByCustomStore(cert)
+        ,
+            "Self-signed cert not in trust store should be rejected");
     }
 
     // ========== PAIRWISE 3: Certificate State × Verification Mode ==========
@@ -297,10 +280,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertTrue(
-            "Valid cert should pass strict verification",
-            trustManager.validateInMode(cert, VerificationMode.STRICT)
-        );
+        assertTrue(trustManager.validateInMode(cert, VerificationMode.STRICT)
+        ,
+            "Valid cert should pass strict verification");
     }
 
     /**
@@ -317,10 +299,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertFalse(
-            "Expired cert should fail strict verification",
-            trustManager.validateInMode(cert, VerificationMode.STRICT)
-        );
+        assertFalse(trustManager.validateInMode(cert, VerificationMode.STRICT)
+        ,
+            "Expired cert should fail strict verification");
     }
 
     /**
@@ -340,10 +321,9 @@ public class SSLCertificatePairwiseTest {
         // Relaxed mode should warn (not throw)
         boolean validated = trustManager.validateInMode(cert, VerificationMode.RELAXED);
         // Documentation: validated may be true with warning or false
-        assertTrue(
-            "Relaxed mode should handle expired cert (validated=" + validated + ")",
-            true
-        );
+        assertTrue(true
+        ,
+            "Relaxed mode should handle expired cert (validated=" + validated + ")");
     }
 
     /**
@@ -360,10 +340,9 @@ public class SSLCertificatePairwiseTest {
             true
         );
 
-        assertTrue(
-            "None mode should accept all certs (test/dev only)",
-            trustManager.validateInMode(cert, VerificationMode.NONE)
-        );
+        assertTrue(trustManager.validateInMode(cert, VerificationMode.NONE)
+        ,
+            "None mode should accept all certs (test/dev only)");
     }
 
     // ========== PAIRWISE 4: Hostname Match × Verification Mode ==========
@@ -382,10 +361,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertFalse(
-            "Hostname mismatch must fail in strict mode",
-            trustManager.validateHostnameInMode(cert, "example.com", VerificationMode.STRICT)
-        );
+        assertFalse(trustManager.validateHostnameInMode(cert, "example.com", VerificationMode.STRICT)
+        ,
+            "Hostname mismatch must fail in strict mode");
     }
 
     /**
@@ -409,7 +387,7 @@ public class SSLCertificatePairwiseTest {
             VerificationMode.RELAXED
         );
         // Documentation: Behavior varies in relaxed mode
-        assertTrue("Relaxed mode processes hostname mismatch", true);
+        assertTrue(true,"Relaxed mode processes hostname mismatch");
     }
 
     /**
@@ -426,14 +404,13 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertTrue(
-            "None mode bypasses hostname verification (test/dev only)",
-            trustManager.validateHostnameInMode(
+        assertTrue(trustManager.validateHostnameInMode(
                 cert,
                 "example.com",
                 VerificationMode.NONE
             )
-        );
+        ,
+            "None mode bypasses hostname verification (test/dev only)");
     }
 
     // ========== PAIRWISE 5: Chain Completeness × Certificate State ==========
@@ -465,10 +442,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertTrue(
-            "Valid complete chain should verify",
-            trustManager.validateChainAndStates(chain)
-        );
+        assertTrue(trustManager.validateChainAndStates(chain)
+        ,
+            "Valid complete chain should verify");
     }
 
     /**
@@ -499,10 +475,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertFalse(
-            "Chain with any expired cert should fail verification",
-            trustManager.validateChainAndStates(chain)
-        );
+        assertFalse(trustManager.validateChainAndStates(chain)
+        ,
+            "Chain with any expired cert should fail verification");
     }
 
     /**
@@ -528,10 +503,9 @@ public class SSLCertificatePairwiseTest {
             )
         };
 
-        assertFalse(
-            "Missing intermediate breaks trust path",
-            trustManager.validateChainAndStates(chain)
-        );
+        assertFalse(trustManager.validateChainAndStates(chain)
+        ,
+            "Missing intermediate breaks trust path");
     }
 
     // ========== PAIRWISE 6: Trust Store × Hostname Match ==========
@@ -550,10 +524,9 @@ public class SSLCertificatePairwiseTest {
         );
         trustManager.setTrustStore(TrustStoreType.SYSTEM);
 
-        assertTrue(
-            "System trust store should verify with correct hostname",
-            trustManager.verifyWithTrustStore(cert, "example.com")
-        );
+        assertTrue(trustManager.verifyWithTrustStore(cert, "example.com")
+        ,
+            "System trust store should verify with correct hostname");
     }
 
     /**
@@ -570,10 +543,9 @@ public class SSLCertificatePairwiseTest {
         );
         trustManager.setTrustStore(TrustStoreType.SYSTEM);
 
-        assertFalse(
-            "System trust store should reject wrong hostname",
-            trustManager.verifyWithTrustStore(cert, "example.com")
-        );
+        assertFalse(trustManager.verifyWithTrustStore(cert, "example.com")
+        ,
+            "System trust store should reject wrong hostname");
     }
 
     /**
@@ -591,10 +563,9 @@ public class SSLCertificatePairwiseTest {
         );
         trustManager.setTrustStore(TrustStoreType.EMPTY);
 
-        assertFalse(
-            "Empty trust store must reject all certs (default-deny)",
-            trustManager.verifyWithTrustStore(cert, "example.com")
-        );
+        assertFalse(trustManager.verifyWithTrustStore(cert, "example.com")
+        ,
+            "Empty trust store must reject all certs (default-deny)");
     }
 
     // ========== PAIRWISE 7: Certificate State × Trust Store ==========
@@ -614,10 +585,9 @@ public class SSLCertificatePairwiseTest {
         );
         trustManager.setTrustStore(TrustStoreType.SYSTEM);
 
-        assertFalse(
-            "Expired cert must be rejected even in system trust store",
-            trustManager.verifyWithTrustStore(cert, "example.com")
-        );
+        assertFalse(trustManager.verifyWithTrustStore(cert, "example.com")
+        ,
+            "Expired cert must be rejected even in system trust store");
     }
 
     /**
@@ -635,10 +605,9 @@ public class SSLCertificatePairwiseTest {
         trustManager.setTrustStore(TrustStoreType.CUSTOM);
         // Don't add cert to custom trust store
 
-        assertFalse(
-            "Valid cert not in custom trust store should be rejected",
-            trustManager.verifyWithTrustStore(cert, "example.com")
-        );
+        assertFalse(trustManager.verifyWithTrustStore(cert, "example.com")
+        ,
+            "Valid cert not in custom trust store should be rejected");
     }
 
     /**
@@ -656,10 +625,9 @@ public class SSLCertificatePairwiseTest {
         trustManager.setTrustStore(TrustStoreType.CUSTOM);
         trustManager.addToCustomTrustStore(cert);
 
-        assertTrue(
-            "Self-signed cert in custom trust store should be trusted",
-            trustManager.verifyWithTrustStore(cert, "internal.corp")
-        );
+        assertTrue(trustManager.verifyWithTrustStore(cert, "internal.corp")
+        ,
+            "Self-signed cert in custom trust store should be trusted");
     }
 
     // ========== PAIRWISE 8: Revocation Status × Verification Mode ==========
@@ -678,10 +646,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertFalse(
-            "Revoked cert must fail in strict mode",
-            trustManager.validateInMode(cert, VerificationMode.STRICT)
-        );
+        assertFalse(trustManager.validateInMode(cert, VerificationMode.STRICT)
+        ,
+            "Revoked cert must fail in strict mode");
     }
 
     /**
@@ -699,10 +666,9 @@ public class SSLCertificatePairwiseTest {
         );
 
         // None mode accepts revoked (dangerous!)
-        assertTrue(
-            "None mode bypasses revocation checks (test/dev ONLY)",
-            trustManager.validateInMode(cert, VerificationMode.NONE)
-        );
+        assertTrue(trustManager.validateInMode(cert, VerificationMode.NONE)
+        ,
+            "None mode bypasses revocation checks (test/dev ONLY)");
     }
 
     // ========== PAIRWISE 9: Wildcard × Verification Mode ==========
@@ -720,10 +686,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertTrue(
-            "Wildcard should match subdomains in strict mode",
-            trustManager.validateHostnameInMode(cert, "api.example.com", VerificationMode.STRICT)
-        );
+        assertTrue(trustManager.validateHostnameInMode(cert, "api.example.com", VerificationMode.STRICT)
+        ,
+            "Wildcard should match subdomains in strict mode");
     }
 
     /**
@@ -740,10 +705,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertFalse(
-            "Wildcard *.example.com should NOT match different.com",
-            trustManager.validateHostnameInMode(cert, "api.different.com", VerificationMode.STRICT)
-        );
+        assertFalse(trustManager.validateHostnameInMode(cert, "api.different.com", VerificationMode.STRICT)
+        ,
+            "Wildcard *.example.com should NOT match different.com");
     }
 
     /**
@@ -760,10 +724,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertFalse(
-            "Wildcard *.example.com should NOT match bare example.com",
-            trustManager.validateHostnameInMode(cert, "example.com", VerificationMode.STRICT)
-        );
+        assertFalse(trustManager.validateHostnameInMode(cert, "example.com", VerificationMode.STRICT)
+        ,
+            "Wildcard *.example.com should NOT match bare example.com");
     }
 
     // ========== PAIRWISE 10: Multi-SAN (Subject Alternative Name) ==========
@@ -781,10 +744,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertTrue(
-            "Multi-SAN cert should match any listed hostname",
-            trustManager.validateHostnameInMode(cert, "web.example.com", VerificationMode.STRICT)
-        );
+        assertTrue(trustManager.validateHostnameInMode(cert, "web.example.com", VerificationMode.STRICT)
+        ,
+            "Multi-SAN cert should match any listed hostname");
     }
 
     /**
@@ -801,10 +763,9 @@ public class SSLCertificatePairwiseTest {
             false
         );
 
-        assertFalse(
-            "Multi-SAN cert should reject unlisted hostnames",
-            trustManager.validateHostnameInMode(cert, "admin.different.com", VerificationMode.STRICT)
-        );
+        assertFalse(trustManager.validateHostnameInMode(cert, "admin.different.com", VerificationMode.STRICT)
+        ,
+            "Multi-SAN cert should reject unlisted hostnames");
     }
 
     // ========== PAIRWISE 11: Date Boundary Conditions ==========
@@ -824,10 +785,9 @@ public class SSLCertificatePairwiseTest {
             new Date(System.currentTimeMillis())  // expires exactly now
         );
 
-        assertFalse(
-            "Cert expiring at boundary (now) should be rejected",
-            trustManager.validateCertificateValidity(cert)
-        );
+        assertFalse(trustManager.validateCertificateValidity(cert)
+        ,
+            "Cert expiring at boundary (now) should be rejected");
     }
 
     /**
@@ -845,10 +805,9 @@ public class SSLCertificatePairwiseTest {
             new Date(System.currentTimeMillis())  // valid from exactly now
         );
 
-        assertTrue(
-            "Cert valid from now (not-before boundary) should pass",
-            trustManager.validateCertificateValidity(cert)
-        );
+        assertTrue(trustManager.validateCertificateValidity(cert)
+        ,
+            "Cert valid from now (not-before boundary) should pass");
     }
 
     // ========== PAIRWISE 12: Cryptographic Algorithm Checks ==========
@@ -868,10 +827,9 @@ public class SSLCertificatePairwiseTest {
             "MD5"  // WEAK!
         );
 
-        assertFalse(
-            "MD5 signature algorithm should be rejected (cryptographically weak)",
-            trustManager.validateSignatureAlgorithm(cert)
-        );
+        assertFalse(trustManager.validateSignatureAlgorithm(cert)
+        ,
+            "MD5 signature algorithm should be rejected (cryptographically weak)");
     }
 
     /**
@@ -889,10 +847,9 @@ public class SSLCertificatePairwiseTest {
             "SHA1"  // DEPRECATED!
         );
 
-        assertFalse(
-            "SHA1 signature algorithm should be rejected (deprecated)",
-            trustManager.validateSignatureAlgorithm(cert)
-        );
+        assertFalse(trustManager.validateSignatureAlgorithm(cert)
+        ,
+            "SHA1 signature algorithm should be rejected (deprecated)");
     }
 
     /**
@@ -909,10 +866,9 @@ public class SSLCertificatePairwiseTest {
             "SHA256"  // STRONG
         );
 
-        assertTrue(
-            "SHA256 signature algorithm should be accepted",
-            trustManager.validateSignatureAlgorithm(cert)
-        );
+        assertTrue(trustManager.validateSignatureAlgorithm(cert)
+        ,
+            "SHA256 signature algorithm should be accepted");
     }
 
     // ========== PAIRWISE 13: Key Size Validation ==========
@@ -932,10 +888,9 @@ public class SSLCertificatePairwiseTest {
             512  // WEAK!
         );
 
-        assertFalse(
-            "RSA-512 key should be rejected (factorable)",
-            trustManager.validateKeySize(cert)
-        );
+        assertFalse(trustManager.validateKeySize(cert)
+        ,
+            "RSA-512 key should be rejected (factorable)");
     }
 
     /**
@@ -953,10 +908,9 @@ public class SSLCertificatePairwiseTest {
             1024  // DEPRECATED
         );
 
-        assertFalse(
-            "RSA-1024 key should be rejected (deprecated by NIST)",
-            trustManager.validateKeySize(cert)
-        );
+        assertFalse(trustManager.validateKeySize(cert)
+        ,
+            "RSA-1024 key should be rejected (deprecated by NIST)");
     }
 
     /**
@@ -973,10 +927,9 @@ public class SSLCertificatePairwiseTest {
             2048  // CURRENT MINIMUM
         );
 
-        assertTrue(
-            "RSA-2048 key should be accepted (current minimum)",
-            trustManager.validateKeySize(cert)
-        );
+        assertTrue(trustManager.validateKeySize(cert)
+        ,
+            "RSA-2048 key should be accepted (current minimum)");
     }
 
     // ========== HELPER ENUMS & MOCK CLASSES ==========

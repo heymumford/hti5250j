@@ -1,28 +1,14 @@
 /*
- * Title: PrinterThread
- * Copyright:   Copyright (c) 2001
- * Company:
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.5
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import org.hti5250j.framework.tn5250.Screen5250;
@@ -46,22 +32,22 @@ class PrinterThread extends Thread implements Printable {
     private SessionPanel session;
     private SessionConfig config;
 
-    PrinterThread(Screen5250 scr, Font font, int cols, int rows,
-                  Color colorBg, boolean toDefaultPrinter, SessionPanel ses) {
+    PrinterThread(Screen5250 screen5250, Font font, int cols, int rows,
+                  Color colorBg, boolean toDefaultPrinter, SessionPanel sessionPanel) {
 
 
         setPriority(1);
-        session = ses;
+        session = sessionPanel;
         session.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        config = ses.getSession().getConfiguration();
+        config = sessionPanel.getSession().getConfiguration();
 
-        int len = scr.getScreenLength();
-        screen = new char[len];
-        screenExtendedAttr = new char[len];
-        screenAttrPlace = new char[len];
-        scr.GetScreen(screen, len, HTI5250jConstants.PLANE_TEXT);
-        scr.GetScreen(screenExtendedAttr, len, HTI5250jConstants.PLANE_EXTENDED);
-        scr.GetScreen(screenAttrPlace, len, HTI5250jConstants.PLANE_IS_ATTR_PLACE);
+        int screenLength = screen5250.getScreenLength();
+        screen = new char[screenLength];
+        screenExtendedAttr = new char[screenLength];
+        screenAttrPlace = new char[screenLength];
+        screen5250.GetScreen(screen, screenLength, HTI5250jConstants.PLANE_TEXT);
+        screen5250.GetScreen(screenExtendedAttr, screenLength, HTI5250jConstants.PLANE_EXTENDED);
+        screen5250.GetScreen(screenAttrPlace, screenLength, HTI5250jConstants.PLANE_IS_ATTR_PLACE);
 
         numCols = cols;
         numRows = rows;
@@ -156,8 +142,8 @@ class PrinterThread extends Thread implements Printable {
                 // we do this because of loosing focus with jdk 1.4.0
                 session.requestFocus();
                 printJob.print();
-            } catch (Exception PrintException) {
-                PrintException.printStackTrace();
+            } catch (Exception printException) {
+                printException.printStackTrace();
             }
         } else {
             // we do this because of loosing focus with jdk 1.4.0
@@ -178,46 +164,46 @@ class PrinterThread extends Thread implements Printable {
      * the provided parameters. The result will be a screen
      * print of the current screen to the printer graphics object
      *
-     * @param g          a value of type Graphics
+     * @param graphics   a value of type Graphics
      * @param pageFormat a value of type PageFormat
      * @param page       a value of type int
      * @return a value of type int
      */
-    public int print(Graphics g, PageFormat pageFormat, int page) {
+    public int print(Graphics graphics, PageFormat pageFormat, int page) {
 
-        Graphics2D g2;
+        Graphics2D graphics2D;
 
         //--- Validate the page number, we only print the first page
         if (page == 0) {
 
             //--- Create a graphic2D object and set the default parameters
-            g2 = (Graphics2D) g;
-            g2.setColor(Color.black);
+            graphics2D = (Graphics2D) graphics;
+            graphics2D.setColor(Color.black);
 
             //--- Translate the origin to be (0,0)
-            g2.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+            graphics2D.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
-            int w = (int) pageFormat.getImageableWidth() / numCols;     // proposed width
-            int h = (int) pageFormat.getImageableHeight() / numRows;     // proposed height
+            int proposedWidth = (int) pageFormat.getImageableWidth() / numCols;     // proposed width
+            int proposedHeight = (int) pageFormat.getImageableHeight() / numRows;     // proposed height
 
 
-            LineMetrics l;
-            FontRenderContext f = null;
+            LineMetrics lineMetrics;
+            FontRenderContext fontRenderContext = null;
 
-            float j = 1;
-            Font k;
-            for (; j < 50; j++) {
+            float fontSize = 1;
+            Font derivedFont;
+            for (; fontSize < 50; fontSize++) {
 
                 // derive the font and obtain the relevent information to compute
                 // the width and height
-                k = font.deriveFont(j);
-                f = new FontRenderContext(k.getTransform(), true, true);
-                l = k.getLineMetrics("Wy", f);
+                derivedFont = font.deriveFont(fontSize);
+                fontRenderContext = new FontRenderContext(derivedFont.getTransform(), true, true);
+                lineMetrics = derivedFont.getLineMetrics("Wy", fontRenderContext);
 
                 if (
-                        (w < (int) k.getStringBounds("W", f).getWidth()) ||
-                                h < (int) (k.getStringBounds("y", f).getHeight() +
-                                        l.getDescent() + l.getLeading())
+                        (proposedWidth < (int) derivedFont.getStringBounds("W", fontRenderContext).getWidth()) ||
+                                proposedHeight < (int) (derivedFont.getStringBounds("y", fontRenderContext).getHeight() +
+                                        lineMetrics.getDescent() + lineMetrics.getLeading())
 
                 )
                     break;
@@ -225,32 +211,38 @@ class PrinterThread extends Thread implements Printable {
 
             // since we were looking for an overrun of the width or height we need
             // to adjust the font one down to get the last one that fit.
-            k = font.deriveFont(--j);
-            f = new FontRenderContext(k.getTransform(), true, true);
-            l = k.getLineMetrics("Wy", f);
+            derivedFont = font.deriveFont(--fontSize);
+            fontRenderContext = new FontRenderContext(derivedFont.getTransform(), true, true);
+            lineMetrics = derivedFont.getLineMetrics("Wy", fontRenderContext);
 
             // set the font of the print job
-            g2.setFont(k);
+            graphics2D.setFont(derivedFont);
 
             // get the width and height of the character bounds
-            int w1 = (int) k.getStringBounds("W", f).getWidth();
-            int h1 = (int) (k.getStringBounds("y", f).getHeight() +
-                    l.getDescent() + l.getLeading());
-            int x;
-            int y;
+            int charWidth = (int) derivedFont.getStringBounds("W", fontRenderContext).getWidth();
+            int charHeight = (int) (derivedFont.getStringBounds("y", fontRenderContext).getHeight() +
+                    lineMetrics.getDescent() + lineMetrics.getLeading());
+            int xPosition;
+            int yPosition;
 
 //         int pos = 0;
 
             // loop through all the screen characters and print them out.
             for (int m = 0; m < numRows; m++)
                 for (int i = 0; i < numCols; i++) {
-                    x = w1 * i;
-                    y = h1 * (m + 1);
+                    xPosition = charWidth * i;
+                    yPosition = charHeight * (m + 1);
 
                     // only draw printable characters (in this case >= ' ')
                     if (screen[getPos(m, i)] >= ' ' && ((screenExtendedAttr[getPos(m, i)] & HTI5250jConstants.EXTENDED_5250_NON_DSP) == 0)) {
 
-                        g2.drawChars(screen, getPos(m, i), 1, x, (int) (y + h1 - (l.getDescent() + l.getLeading()) - 2));
+                        graphics2D.drawChars(
+                                screen,
+                                getPos(m, i),
+                                1,
+                                xPosition,
+                                (int) (yPosition + charHeight - (lineMetrics.getDescent() + lineMetrics.getLeading()) - 2)
+                        );
 
                     }
 
@@ -258,7 +250,12 @@ class PrinterThread extends Thread implements Printable {
 //               if (screen[getPos(m,i)].underLine && !screen[getPos(m,i)].attributePlace)
                     if ((screenExtendedAttr[getPos(m, i)] & HTI5250jConstants.EXTENDED_5250_UNDERLINE) != 0 &&
                             screenAttrPlace[getPos(m, i)] != 1)
-                        g.drawLine(x, (int) (y + (h1 - l.getLeading() - 3)), (x + w1), (int) (y + (h1 - l.getLeading()) - 3));
+                        graphics.drawLine(
+                                xPosition,
+                                (int) (yPosition + (charHeight - lineMetrics.getLeading() - 3)),
+                                (xPosition + charWidth),
+                                (int) (yPosition + (charHeight - lineMetrics.getLeading()) - 3)
+                        );
 
                 }
 

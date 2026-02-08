@@ -1,50 +1,19 @@
-/**
- * Title: RACommandPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD test suite for HTI5250j RA (Repeat to Address) command.
- *
- * The RA command fills a screen region from current cursor position to a specified
- * address with a repeated character. This is critical for terminal rendering.
- *
- * Test dimensions (pairwise combination):
- * 1. Repeat character: space (0x20), null (0x00), printable (0x41-0x5A), extended EBCDIC (0xF0-0xFF)
- * 2. Start position: 0 (top-left), 640 (middle), 1920 (near-end for 24x80)
- * 3. End position: same row, next row, screen end, wrap around
- * 4. Fill length: 0 (zero), 1 (minimal), 80 (full row), 1920/3564 (full screen)
- * 5. Screen state: empty, partially filled, full
- *
- * Command format: [0x02] [toRow] [toCol] [repeatChar]
- * - Validates toRow >= currentRow (enforced by tnvt.processRepeatToAddress)
- * - Converts EBCDIC repeat char to Unicode
- * - Fills screen region with repeated character
- *
- * POSITIVE TESTS (15): Valid RA operations that should succeed
- * BOUNDARY TESTS (3): Edge cases at screen limits
- * ADVERSARIAL TESTS (8): Invalid parameters, negative lengths, wrap-around
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise parameter testing for HTI5250j RA (Repeat to Address) command.
@@ -227,7 +196,7 @@ public class RACommandPairwiseTest {
 
     private RACommandTestHarness harness;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         harness = new RACommandTestHarness(ROWS_24X80, COLS_24X80);
     }
@@ -252,9 +221,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(1, 80, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertTrue("Row 1 should be filled with spaces",
-                harness.verifyFill(0, 80, CHAR_SPACE));
+        assertFalse(error,"RA command should succeed");
+        assertTrue(harness.verifyFill(0, 80, CHAR_SPACE),"Row 1 should be filled with spaces");
     }
 
     /**
@@ -275,10 +243,9 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(2, 80, CHAR_PRINTABLE_A);
 
         // Assert
-        assertFalse("RA command should succeed", error);
+        assertFalse(error,"RA command should succeed");
         // First 160 characters (rows 1-2, columns 1-80) should be 'A'
-        assertTrue("Rows 1-2 should be filled with 'A'",
-                harness.verifyFill(0, 160, CHAR_PRINTABLE_A));
+        assertTrue(harness.verifyFill(0, 160, CHAR_PRINTABLE_A),"Rows 1-2 should be filled with 'A'");
     }
 
     /**
@@ -299,10 +266,9 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_NULL);
 
         // Assert
-        assertFalse("RA command should succeed", error);
+        assertFalse(error,"RA command should succeed");
         // Should fill from position 640 to 1919 (1280 chars)
-        assertTrue("Region should be filled with null",
-                harness.verifyFill(640, 1280, CHAR_NULL));
+        assertTrue(harness.verifyFill(640, 1280, CHAR_NULL),"Region should be filled with null");
     }
 
     /**
@@ -323,10 +289,9 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_EXTENDED_F0);
 
         // Assert
-        assertFalse("RA command should succeed", error);
+        assertFalse(error,"RA command should succeed");
         // Note: The special case clears screen, so check that it was processed
-        assertTrue("Command executed without error",
-                !error);
+        assertTrue(!error,"Command executed without error");
     }
 
     /**
@@ -347,10 +312,10 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(1, 1, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertEquals("Position 0 should be space", CHAR_SPACE, harness.getCharAt(0));
+        assertFalse(error,"RA command should succeed");
+        assertEquals(CHAR_SPACE, harness.getCharAt(0),"Position 0 should be space");
         // Position 1 should still be space (from clearScreen)
-        assertEquals("Position 1 should be space (unchanged)", CHAR_SPACE, harness.getCharAt(1));
+        assertEquals(CHAR_SPACE, harness.getCharAt(1),"Position 1 should be space (unchanged)");
     }
 
     /**
@@ -376,7 +341,7 @@ public class RACommandPairwiseTest {
         // Actually, re-reading the code: times = endPos - startPos
         // If endPos < startPos, times would be negative, loop wouldn't execute
         // This is captured implicitly
-        assertTrue("Handling completed", true);
+        assertTrue(true,"Handling completed");
     }
 
     /**
@@ -397,10 +362,9 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(1, 80, CHAR_PRINTABLE_Z);
 
         // Assert
-        assertFalse("RA command should succeed", error);
+        assertFalse(error,"RA command should succeed");
         // Fill from position 39 (col 40) to position 79 (col 80)
-        assertTrue("Partial row should be filled with 'Z'",
-                harness.verifyFill(39, 41, CHAR_PRINTABLE_Z));
+        assertTrue(harness.verifyFill(39, 41, CHAR_PRINTABLE_Z),"Partial row should be filled with 'Z'");
     }
 
     /**
@@ -421,9 +385,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(3, 80, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertTrue("Rows 2-3 should be filled with space",
-                harness.verifyFill(80, 160, CHAR_SPACE));
+        assertFalse(error,"RA command should succeed");
+        assertTrue(harness.verifyFill(80, 160, CHAR_SPACE),"Rows 2-3 should be filled with space");
     }
 
     /**
@@ -444,9 +407,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(1, 80, CHAR_NULL);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertTrue("First 80 positions should be filled",
-                harness.verifyFill(0, 80, CHAR_NULL));
+        assertFalse(error,"RA command should succeed");
+        assertTrue(harness.verifyFill(0, 80, CHAR_NULL),"First 80 positions should be filled");
     }
 
     /**
@@ -467,12 +429,11 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(20, 80, CHAR_EXTENDED_FF);
 
         // Assert
-        assertFalse("RA command should succeed", error);
+        assertFalse(error,"RA command should succeed");
         // Position 880 = (12-1)*80 + (1-1) = 880
         // Position 1520 = (20-1)*80 + (80-1) = 1519
         // Length = 1519 - 880 + 1 = 640
-        assertTrue("8 rows should be filled with FF",
-                harness.verifyFill(880, 640, CHAR_EXTENDED_FF));
+        assertTrue(harness.verifyFill(880, 640, CHAR_EXTENDED_FF),"8 rows should be filled with FF");
     }
 
     /**
@@ -493,9 +454,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(2, 80, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertTrue("Should fill from col 2 of row 1",
-                harness.verifyFill(1, 159, CHAR_SPACE));
+        assertFalse(error,"RA command should succeed");
+        assertTrue(harness.verifyFill(1, 159, CHAR_SPACE),"Should fill from col 2 of row 1");
     }
 
     /**
@@ -516,8 +476,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_PRINTABLE_A);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertEquals("Last position should be 'A'", CHAR_PRINTABLE_A, harness.getCharAt(1919));
+        assertFalse(error,"RA command should succeed");
+        assertEquals(CHAR_PRINTABLE_A, harness.getCharAt(1919),"Last position should be 'A'");
     }
 
     /**
@@ -538,12 +498,12 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(7, 21, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA command should succeed", error);
+        assertFalse(error,"RA command should succeed");
         // Start pos = (7-1)*80 + (21-1) = 520
         // End pos = (7-1)*80 + (21-1) = 520
         // times = 520 - 520 = 0, loop: for (i=0; i<=0 && 520+0<1920; i++)
         // i=0: screenBuffer[520] = CHAR_SPACE
-        assertEquals("Target cell should be filled with space", CHAR_SPACE, harness.getCharAt(520));
+        assertEquals(CHAR_SPACE, harness.getCharAt(520),"Target cell should be filled with space");
     }
 
     /**
@@ -564,9 +524,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(2, 80, CHAR_PRINTABLE_A);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertTrue("Two rows should be filled with 'A'",
-                harness.verifyFill(0, 160, CHAR_PRINTABLE_A));
+        assertFalse(error,"RA command should succeed");
+        assertTrue(harness.verifyFill(0, 160, CHAR_PRINTABLE_A),"Two rows should be filled with 'A'");
     }
 
     /**
@@ -587,9 +546,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertTrue("Last 60 chars should be filled",
-                harness.verifyFill(1900, 20, CHAR_SPACE));
+        assertFalse(error,"RA command should succeed");
+        assertTrue(harness.verifyFill(1900, 20, CHAR_SPACE),"Last 60 chars should be filled");
     }
 
     // ========== BOUNDARY TESTS: Screen edges, wrap-around (3 tests) ==========
@@ -612,8 +570,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertEquals("Last position should be space", CHAR_SPACE, harness.getCharAt(1919));
+        assertFalse(error,"RA command should succeed");
+        assertEquals(CHAR_SPACE, harness.getCharAt(1919),"Last position should be space");
     }
 
     /**
@@ -634,9 +592,9 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_EXTENDED_F0);
 
         // Assert
-        assertFalse("RA command should succeed", error);
+        assertFalse(error,"RA command should succeed");
         // Special case triggers full screen clear
-        assertTrue("Command should complete", !error);
+        assertTrue(!error,"Command should complete");
     }
 
     /**
@@ -657,8 +615,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_NULL);
 
         // Assert
-        assertFalse("RA command should succeed", error);
-        assertEquals("Last position should be null", CHAR_NULL, harness.getCharAt(1919));
+        assertFalse(error,"RA command should succeed");
+        assertEquals(CHAR_NULL, harness.getCharAt(1919),"Last position should be null");
     }
 
     // ========== ADVERSARIAL TESTS: Invalid params, out-of-bounds (8 tests) ==========
@@ -680,7 +638,7 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(11, 80, CHAR_SPACE);
 
         // Assert
-        assertTrue("RA should return error for backward address", error);
+        assertTrue(error,"RA should return error for backward address");
     }
 
     /**
@@ -700,7 +658,7 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(0, 80, CHAR_SPACE);
 
         // Assert
-        assertTrue("RA should reject row 0", error);
+        assertTrue(error,"RA should reject row 0");
     }
 
     /**
@@ -720,7 +678,7 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(-1, 80, CHAR_SPACE);
 
         // Assert
-        assertTrue("RA should reject negative row", error);
+        assertTrue(error,"RA should reject negative row");
     }
 
     /**
@@ -743,7 +701,7 @@ public class RACommandPairwiseTest {
         // Assert: toRow >= currentRow (1 >= 1: true), so passes row check
         // But endPos = (1-1)*80 + (0-1) = -1 < 0
         // This should trigger validation error
-        assertTrue("RA with col 0 should return error for negative endPos", error);
+        assertTrue(error,"RA with col 0 should return error for negative endPos");
     }
 
     /**
@@ -767,7 +725,7 @@ public class RACommandPairwiseTest {
         // 255 >= screenLength (1920)? No, so endPos is valid
         // But in real scenario, this would be out of bounds for the row
         // The mock harness doesn't validate col bounds strictly
-        assertFalse("RA processes large col value", error);
+        assertFalse(error,"RA processes large col value");
     }
 
     /**
@@ -788,8 +746,8 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA should succeed at boundary", error);
-        assertEquals("Last cell should be filled", CHAR_SPACE, harness.getCharAt(1919));
+        assertFalse(error,"RA should succeed at boundary");
+        assertEquals(CHAR_SPACE, harness.getCharAt(1919),"Last cell should be filled");
     }
 
     /**
@@ -810,9 +768,9 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(24, 80, CHAR_EXTENDED_FF);
 
         // Assert
-        assertFalse("RA should handle all parameters at limits", error);
+        assertFalse(error,"RA should handle all parameters at limits");
         // Special case: clear screen (this is what the code does)
-        assertTrue("Command completed", !error);
+        assertTrue(!error,"Command completed");
     }
 
     /**
@@ -835,7 +793,7 @@ public class RACommandPairwiseTest {
         // Assert: toRow >= currentRow (25 >= 24: true), so no row validation error
         // endPos = (25-1)*80 + (80-1) = 1920 + 79 = 1999 >= screenLength (1920)
         // This is out of bounds, should trigger validation
-        assertTrue("RA should detect out-of-bounds target", error);
+        assertTrue(error,"RA should detect out-of-bounds target");
     }
 
     // ========== SUPPLEMENTARY TESTS: Character set coverage (2 tests) ==========
@@ -858,9 +816,9 @@ public class RACommandPairwiseTest {
         boolean error = harness.processRepeatToAddress(1, 80, CHAR_NULL);
 
         // Assert
-        assertFalse("RA should succeed", error);
-        assertEquals("Position 0 should be null", CHAR_NULL, harness.getCharAt(0));
-        assertEquals("Position 10 should be null", CHAR_NULL, harness.getCharAt(10));
+        assertFalse(error,"RA should succeed");
+        assertEquals(CHAR_NULL, harness.getCharAt(0),"Position 0 should be null");
+        assertEquals(CHAR_NULL, harness.getCharAt(10),"Position 10 should be null");
     }
 
     /**
@@ -885,10 +843,9 @@ public class RACommandPairwiseTest {
             boolean error = harness.processRepeatToAddress(1, 10, testChar);
 
             // Assert
-            assertFalse("RA should succeed for extended char", error);
+            assertFalse(error,"RA should succeed for extended char");
             for (int i = 0; i < 10; i++) {
-                assertEquals("Extended char should be preserved at position " + i,
-                        testChar, harness.getCharAt(i));
+                assertEquals(testChar, harness.getCharAt(i),"Extended char should be preserved at position " + i);
             }
         }
     }
@@ -917,12 +874,10 @@ public class RACommandPairwiseTest {
         boolean error2 = harness.processRepeatToAddress(3, 80, CHAR_PRINTABLE_Z);
 
         // Assert
-        assertFalse("First RA should succeed", error1);
-        assertFalse("Second RA should succeed", error2);
-        assertTrue("Row 1 should still be 'A'",
-                harness.verifyFill(0, 80, CHAR_PRINTABLE_A));
-        assertTrue("Rows 2-3 should be 'Z'",
-                harness.verifyFill(80, 160, CHAR_PRINTABLE_Z));
+        assertFalse(error1,"First RA should succeed");
+        assertFalse(error2,"Second RA should succeed");
+        assertTrue(harness.verifyFill(0, 80, CHAR_PRINTABLE_A),"Row 1 should still be 'A'");
+        assertTrue(harness.verifyFill(80, 160, CHAR_PRINTABLE_Z),"Rows 2-3 should be 'Z'");
     }
 
     /**
@@ -943,8 +898,7 @@ public class RACommandPairwiseTest {
         boolean error = largeHarness.processRepeatToAddress(27, 132, CHAR_SPACE);
 
         // Assert
-        assertFalse("RA should succeed on large screen", error);
-        assertTrue("Large screen should be fillable",
-                largeHarness.verifyFill(0, 100, CHAR_SPACE));
+        assertFalse(error,"RA should succeed on large screen");
+        assertTrue(largeHarness.verifyFill(0, 100, CHAR_SPACE),"Large screen should be fillable");
     }
 }

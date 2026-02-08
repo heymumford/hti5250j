@@ -1,3 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j;
 
 import java.awt.Component;
@@ -79,8 +89,8 @@ public class ExternalProgramConfig {
                 defaultProps.load(file.openStream());
 
                 // we will now load the default settings
-                for (Enumeration e = defaultProps.keys(); e.hasMoreElements(); ) {
-                    String key = (String) e.nextElement();
+                for (Enumeration propertyKeys = defaultProps.keys(); propertyKeys.hasMoreElements(); ) {
+                    String key = (String) propertyKeys.nextElement();
                     etnProps.setProperty(key, defaultProps.getProperty(key));
 
                 }
@@ -104,8 +114,8 @@ public class ExternalProgramConfig {
         wCommand = new JTextField(40);
         uCommand = new JTextField(40);
         if (propKey != null) {
-            for (Enumeration e = props.keys(); e.hasMoreElements(); ) {
-                String key = (String) e.nextElement();
+            for (Enumeration propertyKeys = props.keys(); propertyKeys.hasMoreElements(); ) {
+                String key = (String) propertyKeys.nextElement();
                 if (propKey.equals(props.getProperty(key))) {
                     String subKey = key.substring(8);
                     int index = subKey.indexOf(".");
@@ -152,7 +162,7 @@ public class ExternalProgramConfig {
             Action add = new AbstractAction(LangTool.getString("conf.optAdd")) {
                 private static final long serialVersionUID = 1L;
 
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     doConfigureAction(propKey2);
                 }
             };
@@ -164,7 +174,7 @@ public class ExternalProgramConfig {
             Action edit = new AbstractAction(LangTool.getString("conf.optEdit")) {
                 private static final long serialVersionUID = 1L;
 
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     doConfigureAction(propKey2);
                 }
             };
@@ -176,7 +186,7 @@ public class ExternalProgramConfig {
         Action cancel = new AbstractAction(LangTool.getString("conf.optCancel")) {
             private static final long serialVersionUID = 1L;
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 dialog.dispose();
             }
         };
@@ -211,7 +221,7 @@ public class ExternalProgramConfig {
      * React to the configuration action button to perform to Add or Edit the
      * entry
      *
-     * @param e - key to act upon
+     * @param propKey - key to act upon
      */
     private static void doConfigureAction(String propKey) {
 
@@ -235,16 +245,16 @@ public class ExternalProgramConfig {
 
         private static final long serialVersionUID = 1L;
 
-        public void insertString(int offs, String str, AttributeSet a)
+        public void insertString(int offset, String value, AttributeSet attributes)
                 throws BadLocationException {
 
-            super.insertString(offs, str, a);
+            super.insertString(offset, value, attributes);
             if (getText(0, getLength()).length() > 0)
                 doSomethingEntered();
         }
 
-        public void remove(int offs, int len) throws BadLocationException {
-            super.remove(offs, len);
+        public void remove(int offset, int length) throws BadLocationException {
+            super.remove(offset, length);
             if (getText(0, getLength()).length() == 0)
                 doNothingEntered();
         }

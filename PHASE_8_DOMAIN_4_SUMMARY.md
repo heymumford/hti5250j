@@ -1,45 +1,29 @@
 # Phase 8: Domain 4 Scenario Tests - Sprint 1 Summary
 
-**Status:** ✅ **COMPLETE - Test Framework Ready**
-
-**Date Completed:** 2026-02-07
-
-**Sprint Duration:** Single focused sprint (test-first approach)
-
-**Test Count:** 22 scenario tests across 3 test classes
-
-**Commits:** Pending (will update after git operations)
-
----
+| Field | Value |
+| --- | --- |
+| Status | Complete - test framework ready |
+| Date completed | 2026-02-07 |
+| Sprint duration | Single sprint (test-first) |
+| Test count | 22 scenario tests across 3 classes |
+| Commits | Pending (update after git operations) |
 
 ## Executive Summary
 
-Domain 4 Scenario Tests complete the four-domain test architecture by validating **complete business workflows** end-to-end. Unlike Domain 1-3 tests (which test components, surfaces, and contracts), Domain 4 tests verify that real-world user scenarios work correctly from start to finish.
+Domain 4 scenario tests complete the four-domain architecture by validating end-to-end business workflows. These tests cover payment processing, settlement batches, and error recovery, and they are ready for Phase 8 Sprint 2 (real verifier implementation).
 
-**Three critical scenarios implemented:**
-1. **PaymentProcessingScenarioTest** (6 tests) — Complete payment workflow
-2. **SettlementBatchScenarioTest** (7 tests) — Batch settlement with atomicity
-3. **ErrorRecoveryScenarioTest** (9 tests) — Failure modes and recovery
+Key scenarios:
+1. PaymentProcessingScenarioTest (6 tests) — Complete payment workflow
+2. SettlementBatchScenarioTest (7 tests) — Batch settlement with atomicity
+3. ErrorRecoveryScenarioTest (9 tests) — Failure modes and recovery
 
-All tests compile, zero regressions, ready for Phase 8 Sprint 2 (real verifier implementation).
-
----
-
-## Four-Domain Architecture (Complete)
-
-```
-Domain 1: Unit Tests                (Fast feedback, <5s)        ✅ EXIST
-Domain 2: Continuous Contracts      (Real i5, 24/7)           ✅ EXIST
-Domain 3: Surface Tests             (Critical boundaries)     ✅ COMPLETE (Phase 6-7)
-Domain 4: SCENARIO TESTS            (Business workflows)      ✅ FRAMEWORK READY (Phase 8 Sprint 1)
-```
-
-**Strategic Value:**
-- **Domain 1-3** tests catch technical bugs (logic errors, protocol failures, data loss)
-- **Domain 4** tests catch workflow bugs (missing steps, incorrect state transitions, SLA violations)
-- Together: Prevent silent failures that only appear in production under real user load
+All tests compile with zero regressions.
 
 ---
+
+## Domain Context
+
+Domain 4 scenario tests are defined in the canonical test architecture. See `TEST_ARCHITECTURE.md` for domain definitions, cadence, and evidence expectations.
 
 ## Phase 8 Sprint 1: Test Framework (TDD First)
 
@@ -431,41 +415,6 @@ build/org/hti5250j/scenarios/
 
 ---
 
-## Architecture Alignment
-
-### Four-Domain Test Pyramid (Complete)
-
-```
-         Domain 4: Scenario Tests
-         (Business workflows)
-            ▲
-           / \
-          /   \
-         /     \
-        /       \
-       /         \
-      /           \
-     / Domain 3:   \
-    / Surface Tests \
-    (Critical        \
-    boundaries)      \
-   /                  \
-  /    Domain 2:       \
- /  Continuous Ctrs     \
- (Real i5, 24/7)        \
-/________________________\
-Domain 1: Unit Tests
-(Fast feedback)
-```
-
-**Inverted from traditional pyramid because:**
-- Most bugs live at surfaces (protocol, schema, concurrency)
-- Scenario tests verify end-to-end correctness
-- Unit tests verify implementation details
-- Together: No silent failures in production
-
----
-
 ## How to Use (Phase 8 Sprint 2+)
 
 When Domain 3 surface tests and real i5 access become available:
@@ -489,13 +438,13 @@ When Domain 3 surface tests and real i5 access become available:
 ## Strategic Summary
 
 Domain 4 Scenario Tests:
-- ✅ Complete four-domain test architecture
-- ✅ Verify business workflows (not just code paths)
-- ✅ Catch silent failures (only visible in production)
-- ✅ Support end-to-end user validation
-- ✅ Enable SLA compliance monitoring
-- ✅ Prevent regressions in multi-system integration
-- ✅ Foundation for production reliability
+- Complete four-domain test architecture
+- Verify business workflows (not just code paths)
+- Catch silent failures (only visible in production)
+- Support end-to-end user validation
+- Enable SLA compliance monitoring
+- Prevent regressions in multi-system integration
+- Foundation for production reliability
 
 **Status: Ready for Phase 8 Sprint 2 (i5 integration)**
 

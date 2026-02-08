@@ -1,38 +1,24 @@
-/**
- * Title: MessageLinePairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for HTI5250j message line handling
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.hti5250j.event.ScreenOIAListener;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Vector;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for message line handling and display.
@@ -52,15 +38,14 @@ import static org.junit.Assert.*;
  * - Message persistence across screen updates
  * - Adversarial: null messages, special characters, control sequences, race conditions
  */
-@RunWith(Parameterized.class)
 public class MessageLinePairwiseTest {
 
     // Test parameters
-    private final String messageType;
-    private final int messageLength;
-    private final String displayDuration;
-    private final String priority;
-    private final String screenArea;
+    private String messageType;
+    private int messageLength;
+    private String displayDuration;
+    private String priority;
+    private String screenArea;
 
     // Instance variables
     private ScreenOIA oia;
@@ -108,8 +93,7 @@ public class MessageLinePairwiseTest {
      *
      * Pairwise minimum: 25+ combinations covering critical interaction pairs
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // Row 1: Info message, empty, instant, low, message-line
                 { MSG_INFO, LEN_EMPTY, DURATION_INSTANT, PRIORITY_LOW, AREA_MESSAGE_LINE },
@@ -192,7 +176,7 @@ public class MessageLinePairwiseTest {
         });
     }
 
-    public MessageLinePairwiseTest(String messageType, int messageLength, String displayDuration,
+    private void setParameters(String messageType, int messageLength, String displayDuration,
                                    String priority, String screenArea) {
         this.messageType = messageType;
         this.messageLength = messageLength;
@@ -201,8 +185,7 @@ public class MessageLinePairwiseTest {
         this.screenArea = screenArea;
     }
 
-    @Before
-    public void setUp() {
+        public void setUp() {
         screen5250 = new Screen5250TestDouble();
         oia = new ScreenOIA(screen5250);
         messageListener = new TestMessageListener();
@@ -215,13 +198,15 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify message light starts off and can be queried
      */
-    @Test
-    public void testMessageLightInitial() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightInitial(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         // RED: Will fail if isMessageWait() doesn't return initial state
-        assertFalse(
-            "Message light should start off in new OIA instance",
-            oia.isMessageWait()
-        );
+        assertFalse(oia.isMessageWait()
+        ,
+            "Message light should start off in new OIA instance");
     }
 
     /**
@@ -229,8 +214,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify message light can be turned on with listener notification
      */
-    @Test
-    public void testMessageLightActivation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightActivation(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         if (!messageType.equals(MSG_ERROR) && !messageType.equals(MSG_WARNING) && !messageType.equals(MSG_SYSTEM)) {
             return; // Focus on message types that activate light
         }
@@ -239,16 +227,14 @@ public class MessageLinePairwiseTest {
         oia.setMessageLightOn();
 
         // GREEN: Verify on state
-        assertTrue(
-            String.format("Message light should be on after setMessageLightOn for %s", messageType),
-            oia.isMessageWait()
-        );
+        assertTrue(oia.isMessageWait()
+        ,
+            String.format("Message light should be on after setMessageLightOn for %s", messageType));
 
         // Verify listener was notified
-        assertTrue(
-            "Listener should have been notified of message light on",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_MESSAGELIGHT)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_MESSAGELIGHT)
+        ,
+            "Listener should have been notified of message light on");
     }
 
     /**
@@ -256,11 +242,14 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify message light can be turned off
      */
-    @Test
-    public void testMessageLightDeactivation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightDeactivation(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         // Set up: Turn on light
         oia.setMessageLightOn();
-        assertTrue("Setup: Message light should be on", oia.isMessageWait());
+        assertTrue(oia.isMessageWait(),"Setup: Message light should be on");
 
         oiaListener.clear();
 
@@ -268,16 +257,14 @@ public class MessageLinePairwiseTest {
         oia.setMessageLightOff();
 
         // GREEN: Verify off state
-        assertFalse(
-            "Message light should be off after setMessageLightOff",
-            oia.isMessageWait()
-        );
+        assertFalse(oia.isMessageWait()
+        ,
+            "Message light should be off after setMessageLightOff");
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified of message light off",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_MESSAGELIGHT)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_MESSAGELIGHT)
+        ,
+            "Listener should be notified of message light off");
     }
 
     /**
@@ -285,8 +272,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify input inhibition can carry message text
      */
-    @Test
-    public void testInputInhibitMessageText() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInputInhibitMessageText(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String testMessage = createMessage(messageLength, messageType);
 
         // Set inhibited with message
@@ -294,18 +284,15 @@ public class MessageLinePairwiseTest {
 
         // GREEN: Verify message is stored
         String storedMessage = oia.getInhibitedText();
-        assertNotNull(
-            "Inhibited text should not be null when set",
-            storedMessage
-        );
+        assertNotNull(storedMessage
+        ,
+            "Inhibited text should not be null when set");
 
         // Verify message content
         // Note: Implementation stores full message without truncation
-        assertEquals(
-            String.format("Message text should match for length %d", messageLength),
-            testMessage,
-            storedMessage
-        );
+        assertEquals(testMessage,storedMessage
+        ,
+            String.format("Message text should match for length %d", messageLength));
     }
 
     /**
@@ -313,8 +300,11 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify empty messages are handled safely
      */
-    @Test
-    public void testEmptyMessageHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEmptyMessageHandling(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         if (messageLength != LEN_EMPTY) {
             return; // Focus on empty message case
         }
@@ -324,16 +314,14 @@ public class MessageLinePairwiseTest {
 
         // GREEN: Verify empty message doesn't cause errors
         String storedMessage = oia.getInhibitedText();
-        assertNotNull(
-            "Empty message should be stored without error",
-            storedMessage
-        );
+        assertNotNull(storedMessage
+        ,
+            "Empty message should be stored without error");
 
-        assertEquals(
-            "Empty message should remain empty",
-            "",
+        assertEquals("",
             storedMessage
-        );
+        ,
+            "Empty message should remain empty");
     }
 
     /**
@@ -341,8 +329,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify minimal-length messages display correctly
      */
-    @Test
-    public void testSingleCharacterMessage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSingleCharacterMessage(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         if (messageLength != LEN_SINGLE) {
             return; // Focus on single-char case
         }
@@ -352,11 +343,10 @@ public class MessageLinePairwiseTest {
 
         // GREEN: Verify single character is preserved
         String storedMessage = oia.getInhibitedText();
-        assertEquals(
-            "Single character message should be preserved",
-            singleChar,
+        assertEquals(singleChar,
             storedMessage
-        );
+        ,
+            "Single character message should be preserved");
     }
 
     /**
@@ -364,8 +354,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify standard display width messages work correctly
      */
-    @Test
-    public void testStandardWidth80Message() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testStandardWidth80Message(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         if (messageLength != LEN_STANDARD) {
             return; // Focus on standard 80-char case
         }
@@ -375,17 +368,15 @@ public class MessageLinePairwiseTest {
 
         // GREEN: Verify standard message integrity
         String storedMessage = oia.getInhibitedText();
-        assertEquals(
-            "Standard 80-character message should be preserved",
-            message,
+        assertEquals(message,
             storedMessage
-        );
+        ,
+            "Standard 80-character message should be preserved");
 
-        assertEquals(
-            "Standard message should be exactly 80 characters",
-            LEN_STANDARD,
+        assertEquals(LEN_STANDARD,
             storedMessage.length()
-        );
+        ,
+            "Standard message should be exactly 80 characters");
     }
 
     /**
@@ -393,8 +384,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify extended-width messages on wide displays
      */
-    @Test
-    public void testWideWidth132Message() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWideWidth132Message(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         if (messageLength != LEN_WIDE) {
             return; // Focus on 132-char case
         }
@@ -404,16 +398,14 @@ public class MessageLinePairwiseTest {
 
         // GREEN: Verify wide message handling
         String storedMessage = oia.getInhibitedText();
-        assertNotNull(
-            "Wide 132-character message should be stored",
-            storedMessage
-        );
+        assertNotNull(storedMessage
+        ,
+            "Wide 132-character message should be stored");
 
         // Verify stored length (may be truncated or preserved)
-        assertTrue(
-            "Wide message should be stored or safely truncated",
-            storedMessage.length() <= LEN_WIDE && storedMessage.length() > 0
-        );
+        assertTrue(storedMessage.length() <= LEN_WIDE && storedMessage.length() > 0
+        ,
+            "Wide message should be stored or safely truncated");
     }
 
     /**
@@ -422,8 +414,11 @@ public class MessageLinePairwiseTest {
      * Adversarial test: Verify overflow messages don't cause crashes
      * Note: Implementation stores full message without truncation
      */
-    @Test
-    public void testOverflowMessageTruncation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testOverflowMessageTruncation(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         if (messageLength != LEN_OVERFLOW) {
             return; // Focus on overflow case
         }
@@ -433,23 +428,20 @@ public class MessageLinePairwiseTest {
 
         // GREEN: Verify overflow is handled without crash
         String storedMessage = oia.getInhibitedText();
-        assertNotNull(
-            "Overflow message should be stored without null pointer",
-            storedMessage
-        );
+        assertNotNull(storedMessage
+        ,
+            "Overflow message should be stored without null pointer");
 
         // Verify message is stored (implementation stores full length)
-        assertTrue(
-            "Overflow message should be stored",
-            storedMessage.length() > 0
-        );
+        assertTrue(storedMessage.length() > 0
+        ,
+            "Overflow message should be stored");
 
         // Verify we can retrieve the message without crash
-        assertEquals(
-            "Full overflow message should be retrievable",
-            overflowMessage,
+        assertEquals(overflowMessage,
             storedMessage
-        );
+        ,
+            "Full overflow message should be retrievable");
     }
 
     /**
@@ -457,23 +449,25 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify repeated on/off doesn't cause issues
      */
-    @Test
-    public void testMessageLightToggleIdempotency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightToggleIdempotency(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         // Toggle multiple times
         oia.setMessageLightOn();
-        assertTrue("Setup: Should be on", oia.isMessageWait());
+        assertTrue(oia.isMessageWait(),"Setup: Should be on");
 
         oia.setMessageLightOff();
-        assertFalse("Should be off", oia.isMessageWait());
+        assertFalse(oia.isMessageWait(),"Should be off");
 
         oia.setMessageLightOn();
-        assertTrue("Should be on again", oia.isMessageWait());
+        assertTrue(oia.isMessageWait(),"Should be on again");
 
         // GREEN: Final state should be on
-        assertTrue(
-            "Final toggle should leave light on",
-            oia.isMessageWait()
-        );
+        assertTrue(oia.isMessageWait()
+        ,
+            "Final toggle should leave light on");
     }
 
     /**
@@ -481,8 +475,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify different inhibit codes can be set and preserved
      */
-    @Test
-    public void testMultipleInhibitCodeTypes() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleInhibitCodeTypes(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         int[] inhibitCodes = {
             ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
@@ -498,11 +495,9 @@ public class MessageLinePairwiseTest {
 
             // GREEN: Verify code is retrievable
             int stored = oia.getInputInhibited();
-            assertEquals(
-                String.format("Inhibit code %d should be preserved", code),
-                code,
-                stored
-            );
+            assertEquals(code,stored
+            ,
+                String.format("Inhibit code %d should be preserved", code));
         }
     }
 
@@ -511,19 +506,21 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify special chars don't corrupt message handling
      */
-    @Test
-    public void testSpecialCharacterMessage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSpecialCharacterMessage(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String specialMessage = "ERROR: *@#$%^&*()_+-=[]{}|;:',.<>?/~`";
 
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, specialMessage);
 
         // GREEN: Verify special characters preserved
         String stored = oia.getInhibitedText();
-        assertEquals(
-            "Special characters should be preserved in message",
-            specialMessage,
+        assertEquals(specialMessage,
             stored
-        );
+        ,
+            "Special characters should be preserved in message");
     }
 
     /**
@@ -531,8 +528,11 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify control sequences are handled safely
      */
-    @Test
-    public void testControlSequenceHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testControlSequenceHandling(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         // Attempt XSS-like injection
         String injectionAttempt = "Normal message\u0007\u0008\u001B[31m RED \u001B[0m";
 
@@ -540,17 +540,15 @@ public class MessageLinePairwiseTest {
 
         // GREEN: Verify no crash and message stored
         String stored = oia.getInhibitedText();
-        assertNotNull(
-            "Control sequence message should be stored without error",
-            stored
-        );
+        assertNotNull(stored
+        ,
+            "Control sequence message should be stored without error");
 
         // Message should be stored as-is (no sanitization expected in OIA layer)
-        assertEquals(
-            "Control sequences should be stored without modification",
-            injectionAttempt,
+        assertEquals(injectionAttempt,
             stored
-        );
+        ,
+            "Control sequences should be stored without modification");
     }
 
     /**
@@ -558,18 +556,20 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify null inhibited text is handled gracefully
      */
-    @Test
-    public void testNullInhibitedText() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNullInhibitedText(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         // Set inhibited without message
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0);
 
         // GREEN: Verify null/empty handling
         String stored = oia.getInhibitedText();
         // Can be null or empty, but shouldn't cause crash
-        assertTrue(
-            "Null message should either be null or empty",
-            stored == null || stored.equals("")
-        );
+        assertTrue(stored == null || stored.equals("")
+        ,
+            "Null message should either be null or empty");
     }
 
     /**
@@ -577,31 +577,32 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify state transition with different message types
      */
-    @Test
-    public void testMessageTypeStateTransition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageTypeStateTransition(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String message1 = "First message";
         String message2 = "Second message";
 
         // Set first message
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message1);
-        assertEquals("Setup: First message set", message1, oia.getInhibitedText());
+        assertEquals(message1, oia.getInhibitedText(),"Setup: First message set");
 
         // Transition to second message
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_PROGCHECK, 0, message2);
 
         // GREEN: Verify new message replaces old
-        assertEquals(
-            "Second message should replace first",
-            message2,
+        assertEquals(message2,
             oia.getInhibitedText()
-        );
+        ,
+            "Second message should replace first");
 
         // Verify inhibit code changed
-        assertEquals(
-            "Inhibit code should reflect new type",
-            ScreenOIA.INPUTINHIBITED_PROGCHECK,
+        assertEquals(ScreenOIA.INPUTINHIBITED_PROGCHECK,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibit code should reflect new type");
     }
 
     /**
@@ -609,8 +610,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify message independent of keyboard state
      */
-    @Test
-    public void testMessageWithKeyboardLockInteraction() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageWithKeyboardLockInteraction(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String message = "System locked message";
 
         // Lock keyboard and set message
@@ -618,19 +622,17 @@ public class MessageLinePairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message);
 
         // GREEN: Verify message preserved regardless of keyboard state
-        assertEquals(
-            "Message should be preserved with locked keyboard",
-            message,
+        assertEquals(message,
             oia.getInhibitedText()
-        );
+        ,
+            "Message should be preserved with locked keyboard");
 
         // Unlock and verify message still there
         oia.setKeyBoardLocked(false);
-        assertEquals(
-            "Message should persist after keyboard unlock",
-            message,
+        assertEquals(message,
             oia.getInhibitedText()
-        );
+        ,
+            "Message should persist after keyboard unlock");
     }
 
     /**
@@ -638,18 +640,20 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify listeners notified of message changes
      */
-    @Test
-    public void testMessageListenerNotification() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageListenerNotification(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         oiaListener.clear();
 
         String message = "Test message";
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message);
 
         // GREEN: Verify listener notified
-        assertTrue(
-            "Listener should be notified of input inhibit change",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "Listener should be notified of input inhibit change");
     }
 
     /**
@@ -657,11 +661,14 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify returning to clear state
      */
-    @Test
-    public void testClearInhibitState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearInhibitState(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         // Set inhibited state
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, "Inhibited message");
-        assertEquals("Setup: Should be inhibited", ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, oia.getInputInhibited());
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, oia.getInputInhibited(),"Setup: Should be inhibited");
 
         oiaListener.clear();
 
@@ -669,16 +676,14 @@ public class MessageLinePairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0, null);
 
         // GREEN: Verify clear state
-        assertEquals(
-            "Should return to not-inhibited state",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Should return to not-inhibited state");
 
-        assertTrue(
-            "Listener should be notified of clear",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "Listener should be notified of clear");
     }
 
     /**
@@ -686,21 +691,23 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify truncation on narrow displays
      */
-    @Test
-    public void testMessageTruncationOnNarrowDisplay() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageTruncationOnNarrowDisplay(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String longMessage = "This is a very long message that exceeds the standard 80 column display width and should be truncated safely";
 
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, longMessage);
 
         // GREEN: Verify handling
         String stored = oia.getInhibitedText();
-        assertNotNull("Long message should be stored", stored);
+        assertNotNull(stored,"Long message should be stored");
 
         // Should either be truncated or preserved
-        assertTrue(
-            "Long message should fit in memory",
-            stored.length() > 0
-        );
+        assertTrue(stored.length() > 0
+        ,
+            "Long message should fit in memory");
     }
 
     /**
@@ -708,26 +715,26 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify rapid state changes don't cause race conditions
      */
-    @Test
-    public void testRapidMessageUpdates() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRapidMessageUpdates(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         for (int i = 0; i < 10; i++) {
             String message = String.format("Rapid message %d", i);
             oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message);
 
             // Verify state after each update
             String stored = oia.getInhibitedText();
-            assertEquals(
-                String.format("Message %d should be preserved", i),
-                message,
-                stored
-            );
+            assertEquals(message,stored
+            ,
+                String.format("Message %d should be preserved", i));
         }
 
         // GREEN: Final state should be consistent
-        assertTrue(
-            "Final state should be consistent after rapid updates",
-            oia.getInhibitedText().contains("Rapid message 9")
-        );
+        assertTrue(oia.getInhibitedText().contains("Rapid message 9")
+        ,
+            "Final state should be consistent after rapid updates");
     }
 
     /**
@@ -735,8 +742,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify owner field doesn't interfere with messages
      */
-    @Test
-    public void testMessageWithOwnerField() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageWithOwnerField(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         int owner = 42;
         String message = "Owned message";
 
@@ -744,8 +754,8 @@ public class MessageLinePairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message);
 
         // GREEN: Verify both fields preserved
-        assertEquals("Owner should be set", owner, oia.getOwner());
-        assertEquals("Message should be preserved with owner", message, oia.getInhibitedText());
+        assertEquals(owner, oia.getOwner(),"Owner should be set");
+        assertEquals(message, oia.getInhibitedText(),"Message should be preserved with owner");
     }
 
     /**
@@ -753,35 +763,36 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify message light independent of inhibit status
      */
-    @Test
-    public void testMessageLightInhibitIndependence() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightInhibitIndependence(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String message = "Test message";
 
         // Set inhibited without message light
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message);
-        assertFalse("Setup: Message light off", oia.isMessageWait());
+        assertFalse(oia.isMessageWait(),"Setup: Message light off");
 
         // Turn on message light separately
         oia.setMessageLightOn();
 
         // GREEN: Both should be true independently
-        assertTrue("Message light should be on", oia.isMessageWait());
-        assertEquals(
-            "Inhibit message should still be set",
-            message,
+        assertTrue(oia.isMessageWait(),"Message light should be on");
+        assertEquals(message,
             oia.getInhibitedText()
-        );
+        ,
+            "Inhibit message should still be set");
 
         // Turn off message light
         oia.setMessageLightOff();
 
         // GREEN: Inhibit message should persist
-        assertFalse("Message light should be off", oia.isMessageWait());
-        assertEquals(
-            "Inhibit message should persist after light off",
-            message,
+        assertFalse(oia.isMessageWait(),"Message light should be off");
+        assertEquals(message,
             oia.getInhibitedText()
-        );
+        ,
+            "Inhibit message should persist after light off");
     }
 
     /**
@@ -789,8 +800,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify high-priority messages override lower ones
      */
-    @Test
-    public void testMessagePriorityOrdering() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessagePriorityOrdering(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         if (!priority.equals(PRIORITY_CRITICAL) && !priority.equals(PRIORITY_HIGH)) {
             return; // Focus on high-priority cases
         }
@@ -800,17 +814,16 @@ public class MessageLinePairwiseTest {
 
         // Set low priority first
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, lowPriorityMsg);
-        assertEquals("Setup: Low priority set", lowPriorityMsg, oia.getInhibitedText());
+        assertEquals(lowPriorityMsg, oia.getInhibitedText(),"Setup: Low priority set");
 
         // High priority should override if handled
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_PROGCHECK, 0, highPriorityMsg);
 
         // GREEN: High priority message should be shown
-        assertEquals(
-            "High priority message should override",
-            highPriorityMsg,
+        assertEquals(highPriorityMsg,
             oia.getInhibitedText()
-        );
+        ,
+            "High priority message should override");
     }
 
     /**
@@ -818,8 +831,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify all listeners notified of changes
      */
-    @Test
-    public void testMultipleListenerMessageNotification() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleListenerMessageNotification(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         TestOIAListener listener2 = new TestOIAListener();
         TestOIAListener listener3 = new TestOIAListener();
 
@@ -830,9 +846,9 @@ public class MessageLinePairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, "Test");
 
         // GREEN: Verify all listeners notified
-        assertTrue("First listener notified", oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED));
-        assertTrue("Second listener notified", listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED));
-        assertTrue("Third listener notified", listener3.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED));
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED),"First listener notified");
+        assertTrue(listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED),"Second listener notified");
+        assertTrue(listener3.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED),"Third listener notified");
     }
 
     /**
@@ -840,8 +856,11 @@ public class MessageLinePairwiseTest {
      *
      * Positive test: Verify messages independent of insert mode
      */
-    @Test
-    public void testMessageWithInsertModeInteraction() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageWithInsertModeInteraction(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String message = "Insert mode message";
 
         // Enable insert mode and set message
@@ -849,19 +868,17 @@ public class MessageLinePairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message);
 
         // GREEN: Verify message preserved
-        assertEquals(
-            "Message should be preserved with insert mode on",
-            message,
+        assertEquals(message,
             oia.getInhibitedText()
-        );
+        ,
+            "Message should be preserved with insert mode on");
 
         // Disable insert mode
         oia.setInsertMode(false);
-        assertEquals(
-            "Message should persist after insert mode off",
-            message,
+        assertEquals(message,
             oia.getInhibitedText()
-        );
+        ,
+            "Message should persist after insert mode off");
     }
 
     /**
@@ -869,8 +886,11 @@ public class MessageLinePairwiseTest {
      *
      * Adversarial test: Verify complex interactions don't corrupt state
      */
-    @Test
-    public void testComplexMultiStateInteraction() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testComplexMultiStateInteraction(String messageType, int messageLength, String displayDuration, String priority, String screenArea) throws Exception {
+        setParameters(messageType, messageLength, displayDuration, priority, screenArea);
+        setUp();
         String message = "Complex state message";
 
         // Engage multiple features simultaneously
@@ -880,29 +900,28 @@ public class MessageLinePairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, message);
 
         // GREEN: Verify all state preserved
-        assertTrue("Keyboard should be locked", oia.isKeyBoardLocked());
-        assertTrue("Insert mode should be on", oia.isInsertMode());
-        assertTrue("Message light should be on", oia.isMessageWait());
-        assertEquals(
-            "Message should be preserved with complex state",
-            message,
+        assertTrue(oia.isKeyBoardLocked(),"Keyboard should be locked");
+        assertTrue(oia.isInsertMode(),"Insert mode should be on");
+        assertTrue(oia.isMessageWait(),"Message light should be on");
+        assertEquals(message,
             oia.getInhibitedText()
-        );
+        ,
+            "Message should be preserved with complex state");
 
         // Now disable features one by one
         oia.setKeyBoardLocked(false);
-        assertEquals("Message persists after keyboard unlock", message, oia.getInhibitedText());
+        assertEquals(message, oia.getInhibitedText(),"Message persists after keyboard unlock");
 
         oia.setInsertMode(false);
-        assertEquals("Message persists after insert mode off", message, oia.getInhibitedText());
+        assertEquals(message, oia.getInhibitedText(),"Message persists after insert mode off");
 
         oia.setMessageLightOff();
-        assertEquals("Message persists after light off", message, oia.getInhibitedText());
+        assertEquals(message, oia.getInhibitedText(),"Message persists after light off");
 
         // Verify all state changed correctly
-        assertFalse("Keyboard should be unlocked", oia.isKeyBoardLocked());
-        assertFalse("Insert mode should be off", oia.isInsertMode());
-        assertFalse("Message light should be off", oia.isMessageWait());
+        assertFalse(oia.isKeyBoardLocked(),"Keyboard should be unlocked");
+        assertFalse(oia.isInsertMode(),"Insert mode should be off");
+        assertFalse(oia.isMessageWait(),"Message light should be off");
     }
 
     // Helper methods

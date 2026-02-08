@@ -1,40 +1,26 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Test Suite
  *
- * @author Test Suite
- * @version 0.5
- * <p>
- * Description: Pairwise TDD test suite for system clipboard integration
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.clipboard;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for system clipboard integration in HTI5250j headless mode.
@@ -90,13 +76,13 @@ public class ClipboardIntegrationPairwiseTest {
     private static final String ENC_UNICODE = "UTF-8";
     private static final String ENC_EBCDIC = "CP037";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         systemClipboard = new MockSystemClipboard();
         clipboardManager = new MockClipboardManager(systemClipboard);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         systemClipboard.clear();
         clipboardManager = null;
@@ -118,8 +104,8 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("System clipboard content should not be null", retrieved);
-        assertEquals("Should retrieve plain text from system clipboard", testData, retrieved);
+        assertNotNull(retrieved,"System clipboard content should not be null");
+        assertEquals(testData, retrieved,"Should retrieve plain text from system clipboard");
     }
 
     /**
@@ -136,8 +122,8 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = systemClipboard.getPrimarySelection(FORMAT_RICH_TEXT);
 
         // ASSERT
-        assertNotNull("Primary selection should not be null", retrieved);
-        assertEquals("Should preserve RTF format in primary selection", rtfData, retrieved);
+        assertNotNull(retrieved,"Primary selection should not be null");
+        assertEquals(rtfData, retrieved,"Should preserve RTF format in primary selection");
     }
 
     /**
@@ -154,9 +140,9 @@ public class ClipboardIntegrationPairwiseTest {
         String plainConverted = clipboardManager.getInternalBuffer(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("Converted content should not be null", plainConverted);
-        assertTrue("Should strip HTML tags", !plainConverted.contains("<html>"));
-        assertTrue("Should contain text content", plainConverted.contains("Test"));
+        assertNotNull(plainConverted,"Converted content should not be null");
+        assertTrue(!plainConverted.contains("<html>"),"Should strip HTML tags");
+        assertTrue(plainConverted.contains("Test"),"Should contain text content");
     }
 
     /**
@@ -172,8 +158,8 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = systemClipboard.getContent(FORMAT_RICH_TEXT);
 
         // ASSERT
-        assertNotNull("RTF content should be retrieved", retrieved);
-        assertTrue("Should contain RTF marker", retrieved.contains("rtf"));
+        assertNotNull(retrieved,"RTF content should be retrieved");
+        assertTrue(retrieved.contains("rtf"),"Should contain RTF marker");
     }
 
     /**
@@ -189,8 +175,8 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = systemClipboard.getPrimarySelection(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("Primary selection should contain text", retrieved);
-        assertEquals("Should retrieve plain text from primary", ASCII_TEXT, retrieved);
+        assertNotNull(retrieved,"Primary selection should contain text");
+        assertEquals(ASCII_TEXT, retrieved,"Should retrieve plain text from primary");
     }
 
     // ========== DIMENSION 3 x 4: Selection Type x Paste Target ==========
@@ -209,8 +195,8 @@ public class ClipboardIntegrationPairwiseTest {
         String pasted = clipboardManager.pasteToInputField(systemClipboard.getContent(FORMAT_PLAIN_TEXT));
 
         // ASSERT
-        assertNotNull("Pasted content should not be null", pasted);
-        assertEquals("Should paste single character", testChar, pasted.charAt(0));
+        assertNotNull(pasted,"Pasted content should not be null");
+        assertEquals(testChar, pasted.charAt(0),"Should paste single character");
     }
 
     /**
@@ -228,7 +214,7 @@ public class ClipboardIntegrationPairwiseTest {
         boolean pasted = clipboardManager.pasteToField(systemClipboard.getContent(FORMAT_PLAIN_TEXT), protectedField);
 
         // ASSERT
-        assertFalse("Should not paste to protected field", pasted);
+        assertFalse(pasted,"Should not paste to protected field");
     }
 
     /**
@@ -245,8 +231,8 @@ public class ClipboardIntegrationPairwiseTest {
         String pasted = clipboardManager.pasteToMultipleFields(systemClipboard.getPrimarySelection(FORMAT_PLAIN_TEXT));
 
         // ASSERT
-        assertNotNull("Multi-field paste should complete", pasted);
-        assertTrue("Should contain multi-line content", pasted.contains("MultiLine"));
+        assertNotNull(pasted,"Multi-field paste should complete");
+        assertTrue(pasted.contains("MultiLine"),"Should contain multi-line content");
     }
 
     /**
@@ -263,8 +249,8 @@ public class ClipboardIntegrationPairwiseTest {
         String pasted = clipboardManager.pasteToInputField(clipboardManager.getInternalBuffer(FORMAT_PLAIN_TEXT));
 
         // ASSERT
-        assertNotNull("Block paste should complete", pasted);
-        assertTrue("Should contain all block lines", pasted.contains("Block1"));
+        assertNotNull(pasted,"Block paste should complete");
+        assertTrue(pasted.contains("Block1"),"Should contain all block lines");
     }
 
     // ========== DIMENSION 5 + COMBINATIONS: Encoding & Multi-factor ==========
@@ -284,8 +270,8 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("ASCII content should be retrieved", retrieved);
-        assertEquals("Should preserve ASCII encoding", asciiText, retrieved);
+        assertNotNull(retrieved,"ASCII content should be retrieved");
+        assertEquals(asciiText, retrieved,"Should preserve ASCII encoding");
     }
 
     /**
@@ -302,8 +288,8 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = systemClipboard.getPrimarySelection(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("Unicode content should be retrieved", retrieved);
-        assertEquals("Should preserve Unicode characters", unicodeText, retrieved);
+        assertNotNull(retrieved,"Unicode content should be retrieved");
+        assertEquals(unicodeText, retrieved,"Should preserve Unicode characters");
     }
 
     /**
@@ -321,9 +307,9 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = clipboardManager.getInternalBuffer(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("EBCDIC content should be retrieved", retrieved);
+        assertNotNull(retrieved,"EBCDIC content should be retrieved");
         // Should handle encoding without exception
-        assertTrue("Should preserve content after EBCDIC handling", retrieved.length() > 0);
+        assertTrue(retrieved.length() > 0,"Should preserve content after EBCDIC handling");
     }
 
     /**
@@ -340,9 +326,9 @@ public class ClipboardIntegrationPairwiseTest {
         String plainText = clipboardManager.convertFormat(htmlUnicode, FORMAT_HTML, FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("Converted content should not be null", plainText);
-        assertTrue("Should remove HTML tags", !plainText.contains("<p>"));
-        assertTrue("Should preserve Unicode content", plainText.contains("Tëst") || plainText.contains("st"));
+        assertNotNull(plainText,"Converted content should not be null");
+        assertTrue(!plainText.contains("<p>"),"Should remove HTML tags");
+        assertTrue(plainText.contains("Tëst") || plainText.contains("st"),"Should preserve Unicode content");
     }
 
     // ========== ADVERSARIAL TESTS: Large Pastes & Buffer Management ==========
@@ -360,7 +346,7 @@ public class ClipboardIntegrationPairwiseTest {
         boolean isLarge = clipboardManager.isLargePaste(systemClipboard.getContent(FORMAT_PLAIN_TEXT));
 
         // ASSERT
-        assertTrue("Should detect large paste", isLarge);
+        assertTrue(isLarge,"Should detect large paste");
     }
 
     /**
@@ -380,7 +366,7 @@ public class ClipboardIntegrationPairwiseTest {
         );
 
         // ASSERT
-        assertNotNull("Truncated content should not be null", truncated);
+        assertNotNull(truncated,"Truncated content should not be null");
         assertLessOrEqual("Should truncate to max size", truncated.length(), maxSize);
     }
 
@@ -397,8 +383,8 @@ public class ClipboardIntegrationPairwiseTest {
         String content = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("Content should be non-null", content);
-        assertTrue("Should be empty string", content.isEmpty());
+        assertNotNull(content,"Content should be non-null");
+        assertTrue(content.isEmpty(),"Should be empty string");
     }
 
     /**
@@ -413,7 +399,7 @@ public class ClipboardIntegrationPairwiseTest {
         // ACT & ASSERT: Should not throw NPE
         try {
             String content = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
-            assertTrue("Should handle null gracefully", content == null || content.isEmpty());
+            assertTrue(content == null || content.isEmpty(),"Should handle null gracefully");
         } catch (NullPointerException e) {
             fail("Should not throw NullPointerException: " + e.getMessage());
         }
@@ -433,7 +419,7 @@ public class ClipboardIntegrationPairwiseTest {
         // ACT & ASSERT: Should handle gracefully
         try {
             String retrieved = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
-            assertNotNull("Should retrieve content despite mismatch", retrieved);
+            assertNotNull(retrieved,"Should retrieve content despite mismatch");
         } catch (Exception e) {
             fail("Should handle encoding mismatch gracefully: " + e.getMessage());
         }
@@ -454,8 +440,8 @@ public class ClipboardIntegrationPairwiseTest {
         String asRTF = clipboardManager.convertFormat(asPlain, FORMAT_PLAIN_TEXT, FORMAT_RICH_TEXT);
 
         // ASSERT
-        assertNotNull("Chain conversion should complete", asRTF);
-        assertTrue("Should contain content through conversion chain", asRTF.length() > 0);
+        assertNotNull(asRTF,"Chain conversion should complete");
+        assertTrue(asRTF.length() > 0,"Should contain content through conversion chain");
     }
 
     /**
@@ -472,8 +458,8 @@ public class ClipboardIntegrationPairwiseTest {
         String retrieved = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertNotNull("Special chars should be retrieved", retrieved);
-        assertTrue("Should preserve some form of content", retrieved.length() > 0);
+        assertNotNull(retrieved,"Special chars should be retrieved");
+        assertTrue(retrieved.length() > 0,"Should preserve some form of content");
     }
 
     // ========== BOUNDARY & EDGE CASES ==========
@@ -494,7 +480,7 @@ public class ClipboardIntegrationPairwiseTest {
         // ASSERT
         // May return null when primary selection is disabled, which is acceptable
         // The test verifies no exception is thrown
-        assertTrue("Primary unavailable should not crash", true);
+        assertTrue(true,"Primary unavailable should not crash");
     }
 
     /**
@@ -511,7 +497,7 @@ public class ClipboardIntegrationPairwiseTest {
         String afterClear = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
 
         // ASSERT
-        assertTrue("Should be empty after clear", afterClear == null || afterClear.isEmpty());
+        assertTrue(afterClear == null || afterClear.isEmpty(),"Should be empty after clear");
     }
 
     /**
@@ -523,22 +509,22 @@ public class ClipboardIntegrationPairwiseTest {
         // Test 1 byte
         String single = "A";
         systemClipboard.setContent(single, FORMAT_PLAIN_TEXT);
-        assertEquals("1-byte paste", single, systemClipboard.getContent(FORMAT_PLAIN_TEXT));
+        assertEquals(single, systemClipboard.getContent(FORMAT_PLAIN_TEXT),"1-byte paste");
 
         // Test ~1KB
         String kb1 = "X".repeat(1024);
         systemClipboard.setContent(kb1, FORMAT_PLAIN_TEXT);
-        assertEquals("~1KB paste", kb1, systemClipboard.getContent(FORMAT_PLAIN_TEXT));
+        assertEquals(kb1, systemClipboard.getContent(FORMAT_PLAIN_TEXT),"~1KB paste");
 
         // Test ~1MB (adversarial)
         String mb1 = "X".repeat(1024 * 1024);
         try {
             systemClipboard.setContent(mb1, FORMAT_PLAIN_TEXT);
             String retrieved = systemClipboard.getContent(FORMAT_PLAIN_TEXT);
-            assertTrue("1MB paste should succeed or throw", retrieved != null || mb1.length() > 0);
+            assertTrue(retrieved != null || mb1.length() > 0,"1MB paste should succeed or throw");
         } catch (OutOfMemoryError e) {
             // Acceptable to fail at 1MB
-            assertTrue("OOM at 1MB is acceptable", true);
+            assertTrue(true,"OOM at 1MB is acceptable");
         }
     }
 
@@ -582,9 +568,9 @@ public class ClipboardIntegrationPairwiseTest {
         reader.join(5000);
 
         // ASSERT
-        assertNull("No exception during concurrent access", exception[0]);
-        assertTrue("Reads completed", readCount[0] > 0);
-        assertTrue("Writes completed", writeCount[0] > 0);
+        assertNull(exception[0],"No exception during concurrent access");
+        assertTrue(readCount[0] > 0,"Reads completed");
+        assertTrue(writeCount[0] > 0,"Writes completed");
     }
 
     /**
@@ -601,8 +587,8 @@ public class ClipboardIntegrationPairwiseTest {
         boolean hasHTML = systemClipboard.isFormatAvailable(FORMAT_HTML);
 
         // ASSERT
-        assertTrue("Should report plain text available", hasPlain);
-        assertFalse("Should report HTML not available", hasHTML);
+        assertTrue(hasPlain,"Should report plain text available");
+        assertFalse(hasHTML,"Should report HTML not available");
     }
 
     /**
@@ -622,15 +608,15 @@ public class ClipboardIntegrationPairwiseTest {
         String html = systemClipboard.getContent(FORMAT_HTML);
 
         // ASSERT
-        assertNotNull("Plain text format available", plain);
-        assertNotNull("RTF format available", rtf);
-        assertNotNull("HTML format available", html);
+        assertNotNull(plain,"Plain text format available");
+        assertNotNull(rtf,"RTF format available");
+        assertNotNull(html,"HTML format available");
     }
 
     // ========== HELPER ASSERTIONS & MOCKS ==========
 
     private void assertLessOrEqual(String msg, int actual, int expected) {
-        assertTrue(msg + " (expected <=" + expected + ", actual=" + actual + ")", actual <= expected);
+        assertTrue(actual <= expected,msg + " (expected <=" + expected + ", actual=" + actual + ")");
     }
 
     /**

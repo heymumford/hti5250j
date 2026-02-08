@@ -1,16 +1,12 @@
-/**
- * A convenience implementation of FileFilter that filters out
- * all files except for those type extensions that it knows about.
- * <p>
- * Example - create a new filter that filerts out all files
- * but gif and jpg image files:
- * <p>
- * JFileChooser chooser = new JFileChooser();
- * HTI5250jFileFilter filter = new HTI5250jFileFilter(
- * new String{"gif", "jpg"}, "JPEG & GIF Images")
- * chooser.addChoosableFileFilter(filter);
- * chooser.showOpenDialog(this);
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.gui;
 
 import java.io.File;

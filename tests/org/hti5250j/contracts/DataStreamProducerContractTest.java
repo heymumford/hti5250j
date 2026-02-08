@@ -1,14 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Contract Test Suite
- * DataStreamProducer - Protocol Data Stream Producer Contract
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Establishes behavioral contracts for DataStreamProducer:
- * - BlockingQueue protocol compliance (thread-safe put/take)
- * - Null stream rejection (never enqueue null)
- * - Runnable contract compliance (implement run() correctly)
- * - Partial stream reassembly (handle fragmented network packets)
- * - Thread interruption handling (graceful cleanup)
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.contracts;
 
 import org.junit.jupiter.api.BeforeEach;

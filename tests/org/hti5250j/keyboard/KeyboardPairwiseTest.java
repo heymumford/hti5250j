@@ -1,11 +1,21 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j.keyboard;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.event.KeyEvent;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD tests for keyboard input handling.
@@ -22,7 +32,7 @@ public class KeyboardPairwiseTest {
     private KeyStroker keystroke;
     private KeyMnemonicResolver mnemonicResolver;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mnemonicResolver = new KeyMnemonicResolver();
     }
@@ -44,11 +54,10 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("KeyStroker hash should be consistent",
-                keystroke.hashCode(), keystroke.hashCode());
-        assertFalse("Shift should not be down", keystroke.isShiftDown());
-        assertFalse("Ctrl should not be down", keystroke.isControlDown());
-        assertFalse("Alt should not be down", keystroke.isAltDown());
+        assertEquals(keystroke.hashCode(), keystroke.hashCode(),"KeyStroker hash should be consistent");
+        assertFalse(keystroke.isShiftDown(),"Shift should not be down");
+        assertFalse(keystroke.isControlDown(),"Ctrl should not be down");
+        assertFalse(keystroke.isAltDown(),"Alt should not be down");
     }
 
     /**
@@ -66,9 +75,9 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertTrue("Shift should be down", keystroke.isShiftDown());
-        assertFalse("Ctrl should not be down", keystroke.isControlDown());
-        assertEquals("Key code should be 0", KeyEvent.VK_0, keystroke.getKeyCode());
+        assertTrue(keystroke.isShiftDown(),"Shift should be down");
+        assertFalse(keystroke.isControlDown(),"Ctrl should not be down");
+        assertEquals(KeyEvent.VK_0, keystroke.getKeyCode(),"Key code should be 0");
     }
 
     /**
@@ -86,9 +95,8 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should be F1", KeyEvent.VK_F1, keystroke.getKeyCode());
-        assertFalse("No modifiers should be active",
-                keystroke.isShiftDown() || keystroke.isControlDown() || keystroke.isAltDown());
+        assertEquals(KeyEvent.VK_F1, keystroke.getKeyCode(),"Key code should be F1");
+        assertFalse(keystroke.isShiftDown() || keystroke.isControlDown() || keystroke.isAltDown(),"No modifiers should be active");
     }
 
     /**
@@ -106,8 +114,8 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should be F12", KeyEvent.VK_F12, keystroke.getKeyCode());
-        assertTrue("Ctrl should be down", keystroke.isControlDown());
+        assertEquals(KeyEvent.VK_F12, keystroke.getKeyCode(),"Key code should be F12");
+        assertTrue(keystroke.isControlDown(),"Ctrl should be down");
     }
 
     /**
@@ -117,7 +125,7 @@ public class KeyboardPairwiseTest {
     @Test
     public void testEnterKeyMnemonic() {
         int enterValue = mnemonicResolver.findMnemonicValue("[enter]");
-        assertTrue("Enter mnemonic should map to valid value", enterValue > 0);
+        assertTrue(enterValue > 0,"Enter mnemonic should map to valid value");
     }
 
     /**
@@ -135,8 +143,8 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertTrue("Shift+Tab should have shift set", keystroke.isShiftDown());
-        assertEquals("Key code should be Tab", KeyEvent.VK_TAB, keystroke.getKeyCode());
+        assertTrue(keystroke.isShiftDown(),"Shift+Tab should have shift set");
+        assertEquals(KeyEvent.VK_TAB, keystroke.getKeyCode(),"Key code should be Tab");
     }
 
     /**
@@ -154,8 +162,8 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertTrue("Ctrl should be down", keystroke.isControlDown());
-        assertEquals("Key code should be LEFT", KeyEvent.VK_LEFT, keystroke.getKeyCode());
+        assertTrue(keystroke.isControlDown(),"Ctrl should be down");
+        assertEquals(KeyEvent.VK_LEFT, keystroke.getKeyCode(),"Key code should be LEFT");
     }
 
     /**
@@ -182,7 +190,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("KeyStrokes with same modifiers should be equal", ks1, ks2);
+        assertEquals(ks1, ks2,"KeyStrokes with same modifiers should be equal");
     }
 
     /**
@@ -200,9 +208,9 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertTrue("Shift should be down", keystroke.isShiftDown());
-        assertTrue("Ctrl should be down", keystroke.isControlDown());
-        assertFalse("Alt should not be down", keystroke.isAltDown());
+        assertTrue(keystroke.isShiftDown(),"Shift should be down");
+        assertTrue(keystroke.isControlDown(),"Ctrl should be down");
+        assertFalse(keystroke.isAltDown(),"Alt should not be down");
     }
 
     /**
@@ -220,7 +228,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should be INSERT", KeyEvent.VK_INSERT, keystroke.getKeyCode());
+        assertEquals(KeyEvent.VK_INSERT, keystroke.getKeyCode(),"Key code should be INSERT");
     }
 
     /**
@@ -238,7 +246,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should be DELETE", KeyEvent.VK_DELETE, keystroke.getKeyCode());
+        assertEquals(KeyEvent.VK_DELETE, keystroke.getKeyCode(),"Key code should be DELETE");
     }
 
     // ==================== ADVERSARIAL / ERROR TESTS ====================
@@ -258,7 +266,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should preserve UNDEFINED", KeyEvent.VK_UNDEFINED, keystroke.getKeyCode());
+        assertEquals(KeyEvent.VK_UNDEFINED, keystroke.getKeyCode(),"Key code should preserve UNDEFINED");
     }
 
     /**
@@ -276,7 +284,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Negative key code should be preserved", -1, keystroke.getKeyCode());
+        assertEquals(-1, keystroke.getKeyCode(),"Negative key code should be preserved");
     }
 
     /**
@@ -294,8 +302,8 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertTrue("AltGr should be down", keystroke.isAltGrDown());
-        assertEquals("Key code should be ALT_GRAPH", KeyEvent.VK_ALT_GRAPH, keystroke.getKeyCode());
+        assertTrue(keystroke.isAltGrDown(),"AltGr should be down");
+        assertEquals(KeyEvent.VK_ALT_GRAPH, keystroke.getKeyCode(),"Key code should be ALT_GRAPH");
     }
 
     /**
@@ -322,10 +330,8 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_NUMPAD
         );
 
-        assertFalse("Numpad and standard Enter should differ",
-                standardEnter.equals(numpadEnter));
-        assertFalse("Hash codes should differ",
-                standardEnter.hashCode() == numpadEnter.hashCode());
+        assertFalse(standardEnter.equals(numpadEnter),"Numpad and standard Enter should differ");
+        assertFalse(standardEnter.hashCode() == numpadEnter.hashCode(),"Hash codes should differ");
     }
 
     /**
@@ -352,7 +358,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertFalse("A and Shift+A should not be equal", withoutShift.equals(withShift));
+        assertFalse(withoutShift.equals(withShift),"A and Shift+A should not be equal");
     }
 
     /**
@@ -371,9 +377,8 @@ public class KeyboardPairwiseTest {
         );
 
         String description = keystroke.getKeyStrokeDesc();
-        assertNotNull("Keystroke description should not be null", description);
-        assertTrue("Description should contain Ctrl",
-                description.toLowerCase().contains("ctrl"));
+        assertNotNull(description,"Keystroke description should not be null");
+        assertTrue(description.toLowerCase().contains("ctrl"),"Description should contain Ctrl");
     }
 
     /**
@@ -392,10 +397,8 @@ public class KeyboardPairwiseTest {
         );
 
         String description = keystroke.getKeyStrokeDesc();
-        assertTrue("Description should contain Ctrl",
-                description.toLowerCase().contains("ctrl"));
-        assertTrue("Description should contain Alt",
-                description.toLowerCase().contains("alt"));
+        assertTrue(description.toLowerCase().contains("ctrl"),"Description should contain Ctrl");
+        assertTrue(description.toLowerCase().contains("alt"),"Description should contain Alt");
     }
 
     /**
@@ -405,7 +408,7 @@ public class KeyboardPairwiseTest {
     @Test
     public void testNullMnemonicLookup() {
         KeyMnemonic result = mnemonicResolver.findMnemonic(null);
-        assertNull("Null mnemonic lookup should return null", result);
+        assertNull(result,"Null mnemonic lookup should return null");
     }
 
     /**
@@ -415,7 +418,7 @@ public class KeyboardPairwiseTest {
     @Test
     public void testInvalidMnemonicValue() {
         int value = mnemonicResolver.findMnemonicValue("INVALID_MNEMONIC_XYZ");
-        assertEquals("Invalid mnemonic should return 0", 0, value);
+        assertEquals(0, value,"Invalid mnemonic should return 0");
     }
 
     /**
@@ -425,9 +428,9 @@ public class KeyboardPairwiseTest {
     @Test
     public void testHomeMnemonicDefined() {
         KeyMnemonic home = mnemonicResolver.findMnemonic("[home]");
-        assertNotNull("Home mnemonic should be defined", home);
+        assertNotNull(home,"Home mnemonic should be defined");
         int value = mnemonicResolver.findMnemonicValue("[home]");
-        assertTrue("Home mnemonic should have valid value", value > 0);
+        assertTrue(value > 0,"Home mnemonic should have valid value");
     }
 
     /**
@@ -445,7 +448,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should be ESCAPE", KeyEvent.VK_ESCAPE, keystroke.getKeyCode());
+        assertEquals(KeyEvent.VK_ESCAPE, keystroke.getKeyCode(),"Key code should be ESCAPE");
     }
 
     /**
@@ -463,7 +466,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_LEFT
         );
 
-        assertEquals("Location should be LEFT", KeyStroker.KEY_LOCATION_LEFT, keystroke.getLocation());
+        assertEquals(KeyStroker.KEY_LOCATION_LEFT, keystroke.getLocation(),"Location should be LEFT");
     }
 
     /**
@@ -481,7 +484,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should be PAGE_UP", KeyEvent.VK_PAGE_UP, keystroke.getKeyCode());
+        assertEquals(KeyEvent.VK_PAGE_UP, keystroke.getKeyCode(),"Key code should be PAGE_UP");
     }
 
     /**
@@ -499,9 +502,9 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertTrue("Alt should be down", keystroke.isAltDown());
-        assertEquals("Key code should be RIGHT", KeyEvent.VK_RIGHT, keystroke.getKeyCode());
-        assertFalse("Ctrl should not be down", keystroke.isControlDown());
+        assertTrue(keystroke.isAltDown(),"Alt should be down");
+        assertEquals(KeyEvent.VK_RIGHT, keystroke.getKeyCode(),"Key code should be RIGHT");
+        assertFalse(keystroke.isControlDown(),"Ctrl should not be down");
     }
 
     /**
@@ -519,7 +522,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD
         );
 
-        assertEquals("Key code should be BACK_SPACE", KeyEvent.VK_BACK_SPACE, keystroke.getKeyCode());
+        assertEquals(KeyEvent.VK_BACK_SPACE, keystroke.getKeyCode(),"Key code should be BACK_SPACE");
     }
 
     /**
@@ -546,8 +549,7 @@ public class KeyboardPairwiseTest {
                 KeyStroker.KEY_LOCATION_RIGHT
         );
 
-        assertFalse("Different location should create different KeyStrokes",
-                standardPeriod.equals(rightPeriod));
+        assertFalse(standardPeriod.equals(rightPeriod),"Different location should create different KeyStrokes");
     }
 
 }

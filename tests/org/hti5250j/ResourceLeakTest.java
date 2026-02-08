@@ -1,28 +1,27 @@
-/**
- * ResourceLeakTest.java - TDD Tests for Critical Resource Leak Bugs
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * These tests demonstrate three critical resource leak bugs in the tn5250j codebase:
- * 1. GlobalConfigure.java:187-192 - FileInputStream never closed during settings load
- * 2. GlobalConfigure.java:301-302 - FileOutputStream never closed during settings save
- * 3. SessionConfig.java:235 - URL stream never closed during properties load from resource
- *
- * Tests use file handle tracking to detect unclosed streams at runtime.
- * These tests are written in RED phase (failing) to demonstrate the bugs exist.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Properties;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * TDD Red-Phase Tests for Resource Leak Detection
@@ -35,14 +34,14 @@ public class ResourceLeakTest {
     private File tempDir;
     private File testSettingsFile;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         // Create temporary directory for test files
         tempDir = Files.createTempDirectory("tn5250j-leak-test").toFile();
         testSettingsFile = new File(tempDir, "tn5250jstartup.cfg");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Cleanup test files
         if (testSettingsFile != null && testSettingsFile.exists()) {
@@ -66,46 +65,11 @@ public class ResourceLeakTest {
      */
     @Test
     public void testGlobalConfigureLoadSettingsStreamLeakPattern() throws IOException {
-        // ARRANGE: Create a valid settings file with test properties
-        Properties testProps = new Properties();
-        testProps.setProperty("test.key", "test.value");
-
-        FileOutputStream createOut = new FileOutputStream(testSettingsFile);
-        testProps.store(createOut, "Test Properties");
-        createOut.close();
-
-        // ACT: Simulate the buggy code pattern from GlobalConfigure lines 187-188
-        // The bug: stream is opened but never closed in the success path
-        Properties settings = new Properties();
-        FileInputStream in = null;
-        boolean streamWasLeftOpen = false;
-
-        try {
-            in = new FileInputStream(testSettingsFile);
-            settings.load(in);
-            // BUG: in is never closed here in the actual code
-
-            // ASSERT: Detect if stream was left open
-            try {
-                // Try to check if stream is still available
-                int available = in.available();
-                streamWasLeftOpen = true;  // Stream is still open - BUG CONFIRMED
-            } catch (IOException e) {
-                // Stream was closed - no leak
-            }
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    // already closed or error
-                }
-            }
-        }
-
-        if (streamWasLeftOpen) {
-            fail("FileInputStream resource leak detected in GlobalConfigure.loadSettings(): " +
-                 "Stream was left open after loading properties");
+        TestGlobalConfigure configure = new TestGlobalConfigure();
+        System.clearProperty("emulator.settingsDirectory");
+        configure.reloadSettings();
+        if (!configure.lastInput.wasClosed()) {
+            fail("FileInputStream resource leak detected in GlobalConfigure.loadSettings(): stream not closed");
         }
     }
 
@@ -121,41 +85,10 @@ public class ResourceLeakTest {
      */
     @Test
     public void testGlobalConfigureSaveSettingsStreamLeakPattern() throws IOException {
-        // ARRANGE: Prepare properties to save
-        Properties propsToSave = new Properties();
-        propsToSave.setProperty("test.save.key", "test.save.value");
-
-        // ACT: Simulate the buggy code pattern from GlobalConfigure lines 301-302
-        // The bug: stream is opened but never flushed or closed
-        FileOutputStream out = null;
-        boolean streamWasLeftOpen = false;
-
-        try {
-            out = new FileOutputStream(testSettingsFile);
-            propsToSave.store(out, "Test Settings");
-            // BUG: out is never flushed or closed here in the actual code
-
-            // ASSERT: Detect if stream was left open
-            try {
-                // Try to write to verify stream is still open
-                out.write(0);
-                streamWasLeftOpen = true;  // Stream is still open - BUG CONFIRMED
-            } catch (IOException e) {
-                // Stream was closed - no leak
-            }
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    // already closed or error
-                }
-            }
-        }
-
-        if (streamWasLeftOpen) {
-            fail("FileOutputStream resource leak detected in GlobalConfigure.saveSettings(): " +
-                 "Stream was left open after storing properties");
+        TestGlobalConfigure configure = new TestGlobalConfigure();
+        configure.saveSettings();
+        if (!configure.lastOutput.wasClosed()) {
+            fail("FileOutputStream resource leak detected in GlobalConfigure.saveSettings(): stream not closed");
         }
     }
 
@@ -171,46 +104,13 @@ public class ResourceLeakTest {
      */
     @Test
     public void testSessionConfigLoadPropertiesFromResourceStreamLeakPattern() throws IOException {
-        // This test documents the pattern used in SessionConfig.loadPropertiesFromResource()
-        // The bug is on line 235: properties.load(url.openStream());
-        // The stream from url.openStream() is never closed.
-
-        // ACT: Simulate the buggy pattern
-        Properties properties = new Properties();
-        java.net.URL url = this.getClass().getClassLoader().getResource("log4j.properties");
-
-        // ASSERT: Demonstrate what happens with the buggy pattern
-        if (url != null) {
-            java.io.InputStream stream = null;
-            boolean streamWasLeftOpen = false;
-
-            try {
-                stream = url.openStream();
-                // This is what the code does - loads without closing
-                properties.load(stream);
-                // BUG: stream is never closed here
-
-                // Try to verify stream is still open
-                try {
-                    int available = stream.available();
-                    streamWasLeftOpen = true;  // Stream is still open - BUG CONFIRMED
-                } catch (IOException e) {
-                    // Stream was closed - no leak
-                }
-            } finally {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (IOException e) {
-                        // already closed or error
-                    }
-                }
-            }
-
-            if (streamWasLeftOpen) {
-                fail("URL stream resource leak detected in SessionConfig.loadPropertiesFromResource(): " +
-                     "Stream was left open after loading properties from URL");
-            }
+        TestSessionConfig sessionConfig = new TestSessionConfig();
+        sessionConfig.loadResourceForTest("TN5250JDefaults.props");
+        if (sessionConfig.lastInput == null) {
+            fail("Resource TN5250JDefaults.props not found on classpath");
+        }
+        if (!sessionConfig.lastInput.wasClosed()) {
+            fail("URL stream resource leak detected in SessionConfig.loadPropertiesFromResource(): stream not closed");
         }
     }
 
@@ -220,44 +120,11 @@ public class ResourceLeakTest {
      */
     @Test
     public void testGlobalConfigureLoadSettingsStreamNotClosed() throws IOException {
-        // ARRANGE
-        Properties testProps = new Properties();
-        testProps.setProperty("emulator.settingsDirectory", tempDir.getAbsolutePath() + File.separator);
-        FileOutputStream createOut = new FileOutputStream(testSettingsFile);
-        testProps.store(createOut, "Test");
-        createOut.close();
-
-        // ACT: Simulate the buggy code pattern from lines 187-188
-        Properties settings = new Properties();
-        FileInputStream in = null;
-
-        try {
-            in = new FileInputStream(testSettingsFile);
-            settings.load(in);
-            // BUG: in is never closed here
-
-            // ASSERT: Verify the stream is still open (not closed)
-            // If the stream were properly closed, this should have no effect
-            // But if it's unclosed, we can detect it by checking if it's available
-
-            // Try to read from it - if closed properly, this would fail
-            // If unclosed, it might succeed (implementation-dependent)
-            try {
-                int available = in.available();
-                // Stream is still open and readable - BUG CONFIRMED
-                fail("FileInputStream not closed in GlobalConfigure.loadSettings(): " +
-                     "Stream still has " + available + " bytes available, should be closed");
-            } catch (IOException e) {
-                // Expected if stream was properly closed
-            }
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    // already closed or error
-                }
-            }
+        TestGlobalConfigure configure = new TestGlobalConfigure();
+        System.clearProperty("emulator.settingsDirectory");
+        configure.reloadSettings();
+        if (!configure.lastInput.wasClosed()) {
+            fail("FileInputStream not closed in GlobalConfigure.loadSettings()");
         }
     }
 
@@ -267,34 +134,77 @@ public class ResourceLeakTest {
      */
     @Test
     public void testGlobalConfigureSaveSettingsStreamNotClosed() throws IOException {
-        // ARRANGE
-        Properties settings = new Properties();
-        settings.setProperty("test.key", "test.value");
+        TestGlobalConfigure configure = new TestGlobalConfigure();
+        configure.saveSettings();
+        if (!configure.lastOutput.wasClosed()) {
+            fail("FileOutputStream not closed in GlobalConfigure.saveSettings()");
+        }
+    }
 
-        // ACT: Simulate the buggy code pattern from lines 301-302
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(testSettingsFile);
-            settings.store(out, "Test Settings");
-            // BUG: out is never flushed or closed here
+    private static final class CloseTrackingInputStream extends ByteArrayInputStream {
+        private boolean closed;
 
-            // ASSERT: Verify we can detect that the stream was not closed
-            try {
-                out.flush();
-                // If we get here, stream is still open (not closed) - BUG CONFIRMED
-                fail("FileOutputStream not closed in GlobalConfigure.saveSettings(): " +
-                     "Stream is still open and writable, should have been closed");
-            } catch (IOException e) {
-                // Expected if stream was properly closed
-            }
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    // already closed or error
-                }
-            }
+        CloseTrackingInputStream(byte[] data) {
+            super(data);
+        }
+
+        @Override
+        public void close() throws IOException {
+            closed = true;
+            super.close();
+        }
+
+        boolean wasClosed() {
+            return closed;
+        }
+    }
+
+    private static final class CloseTrackingOutputStream extends ByteArrayOutputStream {
+        private boolean closed;
+
+        @Override
+        public void close() throws IOException {
+            closed = true;
+            super.close();
+        }
+
+        boolean wasClosed() {
+            return closed;
+        }
+    }
+
+    private static final class TestGlobalConfigure extends GlobalConfigure {
+        private CloseTrackingInputStream lastInput;
+        private CloseTrackingOutputStream lastOutput;
+
+        @Override
+        protected java.io.InputStream openSettingsInputStream(String path) {
+            lastInput = new CloseTrackingInputStream("test.key=test.value".getBytes());
+            return lastInput;
+        }
+
+        @Override
+        protected java.io.OutputStream openSettingsOutputStream(String path) {
+            lastOutput = new CloseTrackingOutputStream();
+            return lastOutput;
+        }
+    }
+
+    private static final class TestSessionConfig extends SessionConfig {
+        private CloseTrackingInputStream lastInput;
+
+        TestSessionConfig() {
+            super("TN5250JDefaults.props", "test", true);
+        }
+
+        void loadResourceForTest(String resourceName) throws IOException {
+            loadPropertiesFromResource(resourceName);
+        }
+
+        @Override
+        protected java.io.InputStream openResourceStream(java.net.URL url) {
+            lastInput = new CloseTrackingInputStream("test.key=test.value".getBytes());
+            return lastInput;
         }
     }
 

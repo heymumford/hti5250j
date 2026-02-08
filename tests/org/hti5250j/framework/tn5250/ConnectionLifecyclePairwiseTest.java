@@ -1,39 +1,25 @@
-/**
- * Title: ConnectionLifecyclePairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company: Guild Mortgage
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise lifecycle test suite for tnvt connection management.
- * Tests combinations of connection methods, states, timing, configuration, and cleanup patterns
- * to ensure reliable headless session lifecycle handling.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING. If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Pairwise combinatorial test suite for tnvt connection lifecycle.
@@ -62,7 +48,6 @@ import static org.junit.Assert.*;
  *   14. Idempotent operations
  *   15. State visibility across threads
  */
-@RunWith(JUnit4.class)
 public class ConnectionLifecyclePairwiseTest {
 
     private ExecutorService executorService;
@@ -76,14 +61,14 @@ public class ConnectionLifecyclePairwiseTest {
     private MocktnvtController mockController;
     private MockScreen5250 mockScreen;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         executorService = Executors.newCachedThreadPool();
         mockController = new MocktnvtController();
         mockScreen = new MockScreen5250();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         executorService.shutdownNow();
         if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -104,21 +89,22 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: All operations succeed, state transitions properly
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSimpleConnectDisconnectLifecycle_ValidHostImmediateTiming() throws Exception {
         // Setup: Create minimal mock session
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
-        assertFalse("Initial state should be disconnected", session.isConnected());
+        assertFalse(session.isConnected(),"Initial state should be disconnected");
 
         // Act: Connect
         boolean connectResult = session.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Connect should succeed with valid host", connectResult);
-        assertTrue("Connected state should be true after connect", session.isConnected());
+        assertTrue(connectResult,"Connect should succeed with valid host");
+        assertTrue(session.isConnected(),"Connected state should be true after connect");
 
         // Act: Disconnect
         boolean disconnectResult = session.disconnect();
-        assertTrue("Disconnect should succeed", disconnectResult);
-        assertFalse("Connected state should be false after disconnect", session.isConnected());
+        assertTrue(disconnectResult,"Disconnect should succeed");
+        assertFalse(session.isConnected(),"Connected state should be false after disconnect");
     }
 
     /**
@@ -130,21 +116,22 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Both connects succeed, session is reusable
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectDisconnectReconnect_ValidHostReusableSession() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
         // First cycle
-        assertTrue("First connect should succeed", session.connect(VALID_HOST, VALID_PORT));
-        assertTrue("Should be connected after first connect", session.isConnected());
-        assertTrue("First disconnect should succeed", session.disconnect());
-        assertFalse("Should be disconnected after first disconnect", session.isConnected());
+        assertTrue(session.connect(VALID_HOST, VALID_PORT),"First connect should succeed");
+        assertTrue(session.isConnected(),"Should be connected after first connect");
+        assertTrue(session.disconnect(),"First disconnect should succeed");
+        assertFalse(session.isConnected(),"Should be disconnected after first disconnect");
 
         // Second cycle (reuse)
-        assertTrue("Second connect should succeed after disconnect", session.connect(VALID_HOST, VALID_PORT));
-        assertTrue("Should be connected after second connect", session.isConnected());
-        assertTrue("Second disconnect should succeed", session.disconnect());
-        assertFalse("Should be disconnected after second disconnect", session.isConnected());
+        assertTrue(session.connect(VALID_HOST, VALID_PORT),"Second connect should succeed after disconnect");
+        assertTrue(session.isConnected(),"Should be connected after second connect");
+        assertTrue(session.disconnect(),"Second disconnect should succeed");
+        assertFalse(session.isConnected(),"Should be disconnected after second disconnect");
     }
 
     /**
@@ -156,17 +143,18 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Connection succeeds, SSL flag is set
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectWithSSLConfiguration_SecureConnection() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
         session.setSSLType("TLS");
 
         boolean connectResult = session.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Connect with SSL should succeed", connectResult);
-        assertTrue("Should be connected", session.isConnected());
+        assertTrue(connectResult,"Connect with SSL should succeed");
+        assertTrue(session.isConnected(),"Should be connected");
 
         session.disconnect();
-        assertFalse("Should be disconnected after disconnect", session.isConnected());
+        assertFalse(session.isConnected(),"Should be disconnected after disconnect");
     }
 
     /**
@@ -177,10 +165,11 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: isConnected() returns false, no exception thrown
      */
-    @Test(timeout = 2000)
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testIsConnectedReturnsfalseOnNewSession_InitialState() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
-        assertFalse("New session should not be connected", session.isConnected());
+        assertFalse(session.isConnected(),"New session should not be connected");
     }
 
     /**
@@ -191,14 +180,15 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Returns false, no exception, session remains disconnected
      */
-    @Test(timeout = 2000)
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDisconnectOnAlreadyDisconnectedSession_IdempotentOperation() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
-        assertFalse("Should not be connected initially", session.isConnected());
+        assertFalse(session.isConnected(),"Should not be connected initially");
 
         boolean result = session.disconnect();
-        assertFalse("Disconnect on unconnected session should return false", result);
-        assertFalse("Should still not be connected", session.isConnected());
+        assertFalse(result,"Disconnect on unconnected session should return false");
+        assertFalse(session.isConnected(),"Should still not be connected");
     }
 
     /**
@@ -209,7 +199,8 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: All threads see consistent connected state
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConcurrentStateVisibilityAfterConnect_ThreadSafeView() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
         CountDownLatch connectDone = new CountDownLatch(1);
@@ -243,7 +234,7 @@ public class ConnectionLifecyclePairwiseTest {
         }
 
         readDone.await();
-        assertEquals("All readers should see connected state", 4, connectedCount.get());
+        assertEquals(4, connectedCount.get(),"All readers should see connected state");
 
         session.disconnect();
     }
@@ -256,14 +247,15 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: All resources properly closed, no leaks
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDisconnectClearsResourcesProperly_CleanupVerification() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
-        assertTrue("Connect should succeed", session.connect(VALID_HOST, VALID_PORT));
-        assertTrue("Socket should exist after connect", session.hasSocket());
+        assertTrue(session.connect(VALID_HOST, VALID_PORT),"Connect should succeed");
+        assertTrue(session.hasSocket(),"Socket should exist after connect");
 
-        assertTrue("Disconnect should succeed", session.disconnect());
-        assertFalse("Socket should be cleared after disconnect", session.hasSocket());
+        assertTrue(session.disconnect(),"Disconnect should succeed");
+        assertFalse(session.hasSocket(),"Socket should be cleared after disconnect");
     }
 
     /**
@@ -274,16 +266,17 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: All transitions occur in correct order
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testStateTransitionsThroughConnectionLifecycle() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
-        assertEquals("Initial state should be disconnected", "disconnected", session.getCurrentState());
+        assertEquals("disconnected", session.getCurrentState(),"Initial state should be disconnected");
 
         session.connect(VALID_HOST, VALID_PORT);
-        assertEquals("State after connect should be connected", "connected", session.getCurrentState());
+        assertEquals("connected", session.getCurrentState(),"State after connect should be connected");
 
         session.disconnect();
-        assertEquals("State after disconnect should be disconnected", "disconnected", session.getCurrentState());
+        assertEquals("disconnected", session.getCurrentState(),"State after disconnect should be disconnected");
     }
 
     /**
@@ -294,17 +287,16 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: All cycles succeed, no deadlock or corruption
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testRapidConnectDisconnectCycles_StressSessionReuse() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
         for (int cycle = 0; cycle < 5; cycle++) {
-            assertTrue("Connect cycle " + cycle + " should succeed",
-                session.connect(VALID_HOST, VALID_PORT));
-            assertTrue("Should be connected in cycle " + cycle, session.isConnected());
-            assertTrue("Disconnect cycle " + cycle + " should succeed",
-                session.disconnect());
-            assertFalse("Should be disconnected in cycle " + cycle, session.isConnected());
+            assertTrue(session.connect(VALID_HOST, VALID_PORT),"Connect cycle " + cycle + " should succeed");
+            assertTrue(session.isConnected(),"Should be connected in cycle " + cycle);
+            assertTrue(session.disconnect(),"Disconnect cycle " + cycle + " should succeed");
+            assertFalse(session.isConnected(),"Should be disconnected in cycle " + cycle);
         }
     }
 
@@ -316,12 +308,13 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: isConnected() reflects socket state, not session state
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testIsConnectedReflectsSocketStateNotSessionState() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
-        assertTrue("Connect should succeed", session.connect(VALID_HOST, VALID_PORT));
-        assertTrue("isConnected should be true", session.isConnected());
+        assertTrue(session.connect(VALID_HOST, VALID_PORT),"Connect should succeed");
+        assertTrue(session.isConnected(),"isConnected should be true");
         // Note: firstScreen flag is separate concern from connection state
 
         session.disconnect();
@@ -340,13 +333,14 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Connect returns false, session remains disconnected, no exception escapes
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectToInvalidHostFailsGracefully() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
         boolean result = session.connect(INVALID_HOST, VALID_PORT);
-        assertFalse("Connect to invalid host should return false", result);
-        assertFalse("Should not be connected after failed connect", session.isConnected());
+        assertFalse(result,"Connect to invalid host should return false");
+        assertFalse(session.isConnected(),"Should not be connected after failed connect");
     }
 
     /**
@@ -357,13 +351,14 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Connect returns false, session remains disconnected
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectToInvalidPortFailsGracefully() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
         boolean result = session.connect(VALID_HOST, INVALID_PORT);
-        assertFalse("Connect to invalid port should return false", result);
-        assertFalse("Should not be connected after failed connect", session.isConnected());
+        assertFalse(result,"Connect to invalid port should return false");
+        assertFalse(session.isConnected(),"Should not be connected after failed connect");
     }
 
     /**
@@ -374,7 +369,8 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: One succeeds, one fails or blocks, no corruption
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConcurrentConnectAttemptsOnSameSession_RaceCondition() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
         CountDownLatch barrier = new CountDownLatch(2);
@@ -399,7 +395,7 @@ public class ConnectionLifecyclePairwiseTest {
 
         done.await();
         // At most 1 thread should successfully connect
-        assertTrue("At most 1 thread should succeed", successCount.get() <= 1);
+        assertTrue(successCount.get() <= 1,"At most 1 thread should succeed");
     }
 
     /**
@@ -410,7 +406,8 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: No deadlock, final state is disconnected
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDisconnectDuringConnectAttempt_TimingRace() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
         CountDownLatch connectStart = new CountDownLatch(1);
@@ -441,7 +438,7 @@ public class ConnectionLifecyclePairwiseTest {
         });
 
         done.await();
-        assertFalse("Final state should be disconnected", session.isConnected());
+        assertFalse(session.isConnected(),"Final state should be disconnected");
     }
 
     /**
@@ -452,19 +449,20 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Second connect succeeds after first failure
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectAfterFailedAttempt_ErrorRecovery() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
         // First attempt (fails)
         boolean firstResult = session.connect(INVALID_HOST, VALID_PORT);
-        assertFalse("First connect should fail", firstResult);
-        assertFalse("Should not be connected after failure", session.isConnected());
+        assertFalse(firstResult,"First connect should fail");
+        assertFalse(session.isConnected(),"Should not be connected after failure");
 
         // Second attempt (succeeds)
         boolean secondResult = session.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Second connect should succeed after failure", secondResult);
-        assertTrue("Should be connected after successful retry", session.isConnected());
+        assertTrue(secondResult,"Second connect should succeed after failure");
+        assertTrue(session.isConnected(),"Should be connected after successful retry");
 
         session.disconnect();
     }
@@ -477,7 +475,8 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: All operations complete without deadlock
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testRapidDisconnectReconnectCycles_StressRecovery() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
@@ -489,7 +488,7 @@ public class ConnectionLifecyclePairwiseTest {
         }
 
         session.disconnect();
-        assertFalse("Should end in disconnected state", session.isConnected());
+        assertFalse(session.isConnected(),"Should end in disconnected state");
     }
 
     /**
@@ -500,7 +499,8 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: No double-free, no deadlock
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testMultipleThreadsDisconnectConcurrently_ConcurrentCleanup() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
         session.connect(VALID_HOST, VALID_PORT);
@@ -526,8 +526,8 @@ public class ConnectionLifecyclePairwiseTest {
 
         done.await();
         // Some disconnect attempts may fail (already disconnected), that's ok
-        assertTrue("Some disconnect attempts were made", disconnectAttempts.get() > 0);
-        assertFalse("Final state must be disconnected", session.isConnected());
+        assertTrue(disconnectAttempts.get() > 0,"Some disconnect attempts were made");
+        assertFalse(session.isConnected(),"Final state must be disconnected");
     }
 
     /**
@@ -538,7 +538,8 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: All threads eventually see consistent state
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testIsConnectedVisibilityUnderContention_MemorySafety() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
         CountDownLatch barrier = new CountDownLatch(5);
@@ -582,7 +583,7 @@ public class ConnectionLifecyclePairwiseTest {
         }
 
         done.await();
-        assertEquals("All readers should complete successfully", 40, stateConsistency.get());
+        assertEquals(40, stateConsistency.get(),"All readers should complete successfully");
     }
 
     /**
@@ -593,15 +594,16 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Timeout occurs, connect returns false, no hanging threads
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectionTimeoutHandling_SlowNetwork() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
         session.setConnectTimeout(500); // 500ms timeout
 
         // Connect to a route that should timeout
         boolean result = session.connect("192.0.2.0", 23);
-        assertFalse("Connect should timeout and return false", result);
-        assertFalse("Should not be connected after timeout", session.isConnected());
+        assertFalse(result,"Connect should timeout and return false");
+        assertFalse(session.isConnected(),"Should not be connected after timeout");
     }
 
     /**
@@ -612,16 +614,17 @@ public class ConnectionLifecyclePairwiseTest {
      *
      * Expected: Disconnect returns false (nothing to disconnect), no exception
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDisconnectAfterFailedConnect_ErrorStateCleanup() throws Exception {
         MocktnvtSession session = new MocktnvtSession(mockController, mockScreen);
 
         boolean connectResult = session.connect(INVALID_HOST, VALID_PORT);
-        assertFalse("Connect should fail", connectResult);
+        assertFalse(connectResult,"Connect should fail");
 
         boolean disconnectResult = session.disconnect();
-        assertFalse("Disconnect should return false (nothing to disconnect)", disconnectResult);
-        assertFalse("Should not be connected", session.isConnected());
+        assertFalse(disconnectResult,"Disconnect should return false (nothing to disconnect)");
+        assertFalse(session.isConnected(),"Should not be connected");
     }
 
     // ============================================================================

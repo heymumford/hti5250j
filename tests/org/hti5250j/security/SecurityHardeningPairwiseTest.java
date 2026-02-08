@@ -1,29 +1,20 @@
-/**
- * <p>
- * Title: tn5250J Security Hardening Pairwise Tests
- * Copyright: Copyright (c) 2026
- * Company:
- * <p>
- * Description: Comprehensive pairwise TDD tests for authentication, encryption,
- * credential handling, and secure protocol implementations in HTI5250j.
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.security;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,9 +27,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.framework.transport.SSL.SSLImplementation;
 
 /**
@@ -74,27 +65,28 @@ public class SecurityHardeningPairwiseTest {
     private SSLImplementation sslImpl;
     private MockAuthenticationManager authManager;
     private MockCredentialStore credentialStore;
-    private static final String TEST_KEYSTORE_PATH = System.getProperty("java.io.tmpdir")
-        + File.separator + "test-hardening-keystore";
     private static final char[] TEST_PASSWORD = "TestPassword123!".toCharArray();
+    private String testKeystorePath;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         sslImpl = new SSLImplementation();
         authManager = new MockAuthenticationManager();
         credentialStore = new MockCredentialStore();
+        testKeystorePath = System.getProperty("java.io.tmpdir")
+            + File.separator + "test-hardening-keystore-" + System.nanoTime();
         
         // Clean up test files
-        File testFile = new File(TEST_KEYSTORE_PATH);
+        File testFile = new File(testKeystorePath);
         if (testFile.exists()) {
             testFile.delete();
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         // Cleanup test artifacts
-        File testFile = new File(TEST_KEYSTORE_PATH);
+        File testFile = new File(testKeystorePath);
         if (testFile.exists()) {
             testFile.delete();
         }
@@ -115,10 +107,9 @@ public class SecurityHardeningPairwiseTest {
             "telnet"     // protocol
         );
 
-        assertFalse(
-            "Plaintext telnet without authentication violates security policy (CWE-327)",
-            isSecure
-        );
+        assertFalse(isSecure
+        ,
+            "Plaintext telnet without authentication violates security policy (CWE-327)");
     }
 
     /**
@@ -134,10 +125,9 @@ public class SecurityHardeningPairwiseTest {
             "tn5250e"    // protocol
         );
 
-        assertFalse(
-            "Password authentication without encryption is insecure (CWE-798)",
-            isSecure
-        );
+        assertFalse(isSecure
+        ,
+            "Password authentication without encryption is insecure (CWE-798)");
     }
 
     /**
@@ -153,10 +143,9 @@ public class SecurityHardeningPairwiseTest {
             "SSL"        // protocol
         );
 
-        assertTrue(
-            "Password authentication with TLS 1.2 should be accepted",
-            isSecure
-        );
+        assertTrue(isSecure
+        ,
+            "Password authentication with TLS 1.2 should be accepted");
     }
 
     /**
@@ -172,10 +161,9 @@ public class SecurityHardeningPairwiseTest {
             "SSL"           // protocol
         );
 
-        assertTrue(
-            "Certificate auth with TLS 1.3 is secure configuration",
-            isSecure
-        );
+        assertTrue(isSecure
+        ,
+            "Certificate auth with TLS 1.3 is secure configuration");
     }
 
     /**
@@ -191,10 +179,9 @@ public class SecurityHardeningPairwiseTest {
             "SSL"           // protocol
         );
 
-        assertTrue(
-            "Kerberos authentication with TLS 1.3 is acceptable",
-            isSecure
-        );
+        assertTrue(isSecure
+        ,
+            "Kerberos authentication with TLS 1.3 is acceptable");
     }
 
     // ========== PAIRWISE DIMENSION 2: ENCRYPTION LEVEL VALIDATION ==========
@@ -212,10 +199,9 @@ public class SecurityHardeningPairwiseTest {
             "telnet"        // unencrypted protocol
         );
 
-        assertFalse(
-            "Unencrypted credentials transmission is security violation (CWE-327)",
-            isSecure
-        );
+        assertFalse(isSecure
+        ,
+            "Unencrypted credentials transmission is security violation (CWE-327)");
     }
 
     /**
@@ -227,10 +213,9 @@ public class SecurityHardeningPairwiseTest {
     public void testWeakTLS10IsRejected() {
         boolean isTLS10Acceptable = authManager.isEncryptionLevelAcceptable("TLS1.0");
 
-        assertFalse(
-            "TLS 1.0 is weak and deprecated - should be rejected",
-            isTLS10Acceptable
-        );
+        assertFalse(isTLS10Acceptable
+        ,
+            "TLS 1.0 is weak and deprecated - should be rejected");
     }
 
     /**
@@ -242,10 +227,9 @@ public class SecurityHardeningPairwiseTest {
     public void testWeakTLS11IsRejected() {
         boolean isTLS11Acceptable = authManager.isEncryptionLevelAcceptable("TLS1.1");
 
-        assertFalse(
-            "TLS 1.1 is weak and deprecated - should be rejected",
-            isTLS11Acceptable
-        );
+        assertFalse(isTLS11Acceptable
+        ,
+            "TLS 1.1 is weak and deprecated - should be rejected");
     }
 
     /**
@@ -257,10 +241,9 @@ public class SecurityHardeningPairwiseTest {
     public void testTLS12IsAccepted() {
         boolean isTLS12Acceptable = authManager.isEncryptionLevelAcceptable("TLS1.2");
 
-        assertTrue(
-            "TLS 1.2 should be accepted as secure minimum",
-            isTLS12Acceptable
-        );
+        assertTrue(isTLS12Acceptable
+        ,
+            "TLS 1.2 should be accepted as secure minimum");
     }
 
     /**
@@ -272,10 +255,9 @@ public class SecurityHardeningPairwiseTest {
     public void testTLS13IsAccepted() {
         boolean isTLS13Acceptable = authManager.isEncryptionLevelAcceptable("TLS1.3");
 
-        assertTrue(
-            "TLS 1.3 should be accepted as preferred encryption",
-            isTLS13Acceptable
-        );
+        assertTrue(isTLS13Acceptable
+        ,
+            "TLS 1.3 should be accepted as preferred encryption");
     }
 
     // ========== PAIRWISE DIMENSION 3: CREDENTIAL STORAGE & HANDLING ==========
@@ -302,10 +284,9 @@ public class SecurityHardeningPairwiseTest {
                     break;
                 }
             }
-            assertTrue(
-                "Credential in memory should be cleared after use to prevent memory dump attacks",
-                isCleared
-            );
+            assertTrue(isCleared
+            ,
+                "Credential in memory should be cleared after use to prevent memory dump attacks");
         }
     }
 
@@ -324,7 +305,7 @@ public class SecurityHardeningPairwiseTest {
         boolean isWorldReadable = credFile.canRead(); // This is simplified; actual check is complex
         
         // The file should exist and be securely stored
-        assertTrue("Credential file should exist", credFile.exists());
+        assertTrue(credFile.exists(),"Credential file should exist");
         
         // Cleanup
         credFile.delete();
@@ -341,17 +322,17 @@ public class SecurityHardeningPairwiseTest {
 
         // Attempt to load with correct password
         boolean loadedWithCorrectPassword = credentialStore.loadKeystore(
-            TEST_KEYSTORE_PATH,
+            testKeystorePath,
             TEST_PASSWORD
         );
-        assertTrue("Keystore should load with correct password", loadedWithCorrectPassword);
+        assertTrue(loadedWithCorrectPassword,"Keystore should load with correct password");
 
         // Attempt to load with wrong password
         boolean loadedWithWrongPassword = credentialStore.loadKeystore(
-            TEST_KEYSTORE_PATH,
+            testKeystorePath,
             "WrongPassword".toCharArray()
         );
-        assertFalse("Keystore should NOT load with wrong password", loadedWithWrongPassword);
+        assertFalse(loadedWithWrongPassword,"Keystore should NOT load with wrong password");
     }
 
     // ========== PAIRWISE DIMENSION 4: CERTIFICATE VALIDATION MODES ==========
@@ -372,10 +353,9 @@ public class SecurityHardeningPairwiseTest {
 
         boolean isValid = authManager.validateCertificateStrict(validCert, "example.com");
 
-        assertTrue(
-            "Strict validation should accept valid certificate with matching hostname",
-            isValid
-        );
+        assertTrue(isValid
+        ,
+            "Strict validation should accept valid certificate with matching hostname");
     }
 
     /**
@@ -394,10 +374,9 @@ public class SecurityHardeningPairwiseTest {
 
         boolean isValid = authManager.validateCertificateStrict(expiredCert, "expired.com");
 
-        assertFalse(
-            "Strict validation should reject expired certificate",
-            isValid
-        );
+        assertFalse(isValid
+        ,
+            "Strict validation should reject expired certificate");
     }
 
     /**
@@ -416,10 +395,9 @@ public class SecurityHardeningPairwiseTest {
 
         boolean isValid = authManager.validateCertificateStrict(wrongHostCert, "example.com");
 
-        assertFalse(
-            "Strict validation should reject certificate with wrong hostname (prevents MITM)",
-            isValid
-        );
+        assertFalse(isValid
+        ,
+            "Strict validation should reject certificate with wrong hostname (prevents MITM)");
     }
 
     /**
@@ -441,10 +419,9 @@ public class SecurityHardeningPairwiseTest {
         // Relaxed mode should accept with warning
         boolean isValid = authManager.validateCertificateRelaxed(selfSignedCert);
 
-        assertTrue(
-            "Relaxed validation may accept self-signed (but should warn)",
-            isValid
-        );
+        assertTrue(isValid
+        ,
+            "Relaxed validation may accept self-signed (but should warn)");
     }
 
     /**
@@ -456,10 +433,9 @@ public class SecurityHardeningPairwiseTest {
     public void testNoneValidationStillRejectsNullCertificateChain() {
         boolean isValid = authManager.validateCertificatePermissive(null);
 
-        assertFalse(
-            "Even permissive validation must reject null certificate chain",
-            isValid
-        );
+        assertFalse(isValid
+        ,
+            "Even permissive validation must reject null certificate chain");
     }
 
     // ========== PAIRWISE DIMENSION 5: PROTOCOL VERSION HANDLING ==========
@@ -473,10 +449,9 @@ public class SecurityHardeningPairwiseTest {
     public void testPlainTelnetIsRejectedBySecurityPolicy() {
         boolean isAccepted = authManager.isProtocolAccepted("telnet");
 
-        assertFalse(
-            "Plain telnet should be rejected for security (CWE-327)",
-            isAccepted
-        );
+        assertFalse(isAccepted
+        ,
+            "Plain telnet should be rejected for security (CWE-327)");
     }
 
     /**
@@ -492,10 +467,9 @@ public class SecurityHardeningPairwiseTest {
             "tn5250e"    // TN5250E protocol
         );
 
-        assertFalse(
-            "TN5250E without encryption should be rejected",
-            isSecure
-        );
+        assertFalse(isSecure
+        ,
+            "TN5250E without encryption should be rejected");
     }
 
     /**
@@ -511,10 +485,9 @@ public class SecurityHardeningPairwiseTest {
             "SSL"           // protocol
         );
 
-        assertTrue(
-            "SSL protocol with certificate auth and TLS 1.3 is secure",
-            isSecure
-        );
+        assertTrue(isSecure
+        ,
+            "SSL protocol with certificate auth and TLS 1.3 is secure");
     }
 
     // ========== ADVERSARIAL INJECTION TESTS ==========
@@ -529,10 +502,9 @@ public class SecurityHardeningPairwiseTest {
         
         boolean isValid = authManager.validateUsername(maliciousUsername);
 
-        assertFalse(
-            "SQL injection patterns in username should be rejected (CWE-89)",
-            isValid
-        );
+        assertFalse(isValid
+        ,
+            "SQL injection patterns in username should be rejected (CWE-89)");
     }
 
     /**
@@ -551,10 +523,9 @@ public class SecurityHardeningPairwiseTest {
         for (String macro : maliciousMacros) {
             boolean isValid = authManager.validateMacroName(macro);
 
-            assertFalse(
-                "Path traversal patterns in macro should be blocked: " + macro + " (CWE-22)",
-                isValid
-            );
+            assertFalse(isValid
+            ,
+                "Path traversal patterns in macro should be blocked: " + macro + " (CWE-22)");
         }
     }
 
@@ -570,10 +541,9 @@ public class SecurityHardeningPairwiseTest {
 
         boolean isValid = authManager.validateXMLConfiguration(xxePayload);
 
-        assertFalse(
-            "XXE injection in configuration should be blocked (CWE-611)",
-            isValid
-        );
+        assertFalse(isValid
+        ,
+            "XXE injection in configuration should be blocked (CWE-611)");
     }
 
     /**
@@ -586,10 +556,9 @@ public class SecurityHardeningPairwiseTest {
         
         boolean isValid = authManager.validateLDAPFilter(ldapInjection);
 
-        assertFalse(
-            "LDAP injection patterns should be rejected (CWE-90)",
-            isValid
-        );
+        assertFalse(isValid
+        ,
+            "LDAP injection patterns should be rejected (CWE-90)");
     }
 
     // ========== DOWNGRADE ATTACK TESTS ==========
@@ -605,10 +574,9 @@ public class SecurityHardeningPairwiseTest {
             "TLS1.0"   // Server demands
         );
 
-        assertFalse(
-            "Downgrade attack from TLS 1.3 to TLS 1.0 should be blocked",
-            negotiated
-        );
+        assertFalse(negotiated
+        ,
+            "Downgrade attack from TLS 1.3 to TLS 1.0 should be blocked");
     }
 
     /**
@@ -622,10 +590,9 @@ public class SecurityHardeningPairwiseTest {
             "none"          // Server removes auth requirement
         );
 
-        assertFalse(
-            "Authentication requirement cannot be negotiated away",
-            negotiated
-        );
+        assertFalse(negotiated
+        ,
+            "Authentication requirement cannot be negotiated away");
     }
 
     /**
@@ -639,10 +606,9 @@ public class SecurityHardeningPairwiseTest {
             "none"     // Attacker tries to disable
         );
 
-        assertFalse(
-            "Encryption cannot be disabled in secure mode",
-            negotiated
-        );
+        assertFalse(negotiated
+        ,
+            "Encryption cannot be disabled in secure mode");
     }
 
     // ========== CREDENTIAL THEFT SCENARIO TESTS ==========
@@ -658,10 +624,9 @@ public class SecurityHardeningPairwiseTest {
 
         String logMessage = authManager.generateAuthenticationLog(username, password);
 
-        assertFalse(
-            "Password should not appear in log messages (CWE-798)",
-            new String(password) != null && logMessage.contains(new String(password))
-        );
+        assertFalse(new String(password) != null && logMessage.contains(new String(password))
+        ,
+            "Password should not appear in log messages (CWE-798)");
     }
 
     /**
@@ -676,10 +641,9 @@ public class SecurityHardeningPairwiseTest {
         String sessionToken = authManager.createSessionToken(username, password);
 
         boolean containsPassword = sessionToken.contains(new String(password));
-        assertFalse(
-            "Session token should not contain cleartext password (CWE-798)",
-            containsPassword
-        );
+        assertFalse(containsPassword
+        ,
+            "Session token should not contain cleartext password (CWE-798)");
     }
 
     /**
@@ -691,7 +655,7 @@ public class SecurityHardeningPairwiseTest {
         createTestKeystore(TEST_PASSWORD);
         
         byte[] keystoreBytes = java.nio.file.Files.readAllBytes(
-            java.nio.file.Paths.get(TEST_KEYSTORE_PATH)
+            java.nio.file.Paths.get(testKeystorePath)
         );
 
         // Keystore format should not be plaintext
@@ -699,10 +663,9 @@ public class SecurityHardeningPairwiseTest {
         boolean isPlaintext = keystoreString.contains("BEGIN CERTIFICATE") ||
                              keystoreString.contains("-----");
 
-        assertFalse(
-            "Keystore should be binary format (encrypted), not plaintext",
-            isPlaintext
-        );
+        assertFalse(isPlaintext
+        ,
+            "Keystore should be binary format (encrypted), not plaintext");
     }
 
     // ========== HELPER CLASSES ==========
@@ -908,11 +871,13 @@ public class SecurityHardeningPairwiseTest {
      * Create a test keystore file for testing keystore loading
      */
     private void createTestKeystore(char[] password) throws Exception {
-        File ksFile = new File(TEST_KEYSTORE_PATH);
+        File ksFile = new File(testKeystorePath);
         ksFile.getParentFile().mkdirs();
 
         KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
         ks.load(null, password);
-        ks.store(new FileOutputStream(ksFile), password);
+        try (FileOutputStream out = new FileOutputStream(ksFile)) {
+            ks.store(out, password);
+        }
     }
 }

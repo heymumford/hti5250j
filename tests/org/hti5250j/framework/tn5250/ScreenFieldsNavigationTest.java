@@ -1,35 +1,21 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Test Suite
  *
- * @author Test Suite
- * @version 0.5
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD Test Suite for ScreenFields field navigation
@@ -47,7 +33,7 @@ public class ScreenFieldsNavigationTest {
     private ScreenFields screenFields;
     private TestScreen5250 testScreen;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testScreen = new TestScreen5250();
         screenFields = new ScreenFields(testScreen);
@@ -69,8 +55,8 @@ public class ScreenFieldsNavigationTest {
         ScreenField current = screenFields.getCurrentField();
 
         // ASSERT: Should return the set field
-        assertNotNull("Current field should not be null", current);
-        assertSame("Should return the same field instance", field, current);
+        assertNotNull(current,"Current field should not be null");
+        assertSame(field, current,"Should return the same field instance");
     }
 
     /**
@@ -91,8 +77,8 @@ public class ScreenFieldsNavigationTest {
         ScreenField nextField = field1.next;
 
         // ASSERT: Should be able to navigate
-        assertNotNull("Next field should not be null", nextField);
-        assertSame("Next field should be field2", field2, nextField);
+        assertNotNull(nextField,"Next field should not be null");
+        assertSame(field2, nextField,"Next field should be field2");
     }
 
     /**
@@ -113,8 +99,8 @@ public class ScreenFieldsNavigationTest {
         ScreenField prevField = field2.prev;
 
         // ASSERT: Should be able to navigate backward
-        assertNotNull("Previous field should not be null", prevField);
-        assertSame("Previous field should be field1", field1, prevField);
+        assertNotNull(prevField,"Previous field should not be null");
+        assertSame(field1, prevField,"Previous field should be field1");
     }
 
     /**
@@ -132,7 +118,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField found = screenFields.findByPosition(0);
 
         // ASSERT: Should find the field
-        assertNotNull("Should find field at position 0", found);
+        assertNotNull(found,"Should find field at position 0");
     }
 
     /**
@@ -148,7 +134,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField found = screenFields.findByPosition(50);
 
         // ASSERT: Should find field at position 50
-        assertNotNull("Should find field at position 50", found);
+        assertNotNull(found,"Should find field at position 50");
     }
 
     /**
@@ -164,7 +150,7 @@ public class ScreenFieldsNavigationTest {
         int count = screenFields.getFieldCount();
 
         // ASSERT: Should return 10
-        assertEquals("Field count should be 10", 10, count);
+        assertEquals(10, count,"Field count should be 10");
     }
 
     /**
@@ -180,7 +166,7 @@ public class ScreenFieldsNavigationTest {
         int count = screenFields.getFieldCount();
 
         // ASSERT: Should return 0
-        assertEquals("Field count should be 0", 0, count);
+        assertEquals(0, count,"Field count should be 0");
     }
 
     // ===== ADVERSARIAL TESTS: Boundary & Error Conditions =====
@@ -198,7 +184,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField current = screenFields.getCurrentField();
 
         // ASSERT: Should be null
-        assertNull("Current field should be null when not set", current);
+        assertNull(current,"Current field should be null when not set");
     }
 
     /**
@@ -215,7 +201,7 @@ public class ScreenFieldsNavigationTest {
         screenFields.setCurrentField(null);
 
         // ASSERT: Should be null
-        assertNull("Current field should be null", screenFields.getCurrentField());
+        assertNull(screenFields.getCurrentField(),"Current field should be null");
     }
 
     /**
@@ -233,7 +219,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField nextField = field.next;
 
         // ASSERT: Should be null
-        assertNull("Next field should be null", nextField);
+        assertNull(nextField,"Next field should be null");
     }
 
     /**
@@ -251,7 +237,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField prevField = field.prev;
 
         // ASSERT: Should be null
-        assertNull("Previous field should be null", prevField);
+        assertNull(prevField,"Previous field should be null");
     }
 
     /**
@@ -267,7 +253,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField found = screenFields.findByPosition(0);
 
         // ASSERT: Should return null
-        assertNull("Should return null when no fields exist", found);
+        assertNull(found,"Should return null when no fields exist");
     }
 
     /**
@@ -283,7 +269,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField found = screenFields.findByPosition(100);
 
         // ASSERT: Should return null
-        assertNull("Should return null for position outside all fields", found);
+        assertNull(found,"Should return null for position outside all fields");
     }
 
     /**
@@ -329,8 +315,8 @@ public class ScreenFieldsNavigationTest {
         }
 
         // ASSERT: Should skip to field3
-        assertNotNull("Should find next non-bypass field", nextInputField);
-        assertSame("Should skip bypass field and find field3", field3, nextInputField);
+        assertNotNull(nextInputField,"Should find next non-bypass field");
+        assertSame(field3, nextInputField,"Should skip bypass field and find field3");
     }
 
     /**
@@ -358,7 +344,7 @@ public class ScreenFieldsNavigationTest {
         }
 
         // ASSERT: Should be null (no non-bypass fields)
-        assertNull("Should return null when all fields are bypass", nextInputField);
+        assertNull(nextInputField,"Should return null when all fields are bypass");
     }
 
     /**
@@ -375,7 +361,7 @@ public class ScreenFieldsNavigationTest {
         boolean withinField = field.withinField(0);
 
         // ASSERT: Zero-length field behavior
-        assertFalse("Position 0 should not be within zero-length field", withinField);
+        assertFalse(withinField,"Position 0 should not be within zero-length field");
     }
 
     /**
@@ -400,10 +386,10 @@ public class ScreenFieldsNavigationTest {
         boolean pastEnd = field.withinField(255);
 
         // ASSERT: Positions should be within calculated bounds
-        assertEquals("Start position should be 0", 0, startPos);
-        assertTrue("Position 0 should be within field", atStart);
-        assertTrue("Position 254 should be within field of length 255", atEnd);
-        assertFalse("Position 255 should NOT be within field (255 positions indexed 0-254)", pastEnd);
+        assertEquals(0, startPos,"Start position should be 0");
+        assertTrue(atStart,"Position 0 should be within field");
+        assertTrue(atEnd,"Position 254 should be within field of length 255");
+        assertFalse(pastEnd,"Position 255 should NOT be within field (255 positions indexed 0-254)");
     }
 
     /**
@@ -429,7 +415,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField nextField = field3.next;
 
         // ASSERT: Should be null (no wraparound by default)
-        assertNull("Last field should have null next", nextField);
+        assertNull(nextField,"Last field should have null next");
     }
 
     /**
@@ -456,7 +442,7 @@ public class ScreenFieldsNavigationTest {
         }
 
         // ASSERT: Should detect loop by counting
-        assertEquals("Loop detection should stop at 10 iterations", 10, count);
+        assertEquals(10, count,"Loop detection should stop at 10 iterations");
     }
 
     /**
@@ -477,10 +463,10 @@ public class ScreenFieldsNavigationTest {
         boolean afterEnd = field.withinField(20);
 
         // ASSERT: Boundaries should be inclusive start and end
-        assertTrue("Start position 10 should be within field", atStart);
-        assertTrue("End position 19 should be within field", atEnd);
-        assertFalse("Position 9 should not be within field", beforeStart);
-        assertFalse("Position 20 should not be within field", afterEnd);
+        assertTrue(atStart,"Start position 10 should be within field");
+        assertTrue(atEnd,"End position 19 should be within field");
+        assertFalse(beforeStart,"Position 9 should not be within field");
+        assertFalse(afterEnd,"Position 20 should not be within field");
     }
 
     /**
@@ -514,10 +500,10 @@ public class ScreenFieldsNavigationTest {
         ScreenField atPos20 = screenFields.findByPosition(20);
 
         // ASSERT: Should find correct fields
-        assertSame("Position 9 should be in field1", field1, atPos9);
-        assertSame("Position 10 should be in field2", field2, atPos10);
-        assertSame("Position 19 should be in field2", field2, atPos19);
-        assertSame("Position 20 should be in field3", field3, atPos20);
+        assertSame(field1, atPos9,"Position 9 should be in field1");
+        assertSame(field2, atPos10,"Position 10 should be in field2");
+        assertSame(field2, atPos19,"Position 19 should be in field2");
+        assertSame(field3, atPos20,"Position 20 should be in field3");
     }
 
     /**
@@ -538,7 +524,7 @@ public class ScreenFieldsNavigationTest {
         ScreenField found = screenFields.findByPosition(500);
 
         // ASSERT: Should find field at position 500
-        assertNotNull("Should find field even with 100 fields", found);
+        assertNotNull(found,"Should find field even with 100 fields");
     }
 
     // ===== TEST HELPERS =====

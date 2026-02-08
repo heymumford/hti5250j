@@ -1,37 +1,23 @@
-/**
- * Title: ScreenPlanesPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for ScreenPlanes screen rendering operations
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for ScreenPlanes screen rendering operations.
@@ -44,15 +30,14 @@ import static org.junit.Assert.*;
  *
  * Discovers: Buffer overflow conditions, boundary violations, attribute handling bugs
  */
-@RunWith(Parameterized.class)
 public class ScreenPlanesPairwiseTest {
 
     // Test parameters
-    private final int screenSize;
-    private final int testRow;
-    private final int testCol;
-    private final char testChar;
-    private final int testAttr;
+    private int screenSize;
+    private int testRow;
+    private int testCol;
+    private char testChar;
+    private int testAttr;
 
     // Instance variables
     private ScreenPlanes screenPlanes;
@@ -79,8 +64,7 @@ public class ScreenPlanesPairwiseTest {
      * - Characters: boundary values (0x00, 0x20, 0x40, 0xFF, Unicode)
      * - Attributes: basic and combined
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // Screen size 24x80: Valid positions with various characters
                 { SIZE_24, 0, 0, (char) 0x00, ATTR_NORMAL },           // Top-left, null char
@@ -122,7 +106,7 @@ public class ScreenPlanesPairwiseTest {
         });
     }
 
-    public ScreenPlanesPairwiseTest(int screenSize, int testRow, int testCol, char testChar, int testAttr) {
+    private void setParameters(int screenSize, int testRow, int testCol, char testChar, int testAttr) {
         this.screenSize = screenSize;
         this.testRow = testRow;
         this.testCol = testCol;
@@ -130,8 +114,7 @@ public class ScreenPlanesPairwiseTest {
         this.testAttr = testAttr;
     }
 
-    @Before
-    public void setUp() throws NoSuchFieldException, IllegalAccessException {
+        public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble(screenSize);
         screenPlanes = new ScreenPlanes(screen5250, screenSize);
 
@@ -166,8 +149,11 @@ public class ScreenPlanesPairwiseTest {
      * Positive test: Verify character can be set and retrieved at valid positions
      * across all screen sizes and character values.
      */
-    @Test
-    public void testSetCharAndGetCharValidPositions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSetCharAndGetCharValidPositions(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return; // Skip out-of-bounds for this positive test
         }
@@ -178,11 +164,9 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setChar(pos, testChar);
 
         // GREEN: Verify character was set
-        assertEquals(
-            String.format("Character not set at pos %d (row %d, col %d)", pos, testRow, testCol),
-            testChar,
-            screenPlanes.getChar(pos)
-        );
+        assertEquals(testChar,screenPlanes.getChar(pos)
+        ,
+            String.format("Character not set at pos %d (row %d, col %d)", pos, testRow, testCol));
     }
 
     /**
@@ -190,8 +174,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify that setChar correctly tracks change status
      */
-    @Test
-    public void testSetCharMarksPositionChanged() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSetCharMarksPositionChanged(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -209,10 +196,9 @@ public class ScreenPlanesPairwiseTest {
             char[] screenIsChanged = getPrivateField("screenIsChanged", char[].class);
             // If character differs, position should be marked as changed
             if (testChar != 'A') {
-                assertTrue(
-                    String.format("Position %d should be marked as changed when char differs", pos),
-                    screenIsChanged[pos] == '1'
-                );
+                assertTrue(screenIsChanged[pos] == '1'
+                ,
+                    String.format("Position %d should be marked as changed when char differs", pos));
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             fail("Could not access screenIsChanged field: " + e.getMessage());
@@ -224,8 +210,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify attributes can be set across valid positions
      */
-    @Test
-    public void testSetScreenAttrValidPositions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSetScreenAttrValidPositions(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -236,11 +225,9 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setScreenAttr(pos, testAttr);
 
         // Verify attribute was set
-        assertEquals(
-            String.format("Attribute not set at pos %d (row %d, col %d)", pos, testRow, testCol),
-            testAttr,
-            screenPlanes.getCharAttr(pos)
-        );
+        assertEquals(testAttr,screenPlanes.getCharAttr(pos)
+        ,
+            String.format("Attribute not set at pos %d (row %d, col %d)", pos, testRow, testCol));
     }
 
     /**
@@ -248,8 +235,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify that attribute setting triggers color/extended attribute mapping
      */
-    @Test
-    public void testSetScreenAttrDispersesAttributes() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSetScreenAttrDispersesAttributes(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -264,16 +254,15 @@ public class ScreenPlanesPairwiseTest {
 
             // Attributes should map to color and extended planes
             // (color/extended value depends on attribute value, tested implicitly)
-            assertNotNull("screenColor should be populated", screenColor);
-            assertNotNull("screenExtended should be populated", screenExtended);
+            assertNotNull(screenColor,"screenColor should be populated");
+            assertNotNull(screenExtended,"screenExtended should be populated");
 
             // For non-zero attribute, disperseAttribute should update color plane
             if (testAttr > 0) {
                 // Just verify the planes were updated without null checks
-                assertTrue(
-                    "Attribute dispersal should update color plane",
-                    screenColor[pos] >= 0
-                );
+                assertTrue(screenColor[pos] >= 0
+                ,
+                    "Attribute dispersal should update color plane");
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             fail("Could not access color/extended fields: " + e.getMessage());
@@ -285,8 +274,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify GUI state is correctly retrieved
      */
-    @Test
-    public void testGetWhichGUIReturnsCorrectValue() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testGetWhichGUIReturnsCorrectValue(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -300,11 +292,9 @@ public class ScreenPlanesPairwiseTest {
             screenGUIArray[pos] = (char) testGUIValue;
 
             // Verify getWhichGUI returns the set value
-            assertEquals(
-                String.format("GUI value not retrieved correctly at pos %d", pos),
-                testGUIValue,
-                screenPlanes.getWhichGUI(pos)
-            );
+            assertEquals(testGUIValue,screenPlanes.getWhichGUI(pos)
+            ,
+                String.format("GUI value not retrieved correctly at pos %d", pos));
         } catch (NoSuchFieldException | IllegalAccessException e) {
             fail("Could not access screenGUI field: " + e.getMessage());
         }
@@ -315,8 +305,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Adversarial test: Verify setChar gracefully handles out-of-bounds positions
      */
-    @Test
-    public void testSetCharOutOfBoundsDoesNotCorrupt() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSetCharOutOfBoundsDoesNotCorrupt(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (isValidPosition(testRow, testCol)) {
             return; // Skip valid positions for adversarial test
         }
@@ -352,8 +345,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Adversarial test: Verify setScreenAttr handles out-of-bounds positions
      */
-    @Test
-    public void testSetScreenAttrOutOfBoundsDoesNotCorrupt() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSetScreenAttrOutOfBoundsDoesNotCorrupt(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (isValidPosition(testRow, testCol)) {
             return; // Skip valid positions
         }
@@ -383,36 +379,31 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify that screen initialization respects size parameter
      */
-    @Test
-    public void testScreenInitializationDimensions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testScreenInitializationDimensions(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         int expectedRows = (screenSize == SIZE_27) ? 27 : 24;
         int expectedCols = (screenSize == SIZE_27) ? 132 : 80;
         int expectedSize = expectedRows * expectedCols;
 
         // Verify array dimensions
-        assertEquals(
-            String.format("Screen array size incorrect for %dx%d", expectedRows, expectedCols),
-            expectedSize,
-            screen.length
-        );
+        assertEquals(expectedSize,screen.length
+        ,
+            String.format("Screen array size incorrect for %dx%d", expectedRows, expectedCols));
 
-        assertEquals(
-            String.format("ScreenGUI array size incorrect for %dx%d", expectedRows, expectedCols),
-            expectedSize,
-            screenGUI.length
-        );
+        assertEquals(expectedSize,screenGUI.length
+        ,
+            String.format("ScreenGUI array size incorrect for %dx%d", expectedRows, expectedCols));
 
-        assertEquals(
-            String.format("ScreenAttr array size incorrect for %dx%d", expectedRows, expectedCols),
-            expectedSize,
-            screenAttr.length
-        );
+        assertEquals(expectedSize,screenAttr.length
+        ,
+            String.format("ScreenAttr array size incorrect for %dx%d", expectedRows, expectedCols));
 
-        assertEquals(
-            String.format("ScreenIsAttr array size incorrect for %dx%d", expectedRows, expectedCols),
-            expectedSize,
-            screenIsAttr.length
-        );
+        assertEquals(expectedSize,screenIsAttr.length
+        ,
+            String.format("ScreenIsAttr array size incorrect for %dx%d", expectedRows, expectedCols));
     }
 
     /**
@@ -420,8 +411,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify character preservation across all boundary positions
      */
-    @Test
-    public void testCharacterRoundTripBoundary() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCharacterRoundTripBoundary(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -436,11 +430,9 @@ public class ScreenPlanesPairwiseTest {
         char retrievedChar = screenPlanes.getChar(pos);
 
         // Verify round-trip
-        assertEquals(
-            String.format("Character lost in round-trip at pos %d", pos),
-            testChar,
-            retrievedChar
-        );
+        assertEquals(testChar,retrievedChar
+        ,
+            String.format("Character lost in round-trip at pos %d", pos));
     }
 
     /**
@@ -448,8 +440,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify attribute preservation for all tested values
      */
-    @Test
-    public void testAttributeRoundTripAllValues() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeRoundTripAllValues(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -460,11 +455,9 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setScreenAttr(pos, testAttr);
         int retrievedAttr = screenPlanes.getCharAttr(pos);
 
-        assertEquals(
-            String.format("Attribute lost in round-trip at pos %d", pos),
-            testAttr,
-            retrievedAttr
-        );
+        assertEquals(testAttr,retrievedAttr
+        ,
+            String.format("Attribute lost in round-trip at pos %d", pos));
     }
 
     /**
@@ -472,8 +465,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify operations work at all edge positions
      */
-    @Test
-    public void testEdgePositionOperations() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEdgePositionOperations(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return; // Skip if test parameters are out of bounds
         }
@@ -482,11 +478,10 @@ public class ScreenPlanesPairwiseTest {
         int numCols = (screenSize == SIZE_27) ? 132 : 80;
 
         // Test that this position is within valid bounds
-        assertTrue(
+        assertTrue(testRow >= 0 && testRow < numRows && testCol >= 0 && testCol < numCols
+        ,
             String.format("Position row=%d col=%d is invalid for %dx%d screen",
-                testRow, testCol, numRows, numCols),
-            testRow >= 0 && testRow < numRows && testCol >= 0 && testCol < numCols
-        );
+                testRow, testCol, numRows, numCols));
 
         int pos = convertRowColToPos(testRow, testCol);
 
@@ -495,7 +490,7 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setScreenAttr(pos, testAttr);
 
         char retrieved = screenPlanes.getChar(pos);
-        assertEquals("Character should be retrievable", testChar, retrieved);
+        assertEquals(testChar, retrieved,"Character should be retrievable");
     }
 
     /**
@@ -503,8 +498,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify screen state remains consistent across multiple updates
      */
-    @Test
-    public void testMultipleSequentialUpdates() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleSequentialUpdates(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -513,13 +511,13 @@ public class ScreenPlanesPairwiseTest {
 
         // Perform sequence of updates
         screenPlanes.setChar(pos, 'A');
-        assertEquals("First update failed", 'A', screenPlanes.getChar(pos));
+        assertEquals('A', screenPlanes.getChar(pos),"First update failed");
 
         screenPlanes.setChar(pos, 'B');
-        assertEquals("Second update failed", 'B', screenPlanes.getChar(pos));
+        assertEquals('B', screenPlanes.getChar(pos),"Second update failed");
 
         screenPlanes.setChar(pos, testChar);
-        assertEquals("Final update failed", testChar, screenPlanes.getChar(pos));
+        assertEquals(testChar, screenPlanes.getChar(pos),"Final update failed");
     }
 
     /**
@@ -527,8 +525,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify attribute changes are isolated from character plane
      */
-    @Test
-    public void testAttributeChangeDoeNotAffectCharacter() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeChangeDoeNotAffectCharacter(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -541,13 +542,13 @@ public class ScreenPlanesPairwiseTest {
 
         // Change attributes multiple times
         screenPlanes.setScreenAttr(pos, 32);
-        assertEquals("Character corrupted by attr change 1", expectedChar, screenPlanes.getChar(pos));
+        assertEquals(expectedChar, screenPlanes.getChar(pos),"Character corrupted by attr change 1");
 
         screenPlanes.setScreenAttr(pos, 33);
-        assertEquals("Character corrupted by attr change 2", expectedChar, screenPlanes.getChar(pos));
+        assertEquals(expectedChar, screenPlanes.getChar(pos),"Character corrupted by attr change 2");
 
         screenPlanes.setScreenAttr(pos, testAttr);
-        assertEquals("Character corrupted by attr change 3", expectedChar, screenPlanes.getChar(pos));
+        assertEquals(expectedChar, screenPlanes.getChar(pos),"Character corrupted by attr change 3");
     }
 
     /**
@@ -555,8 +556,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify character changes are isolated from attribute plane
      */
-    @Test
-    public void testCharacterChangeDoesNotAffectAttribute() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCharacterChangeDoesNotAffectAttribute(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -569,13 +573,13 @@ public class ScreenPlanesPairwiseTest {
 
         // Change characters multiple times
         screenPlanes.setChar(pos, 'X');
-        assertEquals("Attribute corrupted by char change 1", expectedAttr, screenPlanes.getCharAttr(pos));
+        assertEquals(expectedAttr, screenPlanes.getCharAttr(pos),"Attribute corrupted by char change 1");
 
         screenPlanes.setChar(pos, 'Y');
-        assertEquals("Attribute corrupted by char change 2", expectedAttr, screenPlanes.getCharAttr(pos));
+        assertEquals(expectedAttr, screenPlanes.getCharAttr(pos),"Attribute corrupted by char change 2");
 
         screenPlanes.setChar(pos, testChar);
-        assertEquals("Attribute corrupted by char change 3", expectedAttr, screenPlanes.getCharAttr(pos));
+        assertEquals(expectedAttr, screenPlanes.getCharAttr(pos),"Attribute corrupted by char change 3");
     }
 
     /**
@@ -583,8 +587,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify Unicode characters are preserved
      */
-    @Test
-    public void testUnicodeCharacterSupport() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testUnicodeCharacterSupport(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -599,11 +606,9 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setChar(pos, testChar);
         char retrieved = screenPlanes.getChar(pos);
 
-        assertEquals(
-            String.format("Unicode character 0x%04X not preserved", (int) testChar),
-            testChar,
-            retrieved
-        );
+        assertEquals(testChar,retrieved
+        ,
+            String.format("Unicode character 0x%04X not preserved", (int) testChar));
     }
 
     /**
@@ -611,8 +616,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify all planes remain in consistent state
      */
-    @Test
-    public void testScreenStateConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testScreenStateConsistency(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -628,19 +636,18 @@ public class ScreenPlanesPairwiseTest {
             screenPlanes.setScreenAttr(pos, testAttr);
 
             // Verify no plane is null and all have same length
-            assertNotNull("Screen array should not be null", screen);
-            assertNotNull("ScreenGUI should not be null", screenGUI);
-            assertNotNull("ScreenAttr should not be null", screenAttr);
-            assertNotNull("ScreenColor should not be null", screenColorArray);
-            assertNotNull("ScreenExtended should not be null", screenExtendedArray);
+            assertNotNull(screen,"Screen array should not be null");
+            assertNotNull(screenGUI,"ScreenGUI should not be null");
+            assertNotNull(screenAttr,"ScreenAttr should not be null");
+            assertNotNull(screenColorArray,"ScreenColor should not be null");
+            assertNotNull(screenExtendedArray,"ScreenExtended should not be null");
 
-            assertTrue(
-                "All planes should have same length",
-                screen.length == screenGUI.length &&
+            assertTrue(screen.length == screenGUI.length &&
                 screen.length == screenAttr.length &&
                 screen.length == screenColorArray.length &&
                 screen.length == screenExtendedArray.length
-            );
+            ,
+                "All planes should have same length");
         } catch (NoSuchFieldException | IllegalAccessException e) {
             fail("Could not verify plane consistency: " + e.getMessage());
         }
@@ -651,8 +658,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify null characters (0x00) are properly stored
      */
-    @Test
-    public void testNullCharacterHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNullCharacterHandling(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -666,7 +676,7 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setChar(pos, testChar);
         char retrieved = screenPlanes.getChar(pos);
 
-        assertEquals("Null character should be preserved", (char) 0x00, retrieved);
+        assertEquals((char) 0x00, retrieved,"Null character should be preserved");
     }
 
     /**
@@ -674,8 +684,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify extended ASCII values are preserved
      */
-    @Test
-    public void testExtendedASCIIHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExtendedASCIIHandling(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -689,7 +702,7 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setChar(pos, testChar);
         char retrieved = screenPlanes.getChar(pos);
 
-        assertEquals("Extended ASCII (0xFF) should be preserved", (char) 0xFF, retrieved);
+        assertEquals((char) 0xFF, retrieved,"Extended ASCII (0xFF) should be preserved");
     }
 
     /**
@@ -697,8 +710,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify wide range of attribute values are accepted
      */
-    @Test
-    public void testAttributeValueRangeCoverage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeValueRangeCoverage(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -709,11 +725,9 @@ public class ScreenPlanesPairwiseTest {
         screenPlanes.setScreenAttr(pos, testAttr);
         int retrieved = screenPlanes.getCharAttr(pos);
 
-        assertEquals(
-            String.format("Attribute value %d should be preserved", testAttr),
-            testAttr,
-            retrieved
-        );
+        assertEquals(testAttr,retrieved
+        ,
+            String.format("Attribute value %d should be preserved", testAttr));
     }
 
     /**
@@ -721,8 +735,11 @@ public class ScreenPlanesPairwiseTest {
      *
      * Positive test: Verify row/col to position conversion is consistent
      */
-    @Test
-    public void testPositionCalculationConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPositionCalculationConsistency(int screenSize, int testRow, int testCol, char testChar, int testAttr) throws Exception {
+        setParameters(screenSize, testRow, testCol, testChar, testAttr);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;
         }
@@ -731,11 +748,9 @@ public class ScreenPlanesPairwiseTest {
         int expectedPos = testRow * numCols + testCol;
         int calculatedPos = convertRowColToPos(testRow, testCol);
 
-        assertEquals(
-            String.format("Position calculation inconsistent for row=%d col=%d", testRow, testCol),
-            expectedPos,
-            calculatedPos
-        );
+        assertEquals(expectedPos,calculatedPos
+        ,
+            String.format("Position calculation inconsistent for row=%d col=%d", testRow, testCol));
     }
 
     /**

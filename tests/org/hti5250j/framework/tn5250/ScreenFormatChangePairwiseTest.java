@@ -1,37 +1,23 @@
-/**
- * Title: ScreenFormatChangePairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for HTI5250j screen format changes
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for ScreenFormat table changes during format transitions.
@@ -45,15 +31,14 @@ import static org.junit.Assert.*;
  *
  * Discovers: Format transition bugs, field corruption, cursor loss, state machine issues
  */
-@RunWith(Parameterized.class)
 public class ScreenFormatChangePairwiseTest {
 
     // Pairwise test parameters
-    private final String formatChange;     // "none", "partial", "complete"
-    private final String fieldPreservation; // "discard", "preserve-modified", "preserve-all"
-    private final String cursorHandling;    // "home", "preserve", "specified"
-    private final String screenClear;       // "none", "format-only", "all"
-    private final String inputState;        // "idle", "active", "pending-aid"
+    private String formatChange;     // "none", "partial", "complete"
+    private String fieldPreservation; // "discard", "preserve-modified", "preserve-all"
+    private String cursorHandling;    // "home", "preserve", "specified"
+    private String screenClear;       // "none", "format-only", "all"
+    private String inputState;        // "idle", "active", "pending-aid"
 
     // Instance variables
     private ScreenFields screenFields;
@@ -67,8 +52,7 @@ public class ScreenFormatChangePairwiseTest {
      * Pairwise combinations covering all interaction pairs across 5 dimensions
      * Total: 25+ combinations ensuring all pairs are exercised
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // === COMPLETE format changes (new screen layout) ===
                 // Combination 1: Complete format + discard fields + home cursor + all clear + idle
@@ -140,7 +124,7 @@ public class ScreenFormatChangePairwiseTest {
         });
     }
 
-    public ScreenFormatChangePairwiseTest(String formatChange, String fieldPreservation,
+    private void setParameters(String formatChange, String fieldPreservation,
                                          String cursorHandling, String screenClear, String inputState) {
         this.formatChange = formatChange;
         this.fieldPreservation = fieldPreservation;
@@ -149,8 +133,7 @@ public class ScreenFormatChangePairwiseTest {
         this.inputState = inputState;
     }
 
-    @Before
-    public void setUp() throws Exception {
+        public void setUp() throws Exception {
         // Create test screen with initial format
         screen5250 = new Screen5250TestDouble(24, 80);
 
@@ -175,33 +158,34 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Format changes completely (new layout), fields should be discarded
      * Validates: Old fields are cleared, new fields are loaded
      */
-    @Test
-    public void testCompleteFormatChangeDiscardsFields() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCompleteFormatChangeDiscardsFields(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("complete")) {
             return; // Skip non-complete format changes
         }
 
         // RED: Will fail if fields aren't properly cleared
         int fieldCountBefore = screenFields.getFieldCount();
-        assertTrue("Should have fields before format change", fieldCountBefore > 0);
+        assertTrue(fieldCountBefore > 0,"Should have fields before format change");
 
         // GREEN: Clear format table and create new format
         screenFields.clearFFT();
-        assertEquals(
-            "Format table should be empty after clearFFT()",
-            0,
+        assertEquals(0,
             screenFields.getFieldCount()
-        );
+        ,
+            "Format table should be empty after clearFFT()");
 
         // Create new format with different fields
         ScreenField newField1 = createField(10, 0, 0, 20, 0x00, 0x00, 0x00, 0x00);
         ScreenField newField2 = createField(10, 2, 0, 15, 0x00, 0x00, 0x00, 0x00);
 
-        assertEquals(
-            "New format should have 2 fields",
-            2,
+        assertEquals(2,
             screenFields.getFieldCount()
-        );
+        ,
+            "New format should have 2 fields");
     }
 
     /**
@@ -210,8 +194,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Some fields updated, others remain
      * Validates: Only affected fields change, others preserved
      */
-    @Test
-    public void testPartialFormatChangePreservesFields() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPartialFormatChangePreservesFields(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("partial")) {
             return;
         }
@@ -230,10 +217,9 @@ public class ScreenFormatChangePairwiseTest {
         ScreenField newField2 = createField(10, 3, 0, 25, 0x00, 0x00, 0x00, 0x00);
 
         // Verify field1 still exists
-        assertTrue(
-            "Field 1 should still exist after partial format change",
-            screenFields.existsAtPos(originalField1Pos)
-        );
+        assertTrue(screenFields.existsAtPos(originalField1Pos)
+        ,
+            "Field 1 should still exist after partial format change");
     }
 
     /**
@@ -242,8 +228,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Format definition unchanged
      * Validates: All fields preserved, attributes unchanged
      */
-    @Test
-    public void testNoFormatChangePreservesFields() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNoFormatChangePreservesFields(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("none")) {
             return;
         }
@@ -253,15 +242,13 @@ public class ScreenFormatChangePairwiseTest {
         int field2Pos = field2.startPos();
 
         // Verify fields still exist after no change
-        assertTrue(
-            "Field 1 should still exist when format unchanged",
-            screenFields.existsAtPos(field1Pos)
-        );
+        assertTrue(screenFields.existsAtPos(field1Pos)
+        ,
+            "Field 1 should still exist when format unchanged");
 
-        assertTrue(
-            "Field 2 should still exist when format unchanged",
-            screenFields.existsAtPos(field2Pos)
-        );
+        assertTrue(screenFields.existsAtPos(field2Pos)
+        ,
+            "Field 2 should still exist when format unchanged");
     }
 
     /**
@@ -270,8 +257,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Cursor handling set to HOME
      * Validates: Cursor moves to (0, 0) before field input
      */
-    @Test
-    public void testCursorMovesToHomeOnFormatChange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorMovesToHomeOnFormatChange(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!cursorHandling.equals("home")) {
             return;
         }
@@ -282,11 +272,10 @@ public class ScreenFormatChangePairwiseTest {
 
         int cursorPos = screen5250.getPos(screen5250.getCurrentRow() - 1, screen5250.getCurrentCol() - 1);
 
-        assertEquals(
-            "Cursor should be at home position (0,0) after format change",
-            homePos,
+        assertEquals(homePos,
             cursorPos
-        );
+        ,
+            "Cursor should be at home position (0,0) after format change");
     }
 
     /**
@@ -295,8 +284,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Cursor handling set to PRESERVE
      * Validates: Cursor stays at saved position if position still valid in new format
      */
-    @Test
-    public void testCursorPreservedAtCurrentPosition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorPreservedAtCurrentPosition(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!cursorHandling.equals("preserve")) {
             return;
         }
@@ -308,11 +300,10 @@ public class ScreenFormatChangePairwiseTest {
         // (In real code, this would be conditional on whether position is still valid)
         int cursorAfterChange = screen5250.getPos(screen5250.getCurrentRow() - 1, screen5250.getCurrentCol() - 1);
 
-        assertEquals(
-            "Cursor should remain at same position when PRESERVE specified",
-            cursorBeforeChange,
+        assertEquals(cursorBeforeChange,
             cursorAfterChange
-        );
+        ,
+            "Cursor should remain at same position when PRESERVE specified");
     }
 
     /**
@@ -321,8 +312,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Cursor handling set to SPECIFIED
      * Validates: Cursor moves to designated field or position
      */
-    @Test
-    public void testCursorMovedToSpecifiedPosition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorMovedToSpecifiedPosition(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!cursorHandling.equals("specified")) {
             return;
         }
@@ -335,11 +329,10 @@ public class ScreenFormatChangePairwiseTest {
         screen5250.setCursor(specifiedRow + 1, specifiedCol + 1);
         int actualPos = screen5250.getPos(screen5250.getCurrentRow() - 1, screen5250.getCurrentCol() - 1);
 
-        assertEquals(
-            "Cursor should move to specified position",
-            specifiedPos,
+        assertEquals(specifiedPos,
             actualPos
-        );
+        ,
+            "Cursor should move to specified position");
     }
 
     /**
@@ -348,8 +341,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Screen clear mode is ALL
      * Validates: All planes (char, attr, extended) are zeroed
      */
-    @Test
-    public void testScreenClearedWhenClearAll() throws NoSuchFieldException, IllegalAccessException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testScreenClearedWhenClearAll(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!screenClear.equals("all")) {
             return;
         }
@@ -367,9 +363,9 @@ public class ScreenFormatChangePairwiseTest {
         }
 
         // Verify screen is cleared
-        assertEquals("Position 0 should be cleared", (char) 0, planes.getChar(0));
-        assertEquals("Position 80 should be cleared", (char) 0, planes.getChar(80));
-        assertEquals("Position 0 attribute should be default", 32, planes.getCharAttr(0));
+        assertEquals((char) 0, planes.getChar(0),"Position 0 should be cleared");
+        assertEquals((char) 0, planes.getChar(80),"Position 80 should be cleared");
+        assertEquals(32, planes.getCharAttr(0),"Position 0 attribute should be default");
     }
 
     /**
@@ -378,8 +374,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Screen clear mode is FORMAT_ONLY
      * Validates: Format/attribute planes cleared, character plane intact
      */
-    @Test
-    public void testFormatOnlyClearPreservesCharacters() throws NoSuchFieldException, IllegalAccessException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFormatOnlyClearPreservesCharacters(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!screenClear.equals("format-only")) {
             return;
         }
@@ -394,18 +393,16 @@ public class ScreenFormatChangePairwiseTest {
         planes.setScreenAttr(10, 32); // Reset to default attribute
 
         // Verify character data is preserved
-        assertEquals(
-            "Character should be preserved in format-only clear",
-            'X',
+        assertEquals('X',
             planes.getChar(10)
-        );
+        ,
+            "Character should be preserved in format-only clear");
 
         // Verify attribute was reset
-        assertEquals(
-            "Attribute should be reset to default",
-            32,
+        assertEquals(32,
             planes.getCharAttr(10)
-        );
+        ,
+            "Attribute should be reset to default");
     }
 
     /**
@@ -414,8 +411,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Screen clear mode is NONE
      * Validates: All planes unchanged during format change
      */
-    @Test
-    public void testNoClearLeavesScreenIntact() throws NoSuchFieldException, IllegalAccessException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNoClearLeavesScreenIntact(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!screenClear.equals("none")) {
             return;
         }
@@ -430,8 +430,8 @@ public class ScreenFormatChangePairwiseTest {
         int savedAttr = planes.getCharAttr(5);
 
         // Format change with no clear should not affect data
-        assertEquals("Character should be unchanged with no clear", 'T', savedChar);
-        assertEquals("Attribute should be unchanged with no clear", 36, savedAttr);
+        assertEquals('T', savedChar,"Character should be unchanged with no clear");
+        assertEquals(36, savedAttr,"Attribute should be unchanged with no clear");
     }
 
     /**
@@ -440,19 +440,22 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Input state is IDLE (no field active)
      * Validates: Format change proceeds without field validation
      */
-    @Test
-    public void testIdleInputStateAllowsFormatChange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testIdleInputStateAllowsFormatChange(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!inputState.equals("idle")) {
             return;
         }
 
         // When idle, currentField should be null
         screenFields.clearFFT();
-        assertNull("Current field should be null when IDLE", screenFields.getCurrentField());
+        assertNull(screenFields.getCurrentField(),"Current field should be null when IDLE");
 
         // Format change should proceed
         ScreenField newField = createField(10, 0, 0, 20, 0x00, 0x00, 0x00, 0x00);
-        assertNotNull("New field should be created", newField);
+        assertNotNull(newField,"New field should be created");
     }
 
     /**
@@ -461,19 +464,22 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Input state is ACTIVE (cursor in field)
      * Validates: Field is properly cleared before format change
      */
-    @Test
-    public void testActiveInputStateRequiresFieldCleanup() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testActiveInputStateRequiresFieldCleanup(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!inputState.equals("active")) {
             return;
         }
 
         // Set active field
         screenFields.setCurrentField(field1);
-        assertNotNull("Current field should be set for ACTIVE state", screenFields.getCurrentField());
+        assertNotNull(screenFields.getCurrentField(),"Current field should be set for ACTIVE state");
 
         // Clear format table (cleanup)
         screenFields.clearFFT();
-        assertNull("Current field should be null after format change", screenFields.getCurrentField());
+        assertNull(screenFields.getCurrentField(),"Current field should be null after format change");
     }
 
     /**
@@ -482,8 +488,11 @@ public class ScreenFormatChangePairwiseTest {
      * Scenario: Input state is PENDING_AID (AID key pressed, waiting for host response)
      * Validates: Fields preserved until ACK, then format change allowed
      */
-    @Test
-    public void testPendingAidInputStatePreservesFields() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPendingAidInputStatePreservesFields(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!inputState.equals("pending-aid")) {
             return;
         }
@@ -491,11 +500,11 @@ public class ScreenFormatChangePairwiseTest {
         // Mark MDT (Modified Data Tag) on current field
         screenFields.setCurrentField(field1);
         screenFields.setCurrentFieldMDT();
-        assertTrue("Master MDT should be set", screenFields.isMasterMDT());
+        assertTrue(screenFields.isMasterMDT(),"Master MDT should be set");
 
         // When PENDING_AID, fields should remain until format change confirmed
         // (in real code, this would wait for host ACK)
-        assertTrue("Field should still exist for transmission", screenFields.getFieldCount() > 0);
+        assertTrue(screenFields.getFieldCount() > 0,"Field should still exist for transmission");
     }
 
     /**
@@ -504,8 +513,11 @@ public class ScreenFormatChangePairwiseTest {
      * Adversarial: Simulate incomplete field update (length missing)
      * Validates: System handles malformed format without crashing
      */
-    @Test
-    public void testIncompleteFieldDefinitionHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testIncompleteFieldDefinitionHandling(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("partial")) {
             return;
         }
@@ -517,10 +529,9 @@ public class ScreenFormatChangePairwiseTest {
             incompleteField.setField(0, 0, 0, 0, 0x00, 0x00, 0x00, 0x00); // length=0
 
             // Should handle gracefully (either reject or handle zero-length field)
-            assertTrue(
-                "System should handle incomplete field definition",
-                incompleteField.getLength() == 0
-            );
+            assertTrue(incompleteField.getLength() == 0
+            ,
+                "System should handle incomplete field definition");
         } catch (Exception e) {
             fail("System crashed on incomplete field definition: " + e.getMessage());
         }
@@ -532,8 +543,11 @@ public class ScreenFormatChangePairwiseTest {
      * Adversarial: Cursor position becomes invalid after format change
      * Validates: Cursor repositioned to valid location
      */
-    @Test
-    public void testCursorInvalidationAfterFormatChange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorInvalidationAfterFormatChange(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("complete")) {
             return;
         }
@@ -547,7 +561,7 @@ public class ScreenFormatChangePairwiseTest {
         if (cursorHandling.equals("home")) {
             screen5250.setCursor(0, 0);
             int newPos = screen5250.getPos(screen5250.getCurrentRow() - 1, screen5250.getCurrentCol() - 1);
-            assertEquals("Cursor should be repositioned to home", 0, newPos);
+            assertEquals(0, newPos,"Cursor should be repositioned to home");
         }
     }
 
@@ -557,8 +571,11 @@ public class ScreenFormatChangePairwiseTest {
      * Adversarial: New format redefines field at same position with different attributes
      * Validates: Old field properly replaced, attributes updated
      */
-    @Test
-    public void testFieldRedefinitionWithAttributeConflict() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldRedefinitionWithAttributeConflict(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("partial")) {
             return;
         }
@@ -574,16 +591,14 @@ public class ScreenFormatChangePairwiseTest {
                                originalLen + 5, 0x00, 0x00, 0x00, 0x00);
 
         // New field should have updated attributes
-        assertNotSame(
-            "Field should be redefined with new attribute",
-            originalAttr,
+        assertNotSame(originalAttr,
             redefinedField.getAttr()
-        );
+        ,
+            "Field should be redefined with new attribute");
 
-        assertTrue(
-            "Field should be extended in length",
-            redefinedField.getLength() > originalLen
-        );
+        assertTrue(redefinedField.getLength() > originalLen
+        ,
+            "Field should be extended in length");
     }
 
     /**
@@ -591,8 +606,11 @@ public class ScreenFormatChangePairwiseTest {
      *
      * Validates: Field count, positions, attributes all consistent after change
      */
-    @Test
-    public void testFormatTableConsistencyAfterChange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFormatTableConsistencyAfterChange(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (formatChange.equals("none")) {
             return; // No change scenario
         }
@@ -601,14 +619,14 @@ public class ScreenFormatChangePairwiseTest {
 
         if (formatChange.equals("complete")) {
             screenFields.clearFFT();
-            assertEquals("Format table should be empty after complete change", 0, screenFields.getFieldCount());
+            assertEquals(0, screenFields.getFieldCount(),"Format table should be empty after complete change");
 
             // Recreate new format
             createField(10, 0, 0, 20, 0x00, 0x00, 0x00, 0x00);
             createField(10, 1, 0, 20, 0x00, 0x00, 0x00, 0x00);
 
             int fieldCountAfter = screenFields.getFieldCount();
-            assertEquals("New format should have consistent field count", 2, fieldCountAfter);
+            assertEquals(2, fieldCountAfter,"New format should have consistent field count");
         }
     }
 
@@ -617,25 +635,28 @@ public class ScreenFormatChangePairwiseTest {
      *
      * Validates: Format table can be updated multiple times without corruption
      */
-    @Test
-    public void testMultipleSequentialFormatChanges() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleSequentialFormatChanges(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         // Change 1: Clear and create new format
         screenFields.clearFFT();
-        assertEquals("First clear should empty format table", 0, screenFields.getFieldCount());
+        assertEquals(0, screenFields.getFieldCount(),"First clear should empty format table");
 
         createField(10, 0, 0, 20, 0x00, 0x00, 0x00, 0x00);
-        assertEquals("After first change, should have 1 field", 1, screenFields.getFieldCount());
+        assertEquals(1, screenFields.getFieldCount(),"After first change, should have 1 field");
 
         // Change 2: Clear and create different format
         screenFields.clearFFT();
-        assertEquals("Second clear should empty format table", 0, screenFields.getFieldCount());
+        assertEquals(0, screenFields.getFieldCount(),"Second clear should empty format table");
 
         createField(10, 0, 0, 30, 0x00, 0x00, 0x00, 0x00);
         createField(10, 2, 0, 25, 0x00, 0x00, 0x00, 0x00);
-        assertEquals("After second change, should have 2 fields", 2, screenFields.getFieldCount());
+        assertEquals(2, screenFields.getFieldCount(),"After second change, should have 2 fields");
 
         // Change 3: Partial update
-        assertTrue("Format should remain valid after multiple changes", screenFields.getFieldCount() > 0);
+        assertTrue(screenFields.getFieldCount() > 0,"Format should remain valid after multiple changes");
     }
 
     /**
@@ -643,8 +664,11 @@ public class ScreenFormatChangePairwiseTest {
      *
      * Validates: Field data isolation - format changes don't affect persisted data
      */
-    @Test
-    public void testFormatChangeDoesNotCorruptFieldData() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFormatChangeDoesNotCorruptFieldData(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         // Store field data
         int field1StartPos = field1.startPos();
         int field1Length = field1.getLength();
@@ -657,7 +681,7 @@ public class ScreenFormatChangePairwiseTest {
 
             // Retrieve field and verify data intact
             ScreenField retrievedField = screenFields.getCurrentField();
-            assertNotNull("Field should be recoverable", retrievedField);
+            assertNotNull(retrievedField,"Field should be recoverable");
         }
     }
 
@@ -666,8 +690,11 @@ public class ScreenFormatChangePairwiseTest {
      *
      * Validates: Field navigation links (prev/next) remain valid after format change
      */
-    @Test
-    public void testFieldNavigationLinksAfterFormatChange() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldNavigationLinksAfterFormatChange(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("partial")) {
             return;
         }
@@ -677,11 +704,11 @@ public class ScreenFormatChangePairwiseTest {
         ScreenField f2 = createField(10, 1, 0, 20, 0x00, 0x00, 0x00, 0x00);
 
         // After partial format change, both should still be navigable
-        assertTrue("Fields should exist after format change", screenFields.getFieldCount() >= 2);
+        assertTrue(screenFields.getFieldCount() >= 2,"Fields should exist after format change");
 
         // Verify field positions are valid
-        assertNotNull("Field 1 should be findable", f1);
-        assertNotNull("Field 2 should be findable", f2);
+        assertNotNull(f1,"Field 1 should be findable");
+        assertNotNull(f2,"Field 2 should be findable");
     }
 
     /**
@@ -689,8 +716,11 @@ public class ScreenFormatChangePairwiseTest {
      *
      * Validates: Field attributes properly copied/inherited during format updates
      */
-    @Test
-    public void testAttributeInheritanceInFormatChanges() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeInheritanceInFormatChanges(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (formatChange.equals("none")) {
             return;
         }
@@ -698,11 +728,10 @@ public class ScreenFormatChangePairwiseTest {
         int srcAttr = 33; // reverse video
         ScreenField newField = createField(srcAttr, 0, 0, 20, 0x00, 0x00, 0x00, 0x00);
 
-        assertEquals(
-            "New field should inherit source attribute",
-            srcAttr,
+        assertEquals(srcAttr,
             newField.getAttr()
-        );
+        ,
+            "New field should inherit source attribute");
     }
 
     /**
@@ -710,8 +739,11 @@ public class ScreenFormatChangePairwiseTest {
      *
      * Validates: MDT (Modified Data Tag) state preserved correctly during format change
      */
-    @Test
-    public void testFormatChangePreservesMDTState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFormatChangePreservesMDTState(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!inputState.equals("pending-aid")) {
             return;
         }
@@ -719,11 +751,11 @@ public class ScreenFormatChangePairwiseTest {
         // Set MDT on field
         screenFields.setCurrentField(field1);
         screenFields.setCurrentFieldMDT();
-        assertTrue("MDT should be set", screenFields.isMasterMDT());
+        assertTrue(screenFields.isMasterMDT(),"MDT should be set");
 
         if (fieldPreservation.equals("preserve-modified")) {
             // MDT state should be preserved
-            assertTrue("MDT should remain after format change with preserve-modified", screenFields.isMasterMDT());
+            assertTrue(screenFields.isMasterMDT(),"MDT should remain after format change with preserve-modified");
         }
     }
 
@@ -733,18 +765,20 @@ public class ScreenFormatChangePairwiseTest {
      * Adversarial: Attempt to define fields beyond screen boundaries
      * Validates: System rejects or clips out-of-bounds fields
      */
-    @Test
-    public void testFormatTableBoundsChecking() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFormatTableBoundsChecking(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         // Attempt to create field beyond screen (24x80)
         ScreenField overflowField = new ScreenField(screen5250);
         overflowField.setField(10, 100, 100, 20, 0x00, 0x00, 0x00, 0x00);
 
         // Field position calculation should handle out-of-bounds
         int pos = overflowField.startPos();
-        assertTrue(
-            "Field position should be calculated even if out-of-bounds",
-            pos >= 0
-        );
+        assertTrue(pos >= 0
+        ,
+            "Field position should be calculated even if out-of-bounds");
     }
 
     /**
@@ -753,8 +787,11 @@ public class ScreenFormatChangePairwiseTest {
      * Adversarial: Format changes to layout where old cursor position is in non-field area
      * Validates: Cursor moved to first field or home position
      */
-    @Test
-    public void testCursorValidationInNewFormat() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorValidationInNewFormat(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (!formatChange.equals("complete")) {
             return;
         }
@@ -768,7 +805,7 @@ public class ScreenFormatChangePairwiseTest {
 
         // Cursor should be repositioned if cursorHandling indicates it
         if (cursorHandling.equals("home")) {
-            assertEquals("Cursor should be at home", 0, screen5250.getPos(0, 0));
+            assertEquals(0, screen5250.getPos(0, 0),"Cursor should be at home");
         }
     }
 
@@ -778,17 +815,20 @@ public class ScreenFormatChangePairwiseTest {
      * Adversarial: Format change results in no fields (all-blank screen)
      * Validates: System handles empty format gracefully
      */
-    @Test
-    public void testEmptyFormatTableHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEmptyFormatTableHandling(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         screenFields.clearFFT();
-        assertEquals("Format table should be empty", 0, screenFields.getFieldCount());
+        assertEquals(0, screenFields.getFieldCount(),"Format table should be empty");
 
         // Should be able to navigate/process empty format without crashing
-        assertNull("Current field should be null when format empty", screenFields.getCurrentField());
+        assertNull(screenFields.getCurrentField(),"Current field should be null when format empty");
 
         // Cursor should still be positionable
         screen5250.setCursor(0, 0);
-        assertEquals("Cursor should be positionable even with empty format", 0, screen5250.getPos(0, 0));
+        assertEquals(0, screen5250.getPos(0, 0),"Cursor should be positionable even with empty format");
     }
 
     /**
@@ -796,8 +836,11 @@ public class ScreenFormatChangePairwiseTest {
      *
      * Validates: All field attributes properly synced with screen planes during format change
      */
-    @Test
-    public void testFieldAttributeSynchronizationAfterFormatChange() throws NoSuchFieldException, IllegalAccessException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldAttributeSynchronizationAfterFormatChange(String formatChange, String fieldPreservation, String cursorHandling, String screenClear, String inputState) throws Exception {
+        setParameters(formatChange, fieldPreservation, cursorHandling, screenClear, inputState);
+        setUp();
         if (formatChange.equals("none")) {
             return;
         }
@@ -815,11 +858,10 @@ public class ScreenFormatChangePairwiseTest {
 
         // Verify attributes are in sync
         for (int i = syncField.startPos(); i < syncField.startPos() + 5; i++) {
-            assertEquals(
-                "Screen attribute should match field attribute",
-                fieldAttr,
+            assertEquals(fieldAttr,
                 planes.getCharAttr(i)
-            );
+            ,
+                "Screen attribute should match field attribute");
         }
     }
 
@@ -849,7 +891,7 @@ public class ScreenFormatChangePairwiseTest {
     private void setInputState() {
         switch (inputState) {
             case "idle":
-                screenFields.clearFFT();
+                screenFields.setCurrentField(null);
                 break;
             case "active":
                 screenFields.setCurrentField(field1);

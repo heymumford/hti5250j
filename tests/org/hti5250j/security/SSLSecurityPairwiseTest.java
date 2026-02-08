@@ -1,28 +1,20 @@
-/**
- * <p>
- * Title: tn5250J SSL Security Pairwise Tests
- * Copyright: Copyright (c) 2026
- * Company:
- * <p>
- * Description: Pairwise TDD tests for SSL/TLS security vulnerabilities
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.security;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,8 +27,8 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.framework.transport.SSL.SSLImplementation;
 
 /**
@@ -63,7 +55,7 @@ public class SSLSecurityPairwiseTest {
         + File.separator + "test-keystore-pairwise";
     private static final char[] HARDCODED_PASSWORD = "changeit".toCharArray();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         sslImpl = new SSLImplementation();
     }
@@ -84,10 +76,9 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNotNull(
-                "TLS initialization should create SSLContext, got null",
-                context
-            );
+            assertNotNull(context
+            ,
+                "TLS initialization should create SSLContext, got null");
         } catch (Exception e) {
             fail("TLS initialization should not throw exception: " + e.getMessage());
         }
@@ -106,10 +97,9 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNotNull(
-                "TLSv1.2 initialization should create SSLContext",
-                context
-            );
+            assertNotNull(context
+            ,
+                "TLSv1.2 initialization should create SSLContext");
         } catch (Exception e) {
             fail("TLSv1.2 initialization should not throw: " + e.getMessage());
         }
@@ -129,13 +119,12 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNotNull(
-                "TLSv1.3 initialization should create SSLContext if supported",
-                context
-            );
+            assertNotNull(context
+            ,
+                "TLSv1.3 initialization should create SSLContext if supported");
         } catch (Exception e) {
             // TLSv1.3 may not be available in older Java versions - acceptable failure
-            assertTrue("TLSv1.3 initialization attempted", true);
+            assertTrue(true,"TLSv1.3 initialization attempted");
         }
     }
 
@@ -162,7 +151,7 @@ public class SSLSecurityPairwiseTest {
             }
         } catch (Exception e) {
             // Expected: SSLv3 should not be available
-            assertTrue("SSLv3 correctly unavailable/disabled: " + e.getMessage(), true);
+            assertTrue(true,"SSLv3 correctly unavailable/disabled: " + e.getMessage());
         }
     }
 
@@ -179,16 +168,15 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNull(
-                "Null protocol should not create valid SSLContext",
-                context
-            );
+            assertNull(context
+            ,
+                "Null protocol should not create valid SSLContext");
         } catch (NullPointerException e) {
             // Expected: null protocol should cause NullPointerException
-            assertTrue("Null protocol correctly rejected", true);
+            assertTrue(true,"Null protocol correctly rejected");
         } catch (Exception e) {
             // Other exceptions also acceptable for invalid input
-            assertTrue("Null protocol rejected: " + e.getMessage(), true);
+            assertTrue(true,"Null protocol rejected: " + e.getMessage());
         }
     }
 
@@ -205,13 +193,12 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNull(
-                "Invalid protocol should not create valid SSLContext",
-                context
-            );
+            assertNull(context
+            ,
+                "Invalid protocol should not create valid SSLContext");
         } catch (Exception e) {
             // Expected: invalid protocol should fail
-            assertTrue("Invalid protocol correctly rejected: " + e.getMessage(), true);
+            assertTrue(true,"Invalid protocol correctly rejected: " + e.getMessage());
         }
     }
 
@@ -238,10 +225,9 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNotNull(
-                "SSLContext should initialize even without existing keystore",
-                context
-            );
+            assertNotNull(context
+            ,
+                "SSLContext should initialize even without existing keystore");
         } catch (Exception e) {
             fail("Missing keystore should not prevent initialization: " + e.getMessage());
         }
@@ -261,10 +247,9 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNotNull(
-                "Empty keystore should not prevent SSLContext initialization",
-                context
-            );
+            assertNotNull(context
+            ,
+                "Empty keystore should not prevent SSLContext initialization");
         } catch (Exception e) {
             fail("Empty keystore should be acceptable: " + e.getMessage());
         }
@@ -295,7 +280,7 @@ public class SSLSecurityPairwiseTest {
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
             // Either outcome is acceptable - initialization handles password errors
-            assertTrue("Wrong password handled (context: " + (context != null) + ")", true);
+            assertTrue(true,"Wrong password handled (context: " + (context != null) + ")");
         } catch (Exception e) {
             fail("Wrong password should be handled gracefully: " + e.getMessage());
         }
@@ -318,9 +303,9 @@ public class SSLSecurityPairwiseTest {
         );
 
         // Test that valid cert structure is recognized
-        assertNotNull("Valid certificate object created", validCert);
-        assertFalse("Valid cert is not marked as expired", validCert.isExpired());
-        assertTrue("Valid cert has correct CN", validCert.getSubjectDN().getName().contains("example.com"));
+        assertNotNull(validCert,"Valid certificate object created");
+        assertFalse(validCert.isExpired(),"Valid cert is not marked as expired");
+        assertTrue(validCert.getSubjectDN().getName().contains("example.com"),"Valid cert has correct CN");
     }
 
     /**
@@ -338,7 +323,7 @@ public class SSLSecurityPairwiseTest {
             true  // is expired
         );
 
-        assertTrue("Expired cert is detected", expiredCert.isExpired());
+        assertTrue(expiredCert.isExpired(),"Expired cert is detected");
     }
 
     /**
@@ -358,10 +343,9 @@ public class SSLSecurityPairwiseTest {
         );
         selfSignedCert.setIssuerDN(dn);  // Same as subject = self-signed
 
-        assertTrue(
-            "Self-signed cert identified (issuer == subject)",
-            dn.equals(selfSignedCert.getIssuerDN().getName())
-        );
+        assertTrue(dn.equals(selfSignedCert.getIssuerDN().getName())
+        ,
+            "Self-signed cert identified (issuer == subject)");
     }
 
     /**
@@ -382,10 +366,9 @@ public class SSLSecurityPairwiseTest {
         String targetHost = "example.com";
         String certHost = wrongHostCert.getSubjectDN().getName();
 
-        assertFalse(
-            "Wrong hostname certificate should not match target host",
-            certHost.contains(targetHost)
-        );
+        assertFalse(certHost.contains(targetHost)
+        ,
+            "Wrong hostname certificate should not match target host");
     }
 
     // ========== PAIRWISE: SOCKET CREATION × CONNECTION STATES ==========
@@ -403,10 +386,9 @@ public class SSLSecurityPairwiseTest {
             sslImpl.createSSLSocket("example.com", 443);
             fail("Socket creation should fail without initialized SSLContext");
         } catch (IllegalStateException e) {
-            assertTrue(
-                "Correct error for uninitialized context: " + e.getMessage(),
-                e.getMessage().contains("SSL Context Not Initialized")
-            );
+            assertTrue(e.getMessage().contains("SSL Context Not Initialized")
+            ,
+                "Correct error for uninitialized context: " + e.getMessage());
         } catch (Exception e) {
             fail("Should throw IllegalStateException, not: " + e.getClass().getName());
         }
@@ -426,7 +408,7 @@ public class SSLSecurityPairwiseTest {
             contextField.setAccessible(true);
             SSLContext context = (SSLContext) contextField.get(sslImpl);
 
-            assertNotNull("SSLContext initialized", context);
+            assertNotNull(context,"SSLContext initialized");
 
             // Attempt socket creation (will fail on non-existent host)
             // but this proves initialization succeeded
@@ -434,13 +416,13 @@ public class SSLSecurityPairwiseTest {
 
             // If socket creation succeeded (unlikely), verify it's an SSLSocket
             if (socket != null) {
-                assertTrue("Created socket is SSLSocket", socket instanceof SSLSocket);
+                assertTrue(socket instanceof SSLSocket,"Created socket is SSLSocket");
             }
         } catch (IllegalStateException e) {
             fail("SSLContext was not properly initialized: " + e.getMessage());
         } catch (Exception e) {
             // Network/host resolution errors expected for test host
-            assertTrue("Network error expected for test host: " + e.getClass().getSimpleName(), true);
+            assertTrue(true,"Network error expected for test host: " + e.getClass().getSimpleName());
         }
     }
 
@@ -457,10 +439,9 @@ public class SSLSecurityPairwiseTest {
                 sslImpl.createSSLSocket(null, 443);
                 fail("Socket creation with null destination should fail");
             } catch (Exception e) {
-                assertTrue(
-                    "Null destination correctly rejected: " + e.getClass().getSimpleName(),
-                    true
-                );
+                assertTrue(true
+                ,
+                    "Null destination correctly rejected: " + e.getClass().getSimpleName());
             }
         } catch (Exception e) {
             fail("Initialization failed: " + e.getMessage());
@@ -481,10 +462,9 @@ public class SSLSecurityPairwiseTest {
                 sslImpl.createSSLSocket("example.com", -1);
                 fail("Socket creation with invalid port should fail");
             } catch (Exception e) {
-                assertTrue(
-                    "Invalid port correctly rejected: " + e.getClass().getSimpleName(),
-                    true
-                );
+                assertTrue(true
+                ,
+                    "Invalid port correctly rejected: " + e.getClass().getSimpleName());
             }
         } catch (Exception e) {
             fail("Initialization failed: " + e.getMessage());
@@ -507,10 +487,10 @@ public class SSLSecurityPairwiseTest {
                 sslImpl.checkServerTrusted(null, "X509");
                 fail("Null certificate chain should be rejected");
             } catch (CertificateException e) {
-                assertTrue("Null cert chain rejected: " + e.getMessage(), true);
+                assertTrue(true,"Null cert chain rejected: " + e.getMessage());
             } catch (NullPointerException e) {
                 // Also acceptable - NPE indicates no null-check
-                assertTrue("Null cert chain causes NPE (should add null-check)", true);
+                assertTrue(true,"Null cert chain causes NPE (should add null-check)");
             }
         } catch (Exception e) {
             fail("Initialization failed: " + e.getMessage());
@@ -532,10 +512,10 @@ public class SSLSecurityPairwiseTest {
                 sslImpl.checkServerTrusted(emptyChain, "X509");
                 fail("Empty certificate chain should be rejected");
             } catch (CertificateException e) {
-                assertTrue("Empty cert chain rejected: " + e.getMessage(), true);
+                assertTrue(true,"Empty cert chain rejected: " + e.getMessage());
             } catch (ArrayIndexOutOfBoundsException e) {
                 // Indicates missing bounds check - acceptable to document
-                assertTrue("Empty cert chain causes AIOOBE (missing bounds check)", true);
+                assertTrue(true,"Empty cert chain causes AIOOBE (missing bounds check)");
             }
         } catch (Exception e) {
             fail("Initialization failed: " + e.getMessage());

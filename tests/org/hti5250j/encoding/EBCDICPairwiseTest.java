@@ -1,33 +1,20 @@
-/**
- * $Id$
- * <p>
- * Title: tn5250J - EBCDIC/ASCII Pairwise Conversion Test Suite
- * Copyright:   Copyright (c) 2025
- * Company:     WATTS Automation
- * <p>
- * Description: Comprehensive pairwise TDD test suite for EBCDIC to ASCII
- * conversion correctness and edge case handling.
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.encoding;
 
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Collection;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise TDD test suite for EBCDIC/ASCII conversion.
@@ -45,7 +32,6 @@ import java.util.Collection;
  * POSITIVE TESTS (10): Valid conversions under normal conditions
  * ADVERSARIAL TESTS (10): Unmappable chars, wrong code page, data corruption
  */
-@RunWith(Parameterized.class)
 public class EBCDICPairwiseTest {
 
     private String codePage;
@@ -55,7 +41,7 @@ public class EBCDICPairwiseTest {
      * Parameterized constructor for pairwise test execution.
      * Each code page parameter generates multiple test runs.
      */
-    public EBCDICPairwiseTest(String codePage) {
+    private void setParameters(String codePage) {
         this.codePage = codePage;
     }
 
@@ -63,8 +49,7 @@ public class EBCDICPairwiseTest {
      * Pairwise test parameter combinations.
      * Covers representative code pages from the supported set.
      */
-    @Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "37" },   // USA, Canada - EBCDIC baseline
                 { "273" },  // Germany, Austria
@@ -82,10 +67,9 @@ public class EBCDICPairwiseTest {
     /**
      * Setup: Load code page before each test.
      */
-    @Before
-    public void setUp() {
+        public void setUp() {
         cp = CharMappings.getCodePage(codePage);
-        assertNotNull("Code page " + codePage + " should be available", cp);
+        assertNotNull(cp,"Code page " + codePage + " should be available");
     }
 
     // =================================================================
@@ -96,73 +80,86 @@ public class EBCDICPairwiseTest {
      * TEST 1: Single uppercase ASCII letter converts round-trip correctly
      * Dimension: Character range (A-Z) x Conversion direction (round-trip)
      */
-    @Test
-    public void testSingleUppercaseLetterRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSingleUppercaseLetterRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char originalChar = 'A';
         byte ebcdic = cp.uni2ebcdic(originalChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Uppercase letter 'A' should round-trip correctly",
-                originalChar, converted);
+        assertEquals(originalChar, converted,"Uppercase letter 'A' should round-trip correctly");
     }
 
     /**
      * TEST 2: Single lowercase ASCII letter converts round-trip correctly
      * Dimension: Character range (a-z) x Conversion direction (round-trip)
      */
-    @Test
-    public void testSingleLowercaseLetterRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSingleLowercaseLetterRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char originalChar = 'z';
         byte ebcdic = cp.uni2ebcdic(originalChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Lowercase letter 'z' should round-trip correctly",
-                originalChar, converted);
+        assertEquals(originalChar, converted,"Lowercase letter 'z' should round-trip correctly");
     }
 
     /**
      * TEST 3: Single digit (0-9) converts round-trip correctly
      * Dimension: Character range (0-9) x Conversion direction (round-trip)
      */
-    @Test
-    public void testSingleDigitRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSingleDigitRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char originalChar = '5';
         byte ebcdic = cp.uni2ebcdic(originalChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Digit '5' should round-trip correctly",
-                originalChar, converted);
+        assertEquals(originalChar, converted,"Digit '5' should round-trip correctly");
     }
 
     /**
      * TEST 4: Special character (space) converts round-trip correctly
      * Dimension: Character range (special) x Conversion direction (round-trip)
      */
-    @Test
-    public void testSpaceCharacterRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSpaceCharacterRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char originalChar = ' ';
         byte ebcdic = cp.uni2ebcdic(originalChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Space character should round-trip correctly",
-                originalChar, converted);
+        assertEquals(originalChar, converted,"Space character should round-trip correctly");
     }
 
     /**
      * TEST 5: Special character (punctuation) converts correctly
      * Dimension: Character range (special) x Conversion direction (round-trip)
      */
-    @Test
-    public void testPunctuationRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPunctuationRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char originalChar = '.';
         byte ebcdic = cp.uni2ebcdic(originalChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Punctuation '.' should round-trip correctly",
-                originalChar, converted);
+        assertEquals(originalChar, converted,"Punctuation '.' should round-trip correctly");
     }
 
     /**
      * TEST 6: String of mixed alphanumeric (length 10) converts correctly
      * Dimension: String length (10) x Character range (mixed) x Conversion (round-trip)
      */
-    @Test
-    public void testMixedAlphanumericStringRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMixedAlphanumericStringRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = "ABC123xyz";
         byte[] ebcdic = new byte[original.length()];
         for (int i = 0; i < original.length(); i++) {
@@ -172,16 +169,18 @@ public class EBCDICPairwiseTest {
         for (byte b : ebcdic) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
-        assertEquals("Mixed alphanumeric string should round-trip",
-                original, converted.toString());
+        assertEquals(original, converted.toString(),"Mixed alphanumeric string should round-trip");
     }
 
     /**
      * TEST 7: Typical 80-character terminal line converts correctly
      * Dimension: String length (80) x Character range (mixed) x Conversion (round-trip)
      */
-    @Test
-    public void testEightCharacterTerminalLineRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEightCharacterTerminalLineRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz !@#$%";
         byte[] ebcdic = new byte[original.length()];
         for (int i = 0; i < original.length(); i++) {
@@ -191,16 +190,18 @@ public class EBCDICPairwiseTest {
         for (byte b : ebcdic) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
-        assertEquals("80-char terminal line should round-trip",
-                original, converted.toString());
+        assertEquals(original, converted.toString(),"80-char terminal line should round-trip");
     }
 
     /**
      * TEST 8: All numeric digits (0-9) convert correctly in sequence
      * Dimension: Character range (0-9) x String length (10) x Conversion (round-trip)
      */
-    @Test
-    public void testAllDigitsSequenceRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAllDigitsSequenceRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = "0123456789";
         byte[] ebcdic = new byte[original.length()];
         for (int i = 0; i < original.length(); i++) {
@@ -210,16 +211,18 @@ public class EBCDICPairwiseTest {
         for (byte b : ebcdic) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
-        assertEquals("All digits should round-trip",
-                original, converted.toString());
+        assertEquals(original, converted.toString(),"All digits should round-trip");
     }
 
     /**
      * TEST 9: All uppercase letters (A-Z) convert correctly in sequence
      * Dimension: Character range (A-Z) x String length (26) x Conversion (round-trip)
      */
-    @Test
-    public void testAllUppercaseLettersSequenceRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAllUppercaseLettersSequenceRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         byte[] ebcdic = new byte[original.length()];
         for (int i = 0; i < original.length(); i++) {
@@ -229,16 +232,18 @@ public class EBCDICPairwiseTest {
         for (byte b : ebcdic) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
-        assertEquals("All uppercase letters should round-trip",
-                original, converted.toString());
+        assertEquals(original, converted.toString(),"All uppercase letters should round-trip");
     }
 
     /**
      * TEST 10: All lowercase letters (a-z) convert correctly in sequence
      * Dimension: Character range (a-z) x String length (26) x Conversion (round-trip)
      */
-    @Test
-    public void testAllLowercaseLettersSequenceRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAllLowercaseLettersSequenceRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = "abcdefghijklmnopqrstuvwxyz";
         byte[] ebcdic = new byte[original.length()];
         for (int i = 0; i < original.length(); i++) {
@@ -248,8 +253,7 @@ public class EBCDICPairwiseTest {
         for (byte b : ebcdic) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
-        assertEquals("All lowercase letters should round-trip",
-                original, converted.toString());
+        assertEquals(original, converted.toString(),"All lowercase letters should round-trip");
     }
 
     // =================================================================
@@ -261,15 +265,16 @@ public class EBCDICPairwiseTest {
      * Dimension: Edge case (null/0x00) x Conversion direction (EBCDIC→ASCII)
      * Risk: Unhandled null termination could corrupt data
      */
-    @Test
-    public void testNullByteHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNullByteHandling(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte nullByte = 0x00;
         char converted = cp.ebcdic2uni(nullByte & 0xFF);
-        assertNotNull("Null byte conversion should not produce null reference",
-                converted);
+        assertNotNull(converted,"Null byte conversion should not produce null reference");
         // Null should map to some character (typically null character)
-        assertTrue("Null byte should convert to valid char code point",
-                converted >= 0 && converted <= Character.MAX_VALUE);
+        assertTrue(converted >= 0 && converted <= Character.MAX_VALUE,"Null byte should convert to valid char code point");
     }
 
     /**
@@ -277,14 +282,15 @@ public class EBCDICPairwiseTest {
      * Dimension: Edge case (0xFF/extended) x Conversion direction (EBCDIC→ASCII)
      * Risk: Extended EBCDIC chars may not map correctly, causing data loss
      */
-    @Test
-    public void testHighByteHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testHighByteHandling(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte highByte = (byte) 0xFF;
         char converted = cp.ebcdic2uni(highByte & 0xFF);
-        assertNotNull("High byte (0xFF) conversion should succeed",
-                converted);
-        assertTrue("High byte should convert to valid char code point",
-                converted >= 0 && converted <= Character.MAX_VALUE);
+        assertNotNull(converted,"High byte (0xFF) conversion should succeed");
+        assertTrue(converted >= 0 && converted <= Character.MAX_VALUE,"High byte should convert to valid char code point");
     }
 
     /**
@@ -293,22 +299,23 @@ public class EBCDICPairwiseTest {
      * Risk: ArrayIndexOutOfBoundsException for unmappable chars (found bug!)
      * Status: This test documents existing behavior - code does not validate char values
      */
-    @Test
-    public void testUnmappableCharacterHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testUnmappableCharacterHandling(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         // Try a character that may not map in all code pages
         char unmappableChar = '\u2764'; // Heart symbol - unlikely in EBCDIC (value 10084)
 
         try {
             byte ebcdic = cp.uni2ebcdic(unmappableChar);
             // If it doesn't throw, check result is valid
-            assertTrue("Unmappable char should convert to some byte value",
-                    ebcdic >= Byte.MIN_VALUE && ebcdic <= Byte.MAX_VALUE);
+            assertTrue(ebcdic >= Byte.MIN_VALUE && ebcdic <= Byte.MAX_VALUE,"Unmappable char should convert to some byte value");
         } catch (ArrayIndexOutOfBoundsException e) {
             // BUG: The implementation does not validate char values before using as array index
             // This is expected behavior with current implementation - it crashes on unmappable chars
             // TODO: Implement character validation in CodepageConverterAdapter.uni2ebcdic()
-            assertNotNull("ArrayIndexOutOfBoundsException should indicate bounds violation",
-                    e.getClass().getName());
+            assertNotNull(e.getClass().getName(),"ArrayIndexOutOfBoundsException should indicate bounds violation");
         }
     }
 
@@ -317,13 +324,15 @@ public class EBCDICPairwiseTest {
      * Dimension: Edge case (null) x Conversion direction (round-trip) x String length (1)
      * Risk: String terminators in C-style code could cause truncation
      */
-    @Test
-    public void testNullCharacterRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNullCharacterRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char nullChar = '\u0000';
         byte ebcdic = cp.uni2ebcdic(nullChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Null character should round-trip (even if to different byte)",
-                nullChar, converted);
+        assertEquals(nullChar, converted,"Null character should round-trip (even if to different byte)");
     }
 
     /**
@@ -331,16 +340,18 @@ public class EBCDICPairwiseTest {
      * Dimension: String length (0) x Conversion (both directions)
      * Risk: Empty string handling could cause ArrayIndexOutOfBounds
      */
-    @Test
-    public void testEmptyStringConversion() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEmptyStringConversion(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = "";
         byte[] ebcdic = new byte[0];
         StringBuilder converted = new StringBuilder();
         for (byte b : ebcdic) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
-        assertEquals("Empty string should remain empty",
-                original, converted.toString());
+        assertEquals(original, converted.toString(),"Empty string should remain empty");
     }
 
     /**
@@ -348,8 +359,11 @@ public class EBCDICPairwiseTest {
      * Dimension: String length (1000) x Character range (mixed) x Conversion (round-trip)
      * Risk: Buffer overflow, off-by-one errors, heap corruption
      */
-    @Test
-    public void testVeryLongStringRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testVeryLongStringRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 1000; i++) {
             sb.append((char) ('A' + (i % 26)));
@@ -363,8 +377,7 @@ public class EBCDICPairwiseTest {
         for (byte b : ebcdic) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
-        assertEquals("1000-character string should round-trip without corruption",
-                original, converted.toString());
+        assertEquals(original, converted.toString(),"1000-character string should round-trip without corruption");
     }
 
     /**
@@ -372,13 +385,15 @@ public class EBCDICPairwiseTest {
      * Dimension: Character range (control) x Conversion direction (round-trip)
      * Risk: Control chars (0x00-0x1F) could be mishandled, breaking terminal protocols
      */
-    @Test
-    public void testControlCharacterRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testControlCharacterRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char controlChar = '\u0009'; // Tab character
         byte ebcdic = cp.uni2ebcdic(controlChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Control character (Tab) should round-trip",
-                controlChar, converted);
+        assertEquals(controlChar, converted,"Control character (Tab) should round-trip");
     }
 
     /**
@@ -386,20 +401,21 @@ public class EBCDICPairwiseTest {
      * Dimension: Edge case (0xFF, 0xFE) x Conversion (sequence) x String length (2)
      * Risk: Byte boundary issues could mix up adjacent conversions
      */
-    @Test
-    public void testConsecutiveHighByteValuesConversion() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConsecutiveHighByteValuesConversion(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte[] input = {(byte) 0xFF, (byte) 0xFE};
         StringBuilder converted = new StringBuilder();
         for (byte b : input) {
             converted.append(cp.ebcdic2uni(b & 0xFF));
         }
         // Should produce two characters, not corrupt into one or three
-        assertEquals("Two high bytes should convert to two chars without cross-contamination",
-                2, converted.length());
+        assertEquals(2, converted.length(),"Two high bytes should convert to two chars without cross-contamination");
         // Both should be valid Unicode characters
         for (char c : converted.toString().toCharArray()) {
-            assertTrue("Each converted char should be valid",
-                    c >= 0 && c <= Character.MAX_VALUE);
+            assertTrue(c >= 0 && c <= Character.MAX_VALUE,"Each converted char should be valid");
         }
     }
 
@@ -408,16 +424,17 @@ public class EBCDICPairwiseTest {
      * Dimension: Conversion (ASCII→EBCDIC) x Consistency x Multiple invocations
      * Risk: Stateful conversion could produce different results on repeated calls
      */
-    @Test
-    public void testConversionConsistencyMultipleInvocations() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConversionConsistencyMultipleInvocations(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char testChar = 'X';
         byte result1 = cp.uni2ebcdic(testChar);
         byte result2 = cp.uni2ebcdic(testChar);
         byte result3 = cp.uni2ebcdic(testChar);
-        assertEquals("First and second conversion should match",
-                result1, result2);
-        assertEquals("Second and third conversion should match",
-                result2, result3);
+        assertEquals(result1, result2,"First and second conversion should match");
+        assertEquals(result2, result3,"Second and third conversion should match");
     }
 
     /**
@@ -425,16 +442,18 @@ public class EBCDICPairwiseTest {
      * Dimension: Code page retrieval x Consistency
      * Risk: Multiple instances could have different mappings, breaking data integrity
      */
-    @Test
-    public void testCodePageInstanceConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCodePageInstanceConsistency(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         ICodePage cp1 = CharMappings.getCodePage(codePage);
         ICodePage cp2 = CharMappings.getCodePage(codePage);
         // Same code page should produce identical conversions
         char testChar = 'M';
         byte result1 = cp1.uni2ebcdic(testChar);
         byte result2 = cp2.uni2ebcdic(testChar);
-        assertEquals("Two instances of same code page should produce identical conversions",
-                result1, result2);
+        assertEquals(result1, result2,"Two instances of same code page should produce identical conversions");
     }
 
     // =================================================================

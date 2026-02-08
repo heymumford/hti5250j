@@ -1,15 +1,25 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j.keyboard;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class KeyMnemonicResolverTest {
 
     private KeyMnemonicResolver resolver;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         resolver = new KeyMnemonicResolver();
     }

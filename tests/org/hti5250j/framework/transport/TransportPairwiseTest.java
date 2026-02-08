@@ -1,31 +1,21 @@
-/**
- * Title: TransportPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD test suite for network transport layer
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this software; see the file COPYING. If not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.transport;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.Socket;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise test coverage for network transport layer.
@@ -68,7 +58,7 @@ public class TransportPairwiseTest {
 
     private SocketConnector connector;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         connector = new SocketConnector();
     }
@@ -109,12 +99,14 @@ public class TransportPairwiseTest {
      * This test PASSES when exception is thrown (expected behavior).
      * This test FAILS when no exception is thrown (BUG detected).
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testPlainSocketWithNullHost() {
-        connector.setSSLType(null);
-        // Null host should cause exception - either in SocketConnector
-        // or in Socket constructor
-        connector.createSocket(null, 23);
+        assertThrows(Exception.class, () -> {
+            connector.setSSLType(null);
+            // Null host should cause exception - either in SocketConnector
+            // or in Socket constructor
+            connector.createSocket(null, 23);
+        });
     }
 
     /**
@@ -128,10 +120,12 @@ public class TransportPairwiseTest {
      *
      * This test FAILS - empty string not caught at connector level.
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testPlainSocketWithEmptyHost() {
-        connector.setSSLType(null);
-        connector.createSocket("", 23);
+        assertThrows(Exception.class, () -> {
+            connector.setSSLType(null);
+            connector.createSocket("", 23);
+        });
     }
 
     /**
@@ -151,7 +145,7 @@ public class TransportPairwiseTest {
         Socket socket = connector.createSocket("this.host.does.not.exist.invalid", 23);
 
         // Connection should fail, socket should be null
-        assertNull("SocketConnector should return null for unreachable host", socket);
+        assertNull(socket,"SocketConnector should return null for unreachable host");
     }
 
     /**
@@ -183,10 +177,12 @@ public class TransportPairwiseTest {
      *
      * This test FAILS - negative ports not validated at connector level.
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testSocketWithNegativePort() {
-        connector.setSSLType(null);
-        connector.createSocket("localhost", -1);
+        assertThrows(Exception.class, () -> {
+            connector.setSSLType(null);
+            connector.createSocket("localhost", -1);
+        });
     }
 
     /**
@@ -200,10 +196,12 @@ public class TransportPairwiseTest {
      *
      * This test documents current behavior with invalid port 0.
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testSocketWithPortZero() {
-        connector.setSSLType(null);
-        connector.createSocket("localhost", 0);
+        assertThrows(Exception.class, () -> {
+            connector.setSSLType(null);
+            connector.createSocket("localhost", 0);
+        });
     }
 
     /**
@@ -217,10 +215,12 @@ public class TransportPairwiseTest {
      *
      * This test FAILS - port boundary not validated at connector level.
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testSocketWithPortTooHigh() {
-        connector.setSSLType(null);
-        connector.createSocket("localhost", 65536);
+        assertThrows(Exception.class, () -> {
+            connector.setSSLType(null);
+            connector.createSocket("localhost", 65536);
+        });
     }
 
     /**
@@ -335,7 +335,7 @@ public class TransportPairwiseTest {
         Socket socket = connector.createSocket("localhost", 992);
 
         // Connection should fail due to invalid SSL type
-        assertNull("Should return null for invalid SSL type", socket);
+        assertNull(socket,"Should return null for invalid SSL type");
     }
 
     /**
@@ -390,10 +390,12 @@ public class TransportPairwiseTest {
      * Validates: Exception handling for multiple invalid parameters
      * Expected: Clear error message about null host
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testConnectionWithNullHostAndNullSSL() {
-        connector.setSSLType(null);
-        connector.createSocket(null, 23);
+        assertThrows(Exception.class, () -> {
+            connector.setSSLType(null);
+            connector.createSocket(null, 23);
+        });
     }
 
     /**

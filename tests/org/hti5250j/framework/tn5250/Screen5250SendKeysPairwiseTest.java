@@ -1,11 +1,21 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.keyboard.KeyMnemonic;
 import org.hti5250j.keyboard.KeyMnemonicResolver;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD tests for Screen5250.sendKeys() - THE critical method for headless automation.
@@ -47,7 +57,7 @@ public class Screen5250SendKeysPairwiseTest {
     private Screen5250 screen;
     private KeyMnemonicResolver mnemonicResolver;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         screen = new Screen5250();
         mnemonicResolver = new KeyMnemonicResolver();
@@ -72,8 +82,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert - verify method accepted input without throwing
-        assertTrue("Method should complete without exception",
-                true);
+        assertTrue(true,"Method should complete without exception");
         // In real implementation, would verify character appears in field
     }
 
@@ -92,7 +101,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Word input should be processed", true);
+        assertTrue(true,"Word input should be processed");
         // Would verify H-E-L-L-O processed in order
     }
 
@@ -112,7 +121,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert - [enter] should have valid mnemonic value
-        assertTrue("Enter mnemonic should resolve", expectedValue > 0);
+        assertTrue(expectedValue > 0,"Enter mnemonic should resolve");
     }
 
     /**
@@ -131,7 +140,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Tab mnemonic should resolve", expectedValue > 0);
+        assertTrue(expectedValue > 0,"Tab mnemonic should resolve");
     }
 
     /**
@@ -150,7 +159,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("PF1 mnemonic should resolve", expectedValue > 0);
+        assertTrue(expectedValue > 0,"PF1 mnemonic should resolve");
     }
 
     /**
@@ -169,7 +178,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("PF12 mnemonic should resolve", expectedValue > 0);
+        assertTrue(expectedValue > 0,"PF12 mnemonic should resolve");
     }
 
     /**
@@ -189,9 +198,8 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(inputDown);
 
         // Assert
-        assertTrue("PageUp and PageDown should be recognized",
-                mnemonicResolver.findMnemonicValue(inputUp) > 0 &&
-                mnemonicResolver.findMnemonicValue(inputDown) > 0);
+        assertTrue(mnemonicResolver.findMnemonicValue(inputUp) > 0 &&
+                mnemonicResolver.findMnemonicValue(inputDown) > 0,"PageUp and PageDown should be recognized");
     }
 
     /**
@@ -209,7 +217,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Mixed text and mnemonic should be processed", true);
+        assertTrue(true,"Mixed text and mnemonic should be processed");
         // Would verify: h-e-l-l-o processed, then enter sent
     }
 
@@ -228,7 +236,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(enterKey);
 
         // Assert
-        assertTrue("KeyMnemonic enum should be accepted", true);
+        assertTrue(true,"KeyMnemonic enum should be accepted");
         // Would verify: mnemonic.value is sent to screen
     }
 
@@ -247,7 +255,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Rapid sequence should be handled", true);
+        assertTrue(true,"Rapid sequence should be handled");
         // Would verify all 10 characters entered in order
     }
 
@@ -269,7 +277,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert - should not throw, no screen modification
-        assertTrue("Empty string should be handled gracefully", true);
+        assertTrue(true,"Empty string should be handled gracefully");
     }
 
     /**
@@ -288,7 +296,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertEquals("Invalid mnemonic should return 0", 0, invalidValue);
+        assertEquals(0, invalidValue,"Invalid mnemonic should return 0");
     }
 
     /**
@@ -307,7 +315,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Keys should be buffered when locked", true);
+        assertTrue(true,"Keys should be buffered when locked");
         // Would verify: input stored in buffer, not sent immediately
     }
 
@@ -326,10 +334,10 @@ public class Screen5250SendKeysPairwiseTest {
         try {
             screen.sendKeys(input);
             // If it doesn't throw, that's valid (defensive null handling)
-            assertTrue("Null should be handled", true);
+            assertTrue(true,"Null should be handled");
         } catch (NullPointerException e) {
             // NullPointerException is also acceptable if contract doesn't require null-safety
-            assertTrue("NPE acceptable for null input", true);
+            assertTrue(true,"NPE acceptable for null input");
         }
     }
 
@@ -348,10 +356,10 @@ public class Screen5250SendKeysPairwiseTest {
         try {
             screen.sendKeys(input);
             // Valid response: accepted or silently converted
-            assertTrue("Unicode should be handled", true);
+            assertTrue(true,"Unicode should be handled");
         } catch (Exception e) {
             // Valid response: rejected with exception
-            assertTrue("Unicode rejection is acceptable", true);
+            assertTrue(true,"Unicode rejection is acceptable");
         }
     }
 
@@ -371,7 +379,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Overflow should be handled (truncate/wrap/error)", true);
+        assertTrue(true,"Overflow should be handled (truncate/wrap/error)");
         // Would verify: field respects length boundary
     }
 
@@ -390,7 +398,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Multiple mnemonics should be processed in order", true);
+        assertTrue(true,"Multiple mnemonics should be processed in order");
         // Would verify: 2 tabs, then enter
     }
 
@@ -409,7 +417,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Unmatched bracket should be handled", true);
+        assertTrue(true,"Unmatched bracket should be handled");
         // Would verify: [ treated as literal or error signaled
     }
 
@@ -429,7 +437,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Clear mnemonic should be defined", clearValue > 0);
+        assertTrue(clearValue > 0,"Clear mnemonic should be defined");
     }
 
     /**
@@ -448,7 +456,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Numeric field should reject alpha or signal error", true);
+        assertTrue(true,"Numeric field should reject alpha or signal error");
         // Would verify: field empty OR bell signal
     }
 
@@ -468,7 +476,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("PF24 should be valid", pf24Value > 0);
+        assertTrue(pf24Value > 0,"PF24 should be valid");
     }
 
     // ==================== EDGE CASE / DIMENSION COVERAGE ====================
@@ -496,8 +504,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(mixedcase);
 
         // Assert
-        assertTrue("Mnemonic resolution should handle case appropriately",
-                lowerValue > 0);
+        assertTrue(lowerValue > 0,"Mnemonic resolution should handle case appropriately");
         // Mixed/upper may or may not be supported; document contract
     }
 
@@ -517,8 +524,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(withSpace);
 
         // Assert
-        assertEquals("Mnemonic with trailing space should not match",
-                0, value);
+        assertEquals(0, value,"Mnemonic with trailing space should not match");
     }
 
     /**
@@ -536,7 +542,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Key order should be preserved exactly", true);
+        assertTrue(true,"Key order should be preserved exactly");
         // Would verify: Z-Y-X-W-V-U in screen, not sorted
     }
 
@@ -556,7 +562,7 @@ public class Screen5250SendKeysPairwiseTest {
         screen.sendKeys(input);
 
         // Assert
-        assertTrue("Repeated sendKeys should be handled consistently", true);
+        assertTrue(true,"Repeated sendKeys should be handled consistently");
         // Would verify: TESTTEST in field or expected behavior
     }
 

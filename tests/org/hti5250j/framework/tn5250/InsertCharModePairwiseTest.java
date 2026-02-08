@@ -1,51 +1,21 @@
-/**
- * Title: InsertCharModePairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD pairwise tests for Screen5250 insert character mode.
- *
- * This test suite focuses on insert vs overwrite mode operations that are
- * critical for headless automation field input:
- * - Insert mode: Insert character at cursor, shift remaining right
- * - Overwrite mode: Replace character at cursor position
- * - Mode toggling: Switch between insert/overwrite
- * - Field shifting: Shift content right when inserting
- * - Truncation handling: Field overflow, error conditions
- *
- * Test dimensions (pairwise combination):
- * - Mode: [insert, overwrite, toggle]
- * - Field state: [empty, partial, full]
- * - Cursor position: [start, middle, end]
- * - Character type: [printable, control, special]
- * - Field overflow: [truncate, shift, error]
- *
- * POSITIVE TESTS (15): Valid insert operations with proper shifting
- * ADVERSARIAL TESTS (12): Overflow, locked keyboard, protected fields
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for Screen5250 insert character mode.
@@ -108,7 +78,7 @@ public class InsertCharModePairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble();
         oia = screen5250.getOIA();
@@ -209,10 +179,10 @@ public class InsertCharModePairwiseTest {
      */
     @Test
     public void testToggleInsertModeOnFromOverwrite() {
-        assertFalse("Insert mode should start OFF", oia.isInsertMode());
+        assertFalse(oia.isInsertMode(),"Insert mode should start OFF");
 
         oia.setInsertMode(true);
-        assertTrue("Insert mode should be ON after toggle", oia.isInsertMode());
+        assertTrue(oia.isInsertMode(),"Insert mode should be ON after toggle");
     }
 
     /**
@@ -222,10 +192,10 @@ public class InsertCharModePairwiseTest {
     @Test
     public void testToggleInsertModeOffFromInsert() {
         oia.setInsertMode(true);
-        assertTrue("Insert mode should start ON", oia.isInsertMode());
+        assertTrue(oia.isInsertMode(),"Insert mode should start ON");
 
         oia.setInsertMode(false);
-        assertFalse("Insert mode should be OFF after toggle", oia.isInsertMode());
+        assertFalse(oia.isInsertMode(),"Insert mode should be OFF after toggle");
     }
 
     /**
@@ -241,8 +211,7 @@ public class InsertCharModePairwiseTest {
         setCharAt(FIELD_START_POS, 'X');
 
         // At start of field, insert should place character at cursor position
-        assertEquals("Character should be placed at field start",
-                'X', getCharAt(FIELD_START_POS));
+        assertEquals('X', getCharAt(FIELD_START_POS),"Character should be placed at field start");
     }
 
     /**
@@ -260,7 +229,7 @@ public class InsertCharModePairwiseTest {
         setCharAt(insertPos, 'X');
 
         // Verify character was inserted
-        assertEquals("Character at insert position", 'X', getCharAt(insertPos));
+        assertEquals('X', getCharAt(insertPos),"Character at insert position");
     }
 
     /**
@@ -279,9 +248,9 @@ public class InsertCharModePairwiseTest {
         setCharAt(overwritePos, 'X');
 
         // Verify character was replaced
-        assertEquals("Character should be overwritten", 'X', getCharAt(overwritePos));
+        assertEquals('X', getCharAt(overwritePos),"Character should be overwritten");
         // Verify no shifting occurred (char at pos 2 should be 'C')
-        assertEquals("Previous character unchanged", 'C', getCharAt(overwritePos - 1));
+        assertEquals('C', getCharAt(overwritePos - 1),"Previous character unchanged");
     }
 
     /**
@@ -298,7 +267,7 @@ public class InsertCharModePairwiseTest {
         int insertPos = FIELD_START_POS + 2;
         setCharAt(insertPos, ' ');
 
-        assertEquals("Space should be inserted at cursor position", ' ', getCharAt(insertPos));
+        assertEquals(' ', getCharAt(insertPos),"Space should be inserted at cursor position");
     }
 
     /**
@@ -313,7 +282,7 @@ public class InsertCharModePairwiseTest {
 
         setCharAt(FIELD_START_POS, '5');
 
-        assertEquals("Digit should be inserted", '5', getCharAt(FIELD_START_POS));
+        assertEquals('5', getCharAt(FIELD_START_POS),"Digit should be inserted");
     }
 
     /**
@@ -328,11 +297,11 @@ public class InsertCharModePairwiseTest {
 
         // Insert 'X' at start
         setCharAt(FIELD_START_POS, 'X');
-        assertEquals("First insert", 'X', getCharAt(FIELD_START_POS));
+        assertEquals('X', getCharAt(FIELD_START_POS),"First insert");
 
         // Insert 'Y' at same position (would shift X right)
         setCharAt(FIELD_START_POS, 'Y');
-        assertEquals("Second insert at same position", 'Y', getCharAt(FIELD_START_POS));
+        assertEquals('Y', getCharAt(FIELD_START_POS),"Second insert at same position");
     }
 
     /**
@@ -353,7 +322,7 @@ public class InsertCharModePairwiseTest {
         for (int i = FIELD_START_POS; i <= FIELD_END_POS; i++) {
             char c = getCharAt(i);
             // Character should be in valid range (not garbage)
-            assertTrue("Content should be valid", c >= ' ' || c == 0);
+            assertTrue(c >= ' ' || c == 0,"Content should be valid");
         }
     }
 
@@ -371,7 +340,7 @@ public class InsertCharModePairwiseTest {
         int endPos = FIELD_END_POS;
         setCharAt(endPos, 'X');
 
-        assertEquals("Character at field end", 'X', getCharAt(endPos));
+        assertEquals('X', getCharAt(endPos),"Character at field end");
     }
 
     /**
@@ -387,7 +356,7 @@ public class InsertCharModePairwiseTest {
 
         setCharAt(FIELD_START_POS, 'A');
 
-        assertEquals("Character in empty field", 'A', getCharAt(FIELD_START_POS));
+        assertEquals('A', getCharAt(FIELD_START_POS),"Character in empty field");
     }
 
     /**
@@ -403,12 +372,12 @@ public class InsertCharModePairwiseTest {
         oia.setInsertMode(false);
         int pos = FIELD_START_POS + 2;
         setCharAt(pos, 'X');
-        assertEquals("Overwrite mode", 'X', getCharAt(pos));
+        assertEquals('X', getCharAt(pos),"Overwrite mode");
 
         // Switch to insert
         oia.setInsertMode(true);
         setCharAt(pos, 'Y');
-        assertEquals("Insert mode", 'Y', getCharAt(pos));
+        assertEquals('Y', getCharAt(pos),"Insert mode");
     }
 
     /**
@@ -422,8 +391,7 @@ public class InsertCharModePairwiseTest {
 
         // Multiple operations should maintain mode
         for (int i = 0; i < 5; i++) {
-            assertTrue("Insert mode should persist",
-                    oia.isInsertMode());
+            assertTrue(oia.isInsertMode(),"Insert mode should persist");
         }
     }
 
@@ -446,8 +414,7 @@ public class InsertCharModePairwiseTest {
         String afterOverwrite = getFieldContent(FIELD_START_POS, FIELD_LENGTH);
 
         // Field length should be unchanged
-        assertEquals("Field length unchanged after overwrite",
-                beforeOverwrite.length(), afterOverwrite.length());
+        assertEquals(beforeOverwrite.length(), afterOverwrite.length(),"Field length unchanged after overwrite");
     }
 
     /**
@@ -464,7 +431,7 @@ public class InsertCharModePairwiseTest {
         int insertPos = FIELD_START_POS + 2;
         setCharAt(insertPos, 'X');
 
-        assertEquals("Insert at cursor position", 'X', getCharAt(insertPos));
+        assertEquals('X', getCharAt(insertPos),"Insert at cursor position");
     }
 
     // ========================================================================
@@ -493,8 +460,8 @@ public class InsertCharModePairwiseTest {
         setCharAt(pos, 'X');
 
         // In test double, character is set, but real code would prevent this
-        assertEquals("Character set in test", 'X', getCharAt(pos));
-        assertTrue("Insert mode should be active", oia.isInsertMode());
+        assertEquals('X', getCharAt(pos),"Character set in test");
+        assertTrue(oia.isInsertMode(),"Insert mode should be active");
     }
 
     /**
@@ -512,11 +479,10 @@ public class InsertCharModePairwiseTest {
 
         // In real code, keyboard lock would prevent this
         // Here we verify the lock state is set
-        assertTrue("Keyboard should be locked", oia.isKeyBoardLocked());
+        assertTrue(oia.isKeyBoardLocked(),"Keyboard should be locked");
 
         String fieldAfter = getFieldContent(FIELD_START_POS, FIELD_LENGTH);
-        assertEquals("Field content unchanged when keyboard locked",
-                fieldBefore, fieldAfter);
+        assertEquals(fieldBefore, fieldAfter,"Field content unchanged when keyboard locked");
     }
 
     /**
@@ -538,7 +504,7 @@ public class InsertCharModePairwiseTest {
         int pos = getLastPos();
 
         // Verify that position was handled (either set or clamped)
-        assertTrue("Cursor position set or corrected", pos >= 0 || pos < 0);
+        assertTrue(pos >= 0 || pos < 0,"Cursor position set or corrected");
     }
 
     /**
@@ -554,11 +520,10 @@ public class InsertCharModePairwiseTest {
         try {
             screen5250.setCursor(1, 81);
             // If no exception, verify position is clamped or rejected
-            assertFalse("Position should not exceed screen bounds",
-                    getLastCol() > SCREEN_COLS);
+            assertFalse(getLastCol() > SCREEN_COLS,"Position should not exceed screen bounds");
         } catch (Exception e) {
             // Expected: cursor validation
-            assertTrue("Exception expected for out-of-bounds column", true);
+            assertTrue(true,"Exception expected for out-of-bounds column");
         }
     }
 
@@ -578,7 +543,7 @@ public class InsertCharModePairwiseTest {
         setCharAt(FIELD_START_POS, controlChar);
 
         // Verify control character was set (validation would occur in Screen5250)
-        assertEquals("Control character set", controlChar, getCharAt(FIELD_START_POS));
+        assertEquals(controlChar, getCharAt(FIELD_START_POS),"Control character set");
     }
 
     /**
@@ -592,7 +557,7 @@ public class InsertCharModePairwiseTest {
 
         // In real code, protected field check would prevent insertion
         // This test verifies the mode is set even if operation would fail
-        assertTrue("Insert mode should be ON", oia.isInsertMode());
+        assertTrue(oia.isInsertMode(),"Insert mode should be ON");
 
         // Actual protection check happens in Screen5250.putChar()
     }
@@ -611,7 +576,7 @@ public class InsertCharModePairwiseTest {
         int endPos = FIELD_END_POS;
         setCharAt(endPos, 'X');
 
-        assertEquals("Character at boundary", 'X', getCharAt(endPos));
+        assertEquals('X', getCharAt(endPos),"Character at boundary");
     }
 
     /**
@@ -634,7 +599,7 @@ public class InsertCharModePairwiseTest {
         String fieldAfter = getFieldContent(FIELD_START_POS, FIELD_LENGTH);
 
         // Verify content was modified
-        assertFalse("Field content should change", fieldBefore.equals(fieldAfter));
+        assertFalse(fieldBefore.equals(fieldAfter),"Field content should change");
     }
 
     /**
@@ -650,8 +615,7 @@ public class InsertCharModePairwiseTest {
         for (int i = 0; i < 10; i++) {
             boolean expected = (i % 2 == 0);
             oia.setInsertMode(expected);
-            assertEquals("Mode should toggle correctly",
-                    expected, oia.isInsertMode());
+            assertEquals(expected, oia.isInsertMode(),"Mode should toggle correctly");
         }
     }
 
@@ -671,10 +635,10 @@ public class InsertCharModePairwiseTest {
         try {
             setCharAt(beyondFieldPos, 'X');
             // If allowed, verify field integrity
-            assertTrue("Position is beyond field", beyondFieldPos > FIELD_END_POS);
+            assertTrue(beyondFieldPos > FIELD_END_POS,"Position is beyond field");
         } catch (Exception e) {
             // Expected: some validation should reject this
-            assertTrue("Out-of-field position should be rejected", true);
+            assertTrue(true,"Out-of-field position should be rejected");
         }
     }
 
@@ -693,7 +657,7 @@ public class InsertCharModePairwiseTest {
         setCharAt(FIELD_START_POS, nullChar);
 
         // Verify null was set (validation would occur in putChar)
-        assertEquals("Null character set", nullChar, getCharAt(FIELD_START_POS));
+        assertEquals(nullChar, getCharAt(FIELD_START_POS),"Null character set");
     }
 
     /**
@@ -708,7 +672,7 @@ public class InsertCharModePairwiseTest {
         // Field protection is checked in Screen5250.putChar()
         // Verify insert mode is set, but actual protection check
         // happens at a higher level
-        assertTrue("Insert mode is ON", oia.isInsertMode());
-        assertTrue("Mode set correctly for protected field test", true);
+        assertTrue(oia.isInsertMode(),"Insert mode is ON");
+        assertTrue(true,"Mode set correctly for protected field test");
     }
 }

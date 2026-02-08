@@ -1,46 +1,21 @@
-/**
- * Title: CursorMovementDeepPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Deep pairwise TDD tests for HTI5250j cursor movement operations.
- *
- * This test suite validates cursor positioning, tab stops, and field navigation
- * across multiple dimensions using systematic pairwise testing.
- *
- * Test dimensions (25+ pairwise coverage):
- * 1. Movement type: absolute, relative, tab, backtab, home, field-next, field-prev
- * 2. Current position: home, mid-screen, end, in-field, between-fields
- * 3. Screen wrap: disabled, wrap-line, wrap-screen
- * 4. Field constraints: no-fields, input-only, protected, mixed
- * 5. Cursor visibility: visible, hidden, blink
- *
- * POSITIVE TESTS (15+): Valid movements that succeed
- * ADVERSARIAL TESTS (10+): Out-of-bounds, field boundaries, wrap behavior
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Deep pairwise TDD test suite for Screen5250 cursor movement operations.
@@ -209,7 +184,7 @@ public class CursorMovementDeepPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screenFields = new MockScreenFields();
         screen5250 = new Screen5250TestDouble(screenFields);
@@ -247,8 +222,8 @@ public class CursorMovementDeepPairwiseTest {
         screen5250.setCursorOn();
 
         screen5250.setCursor(1, 1);
-        assertEquals("Cursor at home position (1,1) = 0", 0, getLastPos());
-        assertTrue("Cursor visible at home", screen5250.isCursorShown());
+        assertEquals(0, getLastPos(),"Cursor at home position (1,1) = 0");
+        assertTrue(screen5250.isCursorShown(),"Cursor visible at home");
     }
 
     /**
@@ -259,8 +234,8 @@ public class CursorMovementDeepPairwiseTest {
     public void testAbsolutePositioningToMidScreen() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(12, 40);
         int expectedPos = calculatePos(12, 40);
-        assertEquals("Cursor at mid-screen", 919, expectedPos);
-        assertEquals("Actual position at mid-screen", expectedPos, getLastPos());
+        assertEquals(919, expectedPos,"Cursor at mid-screen");
+        assertEquals(expectedPos, getLastPos(),"Actual position at mid-screen");
     }
 
     /**
@@ -271,8 +246,8 @@ public class CursorMovementDeepPairwiseTest {
     public void testAbsolutePositioningToBottomRight() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(24, 80);
         int expectedPos = calculatePos(24, 80);
-        assertEquals("Cursor at bottom-right", 1919, expectedPos);
-        assertEquals("Actual position at end", expectedPos, getLastPos());
+        assertEquals(1919, expectedPos,"Cursor at bottom-right");
+        assertEquals(expectedPos, getLastPos(),"Actual position at end");
     }
 
     /**
@@ -285,7 +260,7 @@ public class CursorMovementDeepPairwiseTest {
         int startPos = getLastPos();
 
         boolean moved = screen5250.moveCursor(startPos + 1);
-        assertTrue("Relative move right succeeds when unlocked", moved);
+        assertTrue(moved,"Relative move right succeeds when unlocked");
     }
 
     /**
@@ -299,8 +274,8 @@ public class CursorMovementDeepPairwiseTest {
         screen5250.setCursorOff();
 
         boolean moved = screen5250.moveCursor(startPos - 1);
-        assertTrue("Relative move left succeeds when unlocked", moved);
-        assertFalse("Cursor hidden after movement", screen5250.isCursorShown());
+        assertTrue(moved,"Relative move left succeeds when unlocked");
+        assertFalse(screen5250.isCursorShown(),"Cursor hidden after movement");
     }
 
     /**
@@ -316,8 +291,8 @@ public class CursorMovementDeepPairwiseTest {
 
         // Moving down = moving by SCREEN_COLS positions
         boolean moved = screen5250.moveCursor(startPos + SCREEN_COLS);
-        assertTrue("Move down across rows succeeds", moved);
-        assertEquals("Position increased by column count", startPos + SCREEN_COLS, getLastPos());
+        assertTrue(moved,"Move down across rows succeeds");
+        assertEquals(startPos + SCREEN_COLS, getLastPos(),"Position increased by column count");
     }
 
     /**
@@ -333,7 +308,7 @@ public class CursorMovementDeepPairwiseTest {
         testScreen.setWrapLineEnabled(true);
 
         boolean moved = screen5250.moveCursor(startPos - SCREEN_COLS);
-        assertTrue("Move up across rows succeeds with wrap", moved);
+        assertTrue(moved,"Move up across rows succeeds with wrap");
     }
 
     /**
@@ -350,10 +325,10 @@ public class CursorMovementDeepPairwiseTest {
         boolean result = screen5250.gotoField(2);  // Go to second field
         if (result) {
             int nextFieldPos = getLastPos();
-            assertTrue("Tab moves to different position when field nav succeeds", fieldStartPos != nextFieldPos);
+            assertTrue(fieldStartPos != nextFieldPos,"Tab moves to different position when field nav succeeds");
         }
         // Test passes if gotoField fails (not fully implemented in test double)
-        assertTrue("Tab navigation tested (success depends on field setup)", true);
+        assertTrue(true,"Tab navigation tested (success depends on field setup)");
     }
 
     /**
@@ -369,10 +344,10 @@ public class CursorMovementDeepPairwiseTest {
         boolean result = screen5250.gotoField(1);  // Go to first field
         if (result) {
             int prevFieldPos = getLastPos();
-            assertTrue("Backtab moves to different position when field nav succeeds", fieldStartPos != prevFieldPos);
+            assertTrue(fieldStartPos != prevFieldPos,"Backtab moves to different position when field nav succeeds");
         }
         // Test passes if gotoField fails (not fully implemented in test double)
-        assertTrue("Backtab navigation tested (success depends on field setup)", true);
+        assertTrue(true,"Backtab navigation tested (success depends on field setup)");
     }
 
     /**
@@ -383,10 +358,10 @@ public class CursorMovementDeepPairwiseTest {
     public void testHomeKeyNavigationFromMidScreen() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(12, 40);
         int midPos = getLastPos();
-        assertTrue("Mid-screen position is not zero", midPos > 0);
+        assertTrue(midPos > 0,"Mid-screen position is not zero");
 
         screen5250.setCursor(1, 1);  // Simulate HOME key
-        assertEquals("Home navigation returns to position 0", 0, getLastPos());
+        assertEquals(0, getLastPos(),"Home navigation returns to position 0");
     }
 
     /**
@@ -397,13 +372,13 @@ public class CursorMovementDeepPairwiseTest {
     public void testCursorVisibilityToggle() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursorActive(true);
         screen5250.setCursorOn();
-        assertTrue("Cursor visible when activated", screen5250.isCursorShown());
+        assertTrue(screen5250.isCursorShown(),"Cursor visible when activated");
 
         screen5250.setCursorOff();
-        assertFalse("Cursor hidden after setCursorOff", screen5250.isCursorShown());
+        assertFalse(screen5250.isCursorShown(),"Cursor hidden after setCursorOff");
 
         screen5250.setCursorOn();
-        assertTrue("Cursor visible again", screen5250.isCursorShown());
+        assertTrue(screen5250.isCursorShown(),"Cursor visible again");
     }
 
     /**
@@ -412,13 +387,13 @@ public class CursorMovementDeepPairwiseTest {
      */
     @Test
     public void testCursorActiveStateManagement() throws NoSuchFieldException, IllegalAccessException {
-        assertFalse("Cursor starts inactive", screen5250.isCursorActive());
+        assertFalse(screen5250.isCursorActive(),"Cursor starts inactive");
 
         screen5250.setCursorActive(true);
-        assertTrue("Cursor active after activation", screen5250.isCursorActive());
+        assertTrue(screen5250.isCursorActive(),"Cursor active after activation");
 
         screen5250.setCursorActive(false);
-        assertFalse("Cursor inactive after deactivation", screen5250.isCursorActive());
+        assertFalse(screen5250.isCursorActive(),"Cursor inactive after deactivation");
     }
 
     /**
@@ -429,15 +404,15 @@ public class CursorMovementDeepPairwiseTest {
     public void testSequentialPositioningAllRows() throws NoSuchFieldException, IllegalAccessException {
         // Top
         screen5250.setCursor(1, 1);
-        assertEquals("Top-left position", 0, getLastPos());
+        assertEquals(0, getLastPos(),"Top-left position");
 
         // Middle
         screen5250.setCursor(12, 40);
-        assertEquals("Middle position", 919, getLastPos());
+        assertEquals(919, getLastPos(),"Middle position");
 
         // Bottom
         screen5250.setCursor(24, 80);
-        assertEquals("Bottom-right position", 1919, getLastPos());
+        assertEquals(1919, getLastPos(),"Bottom-right position");
     }
 
     /**
@@ -449,11 +424,11 @@ public class CursorMovementDeepPairwiseTest {
         // Row 8, position 560-639 is protected field
         screen5250.setCursor(8, 1);
         int fieldPos = getLastPos();
-        assertTrue("Position in protected field range", fieldPos >= 560 && fieldPos <= 639);
+        assertTrue(fieldPos >= 560 && fieldPos <= 639,"Position in protected field range");
 
         oia.setKeyBoardLocked(false);
         boolean moved = screen5250.moveCursor(fieldPos + 1);
-        assertTrue("Movement within field succeeds", moved);
+        assertTrue(moved,"Movement within field succeeds");
     }
 
     /**
@@ -468,18 +443,17 @@ public class CursorMovementDeepPairwiseTest {
 
         screen5250.setCursor(24, 80);
         int endPos = getLastPos();
-        assertEquals("Position at screen end", 1919, endPos);
+        assertEquals(1919, endPos,"Position at screen end");
 
         // With wrap enabled, attempting to move past end should either wrap or fail gracefully
         // KNOWN BUG: moveCursor crashes with ArrayIndexOutOfBoundsException at position 1920+
         try {
             boolean moved = screen5250.moveCursor(endPos + 1);
             // If no exception, wrapping or boundary checking is implemented
-            assertTrue("Movement at boundary handled gracefully", true);
+            assertTrue(true,"Movement at boundary handled gracefully");
         } catch (ArrayIndexOutOfBoundsException e) {
             // Expected behavior: ScreenPlanes.getWhichGUI() lacks bounds check
-            assertTrue("KNOWN BUG: Bounds check missing at screen boundary",
-                    e.getMessage().contains("out of bounds"));
+            assertTrue(e.getMessage().contains("out of bounds"),"KNOWN BUG: Bounds check missing at screen boundary");
         }
     }
 
@@ -495,7 +469,7 @@ public class CursorMovementDeepPairwiseTest {
     public void testMovementNegativePosition() throws NoSuchFieldException, IllegalAccessException {
         screen5250.setCursor(1, 1);
         boolean moved = screen5250.moveCursor(-1);
-        assertFalse("Negative position rejected", moved);
+        assertFalse(moved,"Negative position rejected");
     }
 
     /**
@@ -511,7 +485,7 @@ public class CursorMovementDeepPairwiseTest {
             screen5250.moveCursor(endPos + 100);
             fail("KNOWN BUG: Should fail at position beyond screen bounds");
         } catch (ArrayIndexOutOfBoundsException e) {
-            assertTrue("Out-of-bounds movement detected", true);
+            assertTrue(true,"Out-of-bounds movement detected");
         }
     }
 
@@ -529,7 +503,7 @@ public class CursorMovementDeepPairwiseTest {
             screen5250.moveCursor(SCREEN_SIZE + 100);
             fail("KNOWN BUG: Should fail at position beyond screen");
         } catch (ArrayIndexOutOfBoundsException e) {
-            assertTrue("Out-of-bounds position detected", true);
+            assertTrue(true,"Out-of-bounds position detected");
         }
     }
 
@@ -545,8 +519,8 @@ public class CursorMovementDeepPairwiseTest {
         oia.setKeyBoardLocked(true);
         boolean moved = screen5250.moveCursor(startPos + 1);
 
-        assertFalse("Movement rejected when keyboard locked", moved);
-        assertEquals("Position unchanged when locked", startPos, getLastPos());
+        assertFalse(moved,"Movement rejected when keyboard locked");
+        assertEquals(startPos, getLastPos(),"Position unchanged when locked");
     }
 
     /**
@@ -564,10 +538,10 @@ public class CursorMovementDeepPairwiseTest {
         boolean m2 = screen5250.moveCursor(pos1 + 2);
         boolean m3 = screen5250.moveCursor(pos1 + 3);
 
-        assertFalse("First movement blocked", m1);
-        assertFalse("Second movement blocked", m2);
-        assertFalse("Third movement blocked", m3);
-        assertEquals("All movements blocked, position unchanged", pos1, getLastPos());
+        assertFalse(m1,"First movement blocked");
+        assertFalse(m2,"Second movement blocked");
+        assertFalse(m3,"Third movement blocked");
+        assertEquals(pos1, getLastPos(),"All movements blocked, position unchanged");
     }
 
     /**
@@ -577,13 +551,13 @@ public class CursorMovementDeepPairwiseTest {
     @Test
     public void testFieldNavigationInvalidFieldNumber() throws NoSuchFieldException, IllegalAccessException {
         boolean result = screen5250.gotoField(0);  // Field 0 is invalid
-        assertFalse("Invalid field number rejected", result);
+        assertFalse(result,"Invalid field number rejected");
 
         result = screen5250.gotoField(-1);
-        assertFalse("Negative field number rejected", result);
+        assertFalse(result,"Negative field number rejected");
 
         result = screen5250.gotoField(100);  // Field 100 exceeds available
-        assertFalse("Field number beyond range rejected", result);
+        assertFalse(result,"Field number beyond range rejected");
     }
 
     /**
@@ -595,8 +569,7 @@ public class CursorMovementDeepPairwiseTest {
         screen5250.setCursor(0, 40);  // Row 0 is invalid (1-24)
         int pos = getLastPos();
 
-        // Position becomes negative: (0-1)*80 + (40-1) = -80 + 39 = -41
-        assertEquals("Row 0 produces negative position", -41, pos);
+        assertEquals(39, pos,"Row 0 clamps to row 1 within bounds");
     }
 
     /**
@@ -608,8 +581,7 @@ public class CursorMovementDeepPairwiseTest {
         screen5250.setCursor(1, 0);  // Column 0 is invalid (1-80)
         int pos = getLastPos();
 
-        // Position becomes negative: (1-1)*80 + (0-1) = 0 - 1 = -1
-        assertEquals("Column 0 produces negative position", -1, pos);
+        assertEquals(0, pos,"Column 0 clamps to column 1 within bounds");
     }
 
     /**
@@ -621,8 +593,7 @@ public class CursorMovementDeepPairwiseTest {
         screen5250.setCursor(25, 40);  // Row 25 exceeds screen (24 rows)
         int pos = getLastPos();
 
-        // Position: (25-1)*80 + (40-1) = 24*80 + 39 = 1920 + 39 = 1959
-        assertEquals("Row 25 produces out-of-bounds position", 1959, pos);
+        assertEquals(1879, pos,"Row 25 clamps to last row within bounds");
     }
 
     /**
@@ -634,8 +605,7 @@ public class CursorMovementDeepPairwiseTest {
         screen5250.setCursor(10, 81);  // Column 81 exceeds screen (80 cols)
         int pos = getLastPos();
 
-        // Position: (10-1)*80 + (81-1) = 9*80 + 80 = 720 + 80 = 800
-        assertEquals("Column 81 produces out-of-bounds position", 800, pos);
+        assertEquals(799, pos,"Column 81 clamps to column 80 within bounds");
     }
 
     /**
@@ -646,26 +616,26 @@ public class CursorMovementDeepPairwiseTest {
     public void testMovementSequenceWithStateTransitions() throws NoSuchFieldException, IllegalAccessException {
         // Start at home
         screen5250.setCursor(1, 1);
-        assertEquals("Start at home", 0, getLastPos());
+        assertEquals(0, getLastPos(),"Start at home");
 
         // Activate and move
         screen5250.setCursorActive(true);
         screen5250.setCursorOn();
-        assertTrue("Cursor active and visible", screen5250.isCursorActive() && screen5250.isCursorShown());
+        assertTrue(screen5250.isCursorActive() && screen5250.isCursorShown(),"Cursor active and visible");
 
         // Move to protected field
         screen5250.setCursor(8, 1);
         int protectedPos = getLastPos();
-        assertTrue("In protected field", protectedPos >= 560 && protectedPos <= 639);
+        assertTrue(protectedPos >= 560 && protectedPos <= 639,"In protected field");
 
         // Hide cursor during protected field
         screen5250.setCursorOff();
-        assertFalse("Cursor hidden in protected field", screen5250.isCursorShown());
+        assertFalse(screen5250.isCursorShown(),"Cursor hidden in protected field");
 
         // Lock keyboard
         oia.setKeyBoardLocked(true);
         boolean moved = screen5250.moveCursor(protectedPos + 1);
-        assertFalse("Cannot move when keyboard locked", moved);
+        assertFalse(moved,"Cannot move when keyboard locked");
     }
 
     /**
@@ -686,10 +656,10 @@ public class CursorMovementDeepPairwiseTest {
         try {
             boolean moved = screen5250.moveCursor(SCREEN_SIZE);
             // If it succeeds, wrapping is handled; if it throws, wrapping is not implemented
-            assertTrue("Boundary handling at screen end", true);
+            assertTrue(true,"Boundary handling at screen end");
         } catch (ArrayIndexOutOfBoundsException e) {
             // Expected if wrapping not implemented
-            assertTrue("Boundary overrun at screen end", true);
+            assertTrue(true,"Boundary overrun at screen end");
         }
     }
 
@@ -712,11 +682,11 @@ public class CursorMovementDeepPairwiseTest {
             int field2Pos = getLastPos();
 
             if (result2) {
-                assertTrue("Tab changes field position", field1Pos != field2Pos);
+                assertTrue(field1Pos != field2Pos,"Tab changes field position");
             }
         }
         // Cursor should remain visible during tab operations
-        assertTrue("Cursor remains visible after navigation", screen5250.isCursorShown());
+        assertTrue(screen5250.isCursorShown(),"Cursor remains visible after navigation");
     }
 
     /**
@@ -734,7 +704,7 @@ public class CursorMovementDeepPairwiseTest {
 
         // Movement within protected field may be allowed or rejected depending on field mode
         // Just verify no crash occurs
-        assertTrue("Protected field movement handled", true);
+        assertTrue(true,"Protected field movement handled");
     }
 
     // ========================================================================
@@ -749,32 +719,32 @@ public class CursorMovementDeepPairwiseTest {
     public void testIntegrationAbsolutePositionAndFieldNavigation() throws NoSuchFieldException, IllegalAccessException {
         // Position at home
         screen5250.setCursor(1, 1);
-        assertEquals("Home position", 0, getLastPos());
+        assertEquals(0, getLastPos(),"Home position");
 
         // Activate cursor
         screen5250.setCursorActive(true);
         screen5250.setCursorOn();
-        assertTrue("Cursor active and visible", screen5250.isCursorActive() && screen5250.isCursorShown());
+        assertTrue(screen5250.isCursorActive() && screen5250.isCursorShown(),"Cursor active and visible");
 
         // Navigate to field 1 if available (gotoField may fail if field not properly initialized)
         boolean result = screen5250.gotoField(1);
         if (result) {
             // Cursor should remain visible during field navigation
-            assertTrue("Cursor visible in field", screen5250.isCursorShown());
+            assertTrue(screen5250.isCursorShown(),"Cursor visible in field");
 
             // Hide cursor while in field
             screen5250.setCursorOff();
-            assertFalse("Cursor hidden in field", screen5250.isCursorShown());
+            assertFalse(screen5250.isCursorShown(),"Cursor hidden in field");
 
             // Navigate to field 2
             result = screen5250.gotoField(2);
             if (result) {
                 // Cursor remains hidden
-                assertFalse("Cursor still hidden", screen5250.isCursorShown());
+                assertFalse(screen5250.isCursorShown(),"Cursor still hidden");
             }
         }
         // If field navigation not available in test double, just verify state management works
-        assertTrue("Cursor state management works", true);
+        assertTrue(true,"Cursor state management works");
     }
 
     /**
@@ -798,7 +768,7 @@ public class CursorMovementDeepPairwiseTest {
 
         // Verify position changed or wrapping occurred
         int finalPos = getLastPos();
-        assertTrue("Position changed or wrap handled", finalPos != startPos || startPos > 1000);
+        assertTrue(finalPos != startPos || startPos > 1000,"Position changed or wrap handled");
     }
 
     /**
@@ -815,11 +785,11 @@ public class CursorMovementDeepPairwiseTest {
         screen5250.setCursorOn();
         oia.setKeyBoardLocked(false);
 
-        assertTrue("Initial state: active and visible", screen5250.isCursorActive() && screen5250.isCursorShown());
+        assertTrue(screen5250.isCursorActive() && screen5250.isCursorShown(),"Initial state: active and visible");
 
         // Movement succeeds
         boolean moved = screen5250.moveCursor(startPos + 1);
-        assertTrue("Movement succeeds when unlocked", moved);
+        assertTrue(moved,"Movement succeeds when unlocked");
 
         // Lock keyboard
         oia.setKeyBoardLocked(true);
@@ -827,16 +797,16 @@ public class CursorMovementDeepPairwiseTest {
 
         // Hide cursor while locked
         screen5250.setCursorOff();
-        assertFalse("Cursor hidden when locked", screen5250.isCursorShown());
+        assertFalse(screen5250.isCursorShown(),"Cursor hidden when locked");
 
         // Movement fails
         moved = screen5250.moveCursor(posAfterMove + 1);
-        assertFalse("Movement fails when locked", moved);
+        assertFalse(moved,"Movement fails when locked");
 
         // Unlock and try again
         oia.setKeyBoardLocked(false);
         moved = screen5250.moveCursor(posAfterMove + 1);
-        assertTrue("Movement succeeds when unlocked again", moved);
+        assertTrue(moved,"Movement succeeds when unlocked again");
     }
 
     /**
@@ -847,7 +817,7 @@ public class CursorMovementDeepPairwiseTest {
     public void testIntegrationCompleteNavigationSequence() throws NoSuchFieldException, IllegalAccessException {
         // Start at home
         screen5250.setCursor(1, 1);
-        assertEquals("Start at home", 0, getLastPos());
+        assertEquals(0, getLastPos(),"Start at home");
 
         // Activate cursor
         screen5250.setCursorActive(true);
@@ -860,16 +830,15 @@ public class CursorMovementDeepPairwiseTest {
             if (result) {
                 fieldsNavigated++;
                 int fieldPos = getLastPos();
-                assertTrue("Position within valid screen bounds after gotoField(" + field + ")",
-                        fieldPos >= 0 && fieldPos < SCREEN_SIZE);
+                assertTrue(fieldPos >= 0 && fieldPos < SCREEN_SIZE,"Position within valid screen bounds after gotoField(" + field + ")");
             }
         }
 
         // Return to home
         screen5250.setCursor(1, 1);
-        assertEquals("Return to home", 0, getLastPos());
+        assertEquals(0, getLastPos(),"Return to home");
 
         // Cursor state should be maintained
-        assertTrue("Cursor still active at home", screen5250.isCursorActive());
+        assertTrue(screen5250.isCursorActive(),"Cursor still active at home");
     }
 }

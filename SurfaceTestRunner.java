@@ -1,3 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -39,7 +49,7 @@ public class SurfaceTestRunner {
                     runTestMethod(testClass, method);
                 }
             }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException classNotFoundException) {
             System.err.println("ERROR: Could not find test class: " + className);
             testsFailed++;
         }
@@ -52,7 +62,7 @@ public class SurfaceTestRunner {
             Class<?> paramAnnotation = Class.forName("org.junit.jupiter.params.ParameterizedTest");
             return method.isAnnotationPresent((Class<? extends java.lang.annotation.Annotation>) testAnnotation) ||
                    method.isAnnotationPresent((Class<? extends java.lang.annotation.Annotation>) paramAnnotation);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException classNotFoundException) {
             return false;
         }
     }
@@ -75,9 +85,9 @@ public class SurfaceTestRunner {
             testsPassed++;
             System.out.println("  ✓ " + testMethod.getName());
 
-        } catch (Exception e) {
+        } catch (Exception exception) {
             testsFailed++;
-            String error = testMethod.getName() + ": " + e.getCause();
+            String error = testMethod.getName() + ": " + exception.getCause();
             failures.add(error);
             System.out.println("  ✗ " + error);
         }
@@ -91,7 +101,7 @@ public class SurfaceTestRunner {
                 if (method.isAnnotationPresent((Class<? extends java.lang.annotation.Annotation>) beforeEach)) {
                     method.invoke(instance);
                 }
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException classNotFoundException) {
                 // Annotation not found, skip
             }
         }
@@ -105,7 +115,7 @@ public class SurfaceTestRunner {
                 if (method.isAnnotationPresent((Class<? extends java.lang.annotation.Annotation>) afterEach)) {
                     method.invoke(instance);
                 }
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException classNotFoundException) {
                 // Annotation not found, skip
             }
         }

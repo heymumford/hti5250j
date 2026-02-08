@@ -1,35 +1,20 @@
-/**
- * $Id$
- * <p>
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001,2009
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001,2009
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: master_jaf
  *
- * @author: master_jaf
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.encoding.builtin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.CharMappings;
 import org.hti5250j.encoding.ICodePage;
 import org.hti5250j.encoding.builtin.CCSID1026;
@@ -49,13 +34,13 @@ public class CCSID1026Test {
     public void testOldConverter1026() {
 
         ICodePage cp = CharMappings.getCodePage("1026");
-        assertNotNull("At least an ASCII Codepage should be available.", cp);
+        assertNotNull(cp,"At least an ASCII Codepage should be available.");
 
         for (int i = 0; i < 256; i++) {
             final byte beginvalue = (byte) i;
             final char converted = cp.ebcdic2uni(beginvalue);
             final byte afterall = cp.uni2ebcdic(converted);
-            assertEquals("Testing item #" + i, beginvalue, afterall);
+            assertEquals(beginvalue, afterall,"Testing item #" + i);
         }
 
     }
@@ -68,13 +53,13 @@ public class CCSID1026Test {
     public void testNewConverter1026() {
         CCSID1026 cp = new CCSID1026();
         cp.init();
-        assertNotNull("At least an ASCII Codepage should be available.", cp);
+        assertNotNull(cp,"At least an ASCII Codepage should be available.");
 
         for (int i = 0; i < 256; i++) {
             final byte beginvalue = (byte) i;
             final char converted = cp.ebcdic2uni(beginvalue);
             final byte afterall = cp.uni2ebcdic(converted);
-            assertEquals("Testing item #" + i, beginvalue, afterall);
+            assertEquals(beginvalue, afterall,"Testing item #" + i);
         }
     }
 
@@ -87,15 +72,15 @@ public class CCSID1026Test {
         final ICodePage cp = CharMappings.getCodePage("1026");
         final CCSID1026 cpex = new CCSID1026();
         cpex.init();
-        assertNotNull("At least an ASCII Codepage should be available.", cpex);
+        assertNotNull(cpex,"At least an ASCII Codepage should be available.");
 
         for (int i = 0; i < 256; i++) {
             final byte beginvalue = (byte) i;
-            assertEquals("Testing to EBCDIC item #" + i, cp.ebcdic2uni(beginvalue), cpex.ebcdic2uni(beginvalue));
+            assertEquals(cp.ebcdic2uni(beginvalue), cpex.ebcdic2uni(beginvalue),"Testing to EBCDIC item #" + i);
             final char converted = cp.ebcdic2uni(beginvalue);
-            assertEquals("Testing to UNICODE item #" + i, cp.uni2ebcdic(converted), cpex.uni2ebcdic(converted));
+            assertEquals(cp.uni2ebcdic(converted), cpex.uni2ebcdic(converted),"Testing to UNICODE item #" + i);
             final byte afterall = cp.uni2ebcdic(converted);
-            assertEquals("Testing before and after item #" + i, beginvalue, afterall);
+            assertEquals(beginvalue, afterall,"Testing before and after item #" + i);
         }
     }
 

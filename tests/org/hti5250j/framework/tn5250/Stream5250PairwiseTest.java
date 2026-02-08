@@ -1,36 +1,22 @@
-/**
- * Title: tn5250J
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise combinatorial tests for Stream5250 boundary conditions
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING. If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise combinatorial test suite for Stream5250.
@@ -73,7 +59,7 @@ public class Stream5250PairwiseTest {
     private static final int[] BUFFER_SIZES = {0, 1, 10, 100, 1000};
     private static final int[] POSITION_MULTIPLIERS = {0, 1, 5, 95, 99, 100}; // % of buffer length
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Default to 100-byte buffer for most tests
         stream = new Stream5250(createMinimalBuffer(100));
@@ -97,8 +83,8 @@ public class Stream5250PairwiseTest {
         byte result = stream.getNextByte();
 
         // Assert
-        assertEquals("Should return byte at position 0", expectedValue, result);
-        assertEquals("Position should increment to 1", 1, stream.pos);
+        assertEquals(expectedValue, result,"Should return byte at position 0");
+        assertEquals(1, stream.pos,"Position should increment to 1");
     }
 
     /**
@@ -117,8 +103,8 @@ public class Stream5250PairwiseTest {
         byte result = stream.getNextByte();
 
         // Assert
-        assertEquals("Should return byte at position 50", expectedValue, result);
-        assertEquals("Position should increment to 51", 51, stream.pos);
+        assertEquals(expectedValue, result,"Should return byte at position 50");
+        assertEquals(51, stream.pos,"Position should increment to 51");
     }
 
     /**
@@ -138,8 +124,8 @@ public class Stream5250PairwiseTest {
         byte result = stream.getNextByte();
 
         // Assert
-        assertEquals("Should return last valid byte", expectedValue, result);
-        assertEquals("Position should increment to buffer length", bufferLength, stream.pos);
+        assertEquals(expectedValue, result,"Should return last valid byte");
+        assertEquals(bufferLength, stream.pos,"Position should increment to buffer length");
     }
 
     // ===== TEST GROUP 2: getNextByte() Adversarial Cases =====
@@ -149,17 +135,19 @@ public class Stream5250PairwiseTest {
      * Scenario: Position equals buffer length (at boundary)
      * Expected: IllegalStateException thrown
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetNextByte_PositionEqualsLength_ThrowsIllegalState() {
-        // Arrange
-        int bufferLength = stream.buffer.length;
-        stream.pos = bufferLength;
+        assertThrows(IllegalStateException.class, () -> {
+            // Arrange
+            int bufferLength = stream.buffer.length;
+            stream.pos = bufferLength;
 
-        // Act
-        stream.getNextByte();
+            // Act
+            stream.getNextByte();
 
-        // Assert: Should not reach here
-        fail("Should throw IllegalStateException when pos == buffer.length");
+            // Assert: Should not reach here
+            fail("Should throw IllegalStateException when pos == buffer.length");
+        });
     }
 
     /**
@@ -167,16 +155,18 @@ public class Stream5250PairwiseTest {
      * Scenario: Position beyond buffer length
      * Expected: IllegalStateException thrown
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetNextByte_PositionBeyondLength_ThrowsIllegalState() {
-        // Arrange
-        stream.pos = stream.buffer.length + 10;
+        assertThrows(IllegalStateException.class, () -> {
+            // Arrange
+            stream.pos = stream.buffer.length + 10;
 
-        // Act
-        stream.getNextByte();
+            // Act
+            stream.getNextByte();
 
-        // Assert: Should not reach here
-        fail("Should throw IllegalStateException when pos > buffer.length");
+            // Assert: Should not reach here
+            fail("Should throw IllegalStateException when pos > buffer.length");
+        });
     }
 
     /**
@@ -184,17 +174,19 @@ public class Stream5250PairwiseTest {
      * Scenario: Buffer is null, any position
      * Expected: IllegalStateException thrown
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetNextByte_NullBuffer_ThrowsIllegalState() {
-        // Arrange
-        stream.buffer = null;
-        stream.pos = 0;
+        assertThrows(IllegalStateException.class, () -> {
+            // Arrange
+            stream.buffer = null;
+            stream.pos = 0;
 
-        // Act
-        stream.getNextByte();
+            // Act
+            stream.getNextByte();
 
-        // Assert: Should not reach here
-        fail("Should throw IllegalStateException when buffer is null");
+            // Assert: Should not reach here
+            fail("Should throw IllegalStateException when buffer is null");
+        });
     }
 
     /**
@@ -202,17 +194,19 @@ public class Stream5250PairwiseTest {
      * Scenario: Empty buffer (length 0), position 0
      * Expected: IllegalStateException thrown
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetNextByte_ZeroLengthBuffer_ThrowsIllegalState() {
-        // Arrange
-        stream.buffer = new byte[0];
-        stream.pos = 0;
+        assertThrows(IllegalStateException.class, () -> {
+            // Arrange
+            stream.buffer = new byte[0];
+            stream.pos = 0;
 
-        // Act
-        stream.getNextByte();
+            // Act
+            stream.getNextByte();
 
-        // Assert: Should not reach here
-        fail("Should throw IllegalStateException on zero-length buffer");
+            // Assert: Should not reach here
+            fail("Should throw IllegalStateException on zero-length buffer");
+        });
     }
 
     /**
@@ -232,17 +226,16 @@ public class Stream5250PairwiseTest {
 
         // Act & Assert: Read all valid bytes
         for (int i = 0; i < values.length; i++) {
-            assertEquals("Read byte at index " + i, values[i], stream.getNextByte());
+            assertEquals(values[i], stream.getNextByte(),"Read byte at index " + i);
         }
 
         // Act & Assert: Next read should fail
-        assertEquals("Position should be at buffer length", stream.buffer.length, stream.pos);
+        assertEquals(stream.buffer.length, stream.pos,"Position should be at buffer length");
         try {
             stream.getNextByte();
             fail("Should throw IllegalStateException after exhausting buffer");
         } catch (IllegalStateException e) {
-            assertTrue("Exception message should indicate buffer exceeded",
-                    e.getMessage().contains("Buffer length exceeded"));
+            assertTrue(e.getMessage().contains("Buffer length exceeded"),"Exception message should indicate buffer exceeded");
         }
     }
 
@@ -264,8 +257,8 @@ public class Stream5250PairwiseTest {
         byte result = stream.getByteOffset(0);
 
         // Assert
-        assertEquals("Should return byte at current position with zero offset", expectedValue, result);
-        assertEquals("Position should not change", 50, stream.pos);
+        assertEquals(expectedValue, result,"Should return byte at current position with zero offset");
+        assertEquals(50, stream.pos,"Position should not change");
     }
 
     /**
@@ -284,8 +277,8 @@ public class Stream5250PairwiseTest {
         byte result = stream.getByteOffset(5);
 
         // Assert
-        assertEquals("Should return byte at position + offset", expectedValue, result);
-        assertEquals("Position should not change", 10, stream.pos);
+        assertEquals(expectedValue, result,"Should return byte at position + offset");
+        assertEquals(10, stream.pos,"Position should not change");
     }
 
     /**
@@ -305,8 +298,8 @@ public class Stream5250PairwiseTest {
         byte result = stream.getByteOffset(9);
 
         // Assert
-        assertEquals("Should read last byte via positive offset", expectedValue, result);
-        assertEquals("Position should not change", bufferLength - 10, stream.pos);
+        assertEquals(expectedValue, result,"Should read last byte via positive offset");
+        assertEquals(bufferLength - 10, stream.pos,"Position should not change");
     }
 
     /**
@@ -325,7 +318,7 @@ public class Stream5250PairwiseTest {
         byte result = stream.getByteOffset(1);
 
         // Assert
-        assertEquals("Should read next byte with offset +1", expectedValue, result);
+        assertEquals(expectedValue, result,"Should read next byte with offset +1");
     }
 
     // ===== TEST GROUP 4: getByteOffset() Adversarial Cases =====
@@ -335,16 +328,14 @@ public class Stream5250PairwiseTest {
      * Scenario: Position 0, offset -1 (would access index -1)
      * Expected: Exception thrown (guards negative index)
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testGetByteOffset_NegativeOffsetFromZero_ThrowsException() throws Exception {
         // Arrange
         stream.pos = 0;
 
         // Act
-        stream.getByteOffset(-1);
-
-        // Assert: Should not reach here
-        fail("Should throw Exception on negative resulting index");
+        assertThrows(Exception.class, () -> stream.getByteOffset(-1),
+                "Should throw Exception on negative resulting index");
     }
 
     /**
@@ -352,16 +343,14 @@ public class Stream5250PairwiseTest {
      * Scenario: Position 5, offset -10 (would access index -5)
      * Expected: Exception thrown
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testGetByteOffset_NegativeOffsetFromMid_ThrowsException() throws Exception {
         // Arrange
         stream.pos = 5;
 
         // Act
-        stream.getByteOffset(-10);
-
-        // Assert: Should not reach here
-        fail("Should throw Exception on large negative offset");
+        assertThrows(Exception.class, () -> stream.getByteOffset(-10),
+                "Should throw Exception on large negative offset");
     }
 
     /**
@@ -369,16 +358,14 @@ public class Stream5250PairwiseTest {
      * Scenario: Position 95, offset +10 (would access index 105 in 100-byte buffer)
      * Expected: Exception thrown
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testGetByteOffset_OffsetBeyondBuffer_ThrowsException() throws Exception {
         // Arrange
         stream.pos = 95;
 
         // Act
-        stream.getByteOffset(10);
-
-        // Assert: Should not reach here
-        fail("Should throw Exception when pos+offset exceeds buffer");
+        assertThrows(Exception.class, () -> stream.getByteOffset(10),
+                "Should throw Exception when pos+offset exceeds buffer");
     }
 
     /**
@@ -386,16 +373,14 @@ public class Stream5250PairwiseTest {
      * Scenario: Position 90, offset +10 (pos+off == buffer.length, not < buffer.length)
      * Expected: Exception thrown (boundary violation)
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testGetByteOffset_OffsetEqualsBufferBoundary_ThrowsException() throws Exception {
         // Arrange: 100-byte buffer
         stream.pos = 90;
 
         // Act: pos(90) + off(10) = 100 (equals buffer.length, not valid index)
-        stream.getByteOffset(10);
-
-        // Assert: Should not reach here
-        fail("Should throw Exception when pos+offset == buffer.length");
+        assertThrows(Exception.class, () -> stream.getByteOffset(10),
+                "Should throw Exception when pos+offset == buffer.length");
     }
 
     /**
@@ -403,17 +388,15 @@ public class Stream5250PairwiseTest {
      * Scenario: Buffer is null, any position/offset
      * Expected: Exception thrown
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testGetByteOffset_NullBuffer_ThrowsException() throws Exception {
         // Arrange
         stream.buffer = null;
         stream.pos = 0;
 
         // Act
-        stream.getByteOffset(0);
-
-        // Assert: Should not reach here
-        fail("Should throw Exception when buffer is null");
+        assertThrows(Exception.class, () -> stream.getByteOffset(0),
+                "Should throw Exception when buffer is null");
     }
 
     /**
@@ -421,17 +404,15 @@ public class Stream5250PairwiseTest {
      * Scenario: Empty buffer, position 0, offset 0
      * Expected: Exception thrown
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testGetByteOffset_ZeroLengthBuffer_ThrowsException() throws Exception {
         // Arrange
         stream.buffer = new byte[0];
         stream.pos = 0;
 
         // Act
-        stream.getByteOffset(0);
-
-        // Assert: Should not reach here
-        fail("Should throw Exception on zero-length buffer");
+        assertThrows(Exception.class, () -> stream.getByteOffset(0),
+                "Should throw Exception on zero-length buffer");
     }
 
     /**
@@ -439,16 +420,14 @@ public class Stream5250PairwiseTest {
      * Scenario: Position 50, offset -100 (would access index -50)
      * Expected: Exception thrown
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testGetByteOffset_LargeNegativeOffset_ThrowsException() throws Exception {
         // Arrange
         stream.pos = 50;
 
         // Act
-        stream.getByteOffset(-100);
-
-        // Assert: Should not reach here
-        fail("Should throw Exception on large negative offset");
+        assertThrows(Exception.class, () -> stream.getByteOffset(-100),
+                "Should throw Exception on large negative offset");
     }
 
     // ===== TEST GROUP 5: hasNext() Boundary Tests =====
@@ -465,7 +444,7 @@ public class Stream5250PairwiseTest {
         stream.pos = 50;
 
         // Act & Assert
-        assertTrue("hasNext() should return true when pos < streamSize", stream.hasNext());
+        assertTrue(stream.hasNext(),"hasNext() should return true when pos < streamSize");
     }
 
     /**
@@ -480,7 +459,7 @@ public class Stream5250PairwiseTest {
         stream.pos = 100;
 
         // Act & Assert
-        assertFalse("hasNext() should return false when pos == streamSize", stream.hasNext());
+        assertFalse(stream.hasNext(),"hasNext() should return false when pos == streamSize");
     }
 
     /**
@@ -495,7 +474,7 @@ public class Stream5250PairwiseTest {
         stream.pos = 150;
 
         // Act & Assert
-        assertFalse("hasNext() should return false when pos > streamSize", stream.hasNext());
+        assertFalse(stream.hasNext(),"hasNext() should return false when pos > streamSize");
     }
 
     /**
@@ -510,7 +489,7 @@ public class Stream5250PairwiseTest {
         stream.pos = 0;
 
         // Act & Assert
-        assertTrue("hasNext() should return true at start of stream", stream.hasNext());
+        assertTrue(stream.hasNext(),"hasNext() should return true at start of stream");
     }
 
     // ===== TEST GROUP 6: State Transitions & Interactions =====
@@ -528,10 +507,10 @@ public class Stream5250PairwiseTest {
 
         // Act & Assert
         for (int i = 0; i < 5; i++) {
-            assertEquals("Position before read " + i, expectedPositions[i], stream.pos);
+            assertEquals(expectedPositions[i], stream.pos,"Position before read " + i);
             stream.getNextByte();
         }
-        assertEquals("Final position should be 5", 5, stream.pos);
+        assertEquals(5, stream.pos,"Final position should be 5");
     }
 
     /**
@@ -550,7 +529,7 @@ public class Stream5250PairwiseTest {
         }
 
         // Assert: Position should not have changed
-        assertEquals("Position should be unchanged after multiple getByteOffset calls", 30, stream.pos);
+        assertEquals(30, stream.pos,"Position should be unchanged after multiple getByteOffset calls");
     }
 
     /**
@@ -568,16 +547,16 @@ public class Stream5250PairwiseTest {
 
         // Act & Assert
         byte lookahead = stream.getByteOffset(2);
-        assertEquals("getByteOffset should read pos+2", 0x22, lookahead);
-        assertEquals("Position should not advance with getByteOffset", 10, stream.pos);
+        assertEquals(0x22, lookahead,"getByteOffset should read pos+2");
+        assertEquals(10, stream.pos,"Position should not advance with getByteOffset");
 
         byte current = stream.getNextByte();
-        assertEquals("getNextByte should read pos", 0x11, current);
-        assertEquals("Position should advance with getNextByte", 11, stream.pos);
+        assertEquals(0x11, current,"getNextByte should read pos");
+        assertEquals(11, stream.pos,"Position should advance with getNextByte");
 
         byte next = stream.getNextByte();
-        assertEquals("Next byte should be 0x33", 0x33, next);
-        assertEquals("Position should be 12", 12, stream.pos);
+        assertEquals(0x33, next,"Next byte should be 0x33");
+        assertEquals(12, stream.pos,"Position should be 12");
     }
 
     /**
@@ -601,7 +580,7 @@ public class Stream5250PairwiseTest {
             stream.getByteOffset(50);  // pos+50 = 100 (at boundary, invalid)
             fail("Should throw Exception at boundary");
         } catch (Exception e) {
-            assertTrue("Exception expected for boundary offset", true);
+            assertTrue(true,"Exception expected for boundary offset");
         }
     }
 

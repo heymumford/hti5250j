@@ -1,39 +1,26 @@
-/**
- * Title: EventListenerPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD pairwise tests for event listener mechanisms
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.event;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.framework.tn5250.ScreenOIA;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD pairwise test suite for tn5250j event listener subsystem.
@@ -74,7 +61,7 @@ public class EventListenerPairwiseTest {
     // Test harness: Simple event manager for testing listener mechanics
     private TestEventManager eventManager;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         eventManager = new TestEventManager();
     }
@@ -97,12 +84,12 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenChanged(0, 0, 0, 23, 79);
 
         // ASSERT: Listener received exactly one event with correct parameters
-        assertEquals("Listener should receive exactly one event", 1, listener.eventCount);
-        assertEquals("Event should indicate update region", 0, listener.lastInUpdate);
-        assertEquals("Start row should match", 0, listener.lastStartRow);
-        assertEquals("Start col should match", 0, listener.lastStartCol);
-        assertEquals("End row should match", 23, listener.lastEndRow);
-        assertEquals("End col should match", 79, listener.lastEndCol);
+        assertEquals(1, listener.eventCount,"Listener should receive exactly one event");
+        assertEquals(0, listener.lastInUpdate,"Event should indicate update region");
+        assertEquals(0, listener.lastStartRow,"Start row should match");
+        assertEquals(0, listener.lastStartCol,"Start col should match");
+        assertEquals(23, listener.lastEndRow,"End row should match");
+        assertEquals(79, listener.lastEndCol,"End col should match");
     }
 
     /**
@@ -124,8 +111,8 @@ public class EventListenerPairwiseTest {
 
         // ASSERT: All listeners received the event
         for (CapturingScreenListener listener : listeners) {
-            assertEquals("All listeners should receive event", 1, listener.eventCount);
-            assertEquals("All listeners see same start row", 5, listener.lastStartRow);
+            assertEquals(1, listener.eventCount,"All listeners should receive event");
+            assertEquals(5, listener.lastStartRow,"All listeners see same start row");
         }
     }
 
@@ -146,8 +133,8 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenChanged(0, 0, 0, 23, 79);
 
         // ASSERT: Only listener2 received event
-        assertEquals("Removed listener should receive no events", 0, listener1.eventCount);
-        assertEquals("Remaining listener should receive event", 1, listener2.eventCount);
+        assertEquals(0, listener1.eventCount,"Removed listener should receive no events");
+        assertEquals(1, listener2.eventCount,"Remaining listener should receive event");
     }
 
     /**
@@ -164,9 +151,9 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenSizeChanged(24, 80);
 
         // ASSERT: Listener captured size change
-        assertEquals("Should receive size change event", 1, listener.sizeChangeCount);
-        assertEquals("New rows should be 24", 24, listener.lastRows);
-        assertEquals("New cols should be 80", 80, listener.lastCols);
+        assertEquals(1, listener.sizeChangeCount,"Should receive size change event");
+        assertEquals(24, listener.lastRows,"New rows should be 24");
+        assertEquals(80, listener.lastCols,"New cols should be 80");
     }
 
     /**
@@ -183,9 +170,8 @@ public class EventListenerPairwiseTest {
         eventManager.fireOIAChanged(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED);
 
         // ASSERT: Listener received correct change type
-        assertEquals("Should receive one OIA event", 1, listener.eventCount);
-        assertEquals("Change type should match keyboard locked constant",
-                ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED, listener.lastChange);
+        assertEquals(1, listener.eventCount,"Should receive one OIA event");
+        assertEquals(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED, listener.lastChange,"Change type should match keyboard locked constant");
     }
 
     /**
@@ -204,10 +190,9 @@ public class EventListenerPairwiseTest {
         }
 
         // ASSERT: Events received in order
-        assertEquals("Should receive all 10 events", 10, listener.startRows.size());
+        assertEquals(10, listener.startRows.size(),"Should receive all 10 events");
         for (int i = 0; i < 10; i++) {
-            assertEquals("Event " + i + " should have startRow = " + i,
-                    (Integer) i, listener.startRows.get(i));
+            assertEquals((Integer) i, listener.startRows.get(i),"Event " + i + " should have startRow = " + i);
         }
     }
 
@@ -227,15 +212,15 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenChanged(0, 0, 0, 23, 79);
 
         // Listener2 should NOT have received the first event
-        assertEquals("Listener1 should receive first event", 1, listener1.eventCount);
-        assertEquals("Listener2 should NOT receive event fired during addition", 0, listener2.eventCount);
+        assertEquals(1, listener1.eventCount,"Listener1 should receive first event");
+        assertEquals(0, listener2.eventCount,"Listener2 should NOT receive event fired during addition");
 
         // ACT: Fire second event
         eventManager.fireScreenChanged(0, 1, 0, 23, 79);
 
         // ASSERT: Now listener2 receives second event
-        assertEquals("Listener1 should have 2 events", 2, listener1.eventCount);
-        assertEquals("Listener2 should receive second event only", 1, listener2.eventCount);
+        assertEquals(2, listener1.eventCount,"Listener1 should have 2 events");
+        assertEquals(1, listener2.eventCount,"Listener2 should receive second event only");
     }
 
     /**
@@ -260,7 +245,7 @@ public class EventListenerPairwiseTest {
 
         // ASSERT: No listeners received event
         for (CapturingScreenListener listener : listeners) {
-            assertEquals("Cleared listeners should receive no events", 0, listener.eventCount);
+            assertEquals(0, listener.eventCount,"Cleared listeners should receive no events");
         }
     }
 
@@ -278,9 +263,9 @@ public class EventListenerPairwiseTest {
         eventManager.fireSessionChanged("Connected to host", 1);
 
         // ASSERT: Listener received message and state
-        assertEquals("Should receive one session event", 1, listener.eventCount);
-        assertEquals("Message should match", "Connected to host", listener.lastMessage);
-        assertEquals("State should be 1", 1, listener.lastState);
+        assertEquals(1, listener.eventCount,"Should receive one session event");
+        assertEquals("Connected to host", listener.lastMessage,"Message should match");
+        assertEquals(1, listener.lastState,"State should be 1");
     }
 
     /**
@@ -297,10 +282,9 @@ public class EventListenerPairwiseTest {
         eventManager.fireEmulatorAction(EmulatorActionEvent.CLOSE_SESSION, "Closing");
 
         // ASSERT: Listener received correct action and message
-        assertEquals("Should receive one action event", 1, listener.eventCount);
-        assertEquals("Action should be CLOSE_SESSION",
-                EmulatorActionEvent.CLOSE_SESSION, listener.lastAction);
-        assertEquals("Message should match", "Closing", listener.lastMessage);
+        assertEquals(1, listener.eventCount,"Should receive one action event");
+        assertEquals(EmulatorActionEvent.CLOSE_SESSION, listener.lastAction,"Action should be CLOSE_SESSION");
+        assertEquals("Closing", listener.lastMessage,"Message should match");
     }
 
     // ============================================================================
@@ -311,10 +295,12 @@ public class EventListenerPairwiseTest {
      * ADVERSARIAL #1: Null listener registration throws exception
      * Event type: screen-changed | Listener count: null | Operation: add | Timing: sync
      */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullListenerRegistrationThrowsException() {
-        // ACT & ASSERT: Should throw NPE
-        eventManager.addScreenListener(null);
+        assertThrows(NullPointerException.class, () -> {
+            // ACT & ASSERT: Should throw NPE
+            eventManager.addScreenListener(null);
+        });
     }
 
     /**
@@ -345,8 +331,7 @@ public class EventListenerPairwiseTest {
 
         // ASSERT: Listeners before and after exception both received event
         // Note: This tests the PRINCIPLE - actual implementation may vary
-        assertTrue("At least one listener should have received the event",
-                normalListener1.eventCount + normalListener2.eventCount >= 1);
+        assertTrue(normalListener1.eventCount + normalListener2.eventCount >= 1,"At least one listener should have received the event");
     }
 
     /**
@@ -367,8 +352,7 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenChanged(0, 0, 0, 23, 79);
 
         // ASSERT: listener1 still receives events
-        assertEquals("Original listener should still be registered",
-                1, listener1.eventCount);
+        assertEquals(1, listener1.eventCount,"Original listener should still be registered");
     }
 
     /**
@@ -393,17 +377,17 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenChanged(0, 0, 0, 23, 79);
 
         // ASSERT: All listeners that should, received first event
-        assertEquals("Listener1 should receive first event", 1, listener1.eventCount);
-        assertEquals("Listener2 should receive first event before removing", 1, listener2.eventCount);
-        assertEquals("Listener3 should receive first event", 1, listener3.eventCount);
+        assertEquals(1, listener1.eventCount,"Listener1 should receive first event");
+        assertEquals(1, listener2.eventCount,"Listener2 should receive first event before removing");
+        assertEquals(1, listener3.eventCount,"Listener3 should receive first event");
 
         // ACT: Fire second event
         eventManager.fireScreenChanged(0, 1, 0, 23, 79);
 
         // ASSERT: Only listener1 and listener3 receive second event
-        assertEquals("Listener1 should receive second event", 2, listener1.eventCount);
-        assertEquals("Listener2 should not receive second event (removed)", 1, listener2.eventCount);
-        assertEquals("Listener3 should receive second event", 2, listener3.eventCount);
+        assertEquals(2, listener1.eventCount,"Listener1 should receive second event");
+        assertEquals(1, listener2.eventCount,"Listener2 should not receive second event (removed)");
+        assertEquals(2, listener3.eventCount,"Listener3 should receive second event");
     }
 
     /**
@@ -421,7 +405,7 @@ public class EventListenerPairwiseTest {
         try {
             eventManager.fireScreenChangedWithNullCheck(0, 0, 0, 23, 79);
             // If no exception, test passes (defensive)
-            assertTrue("Null handling should be defensive", true);
+            assertTrue(true,"Null handling should be defensive");
         } catch (NullPointerException e) {
             // Also acceptable if checked before firing
             fail("Should handle null events gracefully: " + e.getMessage());
@@ -450,12 +434,11 @@ public class EventListenerPairwiseTest {
         int totalReceived = listeners.stream()
                 .mapToInt(l -> l.eventCount)
                 .sum();
-        assertEquals("All 100 listeners should receive event", 100, totalReceived);
+        assertEquals(100, totalReceived,"All 100 listeners should receive event");
 
         // Clear and verify no dangling references (simple check)
         eventManager.clearScreenListeners();
-        assertEquals("After clear, listener list should be empty",
-                0, eventManager.getScreenListenerCount());
+        assertEquals(0, eventManager.getScreenListenerCount(),"After clear, listener list should be empty");
     }
 
     /**
@@ -473,8 +456,7 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenChanged(0, 0, 0, 23, 79);
 
         // ASSERT: Listener callback fired twice (registered twice)
-        assertEquals("Listener registered twice should receive event twice",
-                2, listener.eventCount);
+        assertEquals(2, listener.eventCount,"Listener registered twice should receive event twice");
     }
 
     /**
@@ -499,15 +481,15 @@ public class EventListenerPairwiseTest {
         eventManager.fireScreenChanged(0, 0, 0, 23, 79);
 
         // ASSERT: All listeners received first event (clear happens after)
-        assertEquals("All listeners should receive first event before clear", 5,
-                listeners.stream().mapToInt(l -> l.eventCount).sum());
+        assertEquals(5,
+                listeners.stream().mapToInt(l -> l.eventCount).sum(),"All listeners should receive first event before clear");
 
         // ACT: Fire second event
         eventManager.fireScreenChanged(0, 1, 0, 23, 79);
 
         // ASSERT: No listeners receive second event (all cleared)
-        assertEquals("After clear, no listeners should receive events", 0,
-                listeners.stream().mapToInt(l -> l.eventCount).sum() - 5);
+        assertEquals(0,
+                listeners.stream().mapToInt(l -> l.eventCount).sum() - 5,"After clear, no listeners should receive events");
     }
 
     /**
@@ -527,7 +509,7 @@ public class EventListenerPairwiseTest {
         }
 
         // ASSERT: All events received in order
-        assertEquals("Should receive all 50 events", 50, fireCount.get());
+        assertEquals(50, fireCount.get(),"Should receive all 50 events");
     }
 
     /**
@@ -549,10 +531,9 @@ public class EventListenerPairwiseTest {
         long syncTime = System.currentTimeMillis() - startTime;
 
         // ASSERT: Synchronous blocking occurred
-        assertTrue("Sync fire should have blocked for slow listener",
-                syncTime >= 500);
-        assertEquals("Both listeners should receive sync event", 1, fastListener.eventCount);
-        assertEquals("Slow listener should receive event", 1, slowListener.eventCount);
+        assertTrue(syncTime >= 500,"Sync fire should have blocked for slow listener");
+        assertEquals(1, fastListener.eventCount,"Both listeners should receive sync event");
+        assertEquals(1, slowListener.eventCount,"Slow listener should receive event");
 
         // ACT: Fire async event
         fastListener.eventCount = 0;
@@ -563,14 +544,12 @@ public class EventListenerPairwiseTest {
         long asyncFireTime = System.currentTimeMillis() - startTime;
 
         // ASSERT: Async fire returns quickly, processing continues in background
-        assertTrue("Async fire should return quickly (< 100ms)",
-                asyncFireTime < 100);
+        assertTrue(asyncFireTime < 100,"Async fire should return quickly (< 100ms)");
 
         // Wait for async to complete
         Thread.sleep(600);
 
-        assertEquals("Both listeners should eventually receive async event",
-                1, fastListener.eventCount);
+        assertEquals(1, fastListener.eventCount,"Both listeners should eventually receive async event");
     }
 
     // ============================================================================

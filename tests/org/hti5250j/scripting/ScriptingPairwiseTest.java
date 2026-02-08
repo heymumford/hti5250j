@@ -1,19 +1,16 @@
-/**
- * <p>
- * Title: tn5250J Scripting Pairwise TDD Test Suite
- * Copyright: Copyright (c) 2026
- * Company:
- * <p>
- * Description: Pairwise coverage for scripting and macro execution (security-critical)
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.scripting;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,9 +18,9 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.SessionPanel;
 import org.hti5250j.tools.Macronizer;
 
@@ -76,7 +73,7 @@ public class ScriptingPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         mockSession = new MockSessionPanel();
 
@@ -91,7 +88,7 @@ public class ScriptingPairwiseTest {
         Files.write(syntaxErrorScript, "print('Missing closing quote\n".getBytes());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         // Clean up temporary files
         if (Files.exists(tempScriptDir)) {
@@ -125,10 +122,10 @@ public class ScriptingPairwiseTest {
         try {
             JPythonInterpreterDriver driver = new JPythonInterpreterDriver();
             // Verify driver exists and can be instantiated
-            assertNotNull("JPythonInterpreterDriver should be instantiated", driver);
+            assertNotNull(driver,"JPythonInterpreterDriver should be instantiated");
         } catch (Exception ex) {
             // Python interpreter may not be available - skip with meaningful message
-            assertTrue("Test skipped: JPython not available in environment", true);
+            assertTrue(true,"Test skipped: JPython not available in environment");
         }
     }
 
@@ -152,12 +149,12 @@ public class ScriptingPairwiseTest {
             fail("Expected InterpreterException for syntax error");
         } catch (NullPointerException ex) {
             // Expected - null session parameter
-            assertNotNull("Null parameter handled", ex);
+            assertNotNull(ex,"Null parameter handled");
         } catch (InterpreterDriver.InterpreterException ex) {
-            assertNotNull("Exception should wrap underlying PyException", ex);
+            assertNotNull(ex,"Exception should wrap underlying PyException");
         } catch (Exception ex) {
             // Python not available - skip
-            assertTrue("Test skipped: JPython not available", true);
+            assertTrue(true,"Test skipped: JPython not available");
         }
     }
 
@@ -181,13 +178,13 @@ public class ScriptingPairwiseTest {
             fail("Should throw or handle null session");
         } catch (NullPointerException ex) {
             // Acceptable - null parameter causes NPE
-            assertNotNull("Null session causes NullPointerException", ex);
+            assertNotNull(ex,"Null session causes NullPointerException");
         } catch (InterpreterDriver.InterpreterException ex) {
             // Also acceptable - explicit error
-            assertTrue("Exception thrown for null session", true);
+            assertTrue(true,"Exception thrown for null session");
         } catch (Exception ex) {
             // Python not available
-            assertTrue("Test skipped: JPython not available", true);
+            assertTrue(true,"Test skipped: JPython not available");
         }
     }
 
@@ -211,10 +208,10 @@ public class ScriptingPairwiseTest {
             try {
                 InterpreterDriverManager.executeScriptFile((SessionPanel)null, invalidFile.toString());
                 // Assert: Either succeeds silently (unsupported) or throws
-                assertTrue("Unsupported extension handled", true);
+                assertTrue(true,"Unsupported extension handled");
             } catch (InterpreterDriver.InterpreterException ex) {
                 // Acceptable - no handler for .sh
-                assertTrue("No handler for unsupported extension", true);
+                assertTrue(true,"No handler for unsupported extension");
             }
         } finally {
             Files.deleteIfExists(invalidFile);
@@ -241,13 +238,13 @@ public class ScriptingPairwiseTest {
             Macronizer.invoke(maliciousMacroName, null);
 
             // Assert: Either blocked or executed safely
-            assertTrue("Path traversal should be handled safely", true);
+            assertTrue(true,"Path traversal should be handled safely");
         } catch (NullPointerException ex) {
             // Acceptable - null session
-            assertTrue("Null session prevents path traversal", true);
+            assertTrue(true,"Null session prevents path traversal");
         } catch (Exception ex) {
             // Acceptable - error handling for invalid path
-            assertNotNull("Should handle path traversal gracefully", ex);
+            assertNotNull(ex,"Should handle path traversal gracefully");
         }
     }
 
@@ -286,8 +283,7 @@ public class ScriptingPairwiseTest {
         executionThread.join(3000);
 
         // Assert: Execution either completed or was terminated by timeout
-        assertTrue("Execution thread should not still be alive after 3s",
-            !executionThread.isAlive() || completed.get());
+        assertTrue(!executionThread.isAlive() || completed.get(),"Execution thread should not still be alive after 3s");
     }
 
     // ========== TEST 7: ADVERSARIAL - CONCURRENT EXECUTION STATE CORRUPTION ==========
@@ -336,7 +332,7 @@ public class ScriptingPairwiseTest {
         thread2.join();
 
         // Assert: Both executions completed without hanging
-        assertTrue("Concurrent scripts should execute", successCount.get() >= 0);
+        assertTrue(successCount.get() >= 0,"Concurrent scripts should execute");
     }
 
     // ========== TEST 8: ADVERSARIAL - SANDBOX ESCAPE ATTEMPT ==========
@@ -359,10 +355,10 @@ public class ScriptingPairwiseTest {
             driver.executeScript((SessionPanel)null, maliciousScript);
 
             // Assert: Script executed without side effects
-            assertNotNull("Script executed", driver);
+            assertNotNull(driver,"Script executed");
         } catch (Exception ex) {
             // Acceptable - restrict access or null session
-            assertTrue("Malicious script rejected or contained", true);
+            assertTrue(true,"Malicious script rejected or contained");
         }
     }
 
@@ -384,10 +380,10 @@ public class ScriptingPairwiseTest {
             driver.executeScriptFile((SessionPanel)null, validPythonScript.toString());
 
             // Assert: Script executed
-            assertTrue("Script file executed", true);
+            assertTrue(true,"Script file executed");
         } catch (Exception ex) {
             // Python not available or other error
-            assertTrue("Test handled exception gracefully", true);
+            assertTrue(true,"Test handled exception gracefully");
         }
     }
 
@@ -410,10 +406,10 @@ public class ScriptingPairwiseTest {
             driver.executeScript((SessionPanel)null, emptyScript);
 
             // Assert: Completed without error
-            assertTrue("Empty script should execute without error", true);
+            assertTrue(true,"Empty script should execute without error");
         } catch (Exception ex) {
             // Acceptable - any exception is caught
-            assertTrue("Empty script handled gracefully", true);
+            assertTrue(true,"Empty script handled gracefully");
         }
     }
 
@@ -452,8 +448,7 @@ public class ScriptingPairwiseTest {
         executionThread.join(10000); // 10 second timeout
 
         // Assert: Execution completed or timed out (not hung indefinitely)
-        assertTrue("Large script should complete or timeout, not hang indefinitely",
-            !executionThread.isAlive() || completed.get());
+        assertTrue(!executionThread.isAlive() || completed.get(),"Large script should complete or timeout, not hang indefinitely");
     }
 
     // ========== TEST 12: ADVERSARIAL - RUNTIME ERROR HANDLING ==========
@@ -475,10 +470,10 @@ public class ScriptingPairwiseTest {
             driver.executeScript((SessionPanel)null, runtimeErrorScript);
             fail("Expected InterpreterException for runtime error");
         } catch (InterpreterDriver.InterpreterException ex) {
-            assertNotNull("Exception should wrap runtime error", ex);
+            assertNotNull(ex,"Exception should wrap runtime error");
         } catch (Exception ex) {
             // Acceptable if Python not available
-            assertTrue("Exception handling verified", true);
+            assertTrue(true,"Exception handling verified");
         }
     }
 
@@ -505,10 +500,10 @@ public class ScriptingPairwiseTest {
 
             // Assert: Macro is stored and can be retrieved
             String retrieved = Macronizer.getMacroByName(macroName);
-            assertEquals("Macro should be retrievable by name", keyStrokes, retrieved);
+            assertEquals(keyStrokes, retrieved,"Macro should be retrievable by name");
         } catch (Exception ex) {
             // Configuration may not be available
-            assertTrue("Macro test handled gracefully", true);
+            assertTrue(true,"Macro test handled gracefully");
         }
     }
 
@@ -536,12 +531,11 @@ public class ScriptingPairwiseTest {
             // Assert: Macro was stored safely
             String retrieved = Macronizer.getMacroByName(macroName);
             if (retrieved != null) {
-                assertEquals("Macro with characters should be stored",
-                    keyStrokes, retrieved);
+                assertEquals(keyStrokes, retrieved,"Macro with characters should be stored");
             }
         } catch (Exception ex) {
             // Acceptable - configuration or other errors
-            assertTrue("Special character handling verified", true);
+            assertTrue(true,"Special character handling verified");
         }
     }
 
@@ -564,10 +558,10 @@ public class ScriptingPairwiseTest {
             InterpreterDriverManager.registerDriver(driver);
 
             // Assert: Original functionality still works
-            assertTrue("Driver should be registered successfully", true);
+            assertTrue(true,"Driver should be registered successfully");
         } catch (Exception ex) {
             // Python not available
-            assertTrue("Driver registration test handled", true);
+            assertTrue(true,"Driver registration test handled");
         }
     }
 
@@ -590,10 +584,10 @@ public class ScriptingPairwiseTest {
             driver.executeScript(validScript);
 
             // Assert: Script executed successfully
-            assertTrue("Script should execute without session", true);
+            assertTrue(true,"Script should execute without session");
         } catch (Exception ex) {
             // Python interpreter available
-            assertTrue("Script execution handled", true);
+            assertTrue(true,"Script execution handled");
         }
     }
 
@@ -620,10 +614,10 @@ public class ScriptingPairwiseTest {
             driver.executeScript((SessionPanel)null, script2);
 
             // Assert: No exception means context variables are managed
-            assertTrue("Context isolation verified", true);
+            assertTrue(true,"Context isolation verified");
         } catch (Exception ex) {
             // Acceptable - Python not available or null session
-            assertTrue("Context test handled", true);
+            assertTrue(true,"Context test handled");
         }
     }
 
@@ -647,10 +641,10 @@ public class ScriptingPairwiseTest {
             driver.executeScript((SessionPanel)null, unicodeScript);
 
             // Assert: Executed without encoding errors
-            assertTrue("Unicode script should execute without error", true);
+            assertTrue(true,"Unicode script should execute without error");
         } catch (Exception ex) {
             // Acceptable - any exception
-            assertTrue("Unicode script handled", true);
+            assertTrue(true,"Unicode script handled");
         }
     }
 
@@ -674,12 +668,11 @@ public class ScriptingPairwiseTest {
             fail("Expected InterpreterException");
         } catch (InterpreterDriver.InterpreterException ex) {
             String errorMsg = ex.toString();
-            assertTrue("Exception should contain error info",
-                errorMsg.toLowerCase().contains("exception") ||
-                errorMsg.toLowerCase().contains("error"));
+            assertTrue(errorMsg.toLowerCase().contains("exception") ||
+                errorMsg.toLowerCase().contains("error"),"Exception should contain error info");
         } catch (Exception ex) {
             // Acceptable - error handling verified
-            assertTrue("Error handling works", true);
+            assertTrue(true,"Error handling works");
         }
     }
 
@@ -721,7 +714,6 @@ public class ScriptingPairwiseTest {
         executionThread.join(5000);
 
         // Assert: Either completed successfully or caught error
-        assertTrue("Recursive execution should complete or error, not hang",
-            completed.get() || !executionThread.isAlive());
+        assertTrue(completed.get() || !executionThread.isAlive(),"Recursive execution should complete or error, not hang");
     }
 }

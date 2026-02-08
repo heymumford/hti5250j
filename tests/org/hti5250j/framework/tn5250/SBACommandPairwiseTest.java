@@ -1,59 +1,23 @@
-/**
- * Title: SBACommandPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for HTI5250j SBA (Set Buffer Address) command handling
- *
- * The SBA command (order code 0x11 / 17) sets the cursor position for subsequent
- * output. This test suite validates:
- *
- * - Valid address encoding in 12-bit and 14-bit formats
- * - Cursor positioning across all screen dimensions (80x24, 132x27, custom)
- * - Row boundaries: 1, 24, 25, 27 (testing valid and out-of-bounds)
- * - Column boundaries: 1, 80, 132, 255 (testing valid and out-of-bounds)
- * - Sequential SBA commands (previous SBA state + new SBA)
- * - SBA after field output (field context switching)
- * - Error responses for invalid addresses (negative responses)
- * - Screen state preservation when SBA fails
- *
- * Pairwise test dimensions (N-wise coverage):
- * 1. Row values:        [1, 24, 25, 27]
- * 2. Column values:     [1, 80, 132, 255]
- * 3. Screen sizes:      [80x24, 132x27, custom]
- * 4. Address encoding:  [12-bit, 14-bit]
- * 5. Sequence context:  [single SBA, consecutive SBAs, SBA after field]
- *
- * POSITIVE TESTS (12+): Valid SBA commands that should succeed
- * ADVERSARIAL TESTS (8+): Out-of-bounds, invalid encoding, state violations
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise TDD test suite for HTI5250j SBA command handling.
@@ -67,15 +31,14 @@ import static org.junit.Assert.*;
  * Discovers: Buffer overflow conditions, address encoding bugs, cursor
  * positioning errors, state machine violations, error response generation
  */
-@RunWith(Parameterized.class)
 public class SBACommandPairwiseTest {
 
     // Test parameters (pairwise combinations)
-    private final int testRow;
-    private final int testCol;
-    private final int screenSize;
-    private final String addressFormat;
-    private final String sequenceContext;
+    private int testRow;
+    private int testCol;
+    private int screenSize;
+    private String addressFormat;
+    private String sequenceContext;
 
     // Instance variables
     private Screen5250 screen5250;
@@ -102,8 +65,7 @@ public class SBACommandPairwiseTest {
      * - Address encoding: 12-bit, 14-bit
      * - Sequencing: single SBA, consecutive SBAs, SBA after field
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // =====================================================================
                 // POSITIVE TESTS: Valid SBA commands that should succeed
@@ -160,7 +122,7 @@ public class SBACommandPairwiseTest {
         });
     }
 
-    public SBACommandPairwiseTest(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) {
+    private void setParameters(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) {
         this.testRow = testRow;
         this.testCol = testCol;
         this.screenSize = screenSize;
@@ -179,6 +141,7 @@ public class SBACommandPairwiseTest {
             super();
             this.mockRows = rows;
             this.mockCols = cols;
+            setRowsCols(rows, cols);
         }
 
         @Override
@@ -217,8 +180,7 @@ public class SBACommandPairwiseTest {
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
+        public void setUp() throws Exception {
         // Create screen with appropriate dimensions
         int rows, cols;
         if (screenSize == SIZE_80x24) {
@@ -310,8 +272,11 @@ public class SBACommandPairwiseTest {
      * POSITIVE: Single SBA command to valid position
      * Sets cursor using SBA and verifies position is correct
      */
-    @Test
-    public void testSBAValidPositionSetsCursor() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAValidPositionSetsCursor(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;  // Skip invalid positions for positive test
         }
@@ -321,16 +286,18 @@ public class SBACommandPairwiseTest {
 
         // Assert
         int expectedPos = convertToPosition(testRow, testCol);
-        assertEquals("Cursor should be at correct position after SBA for row=" + testRow + ",col=" + testCol,
-                expectedPos, getCursorPosition());
+        assertEquals(expectedPos, getCursorPosition(),"Cursor should be at correct position after SBA for row=" + testRow + ",col=" + testCol);
     }
 
     /**
      * POSITIVE: SBA home position (1,1) across all screen sizes
      * Home position should always be valid
      */
-    @Test
-    public void testSBAHomePositionAllScreenSizes() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAHomePositionAllScreenSizes(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (testRow != 1 || testCol != 1) {
             return;  // Only test home position
         }
@@ -339,16 +306,18 @@ public class SBACommandPairwiseTest {
         screen5250.setCursor(testRow, testCol);
 
         // Assert: Position should be 0 (home)
-        assertEquals("Home position (1,1) should map to position 0",
-                0, getCursorPosition());
+        assertEquals(0, getCursorPosition(),"Home position (1,1) should map to position 0");
     }
 
     /**
      * POSITIVE: SBA to bottom-right valid position
      * Tests maximum valid cursor position
      */
-    @Test
-    public void testSBAMaximumValidPosition() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAMaximumValidPosition(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         int maxRow = getExpectedRows();
         int maxCol = getExpectedColumns();
 
@@ -361,16 +330,18 @@ public class SBACommandPairwiseTest {
 
         // Assert: Position should be at end of screen
         int expectedPos = convertToPosition(maxRow, maxCol);
-        assertEquals("Bottom-right valid position should map correctly",
-                expectedPos, getCursorPosition());
+        assertEquals(expectedPos, getCursorPosition(),"Bottom-right valid position should map correctly");
     }
 
     /**
      * POSITIVE: Consecutive SBA commands
      * Tests that second SBA command properly replaces first positioning
      */
-    @Test
-    public void testConsecutiveSBACommandsReplacePosition() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConsecutiveSBACommandsReplacePosition(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (!SEQ_CONSECUTIVE.equals(sequenceContext)) {
             return;  // Only test consecutive scenario
         }
@@ -387,19 +358,20 @@ public class SBACommandPairwiseTest {
         int secondPos = getCursorPosition();
 
         // Assert: Positions should be different
-        assertTrue("Consecutive SBAs should move cursor",
-                firstPos != secondPos);
+        assertTrue(firstPos != secondPos,"Consecutive SBAs should move cursor");
         int expectedPos = convertToPosition(testRow, testCol);
-        assertEquals("Second SBA should set position correctly",
-                expectedPos, secondPos);
+        assertEquals(expectedPos, secondPos,"Second SBA should set position correctly");
     }
 
     /**
      * POSITIVE: SBA after field context
      * Tests that SBA properly resets position when switching contexts
      */
-    @Test
-    public void testSBAAfterFieldContext() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAAfterFieldContext(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (!SEQ_AFTER_FIELD.equals(sequenceContext)) {
             return;  // Only test after-field scenario
         }
@@ -416,16 +388,18 @@ public class SBACommandPairwiseTest {
 
         // Assert: Position should be at SBA target
         int expectedPos = convertToPosition(testRow, testCol);
-        assertEquals("SBA after field should move cursor to SBA position",
-                expectedPos, resultPos);
+        assertEquals(expectedPos, resultPos,"SBA after field should move cursor to SBA position");
     }
 
     /**
      * POSITIVE: 14-bit address encoding on valid position
      * Tests wider address format (used on larger screens)
      */
-    @Test
-    public void testSBA14BitEncodingValidPosition() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBA14BitEncodingValidPosition(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (!FORMAT_14BIT.equals(addressFormat)) {
             return;  // Only test 14-bit format
         }
@@ -438,15 +412,17 @@ public class SBACommandPairwiseTest {
 
         // Assert: Position should be set correctly
         int expectedPos = convertToPosition(testRow, testCol);
-        assertEquals("14-bit encoding should position cursor correctly",
-                expectedPos, getCursorPosition());
+        assertEquals(expectedPos, getCursorPosition(),"14-bit encoding should position cursor correctly");
     }
 
     /**
      * POSITIVE: Boundary rows (1 and max) with various columns
      */
-    @Test
-    public void testSBABoundaryRows() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBABoundaryRows(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         int maxRow = getExpectedRows();
         if ((testRow != 1 && testRow != maxRow) ||
             (testRow == 1 && testCol == 1 && !SEQ_SINGLE.equals(sequenceContext)) ||
@@ -458,15 +434,17 @@ public class SBACommandPairwiseTest {
         int resultPos = getCursorPosition();
         int expectedPos = convertToPosition(testRow, testCol);
 
-        assertEquals("Boundary row position should be correct",
-                expectedPos, resultPos);
+        assertEquals(expectedPos, resultPos,"Boundary row position should be correct");
     }
 
     /**
      * POSITIVE: Boundary columns (1 and max) with various rows
      */
-    @Test
-    public void testSBABoundaryColumns() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBABoundaryColumns(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         int maxCol = getExpectedColumns();
         if ((testCol != 1 && testCol != maxCol) ||
             (testCol == 1 && testRow == 1 && !SEQ_SINGLE.equals(sequenceContext)) ||
@@ -478,15 +456,17 @@ public class SBACommandPairwiseTest {
         int resultPos = getCursorPosition();
         int expectedPos = convertToPosition(testRow, testCol);
 
-        assertEquals("Boundary column position should be correct",
-                expectedPos, resultPos);
+        assertEquals(expectedPos, resultPos,"Boundary column position should be correct");
     }
 
     /**
      * POSITIVE: Middle-of-screen position (row/col coverage)
      */
-    @Test
-    public void testSBAMiddleOfScreen() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAMiddleOfScreen(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if ((testRow != 12 && testRow != 15) || (testCol != 40 && testCol != 60)) {
             return;  // Focus on middle positions
         }
@@ -498,8 +478,7 @@ public class SBACommandPairwiseTest {
         int resultPos = getCursorPosition();
         int expectedPos = convertToPosition(testRow, testCol);
 
-        assertEquals("Middle position should be set correctly",
-                expectedPos, resultPos);
+        assertEquals(expectedPos, resultPos,"Middle position should be set correctly");
     }
 
     // ========================================================================
@@ -510,24 +489,29 @@ public class SBACommandPairwiseTest {
      * ADVERSARIAL: Row 0 (below minimum)
      * SBA with row=0 should be detected as invalid
      */
-    @Test
-    public void testSBARowZeroInvalid() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBARowZeroInvalid(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (testRow != 0) {
             return;  // Only test row 0
         }
 
         boolean isError = validateSBAAddress(testRow, testCol);
 
-        assertTrue("SBA with row=0 (below minimum) should be detected as error",
-                isError);
+        assertTrue(isError,"SBA with row=0 (below minimum) should be detected as error");
     }
 
     /**
      * ADVERSARIAL: Row beyond screen maximum
      * SBA with row > max should be detected as invalid
      */
-    @Test
-    public void testSBARowBeyondMaximumInvalid() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBARowBeyondMaximumInvalid(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         int maxRow = getExpectedRows();
         if (testRow <= maxRow) {
             return;  // Only test beyond-max rows
@@ -535,32 +519,36 @@ public class SBACommandPairwiseTest {
 
         boolean isError = validateSBAAddress(testRow, testCol);
 
-        assertTrue("SBA with row > " + maxRow + " should be detected as error",
-                isError);
+        assertTrue(isError,"SBA with row > " + maxRow + " should be detected as error");
     }
 
     /**
      * ADVERSARIAL: Column 0 (below minimum)
      * SBA with col=0 should be detected as invalid
      */
-    @Test
-    public void testSBAColumnZeroInvalid() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAColumnZeroInvalid(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (testCol != 0) {
             return;  // Only test col 0
         }
 
         boolean isError = validateSBAAddress(testRow, testCol);
 
-        assertTrue("SBA with col=0 (below minimum) should be detected as error",
-                isError);
+        assertTrue(isError,"SBA with col=0 (below minimum) should be detected as error");
     }
 
     /**
      * ADVERSARIAL: Column beyond screen maximum
      * SBA with col > max should be detected as invalid
      */
-    @Test
-    public void testSBAColumnBeyondMaximumInvalid() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAColumnBeyondMaximumInvalid(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         int maxCol = getExpectedColumns();
         if (testCol <= maxCol) {
             return;  // Only test beyond-max columns
@@ -568,16 +556,18 @@ public class SBACommandPairwiseTest {
 
         boolean isError = validateSBAAddress(testRow, testCol);
 
-        assertTrue("SBA with col > " + maxCol + " should be detected as error",
-                isError);
+        assertTrue(isError,"SBA with col > " + maxCol + " should be detected as error");
     }
 
     /**
      * ADVERSARIAL: Both row and column out-of-bounds
      * SBA with both invalid should still return error
      */
-    @Test
-    public void testSBABothRowAndColumnOutOfBoundsInvalid() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBABothRowAndColumnOutOfBoundsInvalid(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         int maxRow = getExpectedRows();
         int maxCol = getExpectedColumns();
 
@@ -588,32 +578,36 @@ public class SBACommandPairwiseTest {
 
         boolean isError = validateSBAAddress(testRow, testCol);
 
-        assertTrue("SBA with both row and col out-of-bounds should return error",
-                isError);
+        assertTrue(isError,"SBA with both row and col out-of-bounds should return error");
     }
 
     /**
      * ADVERSARIAL: High out-of-bounds values (255)
      * Tests handling of extreme invalid addresses
      */
-    @Test
-    public void testSBAExtremeOutOfBoundsValue() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAExtremeOutOfBoundsValue(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (testRow != 255 && testCol != 255) {
             return;  // Only test extreme values
         }
 
         boolean isError = validateSBAAddress(testRow, testCol);
 
-        assertTrue("SBA with extreme value (255) should be detected as error",
-                isError);
+        assertTrue(isError,"SBA with extreme value (255) should be detected as error");
     }
 
     /**
      * ADVERSARIAL: Screen state unchanged after invalid SBA
      * Verifies that failed SBA doesn't leave screen in inconsistent state
      */
-    @Test
-    public void testSBAInvalidPreservesScreenState() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAInvalidPreservesScreenState(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (isValidPosition(testRow, testCol)) {
             return;  // Only test invalid positions
         }
@@ -627,37 +621,41 @@ public class SBACommandPairwiseTest {
         boolean isError = validateSBAAddress(testRow, testCol);
 
         // Assert: Error detected
-        assertTrue("Invalid SBA should be detected", isError);
+        assertTrue(isError,"Invalid SBA should be detected");
 
         // In real implementation, cursor would not move on error
         // Verify by checking cursor is still at initial position
         int afterPos = getCursorPosition();
-        assertEquals("Screen position should not change after invalid SBA",
-                initialPos, afterPos);
+        assertEquals(initialPos, afterPos,"Screen position should not change after invalid SBA");
     }
 
     /**
      * POSITIVE: Valid address validation
      * Verifies that valid addresses are correctly identified
      */
-    @Test
-    public void testSBAValidAddressValidation() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAValidAddressValidation(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;  // Only test valid positions
         }
 
         boolean isError = validateSBAAddress(testRow, testCol);
 
-        assertFalse("Valid SBA address row=" + testRow + ",col=" + testCol + " should not be error",
-                isError);
+        assertFalse(isError,"Valid SBA address row=" + testRow + ",col=" + testCol + " should not be error");
     }
 
     /**
      * POSITIVE: All screen size dimensions handled correctly
      * Tests that each screen size's boundary is respected
      */
-    @Test
-    public void testSBAScreenSizeBoundariesRespected() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSBAScreenSizeBoundariesRespected(int testRow, int testCol, int screenSize, String addressFormat, String sequenceContext) throws Exception {
+        setParameters(testRow, testCol, screenSize, addressFormat, sequenceContext);
+        setUp();
         if (!isValidPosition(testRow, testCol)) {
             return;  // Only test valid positions
         }
@@ -668,7 +666,6 @@ public class SBACommandPairwiseTest {
 
         // Verify position is within screen bounds
         int screenLength = getExpectedRows() * getExpectedColumns();
-        assertTrue("Position " + resultPos + " should be within screen length " + screenLength,
-                resultPos >= 0 && resultPos < screenLength);
+        assertTrue(resultPos >= 0 && resultPos < screenLength,"Position " + resultPos + " should be within screen length " + screenLength);
     }
 }

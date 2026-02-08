@@ -1,3 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: TN5250J Community
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Ramnivas Laddad
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 // InterpreterDriver.java
 package org.hti5250j.scripting;
 

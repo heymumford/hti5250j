@@ -1,27 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Contract Test Suite
- * Plugin Lifecycle State Machine Contract
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test establishes immutable behavioral contracts for HTI5250jPlugin
- * BEFORE any refactoring to Temurin 21 features. Violations detected by these
- * tests indicate fundamental architectural issues requiring review.
- *
- * Contract: Plugin lifecycle follows strict state machine
- *   UNLOADED → LOADED → ACTIVATED → DEACTIVATED → UNLOADED
- *
- * Contract Requirements:
- * 1. getPluginId() must return non-empty string (unique plugin identifier)
- * 2. getName() must return non-empty, human-readable string
- * 3. getVersion() must return valid PluginVersion
- * 4. getApiVersionRequired() must return valid minimum version
- * 5. getDependencies() must return non-null array (may be empty)
- * 6. load()/activate()/deactivate()/unload() must handle PluginException
- * 7. isActive() must reflect plugin state
- * 8. getDescription() must return non-empty string
- *
- * Precondition: No test should modify plugin state
- * Post-condition: All contracts must pass before proceeding to Phase 2
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.contracts;
 
 import org.hti5250j.plugin.HTI5250jPlugin;

@@ -1,53 +1,25 @@
-/**
- * SessionPoolingPairwiseTest.java - Pairwise TDD for Connection Pooling Management
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover connection pool,
- * session reuse, and resource exhaustion bugs by combining multiple adversarial dimensions:
- *
- * PAIRWISE DIMENSIONS:
- * 1. Pool size: 1, 5, 10, unlimited (0)
- * 2. Acquisition mode: immediate, queued (blocking), timeout-on-full
- * 3. Release mode: explicit (close), auto (pooled), on-error (fail-safe)
- * 4. Validation strategy: none, on-borrow, on-return, periodic
- * 5. Eviction policy: none, idle-time (5s), max-age (10s)
- *
- * TEST CATEGORIES:
- * 1. POSITIVE: Normal pooling, session reuse, proper cleanup
- * 2. ADVERSARIAL: Pool exhaustion, contention, timeout scenarios
- * 3. BOUNDARY: Max pool sizes, edge-case counts, timeout precision
- * 4. LEAK DETECTION: Verify cleanup in success and failure paths
- *
- * Test Strategy:
- * - Monitor pool state (size, available, in-use, waiting threads)
- * - Verify session reuse counter increments on borrow
- * - Test thread-safe concurrent acquisition and release
- * - Simulate network failures and validation rejections
- * - Measure idle timeout and max-age eviction accuracy
- * - Stress test with pool exhaustion scenarios
- *
- * Pairwise Coverage (25 tests, 32 pairs):
- *   P1: [1] [immediate] [explicit] [none] [none]
- *   P2: [5] [immediate] [explicit] [on-borrow] [idle-time]
- *   P3: [10] [immediate] [explicit] [on-return] [max-age]
- *   P4: [unlimited] [immediate] [auto] [periodic] [none]
- *   P5: [1] [queued] [explicit] [on-borrow] [max-age]
- *   ... (20 more pairs covering all 2-way interactions)
- *
- * Writing Style: RED phase tests that expose pool management bugs
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.session;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Comprehensive pairwise session pooling tests for HTI5250j.
@@ -55,7 +27,6 @@ import static org.junit.Assert.*;
  * This suite stress-tests pool management under various configurations
  * and concurrent load patterns, exposing deadlocks, leaks, and race conditions.
  */
-@RunWith(JUnit4.class)
 public class SessionPoolingPairwiseTest {
 
     // ============================================================================
@@ -110,7 +81,7 @@ public class SessionPoolingPairwiseTest {
     private AtomicInteger sessionDestructionCount;
     private AtomicInteger sessionReuseCount;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         sessionPool = new MockSessionPool();
         executorService = Executors.newFixedThreadPool(NUM_THREADS);
@@ -120,7 +91,7 @@ public class SessionPoolingPairwiseTest {
         sessionReuseCount = new AtomicInteger(0);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Shutdown pool
         sessionPool.shutdown();
@@ -151,7 +122,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Single-threaded session reuse should work without deadlock.
      * ASSERTION: Session borrowed and returned correctly, reuse counter incremented.
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSingleSessionPoolImmediateAcquisitionExplicitRelease() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_SMALL, AcquisitionMode.IMMEDIATE, ReleaseMode.EXPLICIT,
@@ -159,17 +131,16 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Borrow, use, and return
         MockSession session1 = sessionPool.borrowSession();
-        assertNotNull("Session should be borrowed", session1);
-        assertEquals("Pool size should be 1", 1, sessionPool.getPoolSize());
+        assertNotNull(session1,"Session should be borrowed");
+        assertEquals(1, sessionPool.getPoolSize(),"Pool size should be 1");
 
         sessionPool.returnSession(session1);
 
         // ASSERT: Session available for reuse
         MockSession session2 = sessionPool.borrowSession();
-        assertNotNull("Reused session should be available", session2);
-        assertEquals("Should reuse same session", session1.getId(), session2.getId());
-        assertTrue("Session reuse counter should increment",
-                   sessionPool.getSessionReuseCount() >= 1);
+        assertNotNull(session2,"Reused session should be available");
+        assertEquals(session1.getId(), session2.getId(),"Should reuse same session");
+        assertTrue(sessionPool.getSessionReuseCount() >= 1,"Session reuse counter should increment");
     }
 
     /**
@@ -179,7 +150,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Borrowed sessions should be validated, idle sessions evicted.
      * ASSERTION: Validation called, idle timeout removes session from pool.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testMediumPoolWithOnBorrowValidationAndIdleTimeout() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.IMMEDIATE, ReleaseMode.EXPLICIT,
@@ -188,9 +160,8 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Borrow and validate session
         MockSession session = sessionPool.borrowSession();
-        assertNotNull("Session should be borrowed", session);
-        assertTrue("Validation should run on borrow",
-                   sessionPool.getValidationRunCount() > 0);
+        assertNotNull(session,"Session should be borrowed");
+        assertTrue(sessionPool.getValidationRunCount() > 0,"Validation should run on borrow");
 
         // Return and wait for idle timeout
         sessionPool.returnSession(session);
@@ -200,8 +171,7 @@ public class SessionPoolingPairwiseTest {
 
         int poolSizeAfter = sessionPool.getAvailableCount();
         // Eviction should work or pool remains usable
-        assertTrue("Pool should be consistent",
-                   poolSizeAfter >= 0);
+        assertTrue(poolSizeAfter >= 0,"Pool should be consistent");
     }
 
     /**
@@ -211,7 +181,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Sessions validated on return, old sessions evicted by age.
      * ASSERTION: Return-time validation runs, aged sessions removed.
      */
-    @Test(timeout = 15000)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testLargePoolWithOnReturnValidationAndMaxAgeEviction() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_LARGE, AcquisitionMode.IMMEDIATE, ReleaseMode.EXPLICIT,
@@ -221,22 +192,21 @@ public class SessionPoolingPairwiseTest {
         // ACT: Create and age a session
         MockSession session = sessionPool.borrowSession();
         long creationTime = System.currentTimeMillis();
-        assertNotNull("Session should be borrowed", session);
+        assertNotNull(session,"Session should be borrowed");
 
         sessionPool.returnSession(session);
         int validationsAfterReturn = sessionPool.getValidationRunCount();
-        assertTrue("Validation should run on return", validationsAfterReturn > 0);
+        assertTrue(validationsAfterReturn > 0,"Validation should run on return");
 
         // Wait for max-age to trigger
         Thread.sleep(3000);
 
         // Try to borrow again; should get a session
         MockSession session2 = sessionPool.borrowSession();
-        assertNotNull("Should get a session", session2);
+        assertNotNull(session2,"Should get a session");
 
         // ASSERT: Session was handled (either evicted or reused)
-        assertTrue("Session should exist in pool",
-                   session2.getId() != null);
+        assertTrue(session2.getId() != null,"Session should exist in pool");
     }
 
     /**
@@ -246,7 +216,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Pool should grow without bound, auto-release avoids explicit close.
      * ASSERTION: Pool size increases with demand, validation runs periodically.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testUnlimitedPoolWithAutoReleaseAndPeriodicValidation() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_UNLIMITED, AcquisitionMode.IMMEDIATE, ReleaseMode.AUTO,
@@ -255,16 +226,15 @@ public class SessionPoolingPairwiseTest {
         // ACT: Acquire multiple sessions and return explicitly for pooling
         for (int i = 0; i < 5; i++) {
             MockSession session = sessionPool.borrowSession();
-            assertNotNull("Session should be borrowed", session);
+            assertNotNull(session,"Session should be borrowed");
             sessionPool.returnSession(session);  // Auto-release via return
         }
 
         // ASSERT: Pool should have grown or remain populated
-        assertTrue("Pool should be functional with unlimited size",
-                   sessionPool.getPoolSize() >= 0);
+        assertTrue(sessionPool.getPoolSize() >= 0,"Pool should be functional with unlimited size");
         // Unlimited pool will have sessions available
         int reuseCount = sessionPool.getSessionReuseCount();
-        assertTrue("Sessions should be reused", reuseCount >= 1);
+        assertTrue(reuseCount >= 1,"Sessions should be reused");
     }
 
     // ============================================================================
@@ -278,7 +248,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Multiple threads should block waiting for single session.
      * ASSERTION: Threads block, acquire in order, validation ensures correctness.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSinglePoolQueuedAcquisitionWithBlockingWaiters() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_SMALL, AcquisitionMode.QUEUED, ReleaseMode.EXPLICIT,
@@ -292,7 +263,7 @@ public class SessionPoolingPairwiseTest {
             executorService.submit(() -> {
                 try {
                     MockSession session = sessionPool.borrowSession();
-                    assertNotNull("Session should be borrowed despite contention", session);
+                    assertNotNull(session,"Session should be borrowed despite contention");
                     successCount.incrementAndGet();
 
                     Thread.sleep(100);  // Hold briefly
@@ -307,9 +278,8 @@ public class SessionPoolingPairwiseTest {
         }
 
         // ASSERT: All threads should eventually acquire
-        assertTrue("All threads should complete",
-                   latch.await(15, TimeUnit.SECONDS));
-        assertEquals("All five threads should succeed", 5, successCount.get());
+        assertTrue(latch.await(15, TimeUnit.SECONDS),"All threads should complete");
+        assertEquals(5, successCount.get(),"All five threads should succeed");
     }
 
     /**
@@ -319,7 +289,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Acquisition should timeout when pool exhausted and no available slots.
      * ASSERTION: Timeout exception thrown, acquisition doesn't hang indefinitely.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testPoolExhaustionTimeoutWhenFullWithIdleEviction() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.TIMEOUT_ON_FULL,
@@ -331,7 +302,7 @@ public class SessionPoolingPairwiseTest {
         List<MockSession> heldSessions = new ArrayList<>();
         for (int i = 0; i < POOL_SIZE_MEDIUM; i++) {
             MockSession session = sessionPool.borrowSession();
-            assertNotNull("Should borrow session", session);
+            assertNotNull(session,"Should borrow session");
             heldSessions.add(session);
         }
 
@@ -341,9 +312,8 @@ public class SessionPoolingPairwiseTest {
             fail("Should timeout when pool exhausted");
         } catch (TimeoutException e) {
             // Expected
-            assertTrue("Timeout message should be present",
-                       e.getMessage().contains("timeout") ||
-                       e.getMessage().contains("exhausted"));
+            assertTrue(e.getMessage().contains("timeout") ||
+                       e.getMessage().contains("exhausted"),"Timeout message should be present");
         }
 
         // Cleanup
@@ -359,7 +329,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Failed session should be removed from pool on error.
      * ASSERTION: Error handling removes bad session, others remain usable.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testOnErrorReleaseStrategyRemovesBadSession() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_LARGE, AcquisitionMode.QUEUED, ReleaseMode.ON_ERROR,
@@ -367,7 +338,7 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Create a session and mark it as failed
         MockSession session = sessionPool.borrowSession();
-        assertNotNull("Session should be borrowed", session);
+        assertNotNull(session,"Session should be borrowed");
 
         int poolSizeBefore = sessionPool.getPoolSize();
         session.setFailed(true);
@@ -381,8 +352,7 @@ public class SessionPoolingPairwiseTest {
 
         // ASSERT: Bad session removed, pool size decreased
         int poolSizeAfter = sessionPool.getPoolSize();
-        assertTrue("Failed session should be removed from pool",
-                   poolSizeAfter < poolSizeBefore || sessionPool.getAvailableCount() >= 0);
+        assertTrue(poolSizeAfter < poolSizeBefore || sessionPool.getAvailableCount() >= 0,"Failed session should be removed from pool");
     }
 
     /**
@@ -392,7 +362,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Unlimited + idle timeout should evict idle sessions.
      * ASSERTION: Idle timeout still applies even with unlimited pool.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testUnlimitedPoolWithIdleTimeoutStillEvicts() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_UNLIMITED, AcquisitionMode.QUEUED,
@@ -404,7 +375,7 @@ public class SessionPoolingPairwiseTest {
         List<MockSession> sessions = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             MockSession session = sessionPool.borrowSession();
-            assertNotNull("Session should be borrowed", session);
+            assertNotNull(session,"Session should be borrowed");
             sessionPool.returnSession(session);
             sessions.add(session);
         }
@@ -417,8 +388,7 @@ public class SessionPoolingPairwiseTest {
         int poolSizeAfter = sessionPool.getAvailableCount();
 
         // ASSERT: Idle sessions should be evicted despite unlimited size
-        assertTrue("Pool size reflects idle timeout",
-                   poolSizeAfter <= poolSizeBefore);
+        assertTrue(poolSizeAfter <= poolSizeBefore,"Pool size reflects idle timeout");
     }
 
     // ============================================================================
@@ -432,11 +402,13 @@ public class SessionPoolingPairwiseTest {
      * RED: 20 threads doing 50 operations each should not deadlock or corrupt state.
      * ASSERTION: All operations complete, pool remains consistent, no leaks.
      */
-    @Test(timeout = 30000)
+    @Timeout(value = 30000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSustainedConcurrentLoadWithQueuedAcquisition() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.QUEUED, ReleaseMode.EXPLICIT,
                               ValidationStrategy.PERIODIC, EvictionPolicy.IDLE_TIME);
+        sessionPool.setAcquisitionTimeoutMs(0);
 
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch completionLatch = new CountDownLatch(NUM_THREADS);
@@ -450,7 +422,7 @@ public class SessionPoolingPairwiseTest {
                     startLatch.await();  // Synchronized start
                     for (int i = 0; i < OPERATIONS_PER_THREAD; i++) {
                         MockSession session = sessionPool.borrowSession();
-                        assertNotNull("Session should be borrowed", session);
+                        assertNotNull(session,"Session should be borrowed");
 
                         // Simulate work
                         Thread.sleep(10);
@@ -469,16 +441,15 @@ public class SessionPoolingPairwiseTest {
         startLatch.countDown();  // Start all threads
 
         // ASSERT: All operations complete without deadlock
-        assertTrue("All threads should complete",
-                   completionLatch.await(30, TimeUnit.SECONDS));
+        assertTrue(completionLatch.await(30, TimeUnit.SECONDS),"All threads should complete");
 
         int expectedOps = NUM_THREADS * OPERATIONS_PER_THREAD;
-        assertEquals("All operations should succeed", 0, totalErrors.get());
-        assertEquals("Total operations should complete", expectedOps, totalOperations.get());
+        assertEquals(0, totalErrors.get(),"All operations should succeed");
+        assertEquals(expectedOps, totalOperations.get(),"Total operations should complete");
 
         // Pool should still be usable
         MockSession finalSession = sessionPool.borrowSession();
-        assertNotNull("Pool should still be usable after stress", finalSession);
+        assertNotNull(finalSession,"Pool should still be usable after stress");
         sessionPool.returnSession(finalSession);
     }
 
@@ -489,7 +460,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Many threads without explicit close should not leak connections.
      * ASSERTION: No connection leaks despite auto-release, all validated on borrow.
      */
-    @Test(timeout = 20000)
+    @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testAutoReleaseWithoutLeaksUnderConcurrentLoad() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_LARGE, AcquisitionMode.IMMEDIATE, ReleaseMode.AUTO,
@@ -504,7 +476,7 @@ public class SessionPoolingPairwiseTest {
                 try {
                     for (int i = 0; i < 2; i++) {
                         MockSession session = sessionPool.borrowSession();
-                        assertNotNull("Session should be borrowed", session);
+                        assertNotNull(session,"Session should be borrowed");
                         borrowCount.incrementAndGet();
                         sessionPool.returnSession(session);  // Return to pool
                         Thread.sleep(5);
@@ -517,13 +489,11 @@ public class SessionPoolingPairwiseTest {
             });
         }
 
-        assertTrue("All threads should complete",
-                   latch.await(20, TimeUnit.SECONDS));
+        assertTrue(latch.await(20, TimeUnit.SECONDS),"All threads should complete");
 
         // ASSERT: No leaks, all sessions returned automatically
-        assertEquals("All borrows should complete", NUM_THREADS * 2, borrowCount.get());
-        assertTrue("Pool should have sessions available",
-                   sessionPool.getAvailableCount() > 0);
+        assertEquals(NUM_THREADS * 2, borrowCount.get(),"All borrows should complete");
+        assertTrue(sessionPool.getAvailableCount() > 0,"Pool should have sessions available");
     }
 
     // ============================================================================
@@ -537,7 +507,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Fast timeout should not race with validation checker.
      * ASSERTION: Timeout works reliably without hanging validation threads.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSinglePoolFastTimeoutWithPeriodicValidation() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_SMALL, AcquisitionMode.TIMEOUT_ON_FULL,
@@ -547,7 +518,7 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Hold session while another thread times out
         MockSession session = sessionPool.borrowSession();
-        assertNotNull("First session borrowed", session);
+        assertNotNull(session,"First session borrowed");
 
         CountDownLatch timeoutLatch = new CountDownLatch(1);
         AtomicBoolean timedOut = new AtomicBoolean(false);
@@ -565,9 +536,8 @@ public class SessionPoolingPairwiseTest {
             }
         });
 
-        assertTrue("Should timeout quickly",
-                   timeoutLatch.await(2, TimeUnit.SECONDS));
-        assertTrue("Timeout exception should be raised", timedOut.get());
+        assertTrue(timeoutLatch.await(2, TimeUnit.SECONDS),"Should timeout quickly");
+        assertTrue(timedOut.get(),"Timeout exception should be raised");
 
         sessionPool.returnSession(session);
     }
@@ -579,7 +549,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Validation failure should remove bad session, retry should succeed.
      * ASSERTION: Failed validation triggers retry with new session.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testOnBorrowValidationFailureTriggersRetry() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.IMMEDIATE,
@@ -589,11 +560,10 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Borrow session, may fail validation and retry
         MockSession session = sessionPool.borrowSession();
-        assertNotNull("Should eventually get valid session after retries", session);
+        assertNotNull(session,"Should eventually get valid session after retries");
 
         // First borrow may have failed validation and retried
-        assertTrue("Validation should have run at least once",
-                   sessionPool.getValidationRunCount() >= 1);
+        assertTrue(sessionPool.getValidationRunCount() >= 1,"Validation should have run at least once");
 
         sessionPool.returnSession(session);
     }
@@ -605,7 +575,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Error path should remove session without blocking other threads.
      * ASSERTION: Error handling is lock-free, other threads unblocked.
      */
-    @Test(timeout = 15000)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testErrorReleaseDoesNotBlockOtherThreads() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_UNLIMITED, AcquisitionMode.QUEUED,
@@ -636,7 +607,7 @@ public class SessionPoolingPairwiseTest {
         executorService.submit(() -> {
             try {
                 MockSession session = sessionPool.borrowSession();
-                assertNotNull("Should acquire despite other thread error", session);
+                assertNotNull(session,"Should acquire despite other thread error");
                 successCount.incrementAndGet();
                 sessionPool.returnSession(session);
             } catch (Exception e) {
@@ -646,9 +617,8 @@ public class SessionPoolingPairwiseTest {
             }
         });
 
-        assertTrue("Both threads should complete without deadlock",
-                   latch.await(15, TimeUnit.SECONDS));
-        assertEquals("Second thread should succeed", 1, successCount.get());
+        assertTrue(latch.await(15, TimeUnit.SECONDS),"Both threads should complete without deadlock");
+        assertEquals(1, successCount.get(),"Second thread should succeed");
     }
 
     // ============================================================================
@@ -662,7 +632,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Both validation paths should not interfere with each other.
      * ASSERTION: Return validation + periodic validation run without deadlock.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testOnReturnAndPeriodicValidationCoexist() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.IMMEDIATE,
@@ -672,15 +643,14 @@ public class SessionPoolingPairwiseTest {
         // ACT: Borrow and return multiple sessions
         for (int i = 0; i < 10; i++) {
             MockSession session = sessionPool.borrowSession();
-            assertNotNull("Session borrowed", session);
+            assertNotNull(session,"Session borrowed");
             Thread.sleep(10);
             sessionPool.returnSession(session);
         }
 
         // ASSERT: Return validation should have run on each return
         int validationCount = sessionPool.getValidationRunCount();
-        assertTrue("Return validation should run on each return",
-                   validationCount >= 10);
+        assertTrue(validationCount >= 10,"Return validation should run on each return");
     }
 
     /**
@@ -690,7 +660,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Idle sessions removed even without prior validation.
      * ASSERTION: Timeout-only eviction works, no validation false-positives.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testIdleTimeoutWithoutValidationEvictsCleanly() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.IMMEDIATE, ReleaseMode.EXPLICIT,
@@ -699,7 +670,7 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Borrow and return a session
         MockSession session = sessionPool.borrowSession();
-        assertNotNull("Session should be borrowed", session);
+        assertNotNull(session,"Session should be borrowed");
         sessionPool.returnSession(session);
 
         int availableBefore = sessionPool.getAvailableCount();
@@ -707,12 +678,11 @@ public class SessionPoolingPairwiseTest {
         int availableAfter = sessionPool.getAvailableCount();
 
         // ASSERT: Idle timeout mechanism works
-        assertTrue("Idle timeout eviction should work",
-                   availableAfter <= availableBefore);
+        assertTrue(availableAfter <= availableBefore,"Idle timeout eviction should work");
 
         // Pool should still work for new borrows
         MockSession newSession = sessionPool.borrowSession();
-        assertNotNull("Pool should still be functional", newSession);
+        assertNotNull(newSession,"Pool should still be functional");
         sessionPool.returnSession(newSession);
     }
 
@@ -723,7 +693,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Sessions aged past max-age should be evicted on borrow.
      * ASSERTION: Age-based eviction independent of idle time.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testMaxAgeEvictionIndependentOfIdleTime() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_UNLIMITED, AcquisitionMode.IMMEDIATE,
@@ -733,7 +704,7 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Create session and check it gets evicted
         MockSession oldSession = sessionPool.borrowSession();
-        assertNotNull("Old session borrowed", oldSession);
+        assertNotNull(oldSession,"Old session borrowed");
 
         sessionPool.returnSession(oldSession);
 
@@ -742,11 +713,10 @@ public class SessionPoolingPairwiseTest {
 
         // Borrow again; should get a session (may be evicted old one or new)
         MockSession newSession = sessionPool.borrowSession();
-        assertNotNull("Session should be available", newSession);
+        assertNotNull(newSession,"Session should be available");
 
         // ASSERT: Pool handles age-based eviction
-        assertTrue("Max-age eviction strategy applied",
-                   sessionPool.getDestructionCount() >= 0);
+        assertTrue(sessionPool.getDestructionCount() >= 0,"Max-age eviction strategy applied");
 
         sessionPool.returnSession(newSession);
     }
@@ -762,7 +732,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Exhausted pool should timeout consistently, recover when sessions freed.
      * ASSERTION: Timeout persistent until sessions available, validation re-validates.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testPoolExhaustionRecoveryWithOnBorrowValidation() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.TIMEOUT_ON_FULL,
@@ -789,12 +760,11 @@ public class SessionPoolingPairwiseTest {
         held.remove(0);
 
         MockSession recovered = sessionPool.borrowSession();
-        assertNotNull("Should recover after release", recovered);
-        assertTrue("Validation should run on recovery",
-                   sessionPool.getValidationRunCount() > 0);
+        assertNotNull(recovered,"Should recover after release");
+        assertTrue(sessionPool.getValidationRunCount() > 0,"Validation should run on recovery");
 
         // ASSERT: Pool recovered and session available
-        assertTrue("Pool should have recovered", held.size() >= 0);
+        assertTrue(held.size() >= 0,"Pool should have recovered");
 
         // Cleanup
         for (MockSession session : held) {
@@ -810,7 +780,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Queued threads should acquire as sessions are released.
      * ASSERTION: Queue drains as sessions become available.
      */
-    @Test(timeout = 15000)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testQueueDrainsWithAutoReleaseUnderExhaustion() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.QUEUED, ReleaseMode.EXPLICIT,
@@ -829,7 +800,7 @@ public class SessionPoolingPairwiseTest {
             executorService.submit(() -> {
                 try {
                     MockSession session = sessionPool.borrowSession();
-                    assertNotNull("Queued thread should acquire", session);
+                    assertNotNull(session,"Queued thread should acquire");
                     successCount.incrementAndGet();
                     sessionPool.returnSession(session);
                 } catch (Exception e) {
@@ -848,9 +819,8 @@ public class SessionPoolingPairwiseTest {
         }
 
         // ASSERT: Queue drains, threads acquire
-        assertTrue("All queued threads should eventually acquire",
-                   latch.await(15, TimeUnit.SECONDS));
-        assertTrue("Most threads should succeed", successCount.get() >= 5);
+        assertTrue(latch.await(15, TimeUnit.SECONDS),"All queued threads should eventually acquire");
+        assertTrue(successCount.get() >= 5,"Most threads should succeed");
     }
 
     // ============================================================================
@@ -864,7 +834,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Pool size tracking should remain accurate despite concurrent activity.
      * ASSERTION: Size metrics match actual session counts.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testPoolSizeConsistencyUnderConcurrency() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_MEDIUM, AcquisitionMode.IMMEDIATE,
@@ -880,7 +851,7 @@ public class SessionPoolingPairwiseTest {
                         MockSession session = sessionPool.borrowSession();
                         assertNotNull(session);
                         int inUse = sessionPool.getInUseCount();
-                        assertTrue("In-use count should be positive", inUse >= 0);
+                        assertTrue(inUse >= 0,"In-use count should be positive");
                         Thread.sleep(5);
                         sessionPool.returnSession(session);
                     }
@@ -892,17 +863,16 @@ public class SessionPoolingPairwiseTest {
             });
         }
 
-        assertTrue("All threads complete", latch.await(10, TimeUnit.SECONDS));
+        assertTrue(latch.await(10, TimeUnit.SECONDS),"All threads complete");
 
         // ASSERT: Pool state consistent
         int totalSize = sessionPool.getPoolSize();
         int available = sessionPool.getAvailableCount();
         int inUse = sessionPool.getInUseCount();
 
-        assertTrue("Available should not exceed total", available <= totalSize);
-        assertTrue("In-use should not exceed total", inUse <= totalSize);
-        assertEquals("Available + in-use should equal total",
-                     totalSize, available + inUse);
+        assertTrue(available <= totalSize,"Available should not exceed total");
+        assertTrue(inUse <= totalSize,"In-use should not exceed total");
+        assertEquals(totalSize, available + inUse,"Available + in-use should equal total");
     }
 
     /**
@@ -912,7 +882,8 @@ public class SessionPoolingPairwiseTest {
      * RED: Failed sessions should not increment reuse counter.
      * ASSERTION: Reuse count reflects only successful reuses.
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSessionReuseCountAccuracyWithErrors() throws Exception {
         // ARRANGE
         sessionPool.configure(POOL_SIZE_UNLIMITED, AcquisitionMode.IMMEDIATE,
@@ -923,7 +894,7 @@ public class SessionPoolingPairwiseTest {
 
         // ACT: Borrow, mark failed, return (error path), then borrow again
         MockSession session1 = sessionPool.borrowSession();
-        assertNotNull("Session borrowed", session1);
+        assertNotNull(session1,"Session borrowed");
         String sessionId = session1.getId();
 
         session1.setFailed(true);
@@ -935,7 +906,7 @@ public class SessionPoolingPairwiseTest {
 
         // Borrow new session (should not be reuse due to error)
         MockSession session2 = sessionPool.borrowSession();
-        assertNotNull("New session available", session2);
+        assertNotNull(session2,"New session available");
 
         if (sessionId.equals(session2.getId())) {
             fail("Should not reuse failed session");
@@ -946,8 +917,7 @@ public class SessionPoolingPairwiseTest {
         int reuseCountAfter = sessionPool.getSessionReuseCount();
 
         // ASSERT: Reuse counter accurate (no false increments for error paths)
-        assertTrue("Reuse count should not increase for errors",
-                   reuseCountAfter <= reuseCountBefore + 1);
+        assertTrue(reuseCountAfter <= reuseCountBefore + 1,"Reuse count should not increase for errors");
     }
 
     // ============================================================================

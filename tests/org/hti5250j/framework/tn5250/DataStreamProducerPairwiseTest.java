@@ -1,28 +1,17 @@
-/**
- * Title: tn5250J DataStreamProducerPairwiseTest
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise TDD test suite for DataStreamProducer
- *
- * This test suite covers high-risk areas in the outbound data stream generation:
- * - Read-input, read-screen, read-immediate stream types
- * - Field count variations: 0, 1, 10, max
- * - Modified fields: none, some, all
- * - Cursor position: included, excluded
- * - Response modes: normal, structured-field
- *
- * Test strategy: 25+ tests combining pairwise dimensions with positive/adversarial scenarios
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -30,7 +19,7 @@ import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -104,7 +93,7 @@ public class DataStreamProducerPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dsq = new LinkedBlockingQueue<>();
         mockVt = new MockVtImpl();
@@ -144,11 +133,11 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Verify valid stream received
-        assertNotNull("Result should not be null", result);
-        assertTrue("Result should contain data", result.length > 0);
+        assertNotNull(result,"Result should not be null");
+        assertTrue(result.length > 0,"Result should contain data");
         // Note: IAC is 0xFF (255 unsigned, -1 signed). DataStreamProducer doesn't mandate starting with IAC
-        assertTrue("Should have valid data", result.length >= MINIMAL_STREAM_SIZE);
-        assertTrue("Queue should receive message", dsq.size() >= 0);
+        assertTrue(result.length >= MINIMAL_STREAM_SIZE,"Should have valid data");
+        assertTrue(dsq.size() >= 0,"Queue should receive message");
     }
 
     /**
@@ -183,8 +172,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert
-        assertNotNull("Should receive response", result);
-        assertTrue("Response should contain opcode area", result.length >= MINIMAL_STREAM_SIZE);
+        assertNotNull(result,"Should receive response");
+        assertTrue(result.length >= MINIMAL_STREAM_SIZE,"Response should contain opcode area");
     }
 
     /**
@@ -219,8 +208,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert
-        assertNotNull("Should handle complex response", result);
-        assertTrue("Should parse all field data", result.length >= testBuffer.length - 2);  // Exclude EOR
+        assertNotNull(result,"Should handle complex response");
+        assertTrue(result.length >= testBuffer.length - 2,"Should parse all field data");  // Exclude EOR
     }
 
     /**
@@ -255,9 +244,9 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert
-        assertNotNull("Should parse structured fields", result);
+        assertNotNull(result,"Should parse structured fields");
         // EOR = 0xEF (239). Last byte should be EOR marker or valid data
-        assertTrue("Should have valid length", result.length > 0);
+        assertTrue(result.length > 0,"Should have valid length");
     }
 
     /**
@@ -292,8 +281,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert
-        assertNotNull("Should handle single field", result);
-        assertTrue("Should include cursor data", result.length >= MINIMAL_STREAM_SIZE);
+        assertNotNull(result,"Should handle single field");
+        assertTrue(result.length >= MINIMAL_STREAM_SIZE,"Should include cursor data");
     }
 
     // ========== BOUNDARY TESTS: Field count limits ==========
@@ -324,9 +313,9 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert
-        assertNotNull("Should receive minimal stream", result);
-        assertEquals("Stream opcode should be read-input", READ_INPUT_OPCODE & 0xFF,
-            result[9] & 0xFF);
+        assertNotNull(result,"Should receive minimal stream");
+        assertEquals(READ_INPUT_OPCODE & 0xFF,
+            result[9] & 0xFF,"Stream opcode should be read-input");
     }
 
     /**
@@ -361,8 +350,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert
-        assertNotNull("Should handle max field count", result);
-        assertTrue("Field data should be present", result.length > MINIMAL_STREAM_SIZE);
+        assertNotNull(result,"Should handle max field count");
+        assertTrue(result.length > MINIMAL_STREAM_SIZE,"Field data should be present");
     }
 
     /**
@@ -397,8 +386,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert
-        assertNotNull("Should parse SF-mode single field", result);
-        assertTrue("Should contain SF marker", result.length >= MINIMAL_STREAM_SIZE);
+        assertNotNull(result,"Should parse SF-mode single field");
+        assertTrue(result.length >= MINIMAL_STREAM_SIZE,"Should contain SF marker");
     }
 
     // ========== ADVERSARIAL TESTS: Malformed responses, truncation, corruption ==========
@@ -437,8 +426,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Should parse even with bad opcode
-        assertNotNull("Should not crash on invalid opcode", result);
-        assertEquals("Should capture invalid byte", (byte) 0xFF, testBuffer[9]);
+        assertNotNull(result,"Should not crash on invalid opcode");
+        assertEquals((byte) 0xFF, testBuffer[9],"Should capture invalid byte");
     }
 
     /**
@@ -461,8 +450,8 @@ public class DataStreamProducerPairwiseTest {
         testBuffer[9] = 0x00;  // Set opcode to null
 
         // Assert: Verify opcode was set correctly in buffer
-        assertEquals("Opcode position should have null byte", 0x00, testBuffer[9]);
-        assertTrue("Buffer should be valid", testBuffer.length >= MINIMAL_STREAM_SIZE);
+        assertEquals(0x00, testBuffer[9],"Opcode position should have null byte");
+        assertTrue(testBuffer.length >= MINIMAL_STREAM_SIZE,"Buffer should be valid");
     }
 
     /**
@@ -502,11 +491,11 @@ public class DataStreamProducerPairwiseTest {
             producer = new DataStreamProducer(null, bin, dsq, new byte[0]);
             byte[] result = producer.readIncoming();
             // If no exception, verify that data was buffered
-            assertNotNull("Should buffer partial data", result);
+            assertNotNull(result,"Should buffer partial data");
         } catch (NullPointerException e) {
             // Expected: null tnvt causes NPE when stream attempts disconnect on EOF
             // This validly demonstrates DataStreamProducer's handling of incomplete streams
-            assertTrue("NullPointerException indicates incomplete stream handling", true);
+            assertTrue(true,"NullPointerException indicates incomplete stream handling");
         }
     }
 
@@ -535,10 +524,10 @@ public class DataStreamProducerPairwiseTest {
         try {
             byte[] result = producer.readIncoming();
             // If it doesn't throw, it should return something
-            assertNotNull("Should return result or handle error", result);
+            assertNotNull(result,"Should return result or handle error");
         } catch (Exception e) {
             // Acceptable: truncated header should cause exception
-            assertNotNull("Exception details should exist", e.getMessage());
+            assertNotNull(e.getMessage(),"Exception details should exist");
         }
     }
 
@@ -575,8 +564,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Should detect mismatch
-        assertNotNull("Should receive something", result);
-        assertTrue("Buffer size should match actual, not claimed", result.length <= testBuffer.length);
+        assertNotNull(result,"Should receive something");
+        assertTrue(result.length <= testBuffer.length,"Buffer size should match actual, not claimed");
     }
 
     /**
@@ -608,12 +597,12 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Should detect actual EOR, not injected one
-        assertNotNull("Should parse stream", result);
+        assertNotNull(result,"Should parse stream");
         // The real EOR should be at the very end
         if (result.length >= 2) {
             // EOR = 0xEF (239 unsigned)
-            assertEquals("Final bytes should be EOR marker", 239,
-                result[result.length - 1] & 0xFF);
+            assertEquals(239,
+                result[result.length - 1] & 0xFF,"Final bytes should be EOR marker");
         }
     }
 
@@ -645,8 +634,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Should handle escaped bytes
-        assertNotNull("Should parse escaped bytes", result);
-        assertTrue("Result should be valid", result.length > 0);
+        assertNotNull(result,"Should parse escaped bytes");
+        assertTrue(result.length > 0,"Result should be valid");
     }
 
     // ========== FRAGMENTATION TESTS: Partial messages and reassembly ==========
@@ -682,8 +671,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Should return what was available
-        assertNotNull("Should return received data", result);
-        assertTrue("Should detect underrun", result.length <= testBuffer.length);
+        assertNotNull(result,"Should return received data");
+        assertTrue(result.length <= testBuffer.length,"Should detect underrun");
     }
 
     /**
@@ -715,9 +704,9 @@ public class DataStreamProducerPairwiseTest {
         byte[] result1 = producer.readIncoming();
 
         // Assert: First message should parse correctly
-        assertNotNull("Should receive first message", result1);
-        assertEquals("First opcode should be read-input", READ_INPUT_OPCODE & 0xFF,
-            result1[9] & 0xFF);
+        assertNotNull(result1,"Should receive first message");
+        assertEquals(READ_INPUT_OPCODE & 0xFF,
+            result1[9] & 0xFF,"First opcode should be read-input");
     }
 
     /**
@@ -747,10 +736,10 @@ public class DataStreamProducerPairwiseTest {
             producer = new DataStreamProducer(null, bin, dsq, new byte[0]);
             byte[] result = producer.readIncoming();
             // If no exception, should handle partial read
-            assertNotNull("Should handle partial read", result);
+            assertNotNull(result,"Should handle partial read");
         } catch (NullPointerException e) {
             // Expected: null tnvt causes NPE when reaching EOF on partial header
-            assertTrue("NullPointerException indicates partial header detection", true);
+            assertTrue(true,"NullPointerException indicates partial header detection");
         }
     }
 
@@ -784,8 +773,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Should return available data
-        assertNotNull("Should return partial payload", result);
-        assertTrue("Should respect EOR termination", result.length >= MINIMAL_STREAM_SIZE);
+        assertNotNull(result,"Should return partial payload");
+        assertTrue(result.length >= MINIMAL_STREAM_SIZE,"Should respect EOR termination");
     }
 
     /**
@@ -811,8 +800,8 @@ public class DataStreamProducerPairwiseTest {
         byte[] result = producer.readIncoming();
 
         // Assert: Should accept header-only stream
-        assertNotNull("Should parse header-only stream", result);
-        assertEquals("Opcode should be present", READ_IMMEDIATE_OPCODE & 0xFF, result[9] & 0xFF);
+        assertNotNull(result,"Should parse header-only stream");
+        assertEquals(READ_IMMEDIATE_OPCODE & 0xFF, result[9] & 0xFF,"Opcode should be present");
     }
 
     // ========== PROTOCOL FUZZING: Complex injection and corruption scenarios ==========
@@ -850,8 +839,8 @@ public class DataStreamProducerPairwiseTest {
                 byte[] result = producer.readIncoming();
 
                 // Assert
-                assertNotNull("Should parse field count: " + fieldCount + ", cursor: " +
-                    (cursorFlag == CURSOR_INCLUDED ? "inc" : "exc"), result);
+                assertNotNull(result,"Should parse field count: " + fieldCount + ", cursor: " +
+                    (cursorFlag == CURSOR_INCLUDED ? "inc" : "exc"));
             }
         }
     }
@@ -890,8 +879,8 @@ public class DataStreamProducerPairwiseTest {
                 byte[] result = producer.readIncoming();
 
                 // Assert
-                assertNotNull("Should handle mode: " + mode + ", opcode: " + opcode, result);
-                assertEquals("Opcode should match request", opcode & 0xFF, result[9] & 0xFF);
+                assertNotNull(result,"Should handle mode: " + mode + ", opcode: " + opcode);
+                assertEquals(opcode & 0xFF, result[9] & 0xFF,"Opcode should match request");
             }
         }
     }
@@ -929,8 +918,8 @@ public class DataStreamProducerPairwiseTest {
                 byte[] result = producer.readIncoming();
 
                 // Assert
-                assertNotNull("Should handle mod: " + modFlag + ", fields: " + fieldCount, result);
-                assertTrue("Result should be valid", result.length > 0);
+                assertNotNull(result,"Should handle mod: " + modFlag + ", fields: " + fieldCount);
+                assertTrue(result.length > 0,"Result should be valid");
             }
         }
     }
@@ -962,11 +951,11 @@ public class DataStreamProducerPairwiseTest {
             byte[] result = producer.readIncoming();
             // TIMING MARK negotiation may return null
             // Just verify test completes
-            assertTrue("Should handle timing mark", true);
+            assertTrue(true,"Should handle timing mark");
         } catch (NullPointerException e) {
             // Expected: null tnvt causes NPE when negotiate() is called
             // This validates proper TIMING MARK detection and negotiation attempt
-            assertTrue("NullPointerException indicates TIMING MARK detection", true);
+            assertTrue(true,"NullPointerException indicates TIMING MARK detection");
         }
     }
 
@@ -993,12 +982,12 @@ public class DataStreamProducerPairwiseTest {
             producer = new DataStreamProducer(null, bin, dsq, new byte[0]);
             byte[] result = producer.readIncoming();
             // Expected: return empty array on EOF
-            assertNotNull("Should return array", result);
-            assertEquals("Should be empty on EOF", 0, result.length);
+            assertNotNull(result,"Should return array");
+            assertEquals(0, result.length,"Should be empty on EOF");
         } catch (NullPointerException e) {
             // Expected: null tnvt causes NPE when stream reaches EOF
             // This demonstrates proper EOF detection and disconnect signaling
-            assertTrue("NullPointerException indicates proper EOF handling", true);
+            assertTrue(true,"NullPointerException indicates proper EOF handling");
         }
     }
 

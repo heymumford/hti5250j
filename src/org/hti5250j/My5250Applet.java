@@ -1,3 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j;
 
 import java.awt.Dimension;
@@ -47,11 +57,11 @@ public class My5250Applet extends JApplet {
     public void init() {
         try {
             jbInit();
-        } catch (Exception e) {
+        } catch (Exception exception) {
             if (log == null)
-                System.out.println(e.getMessage());
+                System.out.println(exception.getMessage());
             else
-                log.warn("In constructor: ", e);
+                log.warn("In constructor: ", exception);
         }
     }
 
@@ -69,9 +79,9 @@ public class My5250Applet extends JApplet {
         //Let's check some permissions
         try {
             System.getProperty(".java.policy");
-        } catch (SecurityException e) {
-            e.printStackTrace();
-            HTI5250jSecurityAccessDialog.showErrorMessage(e);
+        } catch (SecurityException securityException) {
+            securityException.printStackTrace();
+            HTI5250jSecurityAccessDialog.showErrorMessage(securityException);
             return;
         }
         log = HTI5250jLogFactory.getLogger(this.getClass());
@@ -132,17 +142,17 @@ public class My5250Applet extends JApplet {
         loadSystemProperty("SESSION_CONNECT_MENU");
 
         manager = SessionManager.instance();
-        final Session5250 s = manager.openSession(sesProps, "", "Test Applet");
-        final SessionPanel gui = new SessionPanel(s);
+        final Session5250 session = manager.openSession(sesProps, "", "Test Applet");
+        final SessionPanel sessionPanel = new SessionPanel(session);
 //      final JTerminal jt = new JTerminal(s);
 
-        this.getContentPane().add(gui);
+        this.getContentPane().add(sessionPanel);
 
-        s.connect();
+        session.connect();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
 //            jt.grabFocus();
-                gui.grabFocus();
+                sessionPanel.grabFocus();
             }
         });
 
@@ -172,10 +182,10 @@ public class My5250Applet extends JApplet {
     /**
      * Tests if a parameter was specified or not.
      */
-    private boolean isSpecified(String parm) {
+    private boolean isSpecified(String parameterName) {
 
-        if (getParameter(parm) != null) {
-            log.info("Parameter " + parm + " is specified as: " + getParameter(parm));
+        if (getParameter(parameterName) != null) {
+            log.info("Parameter " + parameterName + " is specified as: " + getParameter(parameterName));
             return true;
         }
         return false;
@@ -184,14 +194,14 @@ public class My5250Applet extends JApplet {
     /**
      * Returns a local specified by the string localString
      */
-    protected static Locale parseLocale(String localString) {
-        int x = 0;
-        String[] s = {"", "", ""};
-        StringTokenizer tokenizer = new StringTokenizer(localString, "_");
+    protected static Locale parseLocale(String localeString) {
+        int index = 0;
+        String[] localeParts = {"", "", ""};
+        StringTokenizer tokenizer = new StringTokenizer(localeString, "_");
         while (tokenizer.hasMoreTokens()) {
-            s[x++] = tokenizer.nextToken();
+            localeParts[index++] = tokenizer.nextToken();
         }
-        return new Locale(s[0], s[1], s[2]);
+        return new Locale(localeParts[0], localeParts[1], localeParts[2]);
     }
 
     //static initializer for setting look & feel
@@ -199,7 +209,7 @@ public class My5250Applet extends JApplet {
         try {
             //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (Exception e) {
+        } catch (Exception exception) {
         }
     }
 }

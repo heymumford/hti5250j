@@ -1,34 +1,20 @@
 # Phase 6: Domain 3 Surface Tests - Implementation Summary
 
-**Status:** ✅ SPRINT 1 COMPLETE - THREE CRITICAL SURFACE TESTS DELIVERED
+| Field | Value |
+| --- | --- |
+| Status | Sprint 1 complete - three critical surface test suites delivered |
+| Completion date | 2026-02-07 |
+| Duration | Single sprint (TDD-first) |
+| Test count | 100+ failing tests written |
+| Code status | Placeholder implementations ready for real logic |
 
-**Completion Date:** 2026-02-07
-**Duration:** Single sprint (no stops)
-**Test Count:** 100+ failing tests written (TDD-first approach)
-**Code:** Placeholder implementations ready for real code
+## Overview
 
----
+Domain 3 surface tests cover the critical boundaries where data enters and exits the system. Bugs at these surfaces cause silent data loss, so the tests emphasize protocol round-trips, schema constraints, and concurrency ordering.
 
-## What Are Surface Tests?
+## Domain Context
 
-Surface tests occupy Domain 3 of the four-domain test architecture:
-
-```
-Domain 1: Unit Tests (isolation, no i5)              ← Fast feedback
-Domain 2: Continuous Contracts (real i5, 24/7)      ← Drift detection
-Domain 3: SURFACE TESTS (real i5, critical boundaries) ← THIS PHASE
-Domain 4: Scenario Tests (real i5, workflows)       ← Business verification
-```
-
-**Domain 3 Critical Insight:**
-_Surfaces are where data enters and exits the system. Bugs in surface code cause silent data loss._
-
-Three critical surfaces:
-1. **Protocol Round-Trip** — Data flow: Java ↔ Telnet bytes ↔ Java
-2. **Schema Contract** — Field boundaries, type constraints, no truncation
-3. **Concurrency** — Operation ordering, idempotency, no lost updates
-
----
+Domain 3 surface tests are defined in the canonical test architecture. See `TEST_ARCHITECTURE.md` for domain definitions, cadence, and evidence expectations.
 
 ## Sprint 1 Deliverables
 
@@ -121,13 +107,13 @@ Three critical surfaces:
 
 ## Implementation Status
 
-### ✅ What's Done
+###  What's Done
 
 ```
-3 Surface Test Classes:      Created & Compiled ✅
-100+ Failing Tests:           Written (TDD-first) ✅
-Placeholder Implementations:  Ready for real code ✅
-Documentation:               Comprehensive ✅
+3 Surface Test Classes:      Created & Compiled 
+100+ Failing Tests:           Written (TDD-first) 
+Placeholder Implementations:  Ready for real code 
+Documentation:               Comprehensive 
 ```
 
 ### ⏳ Next Steps (Phase 6 Continues)
@@ -148,7 +134,7 @@ Documentation:               Comprehensive ✅
    - Performance: test execution time per domain
 
 4. **Phase 6 Completion Criteria** (Definition of Done)
-   - ✅ 100+ tests written
+   -  100+ tests written
    - ⏳ All tests passing against real i5
    - ⏳ Zero regressions in existing contract tests
    - ⏳ Documentation complete (this file + inline comments)
@@ -197,9 +183,9 @@ Real Implementation (Phase 7)
 |-------|----------|-----------|
 | 1:1 | Simple business logic | No (overhead) |
 | 3:1 | Database queries | Marginal (ORM handles lots) |
-| 10:1 | Protocol translation | **YES** ✅ (surface bugs = silent data loss) |
-| 15:1 | Concurrency | **YES** ✅ (race conditions are invisible) |
-| 20:1 | Cryptography | **YES** ✅ (security bugs are silent) |
+| 10:1 | Protocol translation | **YES**  (surface bugs = silent data loss) |
+| 15:1 | Concurrency | **YES**  (race conditions are invisible) |
+| 20:1 | Cryptography | **YES**  (security bugs are silent) |
 
 **Domain 3 Ratio: 100 tests / ~50 lines of real verification code = 2:1**
 - Low because verifier code is simple (translate, compare, execute)
@@ -231,9 +217,9 @@ Surface tests embody this epistemology: they are **falsifiable claims** about sy
 ## Critical Success Factors for Phase 6
 
 **Must-Have (non-negotiable):**
-- ✅ 100+ tests define surface contracts
-- ✅ Tests are executable (compile without errors)
-- ✅ Tests use TDD discipline (failing before implementation)
+- 100+ tests define surface contracts
+- Tests are executable (compile without errors)
+- Tests use TDD discipline (failing before implementation)
 - ⏳ All tests pass before phase completes
 - ⏳ Zero behavioral changes to existing contract tests
 

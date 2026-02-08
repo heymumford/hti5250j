@@ -1,32 +1,32 @@
 # Phase 6: Domain 3 Surface Tests - Completion Report
 
-**Status:** ✅ **COMPLETE - All Deliverables Ready for i5 Integration**
-
-**Date Completed:** 2026-02-07
-**Total Effort:** 2 Sprints (no stops)
-**Test Count:** 100+ surface tests
-**Code Commits:** 2 (Sprint 1: f28ae5f, Sprint 2: 88721b8)
-
----
+| Field | Value |
+| --- | --- |
+| Status | Complete - all deliverables ready for i5 integration |
+| Date completed | 2026-02-07 |
+| Total effort | 2 sprints |
+| Test count | 100+ surface tests |
+| Commits | Sprint 1: f28ae5f, Sprint 2: 88721b8 |
 
 ## Executive Summary
 
-Domain 3 Surface Tests now have **fully implemented, production-ready verifiers** that test critical system boundaries:
-1. **Protocol Translation Layer** - Data round-trip integrity (31 tests)
-2. **Schema Contract Layer** - Field definitions & constraints (27 tests)
-3. **Concurrency Layer** - Operation ordering & idempotency (42+ tests)
+Domain 3 surface tests now include production-ready verifiers at three critical boundaries:
 
-All 100+ tests **compile and execute successfully**. Existing Phase 1-5 contract tests show **zero regressions**.
+1. Protocol translation layer (31 tests)
+2. Schema contract layer (27 tests)
+3. Concurrency layer (42+ tests)
+
+All 100+ tests compile and execute successfully. Phase 1-5 contract tests show zero regressions.
 
 ---
 
 ## Sprint 1: Test Framework & Placeholders
 
 **Deliverables:**
-- ✅ ProtocolRoundTripSurfaceTest (31 tests)
-- ✅ SchemaContractSurfaceTest (27 tests)
-- ✅ ConcurrencySurfaceTest (42 tests)
-- ✅ PHASE_6_DOMAIN_3_SUMMARY.md
+- ProtocolRoundTripSurfaceTest (31 tests)
+- SchemaContractSurfaceTest (27 tests)
+- ConcurrencySurfaceTest (42 tests)
+- PHASE_6_DOMAIN_3_SUMMARY.md
 
 **Status:** All tests compile, all use TDD discipline (failing before implementation)
 
@@ -257,26 +257,9 @@ Reason: Surface bugs are invisible in production. Only falsifiable tests
 
 ---
 
-## Architecture Alignment
+## Domain Context
 
-### Four-Domain Test Architecture
-
-```
-Domain 1: Unit Tests             (Isolation, <5s)       ✅ Exist
-Domain 2: Continuous Contracts   (Real i5, 24/7)        ✅ Exist
-Domain 3: SURFACE TESTS          (Critical boundaries)  ✅✅ COMPLETE
-Domain 4: Scenario Tests         (Workflows)            ⏳ Phase 8
-```
-
-### Strategic Value
-
-Surface tests provide the **strongest guarantee against silent data loss**:
-- Catch protocol mismatches before production
-- Verify schema assumptions before they diverge
-- Expose race conditions before they cause money loss
-- Validate idempotency before retry logic is needed
-
----
+Domain 3 surface tests are defined in the canonical test architecture. See `TEST_ARCHITECTURE.md` for domain definitions, cadence, and evidence expectations.
 
 ## Commits & Artifacts
 
@@ -343,6 +326,6 @@ grep "tests found" test-results.log  # Should show 100+
 
 ---
 
-**Phase 6 Status: ✅ DELIVERED**
+**Phase 6 Status:  DELIVERED**
 
 Domain 3 surface tests are now **production-ready** with real verifier implementations, zero regressions, and comprehensive documentation. Ready for Phase 7 i5 system integration testing.

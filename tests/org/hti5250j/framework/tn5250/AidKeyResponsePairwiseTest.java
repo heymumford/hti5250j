@@ -1,32 +1,16 @@
-/**
- * Title: AidKeyResponsePairwiseTest.java
- * Copyright: Copyright (c) 2001-2025
- * Company: Mumford Labs
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001-2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise TDD tests for HTI5250j AID key response handling
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -34,7 +18,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for AID (Attention IDentifier) key response handling.
@@ -59,16 +46,15 @@ import static org.junit.Assert.*;
  * - State transitions: OIA keyboard lock, error state clearing
  * - Edge cases: null fields, zero-length field data, cursor beyond screen bounds
  */
-@RunWith(Parameterized.class)
 public class AidKeyResponsePairwiseTest {
 
     // Pairwise test parameters
-    private final String aidTypeName;
-    private final int aidByte;
-    private final String responseFormat;
-    private final String fieldCollectionMode;
-    private final boolean includeCursorReport;
-    private final String errorState;
+    private String aidTypeName;
+    private int aidByte;
+    private String responseFormat;
+    private String fieldCollectionMode;
+    private boolean includeCursorReport;
+    private String errorState;
 
     // Instance variables
     private MockAidResponseBuilder responseBuilder;
@@ -121,7 +107,7 @@ public class AidKeyResponsePairwiseTest {
     private static final String ERROR_PENDING = "PENDING";
     private static final String ERROR_RECOVERY = "RECOVERY";
 
-    public AidKeyResponsePairwiseTest(String aidTypeName, int aidByte, String responseFormat,
+    private void setParameters(String aidTypeName, int aidByte, String responseFormat,
                                        String fieldCollectionMode, boolean includeCursorReport,
                                        String errorState) {
         this.aidTypeName = aidTypeName;
@@ -141,7 +127,6 @@ public class AidKeyResponsePairwiseTest {
      * 4. Cursor report: 2 values (included, excluded)
      * 5. Error state: 3 values (NONE, PENDING, RECOVERY)
      */
-    @Parameterized.Parameters
     public static Collection<Object[]> data() {
         List<Object[]> testCases = new ArrayList<>();
 
@@ -202,9 +187,9 @@ public class AidKeyResponsePairwiseTest {
         return testCases;
     }
 
-    @Before
     public void setUp() {
         responseBuilder = new MockAidResponseBuilder();
+        responseBuilder.setResponseFormat(responseFormat);
         screenState = new MockScreenState();
         capturedResponse = new ByteArrayOutputStream();
     }
@@ -217,8 +202,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: responseBuilder.buildResponse() first byte equals expected AID byte
      */
-    @Test
-    public void testAidByteGeneration() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAidByteGeneration(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(10, 20);
         screenState.setErrorState(ERROR_NONE);
@@ -227,9 +215,9 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(aidByte, screenState, fieldCollectionMode, includeCursorReport);
 
         // Assert
-        assertNotNull("Response should not be null", response);
-        assertTrue("Response should have at least AID byte", response.length >= 1);
-        assertEquals("First byte should be AID", aidByte, response[0] & 0xFF);
+        assertNotNull(response,"Response should not be null");
+        assertTrue(response.length >= 1,"Response should have at least AID byte");
+        assertEquals(aidByte, response[0] & 0xFF,"First byte should be AID");
     }
 
     /**
@@ -238,8 +226,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: AID_ENTER should generate 0xF1
      */
-    @Test
-    public void testEnterKeyAidByte() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEnterKeyAidByte(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(5, 15);
         screenState.setErrorState(ERROR_NONE);
@@ -250,8 +241,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertEquals("Enter AID should be 0xF1", AID_ENTER_BYTE & 0xFF, response[0] & 0xFF);
-        assertTrue("Response with fields should be longer than cursor position", response.length > 3);
+        assertEquals(AID_ENTER_BYTE & 0xFF, response[0] & 0xFF,"Enter AID should be 0xF1");
+        assertTrue(response.length > 3,"Response with fields should be longer than cursor position");
     }
 
     /**
@@ -260,8 +251,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: AID_F1 should generate 0x31
      */
-    @Test
-    public void testF1KeyAidByte() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testF1KeyAidByte(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(0, 0);
         screenState.setErrorState(ERROR_NONE);
@@ -270,7 +264,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_F1_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertEquals("F1 AID should be 0x31", AID_F1_BYTE & 0xFF, response[0] & 0xFF);
+        assertEquals(AID_F1_BYTE & 0xFF, response[0] & 0xFF,"F1 AID should be 0x31");
     }
 
     /**
@@ -279,8 +273,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: AID_F24 should generate 0xBC
      */
-    @Test
-    public void testF24KeyAidByte() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testF24KeyAidByte(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(24, 80);
         screenState.setErrorState(ERROR_NONE);
@@ -291,7 +288,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_F24_BYTE, screenState, FIELDS_ALL, true);
 
         // Assert
-        assertEquals("F24 AID should be 0xBC", AID_F24_BYTE & 0xFF, response[0] & 0xFF);
+        assertEquals(AID_F24_BYTE & 0xFF, response[0] & 0xFF,"F24 AID should be 0xBC");
     }
 
     /**
@@ -300,8 +297,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: AID_F13 should generate 0xB1 (different encoding than F1-F12)
      */
-    @Test
-    public void testF13KeyAidByteBoundary() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testF13KeyAidByteBoundary(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(12, 40);
         screenState.setErrorState(ERROR_NONE);
@@ -310,8 +310,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_F13_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertEquals("F13 AID should be 0xB1", AID_F13_BYTE & 0xFF, response[0] & 0xFF);
-        assertTrue("F13 should differ from F12", AID_F13_BYTE != AID_F12_BYTE);
+        assertEquals(AID_F13_BYTE & 0xFF, response[0] & 0xFF,"F13 AID should be 0xB1");
+        assertTrue(AID_F13_BYTE != AID_F12_BYTE,"F13 should differ from F12");
     }
 
     /**
@@ -320,8 +320,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: AID_CLEAR should generate 0xBD and typically not include field data
      */
-    @Test
-    public void testClearKeyAidByte() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearKeyAidByte(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(1, 1);
         screenState.setErrorState(ERROR_NONE);
@@ -330,8 +333,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_CLEAR_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertEquals("Clear AID should be 0xBD", AID_CLEAR_BYTE & 0xFF, response[0] & 0xFF);
-        assertTrue("Clear typically returns minimal response", response.length <= 50);
+        assertEquals(AID_CLEAR_BYTE & 0xFF, response[0] & 0xFF,"Clear AID should be 0xBD");
+        assertTrue(response.length <= 50,"Clear typically returns minimal response");
     }
 
     /**
@@ -340,8 +343,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Bytes 1-2 after AID contain row/column in 0-based format
      */
-    @Test
-    public void testCursorPositionEncoding() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorPositionEncoding(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         int expectedRow = 10;
         int expectedCol = 25;
@@ -352,9 +358,9 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertTrue("Response must contain at least AID + row + col", response.length >= 3);
-        assertEquals("Row position mismatch", expectedRow, response[1] & 0xFF);
-        assertEquals("Column position mismatch", expectedCol, response[2] & 0xFF);
+        assertTrue(response.length >= 3,"Response must contain at least AID + row + col");
+        assertEquals(expectedRow, response[1] & 0xFF,"Row position mismatch");
+        assertEquals(expectedCol, response[2] & 0xFF,"Column position mismatch");
     }
 
     /**
@@ -363,8 +369,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Boundary case cursor (0,0) encodes as [AID, 0x00, 0x00]
      */
-    @Test
-    public void testCursorPositionBoundaryOrigin() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorPositionBoundaryOrigin(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(0, 0);
         screenState.setErrorState(ERROR_NONE);
@@ -373,8 +382,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_F1_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertEquals("Row 0 should encode as 0x00", 0, response[1] & 0xFF);
-        assertEquals("Col 0 should encode as 0x00", 0, response[2] & 0xFF);
+        assertEquals(0, response[1] & 0xFF,"Row 0 should encode as 0x00");
+        assertEquals(0, response[2] & 0xFF,"Col 0 should encode as 0x00");
     }
 
     /**
@@ -383,8 +392,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Boundary case cursor (24,79) encodes without truncation
      */
-    @Test
-    public void testCursorPositionBoundaryMaximum() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorPositionBoundaryMaximum(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(24, 79);
         screenState.setErrorState(ERROR_NONE);
@@ -393,8 +405,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_F24_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertEquals("Row 24 should encode", 24, response[1] & 0xFF);
-        assertEquals("Col 79 should encode", 79, response[2] & 0xFF);
+        assertEquals(24, response[1] & 0xFF,"Row 24 should encode");
+        assertEquals(79, response[2] & 0xFF,"Col 79 should encode");
     }
 
     // ============= POSITIVE TESTS: Field Data Collection =============
@@ -405,8 +417,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Response length = 3 (AID + row + col) when FIELDS_NONE
      */
-    @Test
-    public void testFieldCollectionNone() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldCollectionNone(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(5, 10);
         screenState.setErrorState(ERROR_NONE);
@@ -417,7 +432,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertEquals("No field collection should return AID + cursor only", 3, response.length);
+        assertEquals(3, response.length,"No field collection should return AID + cursor only");
     }
 
     /**
@@ -426,8 +441,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Response includes AID + cursor + modified field data only
      */
-    @Test
-    public void testFieldCollectionModifiedOnly() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldCollectionModifiedOnly(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(3, 8);
         screenState.setErrorState(ERROR_NONE);
@@ -439,9 +457,9 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertTrue("Response should include modified field data", response.length > 3);
+        assertTrue(response.length > 3,"Response should include modified field data");
         // Should not include field 0, should include field 1
-        assertTrue("Modified field should be present in response", containsFieldData(response, "modified"));
+        assertTrue(containsFieldData(response, "modified"),"Modified field should be present in response");
     }
 
     /**
@@ -450,8 +468,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Response includes AID + cursor + all field data
      */
-    @Test
-    public void testFieldCollectionAll() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldCollectionAll(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(2, 5);
         screenState.setErrorState(ERROR_NONE);
@@ -463,7 +484,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_HELP_BYTE, screenState, FIELDS_ALL, true);
 
         // Assert
-        assertTrue("Response with ALL fields should be longer", response.length > 10);
+        assertTrue(response.length > 10,"Response with ALL fields should be longer");
     }
 
     /**
@@ -472,8 +493,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Each field includes length prefix (1-2 bytes) + data
      */
-    @Test
-    public void testFieldDataLengthEncoding() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldDataLengthEncoding(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(0, 0);
         screenState.setErrorState(ERROR_NONE);
@@ -484,7 +508,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertTrue("Response should have AID + cursor + field length + data", response.length >= 8);
+        assertTrue(response.length >= 8,"Response should have AID + cursor + field length + data");
     }
 
     /**
@@ -493,8 +517,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Zero-length modified field doesn't crash, encodes with length=0
      */
-    @Test
-    public void testEmptyModifiedField() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEmptyModifiedField(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(0, 0);
         screenState.setErrorState(ERROR_NONE);
@@ -505,8 +532,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertNotNull("Empty field should not cause null response", response);
-        assertTrue("Response should include AID and cursor", response.length >= 3);
+        assertNotNull(response,"Empty field should not cause null response");
+        assertTrue(response.length >= 3,"Response should include AID and cursor");
     }
 
     /**
@@ -515,8 +542,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Each field prefixed with location tag (0xC0-0xCF) + length + data
      */
-    @Test
-    public void testMultipleModifiedFieldsStructured() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleModifiedFieldsStructured(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(1, 1);
         screenState.setErrorState(ERROR_NONE);
@@ -529,7 +559,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertTrue("Multiple fields should produce structured response", response.length > 15);
+        assertTrue(response.length > 15,"Multiple fields should produce structured response");
     }
 
     // ============= POSITIVE TESTS: Response Format Variations =============
@@ -540,8 +570,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: SHORT format = 3 bytes (AID + row + col) regardless of fields
      */
-    @Test
-    public void testResponseFormatShort() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResponseFormatShort(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(5, 10);
         screenState.setErrorState(ERROR_NONE);
@@ -551,7 +584,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_CLEAR_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertEquals("SHORT format must be exactly 3 bytes", 3, response.length);
+        assertEquals(3, response.length,"SHORT format must be exactly 3 bytes");
     }
 
     /**
@@ -560,8 +593,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: LONG format >= 3 bytes, includes selected fields
      */
-    @Test
-    public void testResponseFormatLong() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResponseFormatLong(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(2, 2);
         screenState.setErrorState(ERROR_NONE);
@@ -572,7 +608,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertTrue("LONG format should include field data", response.length > 3);
+        assertTrue(response.length > 3,"LONG format should include field data");
     }
 
     /**
@@ -581,8 +617,12 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: STRUCTURED format includes 0xC0 tags before each field
      */
-    @Test
-    public void testResponseFormatStructured() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResponseFormatStructured(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
+        assumeTrue(RESPONSE_STRUCTURED.equals(responseFormat),"Structured format assertions only apply to STRUCTURED");
         // Arrange
         screenState.setCursorPosition(3, 3);
         screenState.setErrorState(ERROR_NONE);
@@ -593,7 +633,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_HELP_BYTE, screenState, FIELDS_ALL, true);
 
         // Assert
-        assertTrue("STRUCTURED format should include location tags", response.length > 10);
+        assertTrue(response.length > 10,"STRUCTURED format should include location tags");
         // Check for field location tag markers (0xC0-0xCF)
         boolean hasLocationTag = false;
         for (byte b : response) {
@@ -602,7 +642,7 @@ public class AidKeyResponsePairwiseTest {
                 break;
             }
         }
-        assertTrue("STRUCTURED format should have location tags", hasLocationTag);
+        assertTrue(hasLocationTag,"STRUCTURED format should have location tags");
     }
 
     /**
@@ -611,8 +651,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: When includeCursorReport=false, response smaller or no cursor position
      */
-    @Test
-    public void testCursorReportExcluded() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCursorReportExcluded(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(10, 20);
         screenState.setErrorState(ERROR_NONE);
@@ -623,7 +666,7 @@ public class AidKeyResponsePairwiseTest {
 
         // Assert
         // Without cursor, response should be shorter or same (cursor may be optional)
-        assertTrue("Response should be buildable without cursor", responseWithoutCursor.length >= 1);
+        assertTrue(responseWithoutCursor.length >= 1,"Response should be buildable without cursor");
     }
 
     // ============= POSITIVE TESTS: Error State Handling =============
@@ -634,8 +677,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: AID transmission clears pending error, OIA updated
      */
-    @Test
-    public void testErrorPendingClearedOnAid() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testErrorPendingClearedOnAid(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setErrorState(ERROR_PENDING);
         screenState.setCursorPosition(0, 0);
@@ -644,8 +690,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertEquals("AID should clear error state", ERROR_NONE, screenState.getErrorState());
-        assertNotNull("Response should be generated", response);
+        assertEquals(ERROR_NONE, screenState.getErrorState(),"AID should clear error state");
+        assertNotNull(response,"Response should be generated");
     }
 
     /**
@@ -654,8 +700,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Recovery state allows AID transmission, clears on send
      */
-    @Test
-    public void testErrorRecoveryStateTransition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testErrorRecoveryStateTransition(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setErrorState(ERROR_RECOVERY);
         screenState.setCursorPosition(5, 5);
@@ -664,7 +713,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_F1_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertNotNull("Recovery state should allow AID send", response);
+        assertNotNull(response,"Recovery state should allow AID send");
     }
 
     // ============= ADVERSARIAL TESTS: Malformed AID Response Handling =============
@@ -675,8 +724,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: NULL AID byte (0x00) should be rejected or handled safely
      */
-    @Test
-    public void testMalformedAidNullByte() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMalformedAidNullByte(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(0, 0);
         screenState.setErrorState(ERROR_NONE);
@@ -686,7 +738,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(invalidAidByte, screenState, FIELDS_NONE, true);
 
         // Assert - should either reject or handle safely
-        assertTrue("Response should handle invalid AID gracefully", response == null || response.length >= 1);
+        assertTrue(response == null || response.length >= 1,"Response should handle invalid AID gracefully");
     }
 
     /**
@@ -695,8 +747,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Out-of-bounds cursor should be clamped or wrapped, not crash
      */
-    @Test
-    public void testMalformedCursorOutOfBoundsRow() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMalformedCursorOutOfBoundsRow(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(100, 10);
         screenState.setErrorState(ERROR_NONE);
@@ -705,10 +760,10 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertNotNull("Out-of-bounds row should not crash", response);
+        assertNotNull(response,"Out-of-bounds row should not crash");
         // Row should be clamped or modulo'd
         int rowByte = response[1] & 0xFF;
-        assertTrue("Row should be bounded [0-24]", rowByte < 25 || rowByte == 100 % 25);
+        assertTrue(rowByte < 25 || rowByte == 100 % 25,"Row should be bounded [0-24]");
     }
 
     /**
@@ -717,8 +772,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Out-of-bounds column should be clamped or wrapped, not crash
      */
-    @Test
-    public void testMalformedCursorOutOfBoundsCol() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMalformedCursorOutOfBoundsCol(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(5, 200);
         screenState.setErrorState(ERROR_NONE);
@@ -727,9 +785,9 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertNotNull("Out-of-bounds column should not crash", response);
+        assertNotNull(response,"Out-of-bounds column should not crash");
         int colByte = response[2] & 0xFF;
-        assertTrue("Column should be bounded [0-79]", colByte < 80 || colByte == 200 % 80);
+        assertTrue(colByte < 80 || colByte == 200 % 80,"Column should be bounded [0-79]");
     }
 
     /**
@@ -738,8 +796,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Truncated field data should not crash, response completed gracefully
      */
-    @Test
-    public void testMalformedTruncatedFieldData() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMalformedTruncatedFieldData(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(0, 0);
         screenState.setErrorState(ERROR_NONE);
@@ -750,8 +811,8 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_MODIFIED, true);
 
         // Assert
-        assertNotNull("Truncated field should not crash", response);
-        assertTrue("Response should be generated", response.length > 3);
+        assertNotNull(response,"Truncated field should not crash");
+        assertTrue(response.length > 3,"Response should be generated");
     }
 
     /**
@@ -760,8 +821,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Null field data should be skipped or encoded as empty
      */
-    @Test
-    public void testMalformedNullFieldData() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMalformedNullFieldData(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(0, 0);
         screenState.setErrorState(ERROR_NONE);
@@ -771,7 +835,7 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_ALL, true);
 
         // Assert
-        assertNotNull("Null field should not crash", response);
+        assertNotNull(response,"Null field should not crash");
     }
 
     /**
@@ -780,8 +844,11 @@ public class AidKeyResponsePairwiseTest {
      *
      * Contract: Negative coordinates should be clamped to 0
      */
-    @Test
-    public void testMalformedNegativeCursorPosition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMalformedNegativeCursorPosition(String aidTypeName, int aidByte, String responseFormat, String fieldCollectionMode, boolean includeCursorReport, String errorState) throws Exception {
+        setParameters(aidTypeName, aidByte, responseFormat, fieldCollectionMode, includeCursorReport, errorState);
+        setUp();
         // Arrange
         screenState.setCursorPosition(-5, -10);
         screenState.setErrorState(ERROR_NONE);
@@ -790,9 +857,9 @@ public class AidKeyResponsePairwiseTest {
         byte[] response = responseBuilder.buildResponse(AID_ENTER_BYTE, screenState, FIELDS_NONE, true);
 
         // Assert
-        assertNotNull("Negative cursor should not crash", response);
-        assertEquals("Negative row should clamp to 0", 0, response[1] & 0xFF);
-        assertEquals("Negative col should clamp to 0", 0, response[2] & 0xFF);
+        assertNotNull(response,"Negative cursor should not crash");
+        assertEquals(0, response[1] & 0xFF,"Negative row should clamp to 0");
+        assertEquals(0, response[2] & 0xFF,"Negative col should clamp to 0");
     }
 
     // ============= HELPER METHODS AND MOCK CLASSES =============
@@ -806,6 +873,12 @@ public class AidKeyResponsePairwiseTest {
      * Mock AID Response Builder - simulates HTI5250j response generation
      */
     static class MockAidResponseBuilder {
+        private String responseFormat = RESPONSE_LONG;
+
+        void setResponseFormat(String responseFormat) {
+            this.responseFormat = responseFormat == null ? RESPONSE_LONG : responseFormat;
+        }
+
         public byte[] buildResponse(int aidByte, MockScreenState screenState,
                                     String fieldCollectionMode, boolean includeCursorReport) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -813,23 +886,25 @@ public class AidKeyResponsePairwiseTest {
             // Write AID byte
             baos.write(aidByte);
 
-            // Write cursor position (with bounds checking)
-            int row = Math.max(0, Math.min(screenState.getCursorRow(), 24));
-            int col = Math.max(0, Math.min(screenState.getCursorCol(), 79));
-            baos.write(row);
-            baos.write(col);
+            if (includeCursorReport) {
+                // Write cursor position (with bounds checking)
+                int row = Math.max(0, Math.min(screenState.getCursorRow(), 24));
+                int col = Math.max(0, Math.min(screenState.getCursorCol(), 79));
+                baos.write(row);
+                baos.write(col);
+            }
 
             // Add field data based on collection mode
             if (fieldCollectionMode.equals("MODIFIED")) {
                 screenState.getModifiedFields().forEach((idx, data) -> {
                     if (data != null && !data.isEmpty()) {
-                        writeFieldData(baos, data, "LONG");
+                        writeFieldData(baos, data, responseFormat);
                     }
                 });
             } else if (fieldCollectionMode.equals("ALL")) {
                 screenState.getAllFields().forEach((idx, data) -> {
                     if (data != null) {
-                        writeFieldData(baos, data, "LONG");
+                        writeFieldData(baos, data, responseFormat);
                     }
                 });
             }

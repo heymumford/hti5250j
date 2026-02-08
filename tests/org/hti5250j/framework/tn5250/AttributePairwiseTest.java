@@ -1,37 +1,23 @@
-/**
- * Title: AttributePairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for screen attribute operations in HTI5250j
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for ScreenPlanes attribute operations.
@@ -49,15 +35,14 @@ import static org.junit.Assert.*;
  * Useful for: Automation frameworks that need to identify field types, extract display
  * attributes, and validate 5250 screen state.
  */
-@RunWith(Parameterized.class)
 public class AttributePairwiseTest {
 
     // Test parameters
-    private final int attributeType;
-    private final int colorValue;
-    private final int fieldAttribute;
-    private final int extendedAttribute;
-    private final int testPosition;
+    private int attributeType;
+    private int colorValue;
+    private int fieldAttribute;
+    private int extendedAttribute;
+    private int testPosition;
 
     // Instance variables
     private ScreenPlanes screenPlanes;
@@ -110,8 +95,7 @@ public class AttributePairwiseTest {
      * - Extended attributes: double-height, double-width, underline, blink, column-sep, non-display
      * - Positions: start (0), mid (960), end (1919)
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // POSITIVE TESTS: Valid attribute combinations
 
@@ -183,7 +167,7 @@ public class AttributePairwiseTest {
         });
     }
 
-    public AttributePairwiseTest(int testId, int attributeType, int colorValue,
+    private void setParameters(int testId, int attributeType, int colorValue,
                                   int fieldAttribute, int extendedAttribute, int testPosition) {
         this.attributeType = attributeType;
         this.colorValue = colorValue;
@@ -192,8 +176,7 @@ public class AttributePairwiseTest {
         this.testPosition = testPosition;
     }
 
-    @Before
-    public void setUp() throws NoSuchFieldException, IllegalAccessException {
+        public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble(SCREEN_SIZE);
         screenPlanes = new ScreenPlanes(screen5250, SCREEN_SIZE);
 
@@ -220,8 +203,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify attribute can be set and retrieved at valid positions
      */
-    @Test
-    public void testGetAttributeValidPosition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testGetAttributeValidPosition(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return; // Skip out-of-bounds for positive test
         }
@@ -231,12 +217,10 @@ public class AttributePairwiseTest {
 
         // GREEN: Verify attribute retrieval
         int retrieved = screenPlanes.getCharAttr(testPosition);
-        assertEquals(
+        assertEquals(attributeType,retrieved
+        ,
             String.format("Attribute not retrieved at pos %d, expected %d got %d",
-                testPosition, attributeType, retrieved),
-            attributeType,
-            retrieved
-        );
+                testPosition, attributeType, retrieved));
     }
 
     /**
@@ -246,8 +230,11 @@ public class AttributePairwiseTest {
      * Note: isAttributePlace identifies 5250 format attribute bytes, not just
      * positions with attributes set via setScreenAttr.
      */
-    @Test
-    public void testIsAttributePlaceValidPosition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testIsAttributePlaceValidPosition(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -256,10 +243,9 @@ public class AttributePairwiseTest {
         boolean isAttrPlace = screenPlanes.isAttributePlace(testPosition);
 
         // GREEN: Verify position returns a boolean
-        assertNotNull(
-            String.format("Position %d isAttributePlace should return boolean", testPosition),
-            isAttrPlace
-        );
+        assertNotNull(isAttrPlace
+        ,
+            String.format("Position %d isAttributePlace should return boolean", testPosition));
     }
 
     /**
@@ -267,8 +253,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify underline extended attribute is properly set
      */
-    @Test
-    public void testExtendedAttributeUnderline() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExtendedAttributeUnderline(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -282,10 +271,9 @@ public class AttributePairwiseTest {
         try {
             // Verify extended attribute plane contains underline flag
             char extAttr = screenExtended[testPosition];
-            assertTrue(
-                String.format("Underline extended attribute not set at pos %d", testPosition),
-                (extAttr & EXT_UNDERLINE) != 0
-            );
+            assertTrue((extAttr & EXT_UNDERLINE) != 0
+            ,
+                String.format("Underline extended attribute not set at pos %d", testPosition));
         } catch (Exception e) {
             fail("Failed to verify underline extended attribute: " + e.getMessage());
         }
@@ -296,8 +284,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify column separator extended attribute is properly set
      */
-    @Test
-    public void testExtendedAttributeColumnSeparator() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExtendedAttributeColumnSeparator(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -310,10 +301,9 @@ public class AttributePairwiseTest {
 
         try {
             char extAttr = screenExtended[testPosition];
-            assertTrue(
-                String.format("Column separator extended attribute not set at pos %d", testPosition),
-                (extAttr & EXT_COLUMN_SEP) != 0
-            );
+            assertTrue((extAttr & EXT_COLUMN_SEP) != 0
+            ,
+                String.format("Column separator extended attribute not set at pos %d", testPosition));
         } catch (Exception e) {
             fail("Failed to verify column separator extended attribute: " + e.getMessage());
         }
@@ -324,8 +314,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify color plane is updated when attribute is set
      */
-    @Test
-    public void testColorMappingValidAttribute() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testColorMappingValidAttribute(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -333,14 +326,12 @@ public class AttributePairwiseTest {
         screenPlanes.setScreenAttr(testPosition, attributeType);
 
         try {
-            char colorValue = screenColor[testPosition];
+            char actualColorValue = screenColor[testPosition];
             // Color should be non-zero for valid attributes
             if (attributeType > 0) {
-                assertTrue(
+                assertTrue(actualColorValue != 0,
                     String.format("Color not mapped for attribute %d at pos %d",
-                        attributeType, testPosition),
-                    colorValue != 0
-                );
+                        attributeType, testPosition));
             }
         } catch (Exception e) {
             fail("Failed to verify color mapping: " + e.getMessage());
@@ -352,8 +343,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify attribute preservation across set/get cycle
      */
-    @Test
-    public void testAttributeRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeRoundTrip(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -361,11 +355,9 @@ public class AttributePairwiseTest {
         screenPlanes.setScreenAttr(testPosition, attributeType);
         int retrieved = screenPlanes.getCharAttr(testPosition);
 
-        assertEquals(
-            String.format("Attribute lost in round-trip at pos %d", testPosition),
-            attributeType,
-            retrieved
-        );
+        assertEquals(attributeType,retrieved
+        ,
+            String.format("Attribute lost in round-trip at pos %d", testPosition));
     }
 
     /**
@@ -373,8 +365,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify field attributes don't cause out-of-bounds writes
      */
-    @Test
-    public void testFieldAttributeIsolation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldAttributeIsolation(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -391,20 +386,16 @@ public class AttributePairwiseTest {
             // Verify adjacent positions were not modified
             if (testPosition > 0) {
                 int prevAttrAfter = screenPlanes.getCharAttr(testPosition - 1);
-                assertEquals(
-                    String.format("Previous position corrupted by attribute at %d", testPosition),
-                    prevAttrBefore,
-                    prevAttrAfter
-                );
+                assertEquals(prevAttrBefore,prevAttrAfter
+                ,
+                    String.format("Previous position corrupted by attribute at %d", testPosition));
             }
 
             if (testPosition < SCREEN_LENGTH - 1) {
                 int nextAttrAfter = screenPlanes.getCharAttr(testPosition + 1);
-                assertEquals(
-                    String.format("Next position corrupted by attribute at %d", testPosition),
-                    nextAttrBefore,
-                    nextAttrAfter
-                );
+                assertEquals(nextAttrBefore,nextAttrAfter
+                ,
+                    String.format("Next position corrupted by attribute at %d", testPosition));
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             fail("Field attribute handling caused array bounds violation: " + e.getMessage());
@@ -416,8 +407,11 @@ public class AttributePairwiseTest {
      *
      * Adversarial test: Verify getAttribute gracefully handles invalid positions
      */
-    @Test
-    public void testGetAttributeOutOfBounds() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testGetAttributeOutOfBounds(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (isValidPosition(testPosition)) {
             return; // Skip valid positions
         }
@@ -439,8 +433,11 @@ public class AttributePairwiseTest {
      *
      * Adversarial test: Verify isAttributePlace handles invalid positions gracefully
      */
-    @Test
-    public void testIsAttributePlaceOutOfBounds() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testIsAttributePlaceOutOfBounds(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (isValidPosition(testPosition)) {
             return; // Skip valid positions
         }
@@ -449,7 +446,7 @@ public class AttributePairwiseTest {
             boolean result = screenPlanes.isAttributePlace(testPosition);
             // If we reach here, implementation doesn't validate bounds
             // Just verify it returns a boolean (no exception)
-            assertNotNull("isAttributePlace should return boolean", result);
+            assertNotNull(result,"isAttributePlace should return boolean");
         } catch (ArrayIndexOutOfBoundsException e) {
             // Also acceptable - graceful failure
         } catch (Exception e) {
@@ -462,8 +459,11 @@ public class AttributePairwiseTest {
      *
      * Adversarial test: Verify zero attribute is handled properly
      */
-    @Test
-    public void testInvalidAttributeValueZero() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInvalidAttributeValueZero(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -476,11 +476,9 @@ public class AttributePairwiseTest {
             screenPlanes.setScreenAttr(testPosition, 0);
             int retrieved = screenPlanes.getCharAttr(testPosition);
             // Zero is valid - may mean "no attribute" or default value
-            assertEquals(
-                String.format("Zero attribute should be stored at pos %d", testPosition),
-                0,
-                retrieved
-            );
+            assertEquals(0,retrieved
+            ,
+                String.format("Zero attribute should be stored at pos %d", testPosition));
         } catch (Exception e) {
             fail("Zero attribute caused exception: " + e.getMessage());
         }
@@ -491,8 +489,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify attribute isolation across positions
      */
-    @Test
-    public void testMultipleAttributesNonInterfering() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleAttributesNonInterfering(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -512,16 +513,12 @@ public class AttributePairwiseTest {
         screenPlanes.setScreenAttr(pos2, ATTR_REVERSE);
 
         // Verify each position retains its attribute
-        assertEquals(
-            String.format("First attribute at %d not preserved", pos1),
-            ATTR_NORMAL,
-            screenPlanes.getCharAttr(pos1)
-        );
-        assertEquals(
-            String.format("Second attribute at %d not preserved", pos2),
-            ATTR_REVERSE,
-            screenPlanes.getCharAttr(pos2)
-        );
+        assertEquals(ATTR_NORMAL,screenPlanes.getCharAttr(pos1)
+        ,
+            String.format("First attribute at %d not preserved", pos1));
+        assertEquals(ATTR_REVERSE,screenPlanes.getCharAttr(pos2)
+        ,
+            String.format("Second attribute at %d not preserved", pos2));
     }
 
     /**
@@ -529,8 +526,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify attributes work at screen boundaries
      */
-    @Test
-    public void testAttributeBoundaryPositions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeBoundaryPositions(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (testPosition != 0 && testPosition != SCREEN_LENGTH - 1) {
             return; // Only test boundaries
         }
@@ -539,11 +539,9 @@ public class AttributePairwiseTest {
             screenPlanes.setScreenAttr(testPosition, attributeType);
             int retrieved = screenPlanes.getCharAttr(testPosition);
 
-            assertEquals(
-                String.format("Boundary attribute at pos %d not retrieved", testPosition),
-                attributeType,
-                retrieved
-            );
+            assertEquals(attributeType,retrieved
+            ,
+                String.format("Boundary attribute at pos %d not retrieved", testPosition));
         } catch (Exception e) {
             fail("Boundary position caused exception: " + e.getMessage());
         }
@@ -554,8 +552,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify attribute changes are isolated to single position
      */
-    @Test
-    public void testAttributeDoesNotAffectAdjacentCharacters() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeDoesNotAffectAdjacentCharacters(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -569,11 +570,9 @@ public class AttributePairwiseTest {
 
             // Verify character is unchanged
             char retrieved = screenPlanes.getChar(testPosition);
-            assertEquals(
-                String.format("Character corrupted by attribute at pos %d", testPosition),
-                expectedChar,
-                retrieved
-            );
+            assertEquals(expectedChar,retrieved
+            ,
+                String.format("Character corrupted by attribute at pos %d", testPosition));
         } catch (Exception e) {
             fail("Character/attribute interaction caused exception: " + e.getMessage());
         }
@@ -584,20 +583,23 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify attributes can be updated at same position
      */
-    @Test
-    public void testSequentialAttributeUpdates() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSequentialAttributeUpdates(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
 
         screenPlanes.setScreenAttr(testPosition, ATTR_NORMAL);
-        assertEquals("First update failed", ATTR_NORMAL, screenPlanes.getCharAttr(testPosition));
+        assertEquals(ATTR_NORMAL, screenPlanes.getCharAttr(testPosition),"First update failed");
 
         screenPlanes.setScreenAttr(testPosition, ATTR_REVERSE);
-        assertEquals("Second update failed", ATTR_REVERSE, screenPlanes.getCharAttr(testPosition));
+        assertEquals(ATTR_REVERSE, screenPlanes.getCharAttr(testPosition),"Second update failed");
 
         screenPlanes.setScreenAttr(testPosition, attributeType);
-        assertEquals("Final update failed", attributeType, screenPlanes.getCharAttr(testPosition));
+        assertEquals(attributeType, screenPlanes.getCharAttr(testPosition),"Final update failed");
     }
 
     /**
@@ -605,8 +607,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify color plane maintains consistency
      */
-    @Test
-    public void testColorPlaneConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testColorPlaneConsistency(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -615,20 +620,18 @@ public class AttributePairwiseTest {
             screenPlanes.setScreenAttr(testPosition, attributeType);
 
             // Verify color plane exists and has correct size
-            assertNotNull("Color plane should not be null", screenColor);
-            assertEquals(
-                "Color plane size mismatch",
-                SCREEN_LENGTH,
+            assertNotNull(screenColor,"Color plane should not be null");
+            assertEquals(SCREEN_LENGTH,
                 screenColor.length
-            );
+            ,
+                "Color plane size mismatch");
 
             // Verify color value is set
             char color = screenColor[testPosition];
             if (attributeType > 0) {
-                assertTrue(
-                    String.format("Color not set for attribute %d", attributeType),
-                    color != 0
-                );
+                assertTrue(color != 0
+                ,
+                    String.format("Color not set for attribute %d", attributeType));
             }
         } catch (Exception e) {
             fail("Color plane consistency check failed: " + e.getMessage());
@@ -640,8 +643,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify extended attribute plane maintains correct state
      */
-    @Test
-    public void testExtendedAttributePlaneConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExtendedAttributePlaneConsistency(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -650,18 +656,17 @@ public class AttributePairwiseTest {
             screenPlanes.setScreenAttr(testPosition, attributeType);
 
             // Verify extended plane exists and has correct size
-            assertNotNull("Extended attribute plane should not be null", screenExtended);
-            assertEquals(
-                "Extended attribute plane size mismatch",
-                SCREEN_LENGTH,
+            assertNotNull(screenExtended,"Extended attribute plane should not be null");
+            assertEquals(SCREEN_LENGTH,
                 screenExtended.length
-            );
+            ,
+                "Extended attribute plane size mismatch");
 
             // Verify extended attribute reflects dispersed attribute
             char extAttr = screenExtended[testPosition];
             if (attributeType >= ATTR_UNDERLINE) {
                 // Certain attributes set extended flags
-                assertNotNull("Extended attribute should be retrievable", extAttr);
+                assertNotNull(extAttr,"Extended attribute should be retrievable");
             }
         } catch (Exception e) {
             fail("Extended attribute plane consistency check failed: " + e.getMessage());
@@ -673,8 +678,11 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify getAttribute/getCharAttr consistency
      */
-    @Test
-    public void testAttributeConsistencyAfterSetting() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeConsistencyAfterSetting(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -684,11 +692,9 @@ public class AttributePairwiseTest {
             int attrValue = screenPlanes.getCharAttr(testPosition);
 
             // Attribute value should be retrievable after setting
-            assertEquals(
-                String.format("Attribute value mismatch at position %d", testPosition),
-                attributeType,
-                attrValue
-            );
+            assertEquals(attributeType,attrValue
+            ,
+                String.format("Attribute value mismatch at position %d", testPosition));
         } catch (Exception e) {
             fail("Attribute value consistency test failed: " + e.getMessage());
         }
@@ -699,13 +705,16 @@ public class AttributePairwiseTest {
      *
      * Positive test: Verify screen starts with valid attribute state
      */
-    @Test
-    public void testAttributeInitializationState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAttributeInitializationState(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         // Verify all positions start with default attribute
         for (int pos = 0; pos < Math.min(100, SCREEN_LENGTH); pos++) {
             int initialAttr = screenPlanes.getCharAttr(pos);
             // Initial attributes may be 0 or default value - just verify retrievable
-            assertNotNull("Attribute should be retrievable at initialization", initialAttr);
+            assertNotNull(initialAttr,"Attribute should be retrievable at initialization");
         }
     }
 
@@ -714,8 +723,11 @@ public class AttributePairwiseTest {
      *
      * Adversarial test: Verify conflicting attributes don't cause corruption
      */
-    @Test
-    public void testConflictingFieldAttributesHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConflictingFieldAttributesHandling(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -729,7 +741,7 @@ public class AttributePairwiseTest {
             screenPlanes.setScreenAttr(testPosition, attributeType);
             int retrieved = screenPlanes.getCharAttr(testPosition);
             // Should handle gracefully without crashing
-            assertEquals("Conflicting attributes should be stored", attributeType, retrieved);
+            assertEquals(attributeType, retrieved,"Conflicting attributes should be stored");
         } catch (Exception e) {
             fail("Conflicting field attributes caused exception: " + e.getMessage());
         }
@@ -740,8 +752,11 @@ public class AttributePairwiseTest {
      *
      * Adversarial test: Verify combining all extended attributes doesn't corrupt screen
      */
-    @Test
-    public void testAllExtendedAttributesCombined() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAllExtendedAttributesCombined(int testId, int attributeType, int colorValue, int fieldAttribute, int extendedAttribute, int testPosition) throws Exception {
+        setParameters(testId, attributeType, colorValue, fieldAttribute, extendedAttribute, testPosition);
+        setUp();
         if (!isValidPosition(testPosition)) {
             return;
         }
@@ -762,15 +777,14 @@ public class AttributePairwiseTest {
 
             // Should not corrupt screen state
             int retrieved = screenPlanes.getCharAttr(testPosition);
-            assertTrue("Screen state should not be corrupted", retrieved != -1);
+            assertTrue(retrieved != -1,"Screen state should not be corrupted");
 
             // Verify adjacent position unchanged
             if (testPosition > 0) {
                 int prevAttrAfter = screenPlanes.getCharAttr(testPosition - 1);
-                assertEquals("Previous position should be unchanged",
-                    prevAttrBefore,
+                assertEquals(prevAttrBefore,
                     prevAttrAfter
-                );
+                ,"Previous position should be unchanged");
             }
         } catch (Exception e) {
             fail("Combined extended attributes caused exception: " + e.getMessage());

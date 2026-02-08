@@ -1,17 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Scenario Test Suite
- * Payment Processing Workflow - End-to-End Verification
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests the complete payment processing workflow:
- * - Customer lookup by account
- * - Payment amount validation
- * - Transaction recording and settlement
- * - Audit trail verification
- * - Error recovery and rollback
- *
- * This scenario ensures that money never goes missing and state is consistent
- * across all workflow stages even when failures occur.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.scenarios;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -248,6 +243,8 @@ public class PaymentProcessingScenarioTest {
             new ConcurrentHashMap<>();
         private final Map<String, List<String>> auditTrails =
             new ConcurrentHashMap<>();
+        private final java.util.concurrent.atomic.AtomicLong transactionCounter =
+            new java.util.concurrent.atomic.AtomicLong(0);
 
         PaymentProcessingScenarioVerifier() {
             // Initialize test accounts
@@ -268,7 +265,7 @@ public class PaymentProcessingScenarioTest {
         }
 
         String recordPayment(String customerId, double amount) {
-            String transactionId = "TXN" + System.currentTimeMillis();
+            String transactionId = "TXN" + transactionCounter.incrementAndGet();
             PaymentScenarioStep.Transaction transaction =
                 new PaymentScenarioStep.Transaction(transactionId, customerId, amount,
                                                    System.currentTimeMillis(), "RECORDED");
@@ -281,23 +278,25 @@ public class PaymentProcessingScenarioTest {
         }
 
         void settlePayment(String transactionId) {
-            PaymentScenarioStep.Transaction txn = transactions.get(transactionId);
-            if (txn != null && !txn.status.equals("SETTLED")) {
-                // Update account balance
-                PaymentScenarioStep.CustomerAccount account = accounts.get(txn.customerId);
-                if (account != null) {
-                    accounts.put(txn.customerId,
-                        new PaymentScenarioStep.CustomerAccount(account.customerId,
-                            account.currentBalance - txn.amount, account.isActive));
+            transactions.compute(transactionId, (id, txn) -> {
+                if (txn == null || "SETTLED".equals(txn.status)) {
+                    return txn;
                 }
+                accounts.compute(txn.customerId, (acctId, account) -> {
+                    if (account == null) {
+                        return null;
+                    }
+                    return new PaymentScenarioStep.CustomerAccount(account.customerId,
+                        account.currentBalance - txn.amount, account.isActive);
+                });
 
-                // Mark transaction settled
-                transactions.put(transactionId,
-                    new PaymentScenarioStep.Transaction(txn.transactionId, txn.customerId,
-                        txn.amount, txn.timestamp, "SETTLED"));
+                auditTrails.computeIfAbsent(id, k ->
+                    Collections.synchronizedList(new ArrayList<>()))
+                    .add("SETTLEMENT: status=SETTLED");
 
-                auditTrails.get(transactionId).add("SETTLEMENT: status=SETTLED");
-            }
+                return new PaymentScenarioStep.Transaction(txn.transactionId, txn.customerId,
+                    txn.amount, txn.timestamp, "SETTLED");
+            });
         }
 
         PaymentScenarioStep.Transaction getTransaction(String transactionId) {

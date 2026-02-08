@@ -1,33 +1,21 @@
-/**
- * Title: ScreenPlanesTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD tests for ScreenPlanes error line save/restore functionality
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * TDD test suite for ScreenPlanes.saveErrorLine() and restoreErrorLine()
@@ -94,7 +82,7 @@ public class ScreenPlanesTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         // Create ScreenPlanes with test double
         screen5250 = new Screen5250TestDouble();
@@ -132,7 +120,7 @@ public class ScreenPlanesTest {
         // Initialize screen content with distinctive values
         char testChar = 'X';
         char testAttr = 42;
-        char testIsAttr = '1';
+        char testIsAttr = 1;
         char testGUI = 7;
 
         int errorLineStartPos = (ERROR_LINE_ROW - 1) * NUM_COLS_80;
@@ -161,22 +149,19 @@ public class ScreenPlanesTest {
         // Verify ALL columns were restored, including the last column (index 79)
         // This test MUST FAIL because bug skips column 79
         for (int i = 0; i < NUM_COLS_80; i++) {
-            assertEquals(
-                "Column " + i + " was not properly restored to screen array",
-                testChar,
+            assertEquals(testChar,
                 screenPlanes.screen[errorLineStartPos + i]
-            );
-            assertEquals(
-                "Column " + i + " was not properly restored to screenAttr array. "
-                    + "BUG: Line 155 skips last column with 'x < numCols - 1'",
-                testAttr,
+            ,
+                "Column " + i + " was not properly restored to screen array");
+            assertEquals(testAttr,
                 screenAttr[errorLineStartPos + i]
-            );
-            assertEquals(
-                "Column " + i + " was not properly restored to screenIsAttr array",
-                testIsAttr,
+            ,
+                "Column " + i + " was not properly restored to screenAttr array. "
+                    + "BUG: Line 155 skips last column with 'x < numCols - 1'");
+            assertEquals(testIsAttr,
                 screenIsAttr[errorLineStartPos + i]
-            );
+            ,
+                "Column " + i + " was not properly restored to screenIsAttr array");
         }
     }
 
@@ -225,20 +210,18 @@ public class ScreenPlanesTest {
         for (int col = 0; col < NUM_COLS_80; col++) {
             int correctPos = errorLineStartPos + col;
 
-            assertEquals(
+            assertEquals(errorLineGUI,
+                screenGUI[correctPos]
+            ,
                 "GUI at column " + col + " of error line (pos " + correctPos
                     + ") was not restored correctly. "
-                    + "BUG: Line 158 writes to screenGUI[x] instead of screenGUI[r + x]",
-                errorLineGUI,
-                screenGUI[correctPos]
-            );
+                    + "BUG: Line 158 writes to screenGUI[x] instead of screenGUI[r + x]");
 
             // Also verify that the beginning of the screen was not corrupted
-            assertEquals(
-                "GUI at position " + col + " (start of screen) should not be overwritten",
-                otherGUI,
+            assertEquals(otherGUI,
                 screenGUI[col]
-            );
+            ,
+                "GUI at position " + col + " (start of screen) should not be overwritten");
         }
     }
 
@@ -278,13 +261,12 @@ public class ScreenPlanesTest {
         // This test MUST FAIL with the current buggy implementation because:
         // Line 155: for (int x = 0; x < numCols - 1; x++)
         //           ==================^ skips when x = 79
-        assertEquals(
+        assertEquals(lastColGUI,
+            screenGUI[lastColPos]
+        ,
             "Last column (index " + lastCol + ", pos " + lastColPos
                 + ") GUI was not restored. "
-                + "BUG: Line 155 uses 'x < numCols - 1' instead of 'x < numCols'",
-            lastColGUI,
-            screenGUI[lastColPos]
-        );
+                + "BUG: Line 155 uses 'x < numCols - 1' instead of 'x < numCols'");
     }
 
     /**
@@ -302,7 +284,7 @@ public class ScreenPlanesTest {
             int pos = errorLineStartPos + col;
             screenPlanes.screen[pos] = (char) ('A' + (col % 26));
             screenAttr[pos] = (char) (32 + (col % 10));
-            screenIsAttr[pos] = (char) ((col % 2) == 0 ? '1' : '0');
+            screenIsAttr[pos] = (char) ((col % 2) == 0 ? 1 : 0);
             screenGUI[pos] = (char) ((col + 1) % 10);
         }
 
@@ -325,30 +307,26 @@ public class ScreenPlanesTest {
         for (int col = 0; col < NUM_COLS_80; col++) {
             int pos = errorLineStartPos + col;
 
-            assertEquals(
-                "Column " + col + ": character not restored",
-                (char) ('A' + (col % 26)),
+            assertEquals((char) ('A' + (col % 26)),
                 screenPlanes.screen[pos]
-            );
+            ,
+                "Column " + col + ": character not restored");
 
-            assertEquals(
-                "Column " + col + ": attribute not restored",
-                (char) (32 + (col % 10)),
+            assertEquals((char) (32 + (col % 10)),
                 screenAttr[pos]
-            );
+            ,
+                "Column " + col + ": attribute not restored");
 
-            assertEquals(
-                "Column " + col + ": isAttr not restored",
-                (char) ((col % 2) == 0 ? '1' : '0'),
+            assertEquals((char) ((col % 2) == 0 ? 1 : 0),
                 screenIsAttr[pos]
-            );
+            ,
+                "Column " + col + ": isAttr not restored");
 
-            assertEquals(
-                "Column " + col + ": GUI not restored at correct offset. "
-                    + "BUG: Line 158 writes to screenGUI[x] instead of screenGUI[r + x]",
-                (char) ((col + 1) % 10),
+            assertEquals((char) ((col + 1) % 10),
                 screenGUI[pos]
-            );
+            ,
+                "Column " + col + ": GUI not restored at correct offset. "
+                    + "BUG: Line 158 writes to screenGUI[x] instead of screenGUI[r + x]");
         }
     }
 
@@ -371,11 +349,10 @@ public class ScreenPlanesTest {
         screenPlanes.saveErrorLine();
 
         // Verify error line was saved (not null)
-        assertEquals(
-            "Error line not saved",
-            true,
+        assertEquals(true,
             screenPlanes.isErrorLineSaved()
-        );
+        ,
+            "Error line not saved");
     }
 
 }

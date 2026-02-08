@@ -1,27 +1,17 @@
-/**
- * ConfigurationPairwiseTest.java - Pairwise TDD Tests for Configuration Handling
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover bugs
- * in configuration handling across GlobalConfigure, SessionConfig, and
- * ConfigureFactory by combining multiple test dimensions:
- *
- * Dimensions tested:
- * - Property keys: [valid, invalid, null, empty, special-chars, unicode]
- * - Property values: [string, number, boolean, null, empty, very-long]
- * - File states: [exists, missing, read-only, corrupt, locked]
- * - Directories: [exists, missing, no-permission, symlink]
- * - Encoding: [UTF-8, ISO-8859-1, ASCII, invalid]
- *
- * Test strategy: Combine pairs of dimensions to create adversarial scenarios
- * that expose input validation gaps, encoding issues, and state handling bugs.
- *
- * Writing style: RED phase tests that expose bugs in configuration handling.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -32,7 +22,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Pairwise Tests for Configuration Handling
@@ -50,7 +40,7 @@ public class ConfigurationPairwiseTest {
     private File testPropsFile;
     private Properties testProps;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         // Create temporary directory structure for test files
         tempDir = Files.createTempDirectory("tn5250j-config-test").toFile();
@@ -60,7 +50,7 @@ public class ConfigurationPairwiseTest {
         testProps = new Properties();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Cleanup test files and restore permissions
         if (testPropsFile != null && testPropsFile.exists()) {
@@ -112,8 +102,8 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Property loaded correctly
-        assertTrue("Property 'app.name' should exist", loaded.containsKey("app.name"));
-        assertEquals("Property value should match", "tn5250j", loaded.getProperty("app.name"));
+        assertTrue(loaded.containsKey("app.name"),"Property 'app.name' should exist");
+        assertEquals("tn5250j", loaded.getProperty("app.name"),"Property value should match");
     }
 
     /**
@@ -135,8 +125,8 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Property loaded and parseable as number
-        assertTrue("Property 'port' should exist", loaded.containsKey("port"));
-        assertEquals("Numeric property should parse", 5250, Integer.parseInt(loaded.getProperty("port")));
+        assertTrue(loaded.containsKey("port"),"Property 'port' should exist");
+        assertEquals(5250, Integer.parseInt(loaded.getProperty("port")),"Numeric property should parse");
     }
 
     /**
@@ -158,8 +148,8 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Boolean property loaded correctly
-        assertTrue("Property 'enabled' should exist", loaded.containsKey("enabled"));
-        assertEquals("Boolean should be 'true'", "true", loaded.getProperty("enabled"));
+        assertTrue(loaded.containsKey("enabled"),"Property 'enabled' should exist");
+        assertEquals("true", loaded.getProperty("enabled"),"Boolean should be 'true'");
     }
 
     /**
@@ -181,8 +171,8 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Unicode property loaded correctly
-        assertTrue("Unicode property should exist", loaded.containsKey("日本語"));
-        assertEquals("Unicode value should match", "こんにちは", loaded.getProperty("日本語"));
+        assertTrue(loaded.containsKey("日本語"),"Unicode property should exist");
+        assertEquals("こんにちは", loaded.getProperty("日本語"),"Unicode value should match");
     }
 
     /**
@@ -204,9 +194,9 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Special-char key loaded correctly
-        assertTrue("Special-char key should exist", loaded.containsKey("emulator.settings.path"));
-        assertEquals("Path value should match", "/home/user/.tn5250j/config",
-                loaded.getProperty("emulator.settings.path"));
+        assertTrue(loaded.containsKey("emulator.settings.path"),"Special-char key should exist");
+        assertEquals("/home/user/.tn5250j/config",
+                loaded.getProperty("emulator.settings.path"),"Path value should match");
     }
 
     /**
@@ -229,10 +219,10 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Multi-value property loaded and parseable
-        assertTrue("Multi-value property should exist", loaded.containsKey("color.rgb"));
+        assertTrue(loaded.containsKey("color.rgb"),"Multi-value property should exist");
         String[] values = loaded.getProperty("color.rgb").split(",");
-        assertEquals("Should have 4 color values", 4, values.length);
-        assertEquals("First value should be 255", 255, Integer.parseInt(values[0]));
+        assertEquals(4, values.length,"Should have 4 color values");
+        assertEquals(255, Integer.parseInt(values[0]),"First value should be 255");
     }
 
     // ==========================================================================
@@ -247,7 +237,7 @@ public class ConfigurationPairwiseTest {
     public void testLoadFromNonExistentFileFails() throws IOException {
         // ARRANGE: File does not exist
         File nonExistent = new File(configDir, "nonexistent.properties");
-        assertFalse("File should not exist", nonExistent.exists());
+        assertFalse(nonExistent.exists(),"File should not exist");
 
         // ACT & ASSERT: FileInputStream should throw FileNotFoundException
         try {
@@ -258,8 +248,7 @@ public class ConfigurationPairwiseTest {
             fail("Should throw FileNotFoundException for non-existent file");
         } catch (FileNotFoundException e) {
             // Expected: file not found
-            assertTrue("Exception message should contain filename",
-                    e.getMessage().contains(nonExistent.getName()));
+            assertTrue(e.getMessage().contains(nonExistent.getName()),"Exception message should contain filename");
         }
     }
 
@@ -301,7 +290,7 @@ public class ConfigurationPairwiseTest {
 
         // ASSERT: Empty key is loaded (this may be a bug or feature)
         // Document the behavior: empty keys are allowed but problematic
-        assertTrue("Empty key should be present", loaded.containsKey(""));
+        assertTrue(loaded.containsKey(""),"Empty key should be present");
     }
 
     /**
@@ -345,9 +334,9 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Long value loaded completely
-        assertTrue("Long value property should exist", loaded.containsKey("config.longvalue"));
-        assertEquals("Long value should load completely", longValue.length(),
-                loaded.getProperty("config.longvalue").length());
+        assertTrue(loaded.containsKey("config.longvalue"),"Long value property should exist");
+        assertEquals(longValue.length(),
+                loaded.getProperty("config.longvalue").length(),"Long value should load completely");
     }
 
     /**
@@ -370,9 +359,9 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Injection payload should be treated as literal value
-        assertTrue("normal.key should exist", loaded.containsKey("normal.key"));
+        assertTrue(loaded.containsKey("normal.key"),"normal.key should exist");
         // The injected.key should NOT be created (it's part of the value)
-        assertFalse("Injected key should NOT be created", loaded.containsKey("injected.key"));
+        assertFalse(loaded.containsKey("injected.key"),"Injected key should NOT be created");
     }
 
     /**
@@ -396,7 +385,7 @@ public class ConfigurationPairwiseTest {
 
         // ASSERT: Properties.load() is forgiving, should load partial data
         // This documents the actual behavior
-        assertTrue("Corrupt file should still load something", loaded.size() >= 0);
+        assertTrue(loaded.size() >= 0,"Corrupt file should still load something");
     }
 
     /**
@@ -422,9 +411,8 @@ public class ConfigurationPairwiseTest {
             fail("Should throw IOException when writing to read-only file");
         } catch (IOException e) {
             // Expected: permission denied
-            assertTrue("Exception should indicate write failure",
-                    e.getMessage().contains("Permission denied") ||
-                    e.getMessage().contains("cannot be written"));
+            assertTrue(e.getMessage().contains("Permission denied") ||
+                    e.getMessage().contains("cannot be written"),"Exception should indicate write failure");
         }
     }
 
@@ -436,7 +424,7 @@ public class ConfigurationPairwiseTest {
     public void testSaveToMissingDirectoryFails() throws IOException {
         // ARRANGE: Delete the configuration directory
         recursiveDelete(configDir);
-        assertFalse("Config dir should be deleted", configDir.exists());
+        assertFalse(configDir.exists(),"Config dir should be deleted");
 
         // ACT & ASSERT: Attempt to save file in non-existent directory
         try {
@@ -447,9 +435,8 @@ public class ConfigurationPairwiseTest {
             fail("Should throw IOException when directory doesn't exist");
         } catch (FileNotFoundException e) {
             // Expected: directory not found
-            assertTrue("Exception should indicate path issue",
-                    e.getMessage().contains("cannot find") ||
-                    e.getMessage().contains("No such file"));
+            assertTrue(e.getMessage().contains("cannot find") ||
+                    e.getMessage().contains("No such file"),"Exception should indicate path issue");
         }
     }
 
@@ -477,7 +464,7 @@ public class ConfigurationPairwiseTest {
 
         // ASSERT: Properties loaded (ISO-8859-1 accepts any byte)
         // This documents the actual behavior: properties.load() is forgiving
-        assertTrue("Should load despite encoding issues", loaded.size() >= 0);
+        assertTrue(loaded.size() >= 0,"Should load despite encoding issues");
     }
 
     // ==========================================================================
@@ -491,8 +478,8 @@ public class ConfigurationPairwiseTest {
     @Test
     public void testSaveToExistingWritableDirectory() throws IOException {
         // ARRANGE: Config directory exists and is writable
-        assertTrue("Config dir should exist", configDir.exists());
-        assertTrue("Config dir should be writable", configDir.canWrite());
+        assertTrue(configDir.exists(),"Config dir should exist");
+        assertTrue(configDir.canWrite(),"Config dir should be writable");
 
         // ACT: Save properties to file
         Properties props = new Properties();
@@ -502,8 +489,8 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: File created successfully
-        assertTrue("File should be created", testPropsFile.exists());
-        assertTrue("File should be readable", testPropsFile.canRead());
+        assertTrue(testPropsFile.exists(),"File should be created");
+        assertTrue(testPropsFile.canRead(),"File should be readable");
     }
 
     /**
@@ -532,7 +519,7 @@ public class ConfigurationPairwiseTest {
             // ACT & ASSERT: Attempt to list/access files should fail
             File[] files = configDir.listFiles();
             // This will return null due to permission denied
-            assertNull("listFiles should return null for no-permission directory", files);
+            assertNull(files,"listFiles should return null for no-permission directory");
 
         } finally {
             // Restore permissions for cleanup
@@ -568,9 +555,8 @@ public class ConfigurationPairwiseTest {
                 fail("Should not create file in read-only directory");
             } catch (IOException e) {
                 // Expected: permission denied
-                assertTrue("Exception should indicate permission issue",
-                        e.getMessage().contains("Permission denied") ||
-                        e.getMessage().contains("cannot"));
+                assertTrue(e.getMessage().contains("Permission denied") ||
+                        e.getMessage().contains("cannot"),"Exception should indicate permission issue");
             }
 
         } finally {
@@ -607,9 +593,9 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: ASCII content loads fine, Unicode may be corrupted
-        assertEquals("English greeting should load", "Hello", loaded.getProperty("greeting.en"));
+        assertEquals("Hello", loaded.getProperty("greeting.en"),"English greeting should load");
         // Note: Japanese will be corrupted due to ISO-8859-1 decoding
-        assertNotNull("Japanese greeting should exist (but corrupted)", loaded.getProperty("greeting.ja"));
+        assertNotNull(loaded.getProperty("greeting.ja"),"Japanese greeting should exist (but corrupted)");
     }
 
     /**
@@ -631,7 +617,7 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Latin-1 characters load correctly
-        assertNotNull("French city should load", loaded.getProperty("city.french"));
+        assertNotNull(loaded.getProperty("city.french"),"French city should load");
     }
 
     /**
@@ -655,9 +641,9 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: All ASCII properties load correctly
-        assertEquals("Simple property should match", "simple.value", loaded.getProperty("simple.key"));
-        assertEquals("Version should match", "1.2.3", loaded.getProperty("app.version"));
-        assertEquals("App name should match", "tn5250j", loaded.getProperty("app.name"));
+        assertEquals("simple.value", loaded.getProperty("simple.key"),"Simple property should match");
+        assertEquals("1.2.3", loaded.getProperty("app.version"),"Version should match");
+        assertEquals("tn5250j", loaded.getProperty("app.name"),"App name should match");
     }
 
     /**
@@ -678,8 +664,8 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Escaped unicode decoded correctly
-        assertNotNull("Escaped unicode should decode", loaded.getProperty("greeting.japanese"));
-        assertEquals("Should decode to actual unicode", "こんにちは", loaded.getProperty("greeting.japanese"));
+        assertNotNull(loaded.getProperty("greeting.japanese"),"Escaped unicode should decode");
+        assertEquals("こんにちは", loaded.getProperty("greeting.japanese"),"Should decode to actual unicode");
     }
 
     // ==========================================================================
@@ -704,7 +690,7 @@ public class ConfigurationPairwiseTest {
         try (FileInputStream fis = new FileInputStream(testPropsFile)) {
             loaded1.load(fis);
         }
-        assertEquals("First load should get version 1", "1", loaded1.getProperty("version"));
+        assertEquals("1", loaded1.getProperty("version"),"First load should get version 1");
 
         // ACT: Modify and save again
         loaded1.setProperty("version", "2");
@@ -720,9 +706,9 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: All modifications persisted
-        assertEquals("Second load should get version 2", "2", loaded2.getProperty("version"));
-        assertTrue("Modified flag should exist", loaded2.containsKey("modified"));
-        assertEquals("Original property should persist", "test", loaded2.getProperty("name"));
+        assertEquals("2", loaded2.getProperty("version"),"Second load should get version 2");
+        assertTrue(loaded2.containsKey("modified"),"Modified flag should exist");
+        assertEquals("test", loaded2.getProperty("name"),"Original property should persist");
     }
 
     /**
@@ -758,8 +744,8 @@ public class ConfigurationPairwiseTest {
         }
 
         // ASSERT: Numeric roundtrip preserved
-        assertEquals("Port should increment", originalPort + 1,
-                Integer.parseInt(loaded2.getProperty("server.port")));
+        assertEquals(originalPort + 1,
+                Integer.parseInt(loaded2.getProperty("server.port")),"Port should increment");
     }
 
     /**
@@ -784,10 +770,9 @@ public class ConfigurationPairwiseTest {
 
         // ASSERT: Note - Java Properties does NOT expand ${...} references
         // This documents the limitation
-        assertEquals("Base path stored", "/home/user", loaded.getProperty("base.path"));
-        assertNotNull("Dependent path stored literally", loaded.getProperty("config.path"));
-        assertTrue("Dependent path contains unexpanded reference",
-                loaded.getProperty("config.path").contains("${base.path}"));
+        assertEquals("/home/user", loaded.getProperty("base.path"),"Base path stored");
+        assertNotNull(loaded.getProperty("config.path"),"Dependent path stored literally");
+        assertTrue(loaded.getProperty("config.path").contains("${base.path}"),"Dependent path contains unexpanded reference");
     }
 
 }

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+
+  SPDX-License-Identifier: GPL-2.0-or-later
+-->
+
+
+
+
+
 
 <project name="hti5250j" default="info" basedir=".">
 
@@ -18,8 +28,8 @@
     <property name="runtime.lib.dir" value="${basedir}/lib/runtime"/>
     <property name="development.lib.dir" value="${basedir}/lib/development"/>
 
-    <property name="compile.source" value="17"/>
-    <property name="compile.target" value="17"/>
+    <property name="compile.source" value="21"/>
+    <property name="compile.target" value="21"/>
 
     <property name="jarname" value="${name}.jar"/>
     <property name="dist.base.name" value="${name}-${version}"/>

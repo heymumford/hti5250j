@@ -1,23 +1,13 @@
 /*
- * @(#)SessionConfig.java
- * Copyright:    Copyright (c) 2001
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
- *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import org.hti5250j.event.SessionConfigEvent;
@@ -34,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -70,9 +61,15 @@ public class SessionConfig {
     private final ReadWriteLock sessionCfglistenersLock = new ReentrantReadWriteLock();
 
     public SessionConfig(String configurationResource, String sessionName) {
+        this(configurationResource, sessionName, false);
+    }
+
+    protected SessionConfig(String configurationResource, String sessionName, boolean deferLoad) {
         this.configurationResource = configurationResource;
         this.sessionName = sessionName;
-        loadConfigurationResource();
+        if (!deferLoad) {
+            loadConfigurationResource();
+        }
     }
 
     public String getConfigurationResource() {
@@ -228,13 +225,19 @@ public class SessionConfig {
         }
     }
 
-    private Properties loadPropertiesFromResource(String resourceName) throws IOException {
+    protected Properties loadPropertiesFromResource(String resourceName) throws IOException {
         Properties properties = new Properties();
         URL url = getClass().getClassLoader().getResource(resourceName);
         if (url != null) {
-            properties.load(url.openStream());
+            try (InputStream stream = openResourceStream(url)) {
+                properties.load(stream);
+            }
         }
         return properties;
+    }
+
+    protected InputStream openResourceStream(URL url) throws IOException {
+        return url.openStream();
     }
 
     public boolean isPropertyExists(String prop) {
@@ -406,8 +409,8 @@ public class SessionConfig {
         }
 
         public KeyMnemonic[] getKeypadMnemonics() {
-            String s = getStringProperty(CONFIG_KEYPAD_MNEMONICS);
-            KeyMnemonic[] result = keyMnemonicSerializer.deserialize(s);
+            String mnemonicData = getStringProperty(CONFIG_KEYPAD_MNEMONICS);
+            KeyMnemonic[] result = keyMnemonicSerializer.deserialize(mnemonicData);
             if (result.length == 0) {
                 return getDefaultKeypadMnemonics();
             }

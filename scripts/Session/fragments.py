@@ -1,24 +1,8 @@
-# Fragments.py acts between "paste" (one temporary fragment) and "macros" (many saved fragments).
-# When you need to paste several text parts or fragments (e.g. ordernumbers, items, names) which are only
-# used in your current session, this script is for you ...
-# Enter the fragments with ADD and use USE to get them on the actual line in the session,
-# REMOVE removes the selected fragment.
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
 #
-# TRIM    - remove spaces in the fragment (e.g. copied and pasted from screen)
-# [ENTER] - add the command string [ENTER] to the line
-# REFRESH - put new sessions (started after the script) in the scope (sessionlist) of the script
+# SPDX-License-Identifier: GPL-2.0-or-later
 
-# TIP: You can use the command keys like 'wrksplf[enter]' or [pf3]'
-# To do:
-# - filter on extension *.txt
-# - use restored file name as default for save file
-# - die on invalid file
-# - remove sub 'serializedlist'
-# - make helpdialog with trim and [enter]
-# - make input field in edit dialog longer
-# - update to new version
-#
-# March 20, 2003 version 0.2
+
 
 import java.io as io
 import java.lang.String

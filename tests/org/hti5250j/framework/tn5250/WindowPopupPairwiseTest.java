@@ -1,36 +1,22 @@
-/**
- * Title: WindowPopupPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for HTI5250j window and popup handling
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for HTI5250j window and popup handling.
@@ -49,15 +35,14 @@ import static org.junit.Assert.*;
  * Pairwise minimum coverage: 25+ combinations ensuring all value pairs appear
  * in at least one test case.
  */
-@RunWith(Parameterized.class)
 public class WindowPopupPairwiseTest {
 
     // Test parameters
-    private final String windowType;
-    private final String windowSize;
-    private final String windowPosition;
-    private final String borderStyle;
-    private final String scrollMode;
+    private String windowType;
+    private String windowSize;
+    private String windowPosition;
+    private String borderStyle;
+    private String scrollMode;
 
     // Instance variables
     private Screen5250TestDouble screen5250;
@@ -101,8 +86,7 @@ public class WindowPopupPairwiseTest {
      * - Window type x Size, Window type x Position, Size x Border, etc.
      * - Adversarial rows test state transitions and resource limits
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // Row 1: Single small window, centered, no border, no scroll
                 { WINDOW_SINGLE, SIZE_SMALL, POS_CENTERED, BORDER_NONE, SCROLL_DISABLED },
@@ -191,7 +175,7 @@ public class WindowPopupPairwiseTest {
         });
     }
 
-    public WindowPopupPairwiseTest(String windowType, String windowSize, String windowPosition,
+    private void setParameters(String windowType, String windowSize, String windowPosition,
                                    String borderStyle, String scrollMode) {
         this.windowType = windowType;
         this.windowSize = windowSize;
@@ -200,8 +184,7 @@ public class WindowPopupPairwiseTest {
         this.scrollMode = scrollMode;
     }
 
-    @Before
-    public void setUp() {
+        public void setUp() {
         screen5250 = new Screen5250TestDouble();
         windowRect = new Rect(0, 0, 0, 0);
         testContext = new WindowTestContext();
@@ -214,8 +197,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Window created with exact dimensions matching parameters
      * REFACTOR: Validate bounds checking
      */
-    @Test
-    public void testWindowCreationWithDimensions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWindowCreationWithDimensions(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         int x = getPositionX();
         int y = getPositionY();
         int width = getSizeWidth();
@@ -223,10 +209,10 @@ public class WindowPopupPairwiseTest {
 
         windowRect = new Rect(x, y, width, height);
 
-        assertEquals("Window X coordinate should match position", x, windowRect.x());
-        assertEquals("Window Y coordinate should match position", y, windowRect.y());
-        assertEquals("Window width should match size", width, windowRect.width());
-        assertEquals("Window height should match size", height, windowRect.height());
+        assertEquals(x, windowRect.x(),"Window X coordinate should match position");
+        assertEquals(y, windowRect.y(),"Window Y coordinate should match position");
+        assertEquals(width, windowRect.width(),"Window width should match size");
+        assertEquals(height, windowRect.height(),"Window height should match size");
     }
 
     /**
@@ -236,27 +222,30 @@ public class WindowPopupPairwiseTest {
      * GREEN: Border renders with correct style characters
      * REFACTOR: Encapsulate border style validation
      */
-    @Test
-    public void testBorderRenderingWithStyle() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBorderRenderingWithStyle(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         testContext.setBorderStyle(borderStyle);
 
         if (borderStyle.equals(BORDER_NONE)) {
-            assertFalse("No border mode should not draw border", testContext.shouldDrawBorder());
+            assertFalse(testContext.shouldDrawBorder(),"No border mode should not draw border");
             return;
         }
 
-        assertTrue("Border style should enable border rendering", testContext.shouldDrawBorder());
+        assertTrue(testContext.shouldDrawBorder(),"Border style should enable border rendering");
 
         int expectedChar = getBorderCharacter();
-        assertFalse("Border character should not be null", expectedChar == 0);
+        assertFalse(expectedChar == 0,"Border character should not be null");
 
         // Verify border character matches style
         if (borderStyle.equals(BORDER_SINGLE)) {
-            assertEquals("Single border should use │ or ─", (int)'│', expectedChar);
+            assertEquals((int)'│', expectedChar,"Single border should use │ or ─");
         } else if (borderStyle.equals(BORDER_DOUBLE)) {
-            assertEquals("Double border should use ║ or ═", (int)'║', expectedChar);
+            assertEquals((int)'║', expectedChar,"Double border should use ║ or ═");
         } else if (borderStyle.equals(BORDER_THICK)) {
-            assertEquals("Thick border should use heavier weight", (int)'█', expectedChar);
+            assertEquals((int)'█', expectedChar,"Thick border should use heavier weight");
         }
     }
 
@@ -267,8 +256,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Scroll regions created based on scroll mode
      * REFACTOR: Separate scroll initialization from window creation
      */
-    @Test
-    public void testScrollingRegionInitialization() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testScrollingRegionInitialization(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         testContext.setScrollMode(scrollMode);
 
         boolean hasVerticalScroll = scrollMode.equals(SCROLL_VERTICAL) ||
@@ -277,15 +269,15 @@ public class WindowPopupPairwiseTest {
                                      scrollMode.equals(SCROLL_BOTH);
 
         if (scrollMode.equals(SCROLL_DISABLED)) {
-            assertFalse("Disabled scroll should not have vertical scroll", hasVerticalScroll);
-            assertFalse("Disabled scroll should not have horizontal scroll", hasHorizontalScroll);
+            assertFalse(hasVerticalScroll,"Disabled scroll should not have vertical scroll");
+            assertFalse(hasHorizontalScroll,"Disabled scroll should not have horizontal scroll");
             return;
         }
 
-        assertEquals("Vertical scroll should match scroll mode", hasVerticalScroll,
-                    testContext.hasVerticalScrollbar());
-        assertEquals("Horizontal scroll should match scroll mode", hasHorizontalScroll,
-                    testContext.hasHorizontalScrollbar());
+        assertEquals(hasVerticalScroll,
+                    testContext.hasVerticalScrollbar(),"Vertical scroll should match scroll mode");
+        assertEquals(hasHorizontalScroll,
+                    testContext.hasHorizontalScrollbar(),"Horizontal scroll should match scroll mode");
     }
 
     /**
@@ -295,19 +287,22 @@ public class WindowPopupPairwiseTest {
      * GREEN: Window type correctly determines nesting capabilities
      * REFACTOR: Strategy pattern for window types
      */
-    @Test
-    public void testWindowTypeNestingBehavior() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWindowTypeNestingBehavior(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         testContext.setWindowType(windowType);
 
         boolean canNest = !windowType.equals(WINDOW_NONE);
 
         if (windowType.equals(WINDOW_NESTED)) {
-            assertTrue("Nested window type should support nesting", canNest);
+            assertTrue(canNest,"Nested window type should support nesting");
             // For nested windows, we can have a parent, but don't require it in test
         } else if (windowType.equals(WINDOW_SINGLE)) {
-            assertFalse("Single window should not require parent", testContext.requiresParent());
+            assertFalse(testContext.requiresParent(),"Single window should not require parent");
         } else if (windowType.equals(WINDOW_TILED)) {
-            assertFalse("Tiled window should not require parent", testContext.requiresParent());
+            assertFalse(testContext.requiresParent(),"Tiled window should not require parent");
         }
     }
 
@@ -318,26 +313,29 @@ public class WindowPopupPairwiseTest {
      * GREEN: Position calculated correctly based on position mode
      * REFACTOR: Extract position calculation
      */
-    @Test
-    public void testWindowPositioning() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWindowPositioning(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         int expectedX = getPositionX();
         int expectedY = getPositionY();
 
         if (windowPosition.equals(POS_CENTERED)) {
             int centerX = (80 - getSizeWidth()) / 2;
             int centerY = (24 - getSizeHeight()) / 2;
-            assertEquals("Centered position should calculate X", centerX, expectedX);
-            assertEquals("Centered position should calculate Y", centerY, expectedY);
+            assertEquals(centerX, expectedX,"Centered position should calculate X");
+            assertEquals(centerY, expectedY,"Centered position should calculate Y");
         } else if (windowPosition.equals(POS_CORNER)) {
-            assertEquals("Corner position should be (0, 0)", 0, expectedX);
-            assertEquals("Corner position should be (0, 0)", 0, expectedY);
+            assertEquals(0, expectedX,"Corner position should be (0, 0)");
+            assertEquals(0, expectedY,"Corner position should be (0, 0)");
         } else if (windowPosition.equals(POS_OFFSET)) {
             // Offset position allows X=0 for fullscreen, but should have offset for smaller windows
             if (getSizeWidth() < 80) {
-                assertTrue("Offset position should have non-zero X for non-fullscreen", expectedX > 0);
+                assertTrue(expectedX > 0,"Offset position should have non-zero X for non-fullscreen");
             }
             if (getSizeHeight() < 24) {
-                assertTrue("Offset position should have non-zero Y for non-fullscreen", expectedY > 0);
+                assertTrue(expectedY > 0,"Offset position should have non-zero Y for non-fullscreen");
             }
         }
     }
@@ -349,17 +347,20 @@ public class WindowPopupPairwiseTest {
      * GREEN: Modal dialog blocks parent input when active
      * REFACTOR: Modal state management
      */
-    @Test
-    public void testModalDialogBlocking() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testModalDialogBlocking(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (!windowType.equals(WINDOW_NESTED) || !windowSize.equals(SIZE_FULLSCREEN)) {
             return; // Only test modal behavior for nested fullscreen windows
         }
 
         testContext.setModalDialog(true);
-        assertTrue("Modal dialog should block parent input", testContext.isInputBlocked());
+        assertTrue(testContext.isInputBlocked(),"Modal dialog should block parent input");
 
         testContext.setModalDialog(false);
-        assertFalse("Non-modal should not block parent input", testContext.isInputBlocked());
+        assertFalse(testContext.isInputBlocked(),"Non-modal should not block parent input");
     }
 
     /**
@@ -369,17 +370,20 @@ public class WindowPopupPairwiseTest {
      * GREEN: Windows render in correct z-order (topmost visible)
      * REFACTOR: Z-order stack management
      */
-    @Test
-    public void testZOrderManagement() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testZOrderManagement(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         WindowTestContext window1 = new WindowTestContext();
         WindowTestContext window2 = new WindowTestContext();
 
         window1.setZOrder(1);
         window2.setZOrder(2);
 
-        assertEquals("First window should have z-order 1", 1, window1.getZOrder());
-        assertEquals("Second window should have z-order 2", 2, window2.getZOrder());
-        assertTrue("Higher z-order window should be topmost", window2.getZOrder() > window1.getZOrder());
+        assertEquals(1, window1.getZOrder(),"First window should have z-order 1");
+        assertEquals(2, window2.getZOrder(),"Second window should have z-order 2");
+        assertTrue(window2.getZOrder() > window1.getZOrder(),"Higher z-order window should be topmost");
     }
 
     /**
@@ -389,8 +393,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Scroll position constrained to valid range
      * REFACTOR: Scroll bounds validation
      */
-    @Test
-    public void testScrollPositionBounds() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testScrollPositionBounds(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (scrollMode.equals(SCROLL_DISABLED)) {
             return;
         }
@@ -399,12 +406,11 @@ public class WindowPopupPairwiseTest {
         int windowHeight = getSizeHeight();
         testContext.setSize(getSizeWidth(), windowHeight);
         testContext.setVerticalScrollPosition(0);
-        assertEquals("Scroll position at 0", 0, testContext.getVerticalScrollPosition());
+        assertEquals(0, testContext.getVerticalScrollPosition(),"Scroll position at 0");
 
         testContext.setVerticalScrollPosition(1000); // Beyond content
         // Scroll position should be non-negative (clamped at minimum)
-        assertTrue("Scroll position should be non-negative",
-                  testContext.getVerticalScrollPosition() >= 0);
+        assertTrue(testContext.getVerticalScrollPosition() >= 0,"Scroll position should be non-negative");
     }
 
     /**
@@ -414,8 +420,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Overlapping windows render correctly with style priority
      * REFACTOR: Style conflict resolution
      */
-    @Test
-    public void testAdversarialOverlappingWindowStyles() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialOverlappingWindowStyles(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (windowType.equals(WINDOW_NONE)) {
             return;
         }
@@ -430,7 +439,7 @@ public class WindowPopupPairwiseTest {
 
         // Topmost window border should be visible
         window2.setZOrder(2);
-        assertTrue("Topmost window border should render", window2.shouldDrawBorder());
+        assertTrue(window2.shouldDrawBorder(),"Topmost window border should render");
     }
 
     /**
@@ -440,22 +449,25 @@ public class WindowPopupPairwiseTest {
      * GREEN: State transitions complete without corruption
      * REFACTOR: State machine validation
      */
-    @Test
-    public void testAdversarialRapidStateTransitions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialRapidStateTransitions(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         WindowTestContext window = new WindowTestContext();
 
         // Simulate rapid transitions
         window.setWindowType(WINDOW_SINGLE);
-        assertEquals("Should be single window", WINDOW_SINGLE, window.getWindowType());
+        assertEquals(WINDOW_SINGLE, window.getWindowType(),"Should be single window");
 
         window.setWindowType(WINDOW_NESTED);
-        assertEquals("Should transition to nested", WINDOW_NESTED, window.getWindowType());
+        assertEquals(WINDOW_NESTED, window.getWindowType(),"Should transition to nested");
 
         window.setWindowType(WINDOW_TILED);
-        assertEquals("Should transition to tiled", WINDOW_TILED, window.getWindowType());
+        assertEquals(WINDOW_TILED, window.getWindowType(),"Should transition to tiled");
 
         // Verify state is consistent
-        assertNotNull("Window context should not be null", window);
+        assertNotNull(window,"Window context should not be null");
     }
 
     /**
@@ -465,8 +477,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Nesting depth is limited and enforced
      * REFACTOR: Depth limit enforcement
      */
-    @Test
-    public void testAdversarialMaximumNestingDepth() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialMaximumNestingDepth(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (!windowType.equals(WINDOW_NESTED)) {
             return;
         }
@@ -485,7 +500,7 @@ public class WindowPopupPairwiseTest {
         }
 
         // Verify nesting is bounded
-        assertTrue("Nesting depth should be bounded", current.getDepth() <= maxDepth);
+        assertTrue(current.getDepth() <= maxDepth,"Nesting depth should be bounded");
     }
 
     /**
@@ -495,8 +510,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Window destroyed and resources cleaned up
      * REFACTOR: Destructor/cleanup pattern
      */
-    @Test
-    public void testAdversarialWindowDestruction() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialWindowDestruction(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (windowType.equals(WINDOW_NONE)) {
             return;
         }
@@ -505,12 +523,12 @@ public class WindowPopupPairwiseTest {
         window.setWindowType(WINDOW_SINGLE);
         window.create();
 
-        assertTrue("Window should be created", window.isCreated());
+        assertTrue(window.isCreated(),"Window should be created");
 
         window.destroy();
 
-        assertFalse("Window should be destroyed", window.isCreated());
-        assertNull("Window data should be cleared", window.getWindowData());
+        assertFalse(window.isCreated(),"Window should be destroyed");
+        assertNull(window.getWindowData(),"Window data should be cleared");
     }
 
     /**
@@ -520,8 +538,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Modal stack correctly manages input blocking
      * REFACTOR: Modal stack management
      */
-    @Test
-    public void testAdversarialMultipleModalStack() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialMultipleModalStack(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         WindowTestContext modal1 = new WindowTestContext();
         WindowTestContext modal2 = new WindowTestContext();
         WindowTestContext modal3 = new WindowTestContext();
@@ -535,9 +556,9 @@ public class WindowPopupPairwiseTest {
         modal3.setZOrder(3);
 
         // Top modal should block input
-        assertTrue("Top modal should block input", modal3.isInputBlocked());
+        assertTrue(modal3.isInputBlocked(),"Top modal should block input");
         // Hidden modals should also block (from parent perspective)
-        assertTrue("Hidden modal should track blocking state", modal2.isInputBlocked());
+        assertTrue(modal2.isInputBlocked(),"Hidden modal should track blocking state");
     }
 
     /**
@@ -547,8 +568,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Scroll position adjusted during resize
      * REFACTOR: Resize validation
      */
-    @Test
-    public void testAdversarialScrollDuringResize() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialScrollDuringResize(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (scrollMode.equals(SCROLL_DISABLED)) {
             return;
         }
@@ -565,8 +589,7 @@ public class WindowPopupPairwiseTest {
         int scrollAfter = window.getVerticalScrollPosition();
 
         // Scroll position should be non-negative
-        assertTrue("Scroll should remain non-negative after resize",
-                  scrollAfter >= 0);
+        assertTrue(scrollAfter >= 0,"Scroll should remain non-negative after resize");
     }
 
     /**
@@ -576,8 +599,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Lifecycle progresses correctly
      * REFACTOR: Lifecycle state machine
      */
-    @Test
-    public void testWindowLifecycle() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWindowLifecycle(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (windowType.equals(WINDOW_NONE)) {
             return;
         }
@@ -585,19 +611,19 @@ public class WindowPopupPairwiseTest {
         WindowTestContext window = new WindowTestContext();
 
         // Initial state
-        assertFalse("Window should not exist before creation", window.isCreated());
+        assertFalse(window.isCreated(),"Window should not exist before creation");
 
         // Create
         window.create();
-        assertTrue("Window should exist after creation", window.isCreated());
+        assertTrue(window.isCreated(),"Window should exist after creation");
 
         // Update
         window.update();
-        assertTrue("Window should still exist after update", window.isCreated());
+        assertTrue(window.isCreated(),"Window should still exist after update");
 
         // Destroy
         window.destroy();
-        assertFalse("Window should not exist after destruction", window.isCreated());
+        assertFalse(window.isCreated(),"Window should not exist after destruction");
     }
 
     /**
@@ -607,8 +633,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: All four corners render with correct characters
      * REFACTOR: Extract corner rendering
      */
-    @Test
-    public void testBorderCornerCharacters() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBorderCornerCharacters(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (borderStyle.equals(BORDER_NONE)) {
             return;
         }
@@ -617,12 +646,11 @@ public class WindowPopupPairwiseTest {
 
         // Verify corners would be rendered
         int expectedCornerChar = getBorderCornerCharacter();
-        assertFalse("Corner character should not be null", expectedCornerChar == 0);
+        assertFalse(expectedCornerChar == 0,"Corner character should not be null");
 
         // Verify consistent corner rendering
-        assertEquals("All corners should use same character",
-                    getBorderCornerCharacter(),
-                    getBorderCornerCharacter());
+        assertEquals(getBorderCornerCharacter(),
+                    getBorderCornerCharacter(),"All corners should use same character");
     }
 
     /**
@@ -632,8 +660,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Horizontal scroll position changes with navigation
      * REFACTOR: Scroll navigation input handling
      */
-    @Test
-    public void testHorizontalScrollNavigation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testHorizontalScrollNavigation(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (!scrollMode.equals(SCROLL_HORIZONTAL) && !scrollMode.equals(SCROLL_BOTH)) {
             return;
         }
@@ -643,10 +674,10 @@ public class WindowPopupPairwiseTest {
         window.setHorizontalScrollPosition(0);
 
         window.scrollRight(5);
-        assertEquals("Scroll right should move position", 5, window.getHorizontalScrollPosition());
+        assertEquals(5, window.getHorizontalScrollPosition(),"Scroll right should move position");
 
         window.scrollLeft(3);
-        assertEquals("Scroll left should move position back", 2, window.getHorizontalScrollPosition());
+        assertEquals(2, window.getHorizontalScrollPosition(),"Scroll left should move position back");
     }
 
     /**
@@ -656,8 +687,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Vertical scroll position changes with navigation
      * REFACTOR: Scroll navigation input handling
      */
-    @Test
-    public void testVerticalScrollNavigation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testVerticalScrollNavigation(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (!scrollMode.equals(SCROLL_VERTICAL) && !scrollMode.equals(SCROLL_BOTH)) {
             return;
         }
@@ -667,10 +701,10 @@ public class WindowPopupPairwiseTest {
         window.setVerticalScrollPosition(0);
 
         window.scrollDown(3);
-        assertEquals("Scroll down should move position", 3, window.getVerticalScrollPosition());
+        assertEquals(3, window.getVerticalScrollPosition(),"Scroll down should move position");
 
         window.scrollUp(1);
-        assertEquals("Scroll up should move position back", 2, window.getVerticalScrollPosition());
+        assertEquals(2, window.getVerticalScrollPosition(),"Scroll up should move position back");
     }
 
     /**
@@ -680,21 +714,24 @@ public class WindowPopupPairwiseTest {
      * GREEN: Negative dimensions rejected
      * REFACTOR: Bounds validation
      */
-    @Test
-    public void testWindowBoundsValidation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWindowBoundsValidation(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         WindowTestContext window = new WindowTestContext();
 
         // Try to set negative width
         window.setSize(-10, 12);
-        assertTrue("Width should be positive", window.getWidth() >= 0);
+        assertTrue(window.getWidth() >= 0,"Width should be positive");
 
         // Try to set negative height
         window.setSize(40, -5);
-        assertTrue("Height should be positive", window.getHeight() >= 0);
+        assertTrue(window.getHeight() >= 0,"Height should be positive");
 
         // Try to set invalid position
         window.setPosition(-5, 10);
-        assertTrue("X position should be non-negative", window.getPositionX() >= 0);
+        assertTrue(window.getPositionX() >= 0,"X position should be non-negative");
     }
 
     /**
@@ -704,8 +741,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Content area is within border
      * REFACTOR: Calculate usable space
      */
-    @Test
-    public void testContentAreaWithinBorder() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testContentAreaWithinBorder(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (borderStyle.equals(BORDER_NONE)) {
             return;
         }
@@ -716,10 +756,10 @@ public class WindowPopupPairwiseTest {
         int contentWidth = windowRect.width() - (2 * borderWidth);
         int contentHeight = windowRect.height() - (2 * borderWidth);
 
-        assertTrue("Content X should be after border", contentX > windowRect.x());
-        assertTrue("Content Y should be after border", contentY > windowRect.y());
-        assertTrue("Content width should account for borders", contentWidth < windowRect.width());
-        assertTrue("Content height should account for borders", contentHeight < windowRect.height());
+        assertTrue(contentX > windowRect.x(),"Content X should be after border");
+        assertTrue(contentY > windowRect.y(),"Content Y should be after border");
+        assertTrue(contentWidth < windowRect.width(),"Content width should account for borders");
+        assertTrue(contentHeight < windowRect.height(),"Content height should account for borders");
     }
 
     /**
@@ -729,8 +769,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Resize updates scroll constraints
      * REFACTOR: Constraint update on resize
      */
-    @Test
-    public void testResizeValidatesScrollConstraints() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResizeValidatesScrollConstraints(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (scrollMode.equals(SCROLL_DISABLED)) {
             return;
         }
@@ -744,8 +787,7 @@ public class WindowPopupPairwiseTest {
 
         // Scroll position should be clamped
         int maxScroll = Math.max(0, 50 - 12); // Some content height minus window height
-        assertTrue("Scroll should be constrained after resize",
-                  window.getVerticalScrollPosition() <= 50);
+        assertTrue(window.getVerticalScrollPosition() <= 50,"Scroll should be constrained after resize");
     }
 
     /**
@@ -755,8 +797,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Fullscreen window spans entire dimensions
      * REFACTOR: Fullscreen dimension calculation
      */
-    @Test
-    public void testFullscreenWindowDimensions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFullscreenWindowDimensions(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (!windowSize.equals(SIZE_FULLSCREEN)) {
             return;
         }
@@ -764,8 +809,8 @@ public class WindowPopupPairwiseTest {
         int width = getSizeWidth();
         int height = getSizeHeight();
 
-        assertEquals("Fullscreen width should be 80 columns", 80, width);
-        assertEquals("Fullscreen height should be 24 rows", 24, height);
+        assertEquals(80, width,"Fullscreen width should be 80 columns");
+        assertEquals(24, height,"Fullscreen height should be 24 rows");
     }
 
     /**
@@ -775,8 +820,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Small window meets minimum requirements
      * REFACTOR: Minimum size enforcement
      */
-    @Test
-    public void testSmallWindowMinimumDimensions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSmallWindowMinimumDimensions(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (!windowSize.equals(SIZE_SMALL)) {
             return;
         }
@@ -784,8 +832,8 @@ public class WindowPopupPairwiseTest {
         int width = getSizeWidth();
         int height = getSizeHeight();
 
-        assertEquals("Small window should be 10 wide", 10, width);
-        assertEquals("Small window should be 5 tall", 5, height);
+        assertEquals(10, width,"Small window should be 10 wide");
+        assertEquals(5, height,"Small window should be 5 tall");
     }
 
     /**
@@ -795,8 +843,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: Concurrent operations complete safely
      * REFACTOR: Thread-safe window operations
      */
-    @Test
-    public void testAdversarialConcurrentWindowOps() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialConcurrentWindowOps(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         final WindowTestContext window = new WindowTestContext();
         window.create();
 
@@ -820,7 +871,7 @@ public class WindowPopupPairwiseTest {
             t2.join();
 
             // Window should still be valid after concurrent access
-            assertTrue("Window should survive concurrent access", window.isCreated());
+            assertTrue(window.isCreated(),"Window should survive concurrent access");
         } catch (InterruptedException e) {
             fail("Thread interrupted: " + e.getMessage());
         }
@@ -833,8 +884,11 @@ public class WindowPopupPairwiseTest {
      * GREEN: All features work together
      * REFACTOR: Feature integration testing
      */
-    @Test
-    public void testAdversarialMaximalConfiguration() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAdversarialMaximalConfiguration(String windowType, String windowSize, String windowPosition, String borderStyle, String scrollMode) throws Exception {
+        setParameters(windowType, windowSize, windowPosition, borderStyle, scrollMode);
+        setUp();
         if (!windowType.equals(WINDOW_SINGLE) || !windowSize.equals(SIZE_FULLSCREEN) ||
             !borderStyle.equals(BORDER_THICK) || !scrollMode.equals(SCROLL_BOTH)) {
             return;
@@ -848,10 +902,10 @@ public class WindowPopupPairwiseTest {
         window.setScrollMode(SCROLL_BOTH);
 
         window.create();
-        assertTrue("Window with all features should be created", window.isCreated());
-        assertTrue("Should have vertical scroll", window.hasVerticalScrollbar());
-        assertTrue("Should have horizontal scroll", window.hasHorizontalScrollbar());
-        assertTrue("Should have border", window.shouldDrawBorder());
+        assertTrue(window.isCreated(),"Window with all features should be created");
+        assertTrue(window.hasVerticalScrollbar(),"Should have vertical scroll");
+        assertTrue(window.hasHorizontalScrollbar(),"Should have horizontal scroll");
+        assertTrue(window.shouldDrawBorder(),"Should have border");
     }
 
     // Helper methods

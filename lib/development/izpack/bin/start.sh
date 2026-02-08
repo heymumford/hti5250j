@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2001-2005 Julien Ponge
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 
 # ShellScript 
 # - to detect a desktop and their native

@@ -1,28 +1,14 @@
-/**
- * Title: GuiGraphicBuffer.java
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.5
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import java.awt.Color;
@@ -704,8 +690,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (updateFont) {
-            Rectangle r = gui.getDrawingBounds();
-            resizeScreenArea(r.width, r.height);
+            Rectangle drawingBounds = gui.getDrawingBounds();
+            resizeScreenArea(drawingBounds.width, drawingBounds.height);
             updateFont = false;
         }
 
@@ -788,19 +774,19 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     /**
      * This will return the screen coordinates of a row and column.
      *
-     * @param r
-     * @param c
+     * @param row
+     * @param col
      * @param point
      */
-    public void getPointFromRowCol(int r, int c, Point point) {
+    public void getPointFromRowCol(int row, int col, Point point) {
 
         // here the x + y coordinates of the row and column are obtained from
         // the character array which is based on a upper left 0,0 coordinate
         //  we will then add to that the offsets to get the screen position point
         //  x,y coordinates. Maybe change this to a translate routine method or
         //  something.
-        point.x = (columnWidth * c) + offLeft;
-        point.y = (rowHeight * r) + offTop;
+        point.x = (columnWidth * col) + offLeft;
+        point.y = (rowHeight * row) + offTop;
 
     }
 
@@ -902,17 +888,16 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
      */
     protected final void resizeScreenArea(int width, int height) {
 
-        Font k = null;
-        k = GUIGraphicsUtils.getDerivedFont(font, width, height, screen.getRows(),
+        Font derivedFont = GUIGraphicsUtils.getDerivedFont(font, width, height, screen.getRows(),
                 screen.getColumns(), sfh, sfw, ps132);
 
-        if (font.getSize() != k.getSize() || updateFont
+        if (font.getSize() != derivedFont.getSize() || updateFont
                 || (offLeft != (width - bi.getWidth()) / 2)
                 || (offTop != (height - bi.getHeight()) / 2)) {
 
             // set up all the variables that are used in calculating the new
             // size
-            font = k;
+            font = derivedFont;
             FontRenderContext frc = new FontRenderContext(font.getTransform(),
                     true, true);
             lm = font.getLineMetrics("Wy", frc);
@@ -1061,23 +1046,23 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             );
         }
 
-        Rectangle r = cursor.getBounds();
-        r.setSize(r.width, r.height);
+        Rectangle cursorBounds = cursor.getBounds();
+        cursorBounds.setSize(cursorBounds.width, cursorBounds.height);
 
         g2.setColor(colorCursor);
         g2.setXORMode(colorBg);
 
         g2.fill(cursor);
 
-        updateImage(r);
+        updateImage(cursorBounds);
 
         if (!rulerFixed) {
             crossRow = row;
-            crossRect.setBounds(r);
+            crossRect.setBounds(cursorBounds);
         } else {
             if (crossHair == 0) {
                 crossRow = row;
-                crossRect.setBounds(r);
+                crossRect.setBounds(cursorBounds);
             }
         }
 
@@ -1283,8 +1268,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     }
 
-    protected void updateImage(Rectangle r) {
-        updateImage(r.x, r.y, r.width, r.height);
+    protected void updateImage(Rectangle bounds) {
+        updateImage(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     public synchronized void drawImageBuffer(Graphics2D gg2d) {
@@ -1359,7 +1344,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
         int attr = oia.getLevel();
         int value = oia.getInputInhibited();
-        String s = oia.getInhibitedText();
+        String inhibitedText = oia.getInhibitedText();
         Graphics2D g2d = getWritingArea(font);
         //      log.info(attr + ", " + value + ", " + s);
         if (g2d == null)
@@ -1369,7 +1354,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             g2d.setColor(colorBg);
             g2d.fill(sArea);
 
-            float Y = ((int) sArea.getY() + rowHeight) - (lm.getLeading() + lm.getDescent());
+            float baselineY = ((int) sArea.getY() + rowHeight) - (lm.getLeading() + lm.getDescent());
 
             switch (attr) {
 
@@ -1377,20 +1362,20 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                     if (value == ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT) {
                         g2d.setColor(colorWhite);
 
-                        if (s != null)
-                            g2d.drawString(s, (float) sArea.getX(), Y);
+                        if (inhibitedText != null)
+                            g2d.drawString(inhibitedText, (float) sArea.getX(), baselineY);
                         else
-                            g2d.drawString(xSystem, (float) sArea.getX(), Y);
+                            g2d.drawString(xSystem, (float) sArea.getX(), baselineY);
                     }
                     break;
                 case ScreenOIA.OIA_LEVEL_INPUT_ERROR:
                     if (value == ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT) {
                         g2d.setColor(colorRed);
 
-                        if (s != null)
-                            g2d.drawString(s, (float) sArea.getX(), Y);
+                        if (inhibitedText != null)
+                            g2d.drawString(inhibitedText, (float) sArea.getX(), baselineY);
                         else
-                            g2d.drawString(xError, (float) sArea.getX(), Y);
+                            g2d.drawString(xError, (float) sArea.getX(), baselineY);
 
                     }
                     break;
@@ -1398,14 +1383,14 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             }
             updateImage(sArea.getBounds());
             g2d.dispose();
-        } catch (Exception e) {
+        } catch (Exception exception) {
 
-            log.warn(" gui graphics setStatus " + e.getMessage());
+            log.warn(" gui graphics setStatus " + exception.getMessage());
 
         }
     }
 
-    public final void drawChar(Graphics2D g, int pos, int row, int col) {
+    public final void drawChar(Graphics2D graphics, int pos, int row, int col) {
         Rectangle csArea = new Rectangle();
         char sChar[] = new char[1];
         int attr = updateRect.attr[pos];
@@ -1422,51 +1407,51 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         int cy = (int) (y + rowHeight - (lm.getDescent() + lm.getLeading()));
 
         if (showHex && attributePlace) {
-            Font f = g.getFont();
+            Font currentFont = graphics.getFont();
 
-            Font k = f.deriveFont(f.getSize2D() / 2);
-            g.setFont(k);
-            g.setColor(colorHexAttr);
-            char[] a = Integer.toHexString(attr).toCharArray();
-            g.drawChars(a, 0, 1, x, y + (rowHeight / 2));
-            g.drawChars(a, 1, 1, x + (columnWidth / 2),
+            Font halfSizeFont = currentFont.deriveFont(currentFont.getSize2D() / 2);
+            graphics.setFont(halfSizeFont);
+            graphics.setColor(colorHexAttr);
+            char[] hexChars = Integer.toHexString(attr).toCharArray();
+            graphics.drawChars(hexChars, 0, 1, x, y + (rowHeight / 2));
+            graphics.drawChars(hexChars, 1, 1, x + (columnWidth / 2),
                     (int) (y + rowHeight - (lm.getDescent() + lm.getLeading()) - 2));
-            g.setFont(f);
+            graphics.setFont(currentFont);
         }
 
         if (!nonDisplay && !attributePlace) {
 
             if (!useGui) {
-                g.setColor(bg);
-                g.fill(csArea);
+                graphics.setColor(bg);
+                graphics.fill(csArea);
             } else {
 
                 if (bg == colorBg && whichGui >= HTI5250jConstants.FIELD_LEFT && whichGui <= HTI5250jConstants.FIELD_ONE)
-                    g.setColor(colorGUIField);
+                    graphics.setColor(colorGUIField);
                 else
-                    g.setColor(bg);
+                    graphics.setColor(bg);
 
-                g.fill(csArea);
+                graphics.fill(csArea);
 
             }
 
             if (useGui && (whichGui < HTI5250jConstants.FIELD_LEFT)) {
 
-                g.setColor(fg);
+                graphics.setColor(fg);
 
                 switch (whichGui) {
 
                     case HTI5250jConstants.UPPER_LEFT:
                         if (sChar[0] == '.') {
                             if (screen.isUsingGuiInterface()) {
-                                GUIGraphicsUtils.drawWinUpperLeft(g,
+                                GUIGraphicsUtils.drawWinUpperLeft(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         colorBlue,
                                         x, y, columnWidth, rowHeight);
 
                             } else {
 
-                                GUIGraphicsUtils.drawWinUpperLeft(g,
+                                GUIGraphicsUtils.drawWinUpperLeft(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
@@ -1478,7 +1463,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                         if (sChar[0] == '.') {
 
                             if (screen.isUsingGuiInterface()) {
-                                GUIGraphicsUtils.drawWinUpper(g,
+                                GUIGraphicsUtils.drawWinUpper(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         colorBlue,
                                         x, y, columnWidth, rowHeight);
@@ -1486,7 +1471,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
                             } else {
 
-                                GUIGraphicsUtils.drawWinUpper(g,
+                                GUIGraphicsUtils.drawWinUpper(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
@@ -1497,7 +1482,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                         if (sChar[0] == '.') {
                             if (screen.isUsingGuiInterface()) {
 
-                                GUIGraphicsUtils.drawWinUpperRight(g,
+                                GUIGraphicsUtils.drawWinUpperRight(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         colorBlue,
                                         x, y, columnWidth, rowHeight);
@@ -1505,7 +1490,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
                             } else {
 
-                                GUIGraphicsUtils.drawWinUpperRight(g,
+                                GUIGraphicsUtils.drawWinUpperRight(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
@@ -1516,7 +1501,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                     case HTI5250jConstants.GUI_LEFT:
                         if (sChar[0] == ':') {
                             if (screen.isUsingGuiInterface()) {
-                                GUIGraphicsUtils.drawWinLeft(g,
+                                GUIGraphicsUtils.drawWinLeft(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         bg,
                                         x, y, columnWidth, rowHeight);
@@ -1524,12 +1509,12 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
                             } else {
 
-                                GUIGraphicsUtils.drawWinLeft(g,
+                                GUIGraphicsUtils.drawWinLeft(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
 
-                                g.drawLine(x + columnWidth / 2,
+                                graphics.drawLine(x + columnWidth / 2,
                                         y,
                                         x + columnWidth / 2,
                                         y + rowHeight);
@@ -1539,14 +1524,14 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                     case HTI5250jConstants.GUI_RIGHT:
                         if (sChar[0] == ':') {
                             if (screen.isUsingGuiInterface()) {
-                                GUIGraphicsUtils.drawWinRight(g,
+                                GUIGraphicsUtils.drawWinRight(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         bg,
                                         x, y, columnWidth, rowHeight);
 
 
                             } else {
-                                GUIGraphicsUtils.drawWinRight(g,
+                                GUIGraphicsUtils.drawWinRight(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
@@ -1559,7 +1544,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
                             if (screen.isUsingGuiInterface()) {
 
-                                GUIGraphicsUtils.drawWinLowerLeft(g,
+                                GUIGraphicsUtils.drawWinLowerLeft(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         bg,
                                         x, y, columnWidth, rowHeight);
@@ -1567,7 +1552,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
                             } else {
 
-                                GUIGraphicsUtils.drawWinLowerLeft(g,
+                                GUIGraphicsUtils.drawWinLowerLeft(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
@@ -1580,7 +1565,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                             if (screen.isUsingGuiInterface()) {
 
 
-                                GUIGraphicsUtils.drawWinBottom(g,
+                                GUIGraphicsUtils.drawWinBottom(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         bg,
                                         x, y, columnWidth, rowHeight);
@@ -1588,7 +1573,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
                             } else {
 
-                                GUIGraphicsUtils.drawWinBottom(g,
+                                GUIGraphicsUtils.drawWinBottom(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
@@ -1600,14 +1585,14 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                         if (sChar[0] == ':') {
                             if (screen.isUsingGuiInterface()) {
 
-                                GUIGraphicsUtils.drawWinLowerRight(g,
+                                GUIGraphicsUtils.drawWinLowerRight(graphics,
                                         GUIGraphicsUtils.WINDOW_GRAPHIC,
                                         bg,
                                         x, y, columnWidth, rowHeight);
 
                             } else {
 
-                                GUIGraphicsUtils.drawWinLowerRight(g,
+                                GUIGraphicsUtils.drawWinLowerRight(graphics,
                                         GUIGraphicsUtils.WINDOW_NORMAL,
                                         fg,
                                         x, y, columnWidth, rowHeight);
@@ -1622,21 +1607,21 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                     // use this until we define colors for gui stuff
                     if ((useGui && whichGui < HTI5250jConstants.BUTTON_LEFT) && (fg == colorGUIField))
 
-                        g.setColor(Color.black);
+                        graphics.setColor(Color.black);
                     else
-                        g.setColor(fg);
+                        graphics.setColor(fg);
 
                     try {
                         if (useGui)
 
                             if (sChar[0] == 0x1C)
-                                g.drawChars(dupChar, 0, 1, x + 1, cy - 2);
+                                graphics.drawChars(dupChar, 0, 1, x + 1, cy - 2);
                             else
-                                g.drawChars(sChar, 0, 1, x + 1, cy - 2);
+                                graphics.drawChars(sChar, 0, 1, x + 1, cy - 2);
                         else if (sChar[0] == 0x1C)
-                            g.drawChars(dupChar, 0, 1, x, cy - 2);
+                            graphics.drawChars(dupChar, 0, 1, x, cy - 2);
                         else
-                            g.drawChars(sChar, 0, 1, x, cy - 2);
+                            graphics.drawChars(sChar, 0, 1, x, cy - 2);
                     } catch (IllegalArgumentException iae) {
                         System.out.println(" drawChar iae " + iae.getMessage());
 
@@ -1645,26 +1630,26 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 if (underLine) {
 
                     if (!useGui || cfg_guiShowUnderline) {
-                        g.setColor(fg);
-                        g.drawLine(x, (int) (y + (rowHeight - (lm.getLeading() + lm.getDescent()))), (x + columnWidth), (int) (y + (rowHeight - (lm.getLeading() + lm.getDescent()))));
+                        graphics.setColor(fg);
+                        graphics.drawLine(x, (int) (y + (rowHeight - (lm.getLeading() + lm.getDescent()))), (x + columnWidth), (int) (y + (rowHeight - (lm.getLeading() + lm.getDescent()))));
 
                     }
                 }
 
                 if (colSep) {
-                    g.setColor(colorSep);
+                    graphics.setColor(colorSep);
                     switch (colSepLine) {
                         case Line:  // line
-                            g.drawLine(x, y, x, y + rowHeight - 1);
-                            g.drawLine(x + columnWidth - 1, y, x + columnWidth - 1, y + rowHeight);
+                            graphics.drawLine(x, y, x, y + rowHeight - 1);
+                            graphics.drawLine(x + columnWidth - 1, y, x + columnWidth - 1, y + rowHeight);
                             break;
                         case ShortLine:  // short line
-                            g.drawLine(x, y + rowHeight - (int) lm.getLeading() - 4, x, y + rowHeight);
-                            g.drawLine(x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 4, x + columnWidth - 1, y + rowHeight);
+                            graphics.drawLine(x, y + rowHeight - (int) lm.getLeading() - 4, x, y + rowHeight);
+                            graphics.drawLine(x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 4, x + columnWidth - 1, y + rowHeight);
                             break;
                         case Dot:  // dot
-                            g.drawLine(x, y + rowHeight - (int) lm.getLeading() - 3, x, y + rowHeight - (int) lm.getLeading() - 4);
-                            g.drawLine(x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 3, x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 4);
+                            graphics.drawLine(x, y + rowHeight - (int) lm.getLeading() - 3, x, y + rowHeight - (int) lm.getLeading() - 4);
+                            graphics.drawLine(x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 3, x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 4);
                             break;
                         case Hide:  // hide
                             break;
@@ -1678,21 +1663,21 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             switch (whichGui) {
 
                 case HTI5250jConstants.FIELD_LEFT:
-                    GUIGraphicsUtils.draw3DLeft(g, GUIGraphicsUtils.INSET, x, y,
+                    GUIGraphicsUtils.draw3DLeft(graphics, GUIGraphicsUtils.INSET, x, y,
                             columnWidth, rowHeight);
 
                     break;
                 case HTI5250jConstants.FIELD_MIDDLE:
-                    GUIGraphicsUtils.draw3DMiddle(g, GUIGraphicsUtils.INSET, x, y,
+                    GUIGraphicsUtils.draw3DMiddle(graphics, GUIGraphicsUtils.INSET, x, y,
                             columnWidth, rowHeight);
                     break;
                 case HTI5250jConstants.FIELD_RIGHT:
-                    GUIGraphicsUtils.draw3DRight(g, GUIGraphicsUtils.INSET, x, y,
+                    GUIGraphicsUtils.draw3DRight(graphics, GUIGraphicsUtils.INSET, x, y,
                             columnWidth, rowHeight);
                     break;
 
                 case HTI5250jConstants.FIELD_ONE:
-                    GUIGraphicsUtils.draw3DOne(g, GUIGraphicsUtils.INSET, x, y,
+                    GUIGraphicsUtils.draw3DOne(graphics, GUIGraphicsUtils.INSET, x, y,
                             columnWidth, rowHeight);
 
                     break;
@@ -1702,7 +1687,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 case HTI5250jConstants.BUTTON_LEFT_DN:
                 case HTI5250jConstants.BUTTON_LEFT_EB:
 
-                    GUIGraphicsUtils.draw3DLeft(g, GUIGraphicsUtils.RAISED, x, y,
+                    GUIGraphicsUtils.draw3DLeft(graphics, GUIGraphicsUtils.RAISED, x, y,
                             columnWidth, rowHeight);
 
                     break;
@@ -1712,7 +1697,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 case HTI5250jConstants.BUTTON_MIDDLE_DN:
                 case HTI5250jConstants.BUTTON_MIDDLE_EB:
 
-                    GUIGraphicsUtils.draw3DMiddle(g, GUIGraphicsUtils.RAISED, x, y,
+                    GUIGraphicsUtils.draw3DMiddle(graphics, GUIGraphicsUtils.RAISED, x, y,
                             columnWidth, rowHeight);
                     break;
 
@@ -1721,14 +1706,14 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 case HTI5250jConstants.BUTTON_RIGHT_DN:
                 case HTI5250jConstants.BUTTON_RIGHT_EB:
 
-                    GUIGraphicsUtils.draw3DRight(g, GUIGraphicsUtils.RAISED, x, y,
+                    GUIGraphicsUtils.draw3DRight(graphics, GUIGraphicsUtils.RAISED, x, y,
                             columnWidth, rowHeight);
 
                     break;
 
                 // scroll bar
                 case HTI5250jConstants.BUTTON_SB_UP:
-                    GUIGraphicsUtils.drawScrollBar(g, GUIGraphicsUtils.RAISED, 1, x, y,
+                    GUIGraphicsUtils.drawScrollBar(graphics, GUIGraphicsUtils.RAISED, 1, x, y,
                             columnWidth, rowHeight,
                             colorWhite, colorBg);
                     break;
@@ -1736,7 +1721,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 // scroll bar
                 case HTI5250jConstants.BUTTON_SB_DN:
 
-                    GUIGraphicsUtils.drawScrollBar(g, GUIGraphicsUtils.RAISED, 2, x, y,
+                    GUIGraphicsUtils.drawScrollBar(graphics, GUIGraphicsUtils.RAISED, 2, x, y,
                             columnWidth, rowHeight,
                             colorWhite, colorBg);
 
@@ -1745,7 +1730,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 // scroll bar
                 case HTI5250jConstants.BUTTON_SB_GUIDE:
 
-                    GUIGraphicsUtils.drawScrollBar(g, GUIGraphicsUtils.INSET, 0, x, y,
+                    GUIGraphicsUtils.drawScrollBar(graphics, GUIGraphicsUtils.INSET, 0, x, y,
                             columnWidth, rowHeight,
                             colorWhite, colorBg);
 
@@ -1755,7 +1740,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 // scroll bar
                 case HTI5250jConstants.BUTTON_SB_THUMB:
 
-                    GUIGraphicsUtils.drawScrollBar(g, GUIGraphicsUtils.INSET, 3, x, y,
+                    GUIGraphicsUtils.drawScrollBar(graphics, GUIGraphicsUtils.INSET, 3, x, y,
                             columnWidth, rowHeight,
                             colorWhite, colorBg);
 
@@ -2032,30 +2017,30 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         return modelToView(row, col, new Rectangle());
     }
 
-    public final Rectangle modelToView(int row, int col, Rectangle r) {
+    public final Rectangle modelToView(int row, int col, Rectangle bounds) {
 
         // right now row and column is 1,1 offset based.  This will need
         //   to be changed to 0,0 offset based by subtracting 1 from them
         //   when the screen is being passed this way
         //     r.x      =  (col - 1) * columnWidth;
         //     r.y      =  (row - 1) * rowHeight;
-        r.x = col * columnWidth;
-        r.y = row * rowHeight;
-        r.width = columnWidth;
-        r.height = rowHeight;
-        return r;
+        bounds.x = col * columnWidth;
+        bounds.y = row * rowHeight;
+        bounds.width = columnWidth;
+        bounds.height = rowHeight;
+        return bounds;
     }
 
     protected Color getColor(char color, boolean background) {
-        int c = 0;
+        int colorValue = 0;
         if (background)
             // background
-            c = (color & 0xff00) >> 8;
+            colorValue = (color & 0xff00) >> 8;
         else
             // foreground
-            c = color & 0x00ff;
+            colorValue = color & 0x00ff;
 
-        switch (c) {
+        switch (colorValue) {
             case HTI5250jConstants.COLOR_FG_BLACK:
                 return colorBg;
             case HTI5250jConstants.COLOR_FG_GREEN:

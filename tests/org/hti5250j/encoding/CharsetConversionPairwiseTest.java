@@ -1,35 +1,22 @@
-/**
- * $Id$
- * <p>
- * Title: tn5250J - Character Set Conversion Pairwise Test Suite
- * Copyright:   Copyright (c) 2025
- * Company:     WATTS Automation
- * <p>
- * Description: Comprehensive pairwise TDD test suite for EBCDIC/ASCII
- * conversion accuracy, code page handling, and adversarial character scenarios.
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.encoding;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Comprehensive pairwise test suite for EBCDIC/ASCII character conversion.
@@ -45,7 +32,6 @@ import org.junit.runners.Parameterized.Parameters;
  * - POSITIVE TESTS (12): Valid encodings, round-trips, multi-byte handling
  * - ADVERSARIAL TESTS (12): Unmappable chars, boundary violations, data integrity checks
  */
-@RunWith(Parameterized.class)
 public class CharsetConversionPairwiseTest {
 
     private String codePage;
@@ -54,7 +40,7 @@ public class CharsetConversionPairwiseTest {
     /**
      * Parameterized constructor for code page variations.
      */
-    public CharsetConversionPairwiseTest(String codePage) {
+    private void setParameters(String codePage) {
         this.codePage = codePage;
     }
 
@@ -62,8 +48,7 @@ public class CharsetConversionPairwiseTest {
      * Pairwise parameter combinations: representative code pages.
      * Dimension 1: Code page [37, 273, 280, 284, 297, 500]
      */
-    @Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "37" },    // USA, Canada - baseline EBCDIC
                 { "273" },   // Germany, Austria
@@ -74,10 +59,9 @@ public class CharsetConversionPairwiseTest {
         });
     }
 
-    @Before
-    public void setUp() {
+        public void setUp() {
         cp = CharMappings.getCodePage(codePage);
-        assertNotNull("Code page " + codePage + " must be available", cp);
+        assertNotNull(cp,"Code page " + codePage + " must be available");
     }
 
     // =====================================================================
@@ -89,13 +73,15 @@ public class CharsetConversionPairwiseTest {
      * Dimension: Character type [printable: A-Z]
      *            Direction [round-trip]
      */
-    @Test
-    public void testPrintableUppercaseRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPrintableUppercaseRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         for (char c = 'A'; c <= 'Z'; c++) {
             byte ebcdic = cp.uni2ebcdic(c);
             char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-            assertEquals("Uppercase letter '" + c + "' (CP " + codePage + ") should round-trip",
-                    c, converted);
+            assertEquals(c, converted,"Uppercase letter '" + c + "' (CP " + codePage + ") should round-trip");
         }
     }
 
@@ -104,13 +90,15 @@ public class CharsetConversionPairwiseTest {
      * Dimension: Character type [printable: a-z]
      *            Direction [round-trip]
      */
-    @Test
-    public void testPrintableLowercaseRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPrintableLowercaseRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         for (char c = 'a'; c <= 'z'; c++) {
             byte ebcdic = cp.uni2ebcdic(c);
             char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-            assertEquals("Lowercase letter '" + c + "' (CP " + codePage + ") should round-trip",
-                    c, converted);
+            assertEquals(c, converted,"Lowercase letter '" + c + "' (CP " + codePage + ") should round-trip");
         }
     }
 
@@ -119,13 +107,15 @@ public class CharsetConversionPairwiseTest {
      * Dimension: Character type [printable: 0-9]
      *            Direction [round-trip]
      */
-    @Test
-    public void testPrintableNumericRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPrintableNumericRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         for (char c = '0'; c <= '9'; c++) {
             byte ebcdic = cp.uni2ebcdic(c);
             char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-            assertEquals("Digit '" + c + "' (CP " + codePage + ") should round-trip",
-                    c, converted);
+            assertEquals(c, converted,"Digit '" + c + "' (CP " + codePage + ") should round-trip");
         }
     }
 
@@ -134,14 +124,16 @@ public class CharsetConversionPairwiseTest {
      * Dimension: Character type [special: space, punctuation]
      *            Direction [round-trip]
      */
-    @Test
-    public void testSpecialCharactersRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSpecialCharactersRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String specialChars = " .,-!?@#$%&*()";
         for (char c : specialChars.toCharArray()) {
             byte ebcdic = cp.uni2ebcdic(c);
             char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-            assertEquals("Special char '" + c + "' (CP " + codePage + ") should round-trip",
-                    c, converted);
+            assertEquals(c, converted,"Special char '" + c + "' (CP " + codePage + ") should round-trip");
         }
     }
 
@@ -150,12 +142,14 @@ public class CharsetConversionPairwiseTest {
      * Dimension: String length [0]
      *            Direction [both]
      */
-    @Test
-    public void testEmptyStringConversion() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEmptyStringConversion(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte[] ebcdic = new byte[0];
         String result = ebcdicToString(ebcdic);
-        assertEquals("Empty string should remain empty in CP " + codePage,
-                "", result);
+        assertEquals("", result,"Empty string should remain empty in CP " + codePage);
     }
 
     /**
@@ -164,13 +158,15 @@ public class CharsetConversionPairwiseTest {
      *            Character type [printable]
      *            Direction [round-trip]
      */
-    @Test
-    public void testSingleCharacterRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSingleCharacterRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char testChar = 'X';
         byte ebcdic = cp.uni2ebcdic(testChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Single char 'X' (CP " + codePage + ") should round-trip",
-                testChar, converted);
+        assertEquals(testChar, converted,"Single char 'X' (CP " + codePage + ") should round-trip");
     }
 
     /**
@@ -179,13 +175,15 @@ public class CharsetConversionPairwiseTest {
      *            Character type [mixed printable]
      *            Direction [round-trip]
      */
-    @Test
-    public void testTerminalLineRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTerminalLineRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = generateTerminalLine(80);
         byte[] ebcdic = stringToEBCDIC(original);
         String converted = ebcdicToString(ebcdic);
-        assertEquals("80-char terminal line (CP " + codePage + ") should round-trip",
-                original, converted);
+        assertEquals(original, converted,"80-char terminal line (CP " + codePage + ") should round-trip");
     }
 
     /**
@@ -194,13 +192,15 @@ public class CharsetConversionPairwiseTest {
      *            Character type [mixed printable]
      *            Direction [round-trip]
      */
-    @Test
-    public void testBufferSizeStringRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBufferSizeStringRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = generateTerminalLine(256);
         byte[] ebcdic = stringToEBCDIC(original);
         String converted = ebcdicToString(ebcdic);
-        assertEquals("256-char buffer (CP " + codePage + ") should round-trip",
-                original, converted);
+        assertEquals(original, converted,"256-char buffer (CP " + codePage + ") should round-trip");
     }
 
     /**
@@ -209,16 +209,18 @@ public class CharsetConversionPairwiseTest {
      *            Character type [mixed]
      *            String length [50]
      */
-    @Test
-    public void testTripleConversionFidelity() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTripleConversionFidelity(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = "The quick brown fox jumps over the lazy dog 12345";
         byte[] toEBCDIC = stringToEBCDIC(original);
         String backToASCII = ebcdicToString(toEBCDIC);
         byte[] toEBCDICAgain = stringToEBCDIC(backToASCII);
 
         String finalResult = ebcdicToString(toEBCDICAgain);
-        assertEquals("Triple conversion should maintain fidelity in CP " + codePage,
-                original, finalResult);
+        assertEquals(original, finalResult,"Triple conversion should maintain fidelity in CP " + codePage);
     }
 
     /**
@@ -227,14 +229,15 @@ public class CharsetConversionPairwiseTest {
      *            Direction [EBCDIC→ASCII]
      * Note: Field markers are protocol-specific; test conversion behavior
      */
-    @Test
-    public void testFieldMarkerConversion() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldMarkerConversion(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte fieldMarker = (byte) 0x1D;
         char converted = cp.ebcdic2uni(fieldMarker & 0xFF);
-        assertNotNull("Field marker 0x1D should convert to some character in CP " + codePage,
-                converted);
-        assertTrue("Field marker conversion should yield valid Unicode",
-                converted >= 0 && converted <= Character.MAX_VALUE);
+        assertNotNull(converted,"Field marker 0x1D should convert to some character in CP " + codePage);
+        assertTrue(converted >= 0 && converted <= Character.MAX_VALUE,"Field marker conversion should yield valid Unicode");
     }
 
     /**
@@ -242,17 +245,18 @@ public class CharsetConversionPairwiseTest {
      * Dimension: Direction [ASCII→EBCDIC]
      *            Consistency [idempotent]
      */
-    @Test
-    public void testConversionConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConversionConsistency(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char testChar = 'Q';
         byte result1 = cp.uni2ebcdic(testChar);
         byte result2 = cp.uni2ebcdic(testChar);
         byte result3 = cp.uni2ebcdic(testChar);
 
-        assertEquals("First and second conversion should match in CP " + codePage,
-                result1, result2);
-        assertEquals("Second and third conversion should match in CP " + codePage,
-                result2, result3);
+        assertEquals(result1, result2,"First and second conversion should match in CP " + codePage);
+        assertEquals(result2, result3,"Second and third conversion should match in CP " + codePage);
     }
 
     /**
@@ -260,8 +264,11 @@ public class CharsetConversionPairwiseTest {
      * Dimension: Code page retrieval [cached]
      *            Consistency [singleton]
      */
-    @Test
-    public void testCodePageInstanceConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCodePageInstanceConsistency(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         ICodePage cp1 = CharMappings.getCodePage(codePage);
         ICodePage cp2 = CharMappings.getCodePage(codePage);
 
@@ -269,8 +276,8 @@ public class CharsetConversionPairwiseTest {
         byte result1 = cp1.uni2ebcdic(testChar);
         byte result2 = cp2.uni2ebcdic(testChar);
 
-        assertEquals("Same code page retrieved twice should yield identical conversions in CP "
-                + codePage, result1, result2);
+        assertEquals(result1, result2,"Same code page retrieved twice should yield identical conversions in CP "
+                + codePage);
     }
 
     // =====================================================================
@@ -283,14 +290,15 @@ public class CharsetConversionPairwiseTest {
      *            Direction [EBCDIC→ASCII]
      * Risk: Null terminators in C-style code could truncate data
      */
-    @Test
-    public void testNullByteEBCDICConversion() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNullByteEBCDICConversion(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte nullByte = 0x00;
         char converted = cp.ebcdic2uni(nullByte & 0xFF);
-        assertNotNull("Null byte should produce valid char reference in CP " + codePage,
-                Character.valueOf(converted));
-        assertTrue("Null byte should map to valid Unicode range in CP " + codePage,
-                converted >= 0 && converted <= Character.MAX_VALUE);
+        assertNotNull(Character.valueOf(converted),"Null byte should produce valid char reference in CP " + codePage);
+        assertTrue(converted >= 0 && converted <= Character.MAX_VALUE,"Null byte should map to valid Unicode range in CP " + codePage);
     }
 
     /**
@@ -299,12 +307,14 @@ public class CharsetConversionPairwiseTest {
      *            Direction [EBCDIC→ASCII]
      * Risk: Extended EBCDIC chars may not map, causing data corruption
      */
-    @Test
-    public void testHighByteEBCDICConversion() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testHighByteEBCDICConversion(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte highByte = (byte) 0xFF;
         char converted = cp.ebcdic2uni(highByte & 0xFF);
-        assertTrue("High byte (0xFF) should convert to valid Unicode in CP " + codePage,
-                converted >= 0 && converted <= Character.MAX_VALUE);
+        assertTrue(converted >= 0 && converted <= Character.MAX_VALUE,"High byte (0xFF) should convert to valid Unicode in CP " + codePage);
     }
 
     /**
@@ -314,17 +324,18 @@ public class CharsetConversionPairwiseTest {
      *            Direction [EBCDIC→ASCII]
      * Risk: Byte boundary issues could corrupt adjacent conversions
      */
-    @Test
-    public void testConsecutiveHighBytesWithoutCrossContamination() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConsecutiveHighBytesWithoutCrossContamination(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte[] input = {(byte) 0xFE, (byte) 0xFF};
         String converted = ebcdicToString(input);
 
-        assertEquals("Two high bytes should produce exactly two characters in CP " + codePage,
-                2, converted.length());
+        assertEquals(2, converted.length(),"Two high bytes should produce exactly two characters in CP " + codePage);
 
         for (char c : converted.toCharArray()) {
-            assertTrue("Each converted char must be valid Unicode in CP " + codePage,
-                    c >= 0 && c <= Character.MAX_VALUE);
+            assertTrue(c >= 0 && c <= Character.MAX_VALUE,"Each converted char must be valid Unicode in CP " + codePage);
         }
     }
 
@@ -335,20 +346,21 @@ public class CharsetConversionPairwiseTest {
      *            Direction [EBCDIC→ASCII]
      * Risk: Array indexing errors at boundaries
      */
-    @Test
-    public void testFullByteRangeConversion() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFullByteRangeConversion(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         byte[] allBytes = new byte[256];
         for (int i = 0; i < 256; i++) {
             allBytes[i] = (byte) i;
         }
 
         String converted = ebcdicToString(allBytes);
-        assertEquals("256-byte range should produce 256 characters in CP " + codePage,
-                256, converted.length());
+        assertEquals(256, converted.length(),"256-byte range should produce 256 characters in CP " + codePage);
 
         for (char c : converted.toCharArray()) {
-            assertTrue("Each char must be valid Unicode in CP " + codePage,
-                    c >= 0 && c <= Character.MAX_VALUE);
+            assertTrue(c >= 0 && c <= Character.MAX_VALUE,"Each char must be valid Unicode in CP " + codePage);
         }
     }
 
@@ -359,20 +371,22 @@ public class CharsetConversionPairwiseTest {
      * Risk: Unmappable chars could throw ArrayIndexOutOfBoundsException
      * Note: This test documents expected behavior with current implementation
      */
-    @Test
-    public void testUnmappableUnicodeCharacterHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testUnmappableUnicodeCharacterHandling(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char unmappableChar = '\u2764'; // Heart symbol (value 10084) - unlikely in EBCDIC
 
         try {
             byte result = cp.uni2ebcdic(unmappableChar);
             // If conversion succeeds, result must be valid
-            assertTrue("Unmappable char conversion should yield byte value in CP " + codePage,
-                    result >= Byte.MIN_VALUE && result <= Byte.MAX_VALUE);
+            assertTrue(result >= Byte.MIN_VALUE && result <= Byte.MAX_VALUE,"Unmappable char conversion should yield byte value in CP " + codePage);
         } catch (ArrayIndexOutOfBoundsException e) {
             // Current implementation throws on unmappable chars
             // This documents the behavior; caller must validate input
-            assertNotNull("ArrayIndexOutOfBoundsException indicates validation needed in CP "
-                    + codePage, e);
+            assertNotNull(e,"ArrayIndexOutOfBoundsException indicates validation needed in CP "
+                    + codePage);
         } catch (Exception e) {
             // Any other exception is unexpected
             fail("Unexpected exception for unmappable char in CP " + codePage + ": "
@@ -386,13 +400,15 @@ public class CharsetConversionPairwiseTest {
      *            Direction [round-trip]
      * Risk: Control chars could be stripped or mishandled
      */
-    @Test
-    public void testControlCharacterRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testControlCharacterRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char tabChar = '\t';
         byte ebcdic = cp.uni2ebcdic(tabChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Tab character should round-trip in CP " + codePage,
-                tabChar, converted);
+        assertEquals(tabChar, converted,"Tab character should round-trip in CP " + codePage);
     }
 
     /**
@@ -401,13 +417,15 @@ public class CharsetConversionPairwiseTest {
      *            Direction [round-trip]
      * Risk: Newlines could be lost or converted to spaces
      */
-    @Test
-    public void testNewlineCharacterHandling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNewlineCharacterHandling(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         char newlineChar = '\n';
         byte ebcdic = cp.uni2ebcdic(newlineChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Newline character should round-trip in CP " + codePage,
-                newlineChar, converted);
+        assertEquals(newlineChar, converted,"Newline character should round-trip in CP " + codePage);
     }
 
     /**
@@ -417,16 +435,17 @@ public class CharsetConversionPairwiseTest {
      *            Direction [round-trip]
      * Risk: Buffer overflow, heap corruption, truncation
      */
-    @Test
-    public void testVeryLongStringRoundTrip() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testVeryLongStringRoundTrip(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String original = generateTerminalLine(1024);
         byte[] ebcdic = stringToEBCDIC(original);
         String converted = ebcdicToString(ebcdic);
 
-        assertEquals("1024-char string should round-trip without truncation in CP " + codePage,
-                original, converted);
-        assertEquals("Buffer should maintain exact length in CP " + codePage,
-                original.length(), converted.length());
+        assertEquals(original, converted,"1024-char string should round-trip without truncation in CP " + codePage);
+        assertEquals(original.length(), converted.length(),"Buffer should maintain exact length in CP " + codePage);
     }
 
     /**
@@ -436,8 +455,11 @@ public class CharsetConversionPairwiseTest {
      *            String length [100]
      * Risk: Pattern corruption, off-by-one errors in indexing
      */
-    @Test
-    public void testRepeatingPatternIntegrity() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRepeatingPatternIntegrity(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 100; i++) {
             sb.append("ABC");
@@ -447,8 +469,7 @@ public class CharsetConversionPairwiseTest {
         byte[] ebcdic = stringToEBCDIC(original);
         String converted = ebcdicToString(ebcdic);
 
-        assertEquals("300-char repeating pattern should maintain integrity in CP " + codePage,
-                original, converted);
+        assertEquals(original, converted,"300-char repeating pattern should maintain integrity in CP " + codePage);
     }
 
     /**
@@ -458,8 +479,11 @@ public class CharsetConversionPairwiseTest {
      *            Direction [round-trip]
      * Risk: C-style null termination could truncate data mid-string
      */
-    @Test
-    public void testNullTerminationDoesNotTruncate() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNullTerminationDoesNotTruncate(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         String beforeNull = "DATA";
         String afterNull = "MORE";
         String original = beforeNull + '\u0000' + afterNull;
@@ -467,10 +491,8 @@ public class CharsetConversionPairwiseTest {
         byte[] ebcdic = stringToEBCDIC(original);
         String converted = ebcdicToString(ebcdic);
 
-        assertEquals("String with embedded null should maintain length in CP " + codePage,
-                original.length(), converted.length());
-        assertEquals("String with embedded null should round-trip in CP " + codePage,
-                original, converted);
+        assertEquals(original.length(), converted.length(),"String with embedded null should maintain length in CP " + codePage);
+        assertEquals(original, converted,"String with embedded null should round-trip in CP " + codePage);
     }
 
     /**
@@ -479,8 +501,11 @@ public class CharsetConversionPairwiseTest {
      *            Character type [all mapped printable]
      * Risk: Code page might have asymmetric mappings (not all chars map both ways)
      */
-    @Test
-    public void testAsymmetricCodePageMapping() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAsymmetricCodePageMapping(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         // Test a sample of printable ASCII chars both directions
         String testChars = "ABCXYZ0123456789";
 
@@ -488,9 +513,8 @@ public class CharsetConversionPairwiseTest {
             byte ebcdic = cp.uni2ebcdic(asciiChar);
             char backToASCII = cp.ebcdic2uni(ebcdic & 0xFF);
 
-            assertEquals("Character '" + asciiChar + "' in CP " + codePage
-                    + " should have symmetric mapping",
-                    asciiChar, backToASCII);
+            assertEquals(asciiChar, backToASCII,"Character '" + asciiChar + "' in CP " + codePage
+                    + " should have symmetric mapping");
         }
     }
 
@@ -500,21 +524,22 @@ public class CharsetConversionPairwiseTest {
      *            Direction [round-trip]
      * Risk: Off-by-one errors at ASCII control/printable boundary
      */
-    @Test
-    public void testControlPrintableBoundary() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testControlPrintableBoundary(String codePage) throws Exception {
+        setParameters(codePage);
+        setUp();
         // 0x1F = Unit Separator (control)
         char controlChar = '\u001F';
         byte ebcdic = cp.uni2ebcdic(controlChar);
         char converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Boundary char 0x1F should round-trip in CP " + codePage,
-                controlChar, converted);
+        assertEquals(controlChar, converted,"Boundary char 0x1F should round-trip in CP " + codePage);
 
         // 0x20 = Space (printable)
         char spaceChar = ' ';
         ebcdic = cp.uni2ebcdic(spaceChar);
         converted = cp.ebcdic2uni(ebcdic & 0xFF);
-        assertEquals("Boundary char Space (0x20) should round-trip in CP " + codePage,
-                spaceChar, converted);
+        assertEquals(spaceChar, converted,"Boundary char Space (0x20) should round-trip in CP " + codePage);
     }
 
     // =====================================================================

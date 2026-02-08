@@ -1,37 +1,21 @@
-/**
- * HeadlessSessionPairwiseTest.java - Pairwise TDD Tests for Headless Session Management
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite validates the critical requirement for tn5250j-headless:
- * a TN5250 terminal emulator that runs WITHOUT Swing/GUI components.
- *
- * Dimensions tested (pairwise combinations):
- * - Session creation: [with-GUI, without-GUI, headless-only]
- * - Screen access: [getScreen(), getScreenAsChars(), getText()]
- * - Input methods: [sendKeys(), executeScript(), macro]
- * - Concurrency: [single-session, multi-session, parallel-ops]
- * - Lifecycle: [create, connect, operate, disconnect, destroy]
- *
- * Test strategy: Combine pairs of dimensions to expose:
- * - GUI dependencies in core classes (failing tests until refactored)
- * - Threading issues in headless operation
- * - Screen buffer access without rendering
- * - Event propagation without UI components
- * - Script execution in headless context
- *
- * Writing style: RED phase tests that expose missing headless support.
- *
- * NOTE: These tests focus on Screen5250 (the core headless component)
- * and test lifecycle management without GUI dependencies.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.headless;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.event.ScreenListener;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,13 +92,13 @@ public class HeadlessSessionPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Create screen buffer without any GUI rendering
         screen = new Screen5250();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Clean up resources
         screen = null;
@@ -136,11 +120,11 @@ public class HeadlessSessionPairwiseTest {
         // ARRANGE: In setUp
 
         // ACT: Screen already created in setUp
-        assertNotNull("Screen should be created", screen);
+        assertNotNull(screen,"Screen should be created");
 
         // ASSERT: Screen buffer exists and is initialized for headless use
-        assertTrue("Screen should have dimensions", screen.getRows() > 0);
-        assertTrue("Screen should have width", screen.getColumns() > 0);
+        assertTrue(screen.getRows() > 0,"Screen should have dimensions");
+        assertTrue(screen.getColumns() > 0,"Screen should have width");
     }
 
     /**
@@ -160,8 +144,8 @@ public class HeadlessSessionPairwiseTest {
         int cols = screen.getColumns();
 
         // ASSERT: Dimensions match standard terminal size
-        assertEquals("Standard 24-row screen", expectedRows, rows);
-        assertEquals("Standard 80-column screen", expectedCols, cols);
+        assertEquals(expectedRows, rows,"Standard 24-row screen");
+        assertEquals(expectedCols, cols,"Standard 80-column screen");
     }
 
     /**
@@ -181,8 +165,8 @@ public class HeadlessSessionPairwiseTest {
         session.sendInput(testInput);
 
         // ASSERT: Keys buffered
-        assertTrue("Session should be connected", session.isConnected());
-        assertTrue("Input should be recorded", session.getInputHistory().contains(testInput));
+        assertTrue(session.isConnected(),"Session should be connected");
+        assertTrue(session.getInputHistory().contains(testInput),"Input should be recorded");
     }
 
     /**
@@ -195,19 +179,19 @@ public class HeadlessSessionPairwiseTest {
     public void testConnectDisconnectHeadlessSession() {
         // ARRANGE: Headless session manager
         HeadlessSessionManager session = new HeadlessSessionManager(screen);
-        assertFalse("Session initially disconnected", session.isConnected());
+        assertFalse(session.isConnected(),"Session initially disconnected");
 
         // ACT: Connect
         session.connect("127.0.0.1", 5250);
 
         // ASSERT: Connection established
-        assertTrue("Session should connect without GUI", session.isConnected());
+        assertTrue(session.isConnected(),"Session should connect without GUI");
 
         // ACT: Disconnect
         session.disconnect();
 
         // ASSERT: Disconnected cleanly
-        assertFalse("Session should disconnect", session.isConnected());
+        assertFalse(session.isConnected(),"Session should disconnect");
     }
 
     /**
@@ -236,7 +220,7 @@ public class HeadlessSessionPairwiseTest {
         session.addScreenListener(listener);
 
         // ASSERT: Listener registered
-        assertEquals("One listener registered", 1, session.getListenerCount());
+        assertEquals(1, session.getListenerCount(),"One listener registered");
     }
 
     /**
@@ -260,10 +244,10 @@ public class HeadlessSessionPairwiseTest {
         session2.sendInput("SESSION2");
 
         // ASSERT: Both sessions independent
-        assertTrue("Session 1 connected", session1.isConnected());
-        assertTrue("Session 2 connected", session2.isConnected());
-        assertEquals("Session 1 input", "SESSION1", session1.getInputHistory().get(0));
-        assertEquals("Session 2 input", "SESSION2", session2.getInputHistory().get(0));
+        assertTrue(session1.isConnected(),"Session 1 connected");
+        assertTrue(session2.isConnected(),"Session 2 connected");
+        assertEquals("SESSION1", session1.getInputHistory().get(0),"Session 1 input");
+        assertEquals("SESSION2", session2.getInputHistory().get(0),"Session 2 input");
     }
 
     /**
@@ -283,8 +267,8 @@ public class HeadlessSessionPairwiseTest {
         int screenSize = screen.getRows() * screen.getColumns();
 
         // ASSERT: Screen buffer exists and has correct size
-        assertTrue("Screen buffer accessible", screenSize > 0);
-        assertEquals("Screen has 1920 characters (24x80)", 1920, screenSize);
+        assertTrue(screenSize > 0,"Screen buffer accessible");
+        assertEquals(1920, screenSize,"Screen has 1920 characters (24x80)");
     }
 
     /**
@@ -300,11 +284,11 @@ public class HeadlessSessionPairwiseTest {
         Screen5250 screen2 = new Screen5250();
 
         // ACT: Both screens should be independent
-        assertNotSame("Screens are different objects", screen1, screen2);
+        assertNotSame(screen1, screen2,"Screens are different objects");
 
         // ASSERT: Each has independent buffer state
-        assertEquals("Screen 1 has standard size", 24, screen1.getRows());
-        assertEquals("Screen 2 has standard size", 24, screen2.getRows());
+        assertEquals(24, screen1.getRows(),"Screen 1 has standard size");
+        assertEquals(24, screen2.getRows(),"Screen 2 has standard size");
     }
 
     /**
@@ -319,18 +303,18 @@ public class HeadlessSessionPairwiseTest {
         HeadlessSessionManager session = new HeadlessSessionManager(screen);
 
         // ACT: Create -> Connect -> Operate -> Disconnect -> Destroy
-        assertNotNull("Session created", session);
+        assertNotNull(session,"Session created");
         session.connect("127.0.0.1", 5250);
-        assertTrue("Connected", session.isConnected());
+        assertTrue(session.isConnected(),"Connected");
 
         session.sendInput("COMMAND");
-        assertEquals("Input sent", 1, session.getInputHistory().size());
+        assertEquals(1, session.getInputHistory().size(),"Input sent");
 
         session.disconnect();
-        assertFalse("Disconnected", session.isConnected());
+        assertFalse(session.isConnected(),"Disconnected");
 
         // ASSERT: All lifecycle stages completed
-        assertNotNull("Screen still accessible after disconnect", session.getScreen());
+        assertNotNull(session.getScreen(),"Screen still accessible after disconnect");
     }
 
     /**
@@ -353,8 +337,8 @@ public class HeadlessSessionPairwiseTest {
 
         // ASSERT: All screens have consistent size
         for (Screen5250 s : screens) {
-            assertEquals("Rows consistent", expectedRows, s.getRows());
-            assertEquals("Columns consistent", expectedCols, s.getColumns());
+            assertEquals(expectedRows, s.getRows(),"Rows consistent");
+            assertEquals(expectedCols, s.getColumns(),"Columns consistent");
         }
     }
 
@@ -403,8 +387,8 @@ public class HeadlessSessionPairwiseTest {
         boolean completed = endLatch.await(5, TimeUnit.SECONDS);
 
         // ASSERT: All connections succeeded
-        assertTrue("Concurrent operations completed in time", completed);
-        assertTrue("At least some connections succeeded", successCount.get() > 0);
+        assertTrue(completed,"Concurrent operations completed in time");
+        assertTrue(successCount.get() > 0,"At least some connections succeeded");
     }
 
     /**
@@ -418,14 +402,14 @@ public class HeadlessSessionPairwiseTest {
     public void testScreenAccessWithoutConnection() {
         // ARRANGE: Disconnected headless session
         HeadlessSessionManager session = new HeadlessSessionManager(screen);
-        assertFalse("Not connected initially", session.isConnected());
+        assertFalse(session.isConnected(),"Not connected initially");
 
         // ACT: Access screen without connection
         Screen5250 screenBuffer = session.getScreen();
 
         // ASSERT: Screen buffer accessible independently
-        assertNotNull("Screen accessible before connection", screenBuffer);
-        assertTrue("Screen has dimensions", screenBuffer.getRows() > 0);
+        assertNotNull(screenBuffer,"Screen accessible before connection");
+        assertTrue(screenBuffer.getRows() > 0,"Screen has dimensions");
     }
 
     /**
@@ -442,13 +426,13 @@ public class HeadlessSessionPairwiseTest {
         // ACT: Rapid connection cycles
         for (int i = 0; i < 10; i++) {
             session.connect("127.0.0.1", 5250);
-            assertTrue("Should be connected", session.isConnected());
+            assertTrue(session.isConnected(),"Should be connected");
             session.disconnect();
-            assertFalse("Should be disconnected", session.isConnected());
+            assertFalse(session.isConnected(),"Should be disconnected");
         }
 
         // ASSERT: No resource leak
-        assertFalse("Final state disconnected", session.isConnected());
+        assertFalse(session.isConnected(),"Final state disconnected");
     }
 
     /**
@@ -469,7 +453,7 @@ public class HeadlessSessionPairwiseTest {
                 Screen5250 s = screen;
                 int rows = s.getRows();
                 int cols = s.getColumns();
-                assertTrue("Dimensions should be consistent", rows == 24 && cols == 80);
+                assertTrue(rows == 24 && cols == 80,"Dimensions should be consistent");
             } catch (Exception e) {
                 errors.add(e);
             } finally {
@@ -485,8 +469,8 @@ public class HeadlessSessionPairwiseTest {
         boolean completed = latch.await(5, TimeUnit.SECONDS);
 
         // ASSERT: No race conditions
-        assertTrue("Operations completed", completed);
-        assertTrue("No concurrency errors: " + errors, errors.isEmpty());
+        assertTrue(completed,"Operations completed");
+        assertTrue(errors.isEmpty(),"No concurrency errors: " + errors);
     }
 
     /**
@@ -500,7 +484,7 @@ public class HeadlessSessionPairwiseTest {
         // ARRANGE: Connected session
         HeadlessSessionManager session = new HeadlessSessionManager(screen);
         session.connect("127.0.0.1", 5250);
-        assertTrue("Initially connected", session.isConnected());
+        assertTrue(session.isConnected(),"Initially connected");
 
         // ACT: Send input while connected
         session.sendInput("VALID");
@@ -510,8 +494,8 @@ public class HeadlessSessionPairwiseTest {
         session.sendInput("INVALID");
 
         // ASSERT: Only first input recorded
-        assertEquals("Only connected input recorded", 1, session.getInputHistory().size());
-        assertEquals("Valid input sent", "VALID", session.getInputHistory().get(0));
+        assertEquals(1, session.getInputHistory().size(),"Only connected input recorded");
+        assertEquals("VALID", session.getInputHistory().get(0),"Valid input sent");
     }
 
     /**
@@ -543,10 +527,10 @@ public class HeadlessSessionPairwiseTest {
 
         // ACT: Register listeners in concurrent threads
         final int listenerCount = session.getListenerCount();
-        assertEquals("All 5 listeners registered", 5, listenerCount);
+        assertEquals(5, listenerCount,"All 5 listeners registered");
 
         // ASSERT: Listeners thread-safe
-        assertTrue("Listeners registered successfully", listenerCount == 5);
+        assertTrue(listenerCount == 5,"Listeners registered successfully");
     }
 
     /**
@@ -571,7 +555,7 @@ public class HeadlessSessionPairwiseTest {
         }
 
         // ASSERT: Error handled appropriately
-        assertTrue("Null check works", nullScreen == null);
+        assertTrue(nullScreen == null,"Null check works");
     }
 
     /**
@@ -587,18 +571,18 @@ public class HeadlessSessionPairwiseTest {
 
         // ACT: Connect -> Disconnect -> Reconnect
         session.connect("127.0.0.1", 5250);
-        assertTrue("First connect", session.isConnected());
+        assertTrue(session.isConnected(),"First connect");
 
         session.disconnect();
-        assertFalse("First disconnect", session.isConnected());
+        assertFalse(session.isConnected(),"First disconnect");
 
         session.connect("127.0.0.1", 5250);
-        assertTrue("Second connect", session.isConnected());
+        assertTrue(session.isConnected(),"Second connect");
 
         session.sendInput("RECONNECTED");
 
         // ASSERT: Session reusable
-        assertEquals("Input after reconnect", 1, session.getInputHistory().size());
+        assertEquals(1, session.getInputHistory().size(),"Input after reconnect");
     }
 
     /**
@@ -621,7 +605,7 @@ public class HeadlessSessionPairwiseTest {
         session.sendInput(largeInput.toString());
 
         // ASSERT: Large input handled
-        assertEquals("Large input recorded", 1, session.getInputHistory().size());
-        assertTrue("Input contains data", session.getInputHistory().get(0).length() > 500);
+        assertEquals(1, session.getInputHistory().size(),"Large input recorded");
+        assertTrue(session.getInputHistory().get(0).length() > 500,"Input contains data");
     }
 }

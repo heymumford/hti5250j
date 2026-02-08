@@ -1,13 +1,23 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j.keyboard;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD tests for keyboard remapping configuration in HTI5250j.
@@ -29,7 +39,7 @@ public class KeyboardRemappingPairwiseTest {
     private KeyStroker sourceKey;
     private RemappingAction targetAction;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         config = new KeyboardRemappingConfiguration();
         remapper = new KeyRemapper(config);
@@ -50,9 +60,9 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, targetAction, "pass-through", "global");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("Physical F1 should map to [help]", result);
-        assertEquals("Target should be [help]", "[help]", result.getTargetName());
-        assertEquals("Should be 5250 key type", RemappingAction.TYPE_5250_KEY, result.getType());
+        assertNotNull(result,"Physical F1 should map to [help]");
+        assertEquals("[help]", result.getTargetName(),"Target should be [help]");
+        assertEquals(RemappingAction.TYPE_5250_KEY, result.getType(),"Should be 5250 key type");
     }
 
     /**
@@ -68,9 +78,9 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, targetAction, "pass-through", "session");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("Ctrl+A should map to copy action", result);
-        assertEquals("Target should be copy", "copy", result.getTargetName());
-        assertEquals("Scope should be session", "session", remapper.getScope(sourceKey));
+        assertNotNull(result,"Ctrl+A should map to copy action");
+        assertEquals("copy", result.getTargetName(),"Target should be copy");
+        assertEquals("session", remapper.getScope(sourceKey),"Scope should be session");
     }
 
     /**
@@ -86,8 +96,8 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, targetAction, "pass-through", "global");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("Combined key should map to macro", result);
-        assertTrue("Target should be macro type", result.getType() == RemappingAction.TYPE_MACRO);
+        assertNotNull(result,"Combined key should map to macro");
+        assertTrue(result.getType() == RemappingAction.TYPE_MACRO,"Target should be macro type");
     }
 
     /**
@@ -103,9 +113,9 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, targetAction, "consume", "application");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("Disabled key should have mapping", result);
-        assertEquals("Type should be disabled", RemappingAction.TYPE_DISABLED, result.getType());
-        assertTrue("Event should be consumed", remapper.shouldConsume(sourceKey));
+        assertNotNull(result,"Disabled key should have mapping");
+        assertEquals(RemappingAction.TYPE_DISABLED, result.getType(),"Type should be disabled");
+        assertTrue(remapper.shouldConsume(sourceKey),"Event should be consumed");
     }
 
     /**
@@ -122,8 +132,8 @@ public class KeyboardRemappingPairwiseTest {
         remapper.setModifierTranslation(sourceKey, "Alt", "Ctrl");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("Alt+F4 should translate", result);
-        assertEquals("Should resolve to [reset]", "[reset]", result.getTargetName());
+        assertNotNull(result,"Alt+F4 should translate");
+        assertEquals("[reset]", result.getTargetName(),"Should resolve to [reset]");
     }
 
     /**
@@ -141,7 +151,7 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, second, "pass-through", "global", "first-wins");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertEquals("First-wins should return initial mapping", "[pf2]", result.getTargetName());
+        assertEquals("[pf2]", result.getTargetName(),"First-wins should return initial mapping");
     }
 
     /**
@@ -159,7 +169,7 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, second, "consume", "session", "last-wins");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertEquals("Last-wins should return latest mapping", "paste", result.getTargetName());
+        assertEquals("paste", result.getTargetName(),"Last-wins should return latest mapping");
     }
 
     /**
@@ -177,7 +187,7 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, sessionAction, "pass-through", "session");
 
         RemappingAction result = remapper.resolveMapping(sourceKey, "session");
-        assertEquals("Session scope should override global", "[pf15]", result.getTargetName());
+        assertEquals("[pf15]", result.getTargetName(),"Session scope should override global");
     }
 
     /**
@@ -192,8 +202,7 @@ public class KeyboardRemappingPairwiseTest {
 
         remapper.addMapping(sourceKey, targetAction, "pass-through", "application");
 
-        assertTrue("Application scope should be global",
-                remapper.isApplicationScope(sourceKey));
+        assertTrue(remapper.isApplicationScope(sourceKey),"Application scope should be global");
     }
 
     /**
@@ -213,10 +222,10 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(standardEnter, standardAction, "pass-through", "global");
         remapper.addMapping(numpadEnter, numpadAction, "pass-through", "global");
 
-        assertEquals("Standard enter should be [enter]", "[enter]",
-                remapper.resolveMapping(standardEnter).getTargetName());
-        assertEquals("Numpad enter should be [newline]", "[newline]",
-                remapper.resolveMapping(numpadEnter).getTargetName());
+        assertEquals("[enter]",
+                remapper.resolveMapping(standardEnter).getTargetName(),"Standard enter should be [enter]");
+        assertEquals("[newline]",
+                remapper.resolveMapping(numpadEnter).getTargetName(),"Numpad enter should be [newline]");
     }
 
     /**
@@ -231,8 +240,7 @@ public class KeyboardRemappingPairwiseTest {
 
         remapper.addMapping(sourceKey, targetAction, "consume", "session");
 
-        assertTrue("Consumed modifier should prevent propagation",
-                remapper.shouldConsume(sourceKey));
+        assertTrue(remapper.shouldConsume(sourceKey),"Consumed modifier should prevent propagation");
     }
 
     // ==================== ADVERSARIAL / ERROR TESTS ====================
@@ -258,8 +266,7 @@ public class KeyboardRemappingPairwiseTest {
         remapper.markKeyAsMapped("[pf1]");
         remapper.markKeyAsMapped("[pf2]");
 
-        assertTrue("System should detect circular mapping",
-                remapper.hasCircularMapping(sourceKey, targetKey));
+        assertTrue(remapper.hasCircularMapping(sourceKey, targetKey),"System should detect circular mapping");
     }
 
     /**
@@ -279,8 +286,7 @@ public class KeyboardRemappingPairwiseTest {
             remapper.addMapping(sourceKey, action2, "pass-through", "global", "error");
             fail("Should throw exception on conflicting mapping with error resolution");
         } catch (KeyRemappingConflictException e) {
-            assertTrue("Exception should indicate conflict",
-                    e.getMessage() != null && e.getMessage().length() > 0);
+            assertTrue(e.getMessage() != null && e.getMessage().length() > 0,"Exception should indicate conflict");
         }
     }
 
@@ -298,8 +304,7 @@ public class KeyboardRemappingPairwiseTest {
             remapper.addMapping(sourceKey, targetAction, "pass-through", "global");
             fail("Should reject invalid key code");
         } catch (IllegalArgumentException e) {
-            assertTrue("Exception should indicate invalid key",
-                    e.getMessage().contains("invalid") || e.getMessage().contains("key"));
+            assertTrue(e.getMessage().contains("invalid") || e.getMessage().contains("key"),"Exception should indicate invalid key");
         }
     }
 
@@ -316,7 +321,7 @@ public class KeyboardRemappingPairwiseTest {
             remapper.addMapping(sourceKey, null, "pass-through", "global");
             fail("Should reject null target action");
         } catch (NullPointerException e) {
-            assertNotNull("Exception should be thrown", e);
+            assertNotNull(e,"Exception should be thrown");
         }
     }
 
@@ -335,8 +340,7 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, appAction, "pass-through", "application");
 
         // Both should exist but application should take precedence
-        assertEquals("Application scope should override global",
-                "[pf16]", remapper.resolveMapping(sourceKey, "application").getTargetName());
+        assertEquals("[pf16]", remapper.resolveMapping(sourceKey, "application").getTargetName(),"Application scope should override global");
     }
 
     /**
@@ -351,8 +355,7 @@ public class KeyboardRemappingPairwiseTest {
 
         remapper.addMapping(sourceKey, action, "pass-through", "global", "error");
 
-        assertTrue("Should detect self-referential mapping",
-                remapper.hasSelfReferentialMapping(sourceKey));
+        assertTrue(remapper.hasSelfReferentialMapping(sourceKey),"Should detect self-referential mapping");
     }
 
     /**
@@ -369,7 +372,7 @@ public class KeyboardRemappingPairwiseTest {
         remapper.setModifierTranslation(sourceKey, "Shift+Ctrl+Alt", "Alt");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("Complex modifier should resolve", result);
+        assertNotNull(result,"Complex modifier should resolve");
     }
 
     /**
@@ -386,9 +389,8 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, targetAction, "pass-through", "session");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("Macro with parameters should resolve", result);
-        assertTrue("Should contain macro parameters",
-                result.getTargetName().contains("param"));
+        assertNotNull(result,"Macro with parameters should resolve");
+        assertTrue(result.getTargetName().contains("param"),"Should contain macro parameters");
     }
 
     /**
@@ -405,10 +407,8 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, globalAction, "pass-through", "global");
         remapper.addMapping(sourceKey, sessionAction, "consume", "session");
 
-        assertEquals("Session disabled, but global should exist",
-                "[sysreq]", remapper.resolveMapping(sourceKey, "global").getTargetName());
-        assertNull("Session scope should be disabled",
-                remapper.resolveMapping(sourceKey, "session").getTargetName());
+        assertEquals("[sysreq]", remapper.resolveMapping(sourceKey, "global").getTargetName(),"Session disabled, but global should exist");
+        assertNull(remapper.resolveMapping(sourceKey, "session").getTargetName(),"Session scope should be disabled");
     }
 
     /**
@@ -427,8 +427,7 @@ public class KeyboardRemappingPairwiseTest {
             remapper.setModifierTranslation(sourceKey, "InvalidMod", "Ctrl");
             fail("Should reject invalid modifier string");
         } catch (IllegalArgumentException e) {
-            assertTrue("Exception should indicate invalid modifier",
-                    e.getMessage().contains("modifier") || e.getMessage().contains("invalid"));
+            assertTrue(e.getMessage().contains("modifier") || e.getMessage().contains("invalid"),"Exception should indicate invalid modifier");
         }
     }
 
@@ -450,7 +449,7 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(intermediateKey, action2, "pass-through", "global");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertEquals("Chain should resolve to first mapping", "[pf8]", result.getTargetName());
+        assertEquals("[pf8]", result.getTargetName(),"Chain should resolve to first mapping");
     }
 
     /**
@@ -466,16 +465,16 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, action, "pass-through", "global");
 
         Map<String, Object> saved = remapper.exportConfiguration();
-        assertNotNull("Configuration should be exportable", saved);
-        assertTrue("Saved config should contain mapping", saved.size() > 0);
+        assertNotNull(saved,"Configuration should be exportable");
+        assertTrue(saved.size() > 0,"Saved config should contain mapping");
 
         KeyboardRemappingConfiguration newConfig = new KeyboardRemappingConfiguration();
         KeyRemapper newRemapper = new KeyRemapper(newConfig);
         newRemapper.importConfiguration(saved);
 
         RemappingAction restored = newRemapper.resolveMapping(sourceKey);
-        assertNotNull("Restored mapping should exist", restored);
-        assertEquals("Restored mapping should match original", "[home]", restored.getTargetName());
+        assertNotNull(restored,"Restored mapping should exist");
+        assertEquals("[home]", restored.getTargetName(),"Restored mapping should match original");
     }
 
     /**
@@ -495,10 +494,10 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(leftShift, leftAction, "pass-through", "global");
         remapper.addMapping(rightShift, rightAction, "pass-through", "global");
 
-        assertEquals("Left shift should map to markleft", "[markleft]",
-                remapper.resolveMapping(leftShift).getTargetName());
-        assertEquals("Right shift should map to markright", "[markright]",
-                remapper.resolveMapping(rightShift).getTargetName());
+        assertEquals("[markleft]",
+                remapper.resolveMapping(leftShift).getTargetName(),"Left shift should map to markleft");
+        assertEquals("[markright]",
+                remapper.resolveMapping(rightShift).getTargetName(),"Right shift should map to markright");
     }
 
     /**
@@ -515,9 +514,8 @@ public class KeyboardRemappingPairwiseTest {
         remapper.setActionStateCondition(sourceKey, "insert-mode", true);
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("State-dependent action should resolve", result);
-        assertTrue("Should have state condition",
-                remapper.hasStateCondition(sourceKey));
+        assertNotNull(result,"State-dependent action should resolve");
+        assertTrue(remapper.hasStateCondition(sourceKey),"Should have state condition");
     }
 
     /**
@@ -533,8 +531,8 @@ public class KeyboardRemappingPairwiseTest {
         remapper.addMapping(sourceKey, targetAction, "pass-through", "global");
 
         RemappingAction result = remapper.resolveMapping(sourceKey);
-        assertNotNull("AltGr+2 should map to [copy]", result);
-        assertEquals("Target should be [copy]", "[copy]", result.getTargetName());
+        assertNotNull(result,"AltGr+2 should map to [copy]");
+        assertEquals("[copy]", result.getTargetName(),"Target should be [copy]");
     }
 
     /**
@@ -547,6 +545,6 @@ public class KeyboardRemappingPairwiseTest {
                 KeyStroker.KEY_LOCATION_STANDARD);
 
         RemappingAction result = remapper.resolveMapping(unmappedKey);
-        assertNull("Unmapped key should return null", result);
+        assertNull(result,"Unmapped key should return null");
     }
 }

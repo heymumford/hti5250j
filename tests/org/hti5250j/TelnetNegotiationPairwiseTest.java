@@ -1,41 +1,23 @@
-/**
- * TelnetNegotiationPairwiseTest.java - Pairwise TDD Tests for HTI5250j Telnet Negotiation
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover bugs in telnet
- * protocol negotiation (RFC 854) and TN5250E extensions within tnvt.java.
- *
- * Pairwise dimensions tested:
- * 1. Option: BINARY (0), ECHO (1), SGA (3), TTYPE (24), EOR (25), TN5250E (proprietary)
- * 2. Command: WILL (251), WONT (252), DO (253), DONT (254), SB (250), INVALID
- * 3. Sequence: standard (proper order), out-of-order (reversed), repeated (double)
- * 4. Terminal type: IBM-3179-2 (80x24), IBM-3477-FC (132 col), custom, empty, malformed
- * 5. Response: accept (WILL/DO), reject (WONT/DONT), ignore (no response), invalid
- *
- * Coverage goals:
- * - Happy path: Proper negotiation with standard sequences
- * - Protocol compliance: RFC 854 telnet negotiation rules
- * - Adversarial: Malformed sequences, buffer overflows, injection attacks
- * - State handling: Proper option state transitions and tracking
- * - Terminal type exchange: Correct TTYPE subnegotiation with SB/SE
- *
- * Test strategy: RED phase tests that expose implementation bugs through:
- * 1. Boundary testing (empty options, oversized strings)
- * 2. Sequence testing (out-of-order, repeated negotiations)
- * 3. Encoding testing (UTF-8, invalid bytes, null terminators)
- * 4. State testing (option state transitions)
- * 5. Performance testing (rapid negotiation floods)
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Telnet Negotiation Pairwise Test Suite
@@ -97,13 +79,13 @@ public class TelnetNegotiationPairwiseTest {
             new String(new char[1024]).replace('\0', 'A')    // Very long string
     };
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         mockInputStream = null;
         capturedOutput = new ByteArrayOutputStream();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (mockInputStream != null) {
             try {
@@ -126,7 +108,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean result = isValidNegotiationSequence(serverNegotiation);
 
         // Then: Should be recognized as valid
-        assertTrue("DO BINARY should be valid negotiation", result);
+        assertTrue(result,"DO BINARY should be valid negotiation");
     }
 
     @Test
@@ -138,7 +120,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean result = isValidNegotiationSequence(serverNegotiation);
 
         // Then: Should be valid
-        assertTrue("DO ECHO should be valid", result);
+        assertTrue(result,"DO ECHO should be valid");
     }
 
     @Test
@@ -150,7 +132,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean result = isValidNegotiationSequence(serverNegotiation);
 
         // Then: Valid
-        assertTrue("DO SGA should be valid", result);
+        assertTrue(result,"DO SGA should be valid");
     }
 
     @Test
@@ -163,7 +145,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isValid = isValidTerminalTypeResponse(response);
 
         // Then: Response should be properly formed with SE terminator
-        assertTrue("IBM-3179-2 response should be valid", isValid);
+        assertTrue(isValid,"IBM-3179-2 response should be valid");
     }
 
     @Test
@@ -175,7 +157,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isValid = isValidTerminalTypeResponse(response);
 
         // Then: Valid response
-        assertTrue("IBM-3477-FC response should be valid", isValid);
+        assertTrue(isValid,"IBM-3477-FC response should be valid");
     }
 
     @Test
@@ -187,7 +169,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean result = isValidNegotiationSequence(serverNegotiation);
 
         // Then: Valid
-        assertTrue("DO EOR should be valid", result);
+        assertTrue(result,"DO EOR should be valid");
     }
 
     @Test
@@ -199,9 +181,9 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response = createRejectionResponse((byte) 6);
 
         // Then: Should create WONT TIMING_MARK
-        assertEquals("First byte should be IAC", IAC, response[0]);
-        assertEquals("Second byte should be WONT", WONT, response[1]);
-        assertEquals("Third byte should be option code", (byte) 6, response[2]);
+        assertEquals(IAC, response[0],"First byte should be IAC");
+        assertEquals(WONT, response[1],"Second byte should be WONT");
+        assertEquals((byte) 6, response[2],"Third byte should be option code");
     }
 
     @Test
@@ -217,7 +199,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean result3 = isValidNegotiationSequence(negotiation3);
 
         // Then: All should be valid
-        assertTrue("All sequential negotiations should be valid", result1 && result2 && result3);
+        assertTrue(result1 && result2 && result3,"All sequential negotiations should be valid");
     }
 
     // ==================== PROTOCOL COMPLIANCE: RFC 854 Rules ====================
@@ -231,7 +213,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isNegotiation = (dataWithEscapedIAC[0] == IAC && dataWithEscapedIAC[1] != IAC);
 
         // Then: Should not be treated as negotiation command
-        assertFalse("IAC IAC should be data escape, not command", isNegotiation);
+        assertFalse(isNegotiation,"IAC IAC should be data escape, not command");
     }
 
     @Test
@@ -243,7 +225,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isValid = (truncatedDO.length >= 3);
 
         // Then: Should be invalid (requires option byte)
-        assertFalse("DO without option should be invalid", isValid);
+        assertFalse(isValid,"DO without option should be invalid");
     }
 
     @Test
@@ -255,7 +237,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isValid = (truncatedWILL.length >= 3);
 
         // Then: Invalid
-        assertFalse("WILL without option should be invalid", isValid);
+        assertFalse(isValid,"WILL without option should be invalid");
     }
 
     @Test
@@ -267,7 +249,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isProperlyTerminated = endsWithIAC_SE(truncatedSubneg);
 
         // Then: Should be invalid
-        assertFalse("SB without SE should be invalid", isProperlyTerminated);
+        assertFalse(isProperlyTerminated,"SB without SE should be invalid");
     }
 
     @Test
@@ -279,7 +261,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isProperlyTerminated = endsWithIAC_SE(properSubneg);
 
         // Then: Should be valid
-        assertTrue("SB with SE should be valid", isProperlyTerminated);
+        assertTrue(isProperlyTerminated,"SB with SE should be valid");
     }
 
     @Test
@@ -291,8 +273,8 @@ public class TelnetNegotiationPairwiseTest {
         byte[] ourResponse = createWillResponse(TRANSMIT_BINARY);
 
         // Then: Response should be WILL BINARY
-        assertEquals("Response should be WILL", WILL, ourResponse[1]);
-        assertEquals("Response option should match", TRANSMIT_BINARY, ourResponse[2]);
+        assertEquals(WILL, ourResponse[1],"Response should be WILL");
+        assertEquals(TRANSMIT_BINARY, ourResponse[2],"Response option should match");
     }
 
     @Test
@@ -304,7 +286,7 @@ public class TelnetNegotiationPairwiseTest {
         byte[] ourResponse = createRejectionResponse((byte) 99);
 
         // Then: Should be WONT
-        assertEquals("Response should be WONT", WONT, ourResponse[1]);
+        assertEquals(WONT, ourResponse[1],"Response should be WONT");
     }
 
     // ==================== ADVERSARIAL: Malformed & Injection Attacks ====================
@@ -318,7 +300,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isValid = (response.length > 4) && (response[3] == QUAL_IS);
 
         // Then: Empty terminal types should still be structured properly
-        assertTrue("Empty TTYPE should maintain structure", isValid);
+        assertTrue(isValid,"Empty TTYPE should maintain structure");
     }
 
     @Test
@@ -331,7 +313,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean hasNullByte = hasNullByte(response);
 
         // Then: Should detect null bytes
-        assertTrue("Should detect null byte injection", hasNullByte);
+        assertTrue(hasNullByte,"Should detect null byte injection");
     }
 
     @Test
@@ -344,7 +326,7 @@ public class TelnetNegotiationPairwiseTest {
         int responseSize = response.length;
 
         // Then: Response should not exceed reasonable bounds (< 1024 bytes)
-        assertTrue("Oversized TTYPE response should be bounded", responseSize < 1024);
+        assertTrue(responseSize < 1024,"Oversized TTYPE response should be bounded");
     }
 
     @Test
@@ -364,7 +346,7 @@ public class TelnetNegotiationPairwiseTest {
                 break;
             }
         }
-        assertFalse("IAC should be escaped in TTYPE", hasUnescapedIAC);
+        assertFalse(hasUnescapedIAC,"IAC should be escaped in TTYPE");
     }
 
     @Test
@@ -377,7 +359,7 @@ public class TelnetNegotiationPairwiseTest {
         String extractedType = new String(extractTerminalTypeBytes(response), StandardCharsets.UTF_8);
 
         // Then: Should contain the malicious string (no validation at protocol level)
-        assertEquals("Protocol should preserve terminal type as-is", pathTraversal, extractedType);
+        assertEquals(pathTraversal, extractedType,"Protocol should preserve terminal type as-is");
     }
 
     @Test
@@ -400,7 +382,7 @@ public class TelnetNegotiationPairwiseTest {
         }
 
         // Then: Should parse all sequences without crashing
-        assertEquals("Should parse all 50 sequences", 50, validSequences);
+        assertEquals(50, validSequences,"Should parse all 50 sequences");
     }
 
     @Test
@@ -412,7 +394,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isValidCommand = isValidTelnetCommand(invalidCommand[1]);
 
         // Then: Should be invalid
-        assertFalse("Invalid command code should be detected", isValidCommand);
+        assertFalse(isValidCommand,"Invalid command code should be detected");
     }
 
     @Test
@@ -424,7 +406,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isProper = (truncatedSB.length >= 3);
 
         // Then: Invalid
-        assertFalse("SB must have option code", isProper);
+        assertFalse(isProper,"SB must have option code");
     }
 
     @Test
@@ -436,7 +418,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isTerminated = endsWithIAC_SE(unclosed);
 
         // Then: Should be detected as invalid
-        assertFalse("Unclosed SB should be invalid", isTerminated);
+        assertFalse(isTerminated,"Unclosed SB should be invalid");
     }
 
     // ==================== TTYPE EXCHANGE: Terminal Type Negotiation ====================
@@ -450,7 +432,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean isValid = isValidNegotiationSequence(serverWillTTYPE);
 
         // Then: Should be valid
-        assertTrue("Server WILL TTYPE should be valid", isValid);
+        assertTrue(isValid,"Server WILL TTYPE should be valid");
     }
 
     @Test
@@ -462,8 +444,8 @@ public class TelnetNegotiationPairwiseTest {
         byte[] clientResponse = createDoResponse(TERMINAL_TYPE);
 
         // Then: Should be DO TTYPE
-        assertEquals("Response should be DO", DO, clientResponse[1]);
-        assertEquals("Response option should be TTYPE", TERMINAL_TYPE, clientResponse[2]);
+        assertEquals(DO, clientResponse[1],"Response should be DO");
+        assertEquals(TERMINAL_TYPE, clientResponse[2],"Response option should be TTYPE");
     }
 
     @Test
@@ -476,7 +458,7 @@ public class TelnetNegotiationPairwiseTest {
                             request[4] == IAC && request[5] == SE);
 
         // Then: Should be well-formed
-        assertTrue("TTYPE SEND request should be well-formed", isProper);
+        assertTrue(isProper,"TTYPE SEND request should be well-formed");
     }
 
     @Test
@@ -488,10 +470,10 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response = createTerminalTypeResponse("IBM-3179-2");
 
         // Then: Should have proper structure
-        assertEquals("First byte should be IAC", IAC, response[0]);
-        assertEquals("Second byte should be SB", SB, response[1]);
-        assertEquals("Third byte should be TTYPE", TERMINAL_TYPE, response[2]);
-        assertEquals("Fourth byte should be IS (0)", QUAL_IS, response[3]);
+        assertEquals(IAC, response[0],"First byte should be IAC");
+        assertEquals(SB, response[1],"Second byte should be SB");
+        assertEquals(TERMINAL_TYPE, response[2],"Third byte should be TTYPE");
+        assertEquals(QUAL_IS, response[3],"Fourth byte should be IS (0)");
     }
 
     @Test
@@ -502,7 +484,7 @@ public class TelnetNegotiationPairwiseTest {
 
         // Then: Response should contain type string
         String extractedType = new String(extractTerminalTypeBytes(response), StandardCharsets.UTF_8);
-        assertEquals("Should extract correct terminal type", "IBM-3477-FC", extractedType);
+        assertEquals("IBM-3477-FC", extractedType,"Should extract correct terminal type");
     }
 
     @Test
@@ -515,8 +497,8 @@ public class TelnetNegotiationPairwiseTest {
         int secondLastIndex = lastIndex - 1;
 
         // Then: Should end with IAC SE
-        assertEquals("Second to last byte should be IAC", IAC, response[secondLastIndex]);
-        assertEquals("Last byte should be SE", SE, response[lastIndex]);
+        assertEquals(IAC, response[secondLastIndex],"Second to last byte should be IAC");
+        assertEquals(SE, response[lastIndex],"Last byte should be SE");
     }
 
     @Test
@@ -528,7 +510,7 @@ public class TelnetNegotiationPairwiseTest {
         String extracted = new String(extractTerminalTypeBytes(response), StandardCharsets.UTF_8);
 
         // Then: Should preserve custom type
-        assertEquals("Should preserve custom terminal type", "AIXTERM", extracted);
+        assertEquals("AIXTERM", extracted,"Should preserve custom terminal type");
     }
 
     @Test
@@ -540,7 +522,7 @@ public class TelnetNegotiationPairwiseTest {
             String extracted = new String(extractTerminalTypeBytes(response), StandardCharsets.UTF_8);
 
             // Then: Each should be preserved correctly
-            assertEquals("Terminal type should be preserved: " + termType, termType, extracted);
+            assertEquals(termType, extracted,"Terminal type should be preserved: " + termType);
         }
     }
 
@@ -556,7 +538,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean hasDO = hasDOCommand(reversed);
 
         // Then: Both should parse independently
-        assertTrue("Both SB and DO should parse", hasSB && hasDO);
+        assertTrue(hasSB && hasDO,"Both SB and DO should parse");
     }
 
     @Test
@@ -570,7 +552,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean result2 = isValidNegotiationSequence(binary2);
 
         // Then: Should both be valid (idempotent)
-        assertTrue("Repeated DO BINARY should both be valid", result1 && result2);
+        assertTrue(result1 && result2,"Repeated DO BINARY should both be valid");
     }
 
     @Test
@@ -584,8 +566,8 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response2 = createRejectionResponse(TRANSMIT_BINARY);
 
         // Then: Both should produce valid responses
-        assertEquals("DO should produce WILL", WILL, response1[1]);
-        assertEquals("DONT should produce WONT", WONT, response2[1]);
+        assertEquals(WILL, response1[1],"DO should produce WILL");
+        assertEquals(WONT, response2[1],"DONT should produce WONT");
     }
 
     @Test
@@ -599,7 +581,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean doValid = isValidNegotiationSequence(serverDo);
 
         // Then: Both should be structurally valid
-        assertTrue("Both WILL and DO should be valid", willValid && doValid);
+        assertTrue(willValid && doValid,"Both WILL and DO should be valid");
     }
 
     @Test
@@ -613,9 +595,8 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response2 = createTerminalTypeResponse("IBM-3179-2");
 
         // Then: Both should be valid
-        assertTrue("Both TTYPE responses should be valid",
-                isValidTerminalTypeResponse(response1) &&
-                isValidTerminalTypeResponse(response2));
+        assertTrue(isValidTerminalTypeResponse(response1) &&
+                isValidTerminalTypeResponse(response2),"Both TTYPE responses should be valid");
     }
 
     @Test
@@ -630,7 +611,7 @@ public class TelnetNegotiationPairwiseTest {
         boolean doValid = isValidNegotiationSequence(doCmd);
 
         // Then: Both should be valid
-        assertTrue("TTYPE followed by DO should be valid", ttypeValid && doValid);
+        assertTrue(ttypeValid && doValid,"TTYPE followed by DO should be valid");
     }
 
     @Test
@@ -652,7 +633,7 @@ public class TelnetNegotiationPairwiseTest {
         }
 
         // Then: Should have 4 valid sequences
-        assertEquals("Should have 4 valid rapid sequences", 4, validCount);
+        assertEquals(4, validCount,"Should have 4 valid rapid sequences");
     }
 
     // ==================== TERMINAL TYPE: Malformed Types ====================
@@ -667,7 +648,7 @@ public class TelnetNegotiationPairwiseTest {
                                      response[2] == TERMINAL_TYPE && response[3] == QUAL_IS);
 
         // Then: Should maintain structure even with empty content
-        assertTrue("Empty TTYPE should have proper structure", hasProperStructure);
+        assertTrue(hasProperStructure,"Empty TTYPE should have proper structure");
     }
 
     @Test
@@ -679,7 +660,7 @@ public class TelnetNegotiationPairwiseTest {
 
         // When: Extract
         // Then: Should preserve the space
-        assertEquals("Should preserve leading space", withSpace, extracted);
+        assertEquals(withSpace, extracted,"Should preserve leading space");
     }
 
     @Test
@@ -690,7 +671,7 @@ public class TelnetNegotiationPairwiseTest {
         String extracted = new String(extractTerminalTypeBytes(response), StandardCharsets.UTF_8);
 
         // Then: Should preserve
-        assertEquals("Should preserve trailing space", withSpace, extracted);
+        assertEquals(withSpace, extracted,"Should preserve trailing space");
     }
 
     @Test
@@ -701,7 +682,7 @@ public class TelnetNegotiationPairwiseTest {
         String extracted = new String(extractTerminalTypeBytes(response), StandardCharsets.UTF_8);
 
         // Then: Should preserve CRLF
-        assertEquals("Should preserve CRLF in TTYPE", withCRLF, extracted);
+        assertEquals(withCRLF, extracted,"Should preserve CRLF in TTYPE");
     }
 
     @Test
@@ -715,7 +696,7 @@ public class TelnetNegotiationPairwiseTest {
 
         // Then: Should handle UTF-8 properly
         String extracted = new String(ttypeBytes, StandardCharsets.UTF_8);
-        assertEquals("Should preserve unicode characters", withUnicode, extracted);
+        assertEquals(withUnicode, extracted,"Should preserve unicode characters");
     }
 
     @Test
@@ -726,7 +707,7 @@ public class TelnetNegotiationPairwiseTest {
         String extracted = new String(extractTerminalTypeBytes(response), StandardCharsets.UTF_8);
 
         // Then: Should preserve specials
-        assertEquals("Should preserve special characters", withSpecials, extracted);
+        assertEquals(withSpecials, extracted,"Should preserve special characters");
     }
 
     @Test
@@ -739,7 +720,7 @@ public class TelnetNegotiationPairwiseTest {
         int responseSize = response.length;
 
         // Then: Response should be bounded
-        assertTrue("Response should not exceed 512 bytes", responseSize < 512);
+        assertTrue(responseSize < 512,"Response should not exceed 512 bytes");
     }
 
     @Test
@@ -752,7 +733,7 @@ public class TelnetNegotiationPairwiseTest {
         byte[] ttypeBytes = extractTerminalTypeBytes(response);
 
         // Then: Should still be valid (protocol doesn't enforce, but structure maintained)
-        assertTrue("Should create response even with long TTYPE", response.length > 0);
+        assertTrue(response.length > 0,"Should create response even with long TTYPE");
     }
 
     // ==================== RESPONSE HANDLING: Accept, Reject, Ignore ====================
@@ -766,8 +747,8 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response = createWillResponse(TRANSMIT_BINARY);
 
         // Then: Should be WILL BINARY
-        assertEquals("Should respond with WILL", WILL, response[1]);
-        assertEquals("Should echo option", TRANSMIT_BINARY, response[2]);
+        assertEquals(WILL, response[1],"Should respond with WILL");
+        assertEquals(TRANSMIT_BINARY, response[2],"Should echo option");
     }
 
     @Test
@@ -779,8 +760,8 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response = createRejectionResponse((byte) 99);
 
         // Then: Should be WONT 99
-        assertEquals("Should respond with WONT", WONT, response[1]);
-        assertEquals("Should echo unsupported option", (byte) 99, response[2]);
+        assertEquals(WONT, response[1],"Should respond with WONT");
+        assertEquals((byte) 99, response[2],"Should echo unsupported option");
     }
 
     @Test
@@ -792,8 +773,8 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response = createDoResponse(END_OF_RECORD);
 
         // Then: Should be DO EOR
-        assertEquals("Should respond with DO", DO, response[1]);
-        assertEquals("Should echo option", END_OF_RECORD, response[2]);
+        assertEquals(DO, response[1],"Should respond with DO");
+        assertEquals(END_OF_RECORD, response[2],"Should echo option");
     }
 
     @Test
@@ -805,7 +786,7 @@ public class TelnetNegotiationPairwiseTest {
         byte[] response = createRejectionResponse((byte) 77);
 
         // Then: WONT should be sent
-        assertEquals("Should reject with WONT", WONT, response[1]);
+        assertEquals(WONT, response[1],"Should reject with WONT");
     }
 
     @Test
@@ -821,9 +802,9 @@ public class TelnetNegotiationPairwiseTest {
         byte[] resp3 = createRejectionResponse((byte) 88);
 
         // Then: All should be valid
-        assertEquals("First response WILL", WILL, resp1[1]);
-        assertEquals("Second response WILL", WILL, resp2[1]);
-        assertEquals("Third response WONT", WONT, resp3[1]);
+        assertEquals(WILL, resp1[1],"First response WILL");
+        assertEquals(WILL, resp2[1],"Second response WILL");
+        assertEquals(WONT, resp3[1],"Third response WONT");
     }
 
     // ==================== HELPER METHODS ====================

@@ -1,39 +1,25 @@
-/**
- * Title: ConnectionTimeoutPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company: Guild Mortgage
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise timeout test suite for HTI5250j connection handling.
- * Tests combinations of timeout types, durations, recovery actions, connection states,
- * and recovery strategies to ensure robust timeout behavior and adversarial hung scenarios.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING. If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Pairwise combinatorial timeout handling test suite for tnvt connection.
@@ -72,7 +58,6 @@ import static org.junit.Assert.*;
  *   24. Timeout notification to listeners - observer callbacks
  *   25. Recovery metrics tracking - timeout event tracking
  */
-@RunWith(JUnit4.class)
 public class ConnectionTimeoutPairwiseTest {
 
     private ExecutorService executorService;
@@ -92,7 +77,7 @@ public class ConnectionTimeoutPairwiseTest {
     private MockTimeoutController mockController;
     private MockScreen5250 mockScreen;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         executorService = Executors.newCachedThreadPool();
         mockController = new MockTimeoutController();
@@ -100,7 +85,7 @@ public class ConnectionTimeoutPairwiseTest {
         mockSession = new MockTimeoutSession(mockController, mockScreen, executorService);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (mockSession != null) {
             mockSession.disconnect();
@@ -125,14 +110,15 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Connection succeeds on retry, no exception
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectTimeoutWithAutomaticRetry_RecoverySuceeeds() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.setRetryPolicy(1, 100); // 1 retry, 100ms delay
 
         mockSession.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Should be connected after retry recovery", mockSession.isConnected());
-        assertEquals("Should have at least 1 connect attempt", 1, mockSession.getConnectAttempts());
+        assertTrue(mockSession.isConnected(),"Should be connected after retry recovery");
+        assertEquals(1, mockSession.getConnectAttempts(),"Should have at least 1 connect attempt");
     }
 
     /**
@@ -145,19 +131,20 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Manual reconnect restores connection
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testReadTimeoutWithManualReconnect_RecoveryInitiatedByUser() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Initial connection should succeed", mockSession.isConnected());
+        assertTrue(mockSession.isConnected(),"Initial connection should succeed");
 
         // Simulate read timeout event
         mockSession.simulateReadTimeout();
-        assertFalse("Should be disconnected after read timeout", mockSession.isConnected());
+        assertFalse(mockSession.isConnected(),"Should be disconnected after read timeout");
 
         // Manual reconnect
         mockSession.reconnect();
-        assertTrue("Should be reconnected after manual reconnect", mockSession.isConnected());
+        assertTrue(mockSession.isConnected(),"Should be reconnected after manual reconnect");
     }
 
     /**
@@ -170,20 +157,21 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Keepalive keeps connection alive, no timeout event
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testInactivityTimeoutWithKeepaliveEnabled_PreventsTimeout() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_NORMAL);
         mockSession.enableKeepalive(true, 10000); // 10s keepalive interval
 
         mockSession.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Should be connected", mockSession.isConnected());
+        assertTrue(mockSession.isConnected(),"Should be connected");
 
         // Simulate idle period
         Thread.sleep(500);
 
         // Keepalive should have fired
-        assertTrue("Keepalive should have sent probe", mockSession.hasKeepaliveProbed());
-        assertTrue("Should still be connected with keepalive", mockSession.isConnected());
+        assertTrue(mockSession.hasKeepaliveProbed(),"Keepalive should have sent probe");
+        assertTrue(mockSession.isConnected(),"Should still be connected with keepalive");
     }
 
     /**
@@ -196,18 +184,19 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Session recovers to connected state automatically
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWriteTimeoutWithAutomaticReconnect_StateRecovered() throws Exception {
         mockSession.setWriteTimeout(TIMEOUT_SHORT);
         mockSession.setAutoRecoveryEnabled(true);
         mockSession.connect(VALID_HOST, VALID_PORT);
 
         mockSession.simulateWriteTimeout();
-        assertFalse("Should be disconnected after write timeout", mockSession.isConnected());
+        assertFalse(mockSession.isConnected(),"Should be disconnected after write timeout");
 
         // Auto-recovery should reconnect
         Thread.sleep(500);
-        assertTrue("Should be auto-recovered to connected state", mockSession.isConnected());
+        assertTrue(mockSession.isConnected(),"Should be auto-recovered to connected state");
     }
 
     /**
@@ -220,14 +209,15 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Timeout occurs immediately, retry succeeds
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectTimeoutZeroDuration_ImmediateTimeoutWithRetry() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_ZERO);
         mockSession.setRetryPolicy(1, 100);
 
         mockSession.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Should succeed with retry after zero timeout", mockSession.isConnected());
-        assertTrue("Should have attempted at least once", mockSession.getConnectAttempts() >= 1);
+        assertTrue(mockSession.isConnected(),"Should succeed with retry after zero timeout");
+        assertTrue(mockSession.getConnectAttempts() >= 1,"Should have attempted at least once");
     }
 
     // ============================================================================
@@ -244,14 +234,15 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Connection attempt fails, exception thrown or error reported
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectTimeoutNoRetry_FailureWithoutRecovery() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.setRetryPolicy(0, 0); // No retries
 
         boolean connected = mockSession.connect(SLOW_HOST, VALID_PORT);
-        assertFalse("Should fail without retry", connected);
-        assertFalse("Should not be connected", mockSession.isConnected());
+        assertFalse(connected,"Should fail without retry");
+        assertFalse(mockSession.isConnected(),"Should not be connected");
     }
 
     /**
@@ -264,7 +255,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Timeout event triggered, partial data discarded or queued
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testReadTimeoutDuringDataReception_PartialMessageHandling() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
@@ -273,8 +265,8 @@ public class ConnectionTimeoutPairwiseTest {
         mockSession.simulatePartialDataReceived(10);
         mockSession.simulateReadTimeout();
 
-        assertFalse("Should be disconnected after read timeout", mockSession.isConnected());
-        assertTrue("Timeout event should have been reported", mockSession.hasTimeoutOccurred());
+        assertFalse(mockSession.isConnected(),"Should be disconnected after read timeout");
+        assertTrue(mockSession.hasTimeoutOccurred(),"Timeout event should have been reported");
     }
 
     /**
@@ -287,14 +279,15 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Write timeout event, automatic recovery or disconnect
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWriteTimeoutSocketBufferFull_SlowReceiverHandling() throws Exception {
         mockSession.setWriteTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
         mockSession.setAutoRecoveryEnabled(true);
 
         mockSession.simulateWriteTimeout();
-        assertTrue("Timeout event should be recorded", mockSession.hasTimeoutOccurred());
+        assertTrue(mockSession.hasTimeoutOccurred(),"Timeout event should be recorded");
     }
 
     /**
@@ -307,7 +300,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Connection closed, session disconnected
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testInactivityTimeoutWithoutKeepalive_ConnectionDropped() throws Exception {
         mockSession.setInactivityTimeout(TIMEOUT_SHORT);
         mockSession.enableKeepalive(false, 0); // Keepalive disabled
@@ -318,7 +312,7 @@ public class ConnectionTimeoutPairwiseTest {
 
         // Connection should be dropped
         mockSession.checkInactivityTimeout();
-        assertFalse("Connection should be dropped after inactivity timeout", mockSession.isConnected());
+        assertFalse(mockSession.isConnected(),"Connection should be dropped after inactivity timeout");
     }
 
     /**
@@ -331,7 +325,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Multiple timeout events, eventual recovery or failure
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testCascadingTimeouts_MultipleTimeoutSequence() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.setReadTimeout(TIMEOUT_SHORT);
@@ -340,7 +335,7 @@ public class ConnectionTimeoutPairwiseTest {
 
         // First connect attempt times out
         mockSession.connect(SLOW_HOST, VALID_PORT);
-        assertTrue("Should eventually connect with retries", mockSession.isConnected() || mockSession.getConnectAttempts() > 1);
+        assertTrue(mockSession.isConnected() || mockSession.getConnectAttempts() > 1,"Should eventually connect with retries");
     }
 
     /**
@@ -353,7 +348,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Backoff delay increases with each retry
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutDuringRetry_ExponentialBackoffIncreases() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.setRetryPolicy(3, 100); // Initial 100ms, exponential
@@ -363,7 +359,7 @@ public class ConnectionTimeoutPairwiseTest {
         long duration = System.currentTimeMillis() - startTime;
 
         // With exponential backoff: 100ms + 200ms + 400ms = 700ms minimum
-        assertTrue("Should have backoff delay between retries", duration >= 400 || !mockSession.isConnected());
+        assertTrue(duration >= 400 || !mockSession.isConnected(),"Should have backoff delay between retries");
     }
 
     /**
@@ -376,7 +372,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: InterruptedException propagated, thread terminates cleanly
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testThreadInterruptionDuringReadTimeout_CleanTermination() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
@@ -398,7 +395,7 @@ public class ConnectionTimeoutPairwiseTest {
         Thread.sleep(200);
         mockSession.interrupt();
 
-        assertTrue("Read should have been interrupted", readInterrupted.await(2, TimeUnit.SECONDS));
+        assertTrue(readInterrupted.await(2, TimeUnit.SECONDS),"Read should have been interrupted");
     }
 
     /**
@@ -411,7 +408,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Pending commands handled appropriately (queued, discarded, or retried)
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutWithPendingOperations_QueueHandling() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
@@ -421,14 +419,13 @@ public class ConnectionTimeoutPairwiseTest {
         mockSession.queueOperation("SEND_COMMAND_2");
         mockSession.queueOperation("SEND_COMMAND_3");
 
-        assertEquals("Should have 3 queued operations", 3, mockSession.getPendingOperationCount());
+        assertEquals(3, mockSession.getPendingOperationCount(),"Should have 3 queued operations");
 
         // Trigger read timeout
         mockSession.simulateReadTimeout();
 
         // Queue should be preserved or cleared appropriately
-        assertTrue("Should handle queued operations on timeout",
-                mockSession.getPendingOperationCount() >= 0);
+        assertTrue(mockSession.getPendingOperationCount() >= 0,"Should handle queued operations on timeout");
     }
 
     /**
@@ -441,18 +438,19 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Session state valid after reconnect, no corruption
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testRecoveryAfterReadTimeout_StateConsistency() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
         String preTimeoutState = mockSession.getSessionState();
 
         mockSession.simulateReadTimeout();
-        assertNotSame("State should change on timeout", preTimeoutState, mockSession.getSessionState());
+        assertNotSame(preTimeoutState, mockSession.getSessionState(),"State should change on timeout");
 
         mockSession.reconnect();
-        assertNotNull("Reconnected state should be valid", mockSession.getSessionState());
-        assertTrue("Should be connected after recovery", mockSession.isConnected());
+        assertNotNull(mockSession.getSessionState(),"Reconnected state should be valid");
+        assertTrue(mockSession.isConnected(),"Should be connected after recovery");
     }
 
     /**
@@ -465,7 +463,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: All registered observers notified of timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutNotificationToObservers_ListenerPattern() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         AtomicInteger notificationCount = new AtomicInteger(0);
@@ -475,7 +474,7 @@ public class ConnectionTimeoutPairwiseTest {
 
         mockSession.simulateTimeout("CONNECT");
 
-        assertEquals("Both observers should be notified", 2, notificationCount.get());
+        assertEquals(2, notificationCount.get(),"Both observers should be notified");
     }
 
     // ============================================================================
@@ -492,7 +491,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Operation succeeds, no spurious timeout
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConnectTimeoutAtBoundary_NoSpuriousTimeout() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.setRetryPolicy(1, 0);
@@ -501,9 +501,9 @@ public class ConnectionTimeoutPairwiseTest {
         mockSession.connect(VALID_HOST, VALID_PORT);
         long elapsed = System.currentTimeMillis() - startTime;
 
-        assertTrue("Should complete successfully", mockSession.isConnected());
+        assertTrue(mockSession.isConnected(),"Should complete successfully");
         // Should complete within reasonable time, not hang
-        assertTrue("Should not take excessively long", elapsed < 5000);
+        assertTrue(elapsed < 5000,"Should not take excessively long");
     }
 
     /**
@@ -516,15 +516,16 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Configuration accepted, uses large value but doesn't affect test timing
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testLongTimeoutDuration_ConfiguredButNotTriggered() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_LONG);
         mockSession.connect(VALID_HOST, VALID_PORT);
-        assertTrue("Should be connected", mockSession.isConnected());
+        assertTrue(mockSession.isConnected(),"Should be connected");
 
         // Should complete quickly despite long timeout
         Thread.sleep(100);
-        assertTrue("Should still be connected with long timeout", mockSession.isConnected());
+        assertTrue(mockSession.isConnected(),"Should still be connected with long timeout");
     }
 
     /**
@@ -537,7 +538,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Timeout handled correctly during SSL negotiation
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutDuringSslNegotiation_EncryptionHandling() throws Exception {
         mockSession.enableSSL(true);
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
@@ -545,7 +547,7 @@ public class ConnectionTimeoutPairwiseTest {
 
         mockSession.connect(VALID_HOST, VALID_PORT);
         // Should either succeed or fail gracefully after timeout
-        assertTrue("Should handle SSL timeout gracefully", true);
+        assertTrue(true,"Should handle SSL timeout gracefully");
     }
 
     /**
@@ -558,7 +560,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Both operations cleaned up, no deadlock
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutWithConcurrentOperations_NoDeadlock() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.setWriteTimeout(TIMEOUT_SHORT);
@@ -593,8 +596,7 @@ public class ConnectionTimeoutPairwiseTest {
             }
         });
 
-        assertTrue("Both operations should complete without deadlock",
-                done.await(3, TimeUnit.SECONDS));
+        assertTrue(done.await(3, TimeUnit.SECONDS),"Both operations should complete without deadlock");
     }
 
     /**
@@ -607,7 +609,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Each timeout handled independently, no accumulated state issues
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testMultipleReadTimeoutsSequential_RecurrentTimeoutHandling() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.setAutoRecoveryEnabled(true);
@@ -620,7 +623,7 @@ public class ConnectionTimeoutPairwiseTest {
         }
 
         // Session should still be functional
-        assertTrue("Should handle multiple timeouts", mockSession.getTimeoutEventCount() >= 3);
+        assertTrue(mockSession.getTimeoutEventCount() >= 3,"Should handle multiple timeouts");
     }
 
     /**
@@ -633,7 +636,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Connection closed when keepalive times out
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testKeepaliveTimeoutDuringIdle_ConnectionDroppedOnKeepaliveFailure() throws Exception {
         mockSession.setInactivityTimeout(TIMEOUT_SHORT);
         mockSession.enableKeepalive(true, 500); // 500ms keepalive
@@ -641,7 +645,7 @@ public class ConnectionTimeoutPairwiseTest {
 
         // Simulate keepalive timeout
         mockSession.simulateKeepaliveTimeout();
-        assertFalse("Connection should be dropped on keepalive timeout", mockSession.isConnected());
+        assertFalse(mockSession.isConnected(),"Connection should be dropped on keepalive timeout");
     }
 
     /**
@@ -654,7 +658,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Circuit opens after threshold, stops retry attempts
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutTriggersCircuitBreaker_FailureThresholdEnforced() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.setCircuitBreakerThreshold(2); // Open after 2 failures
@@ -664,7 +669,7 @@ public class ConnectionTimeoutPairwiseTest {
             mockSession.connect(SLOW_HOST, VALID_PORT);
         }
 
-        assertTrue("Circuit breaker should be active after threshold", mockSession.isCircuitBreakerOpen());
+        assertTrue(mockSession.isCircuitBreakerOpen(),"Circuit breaker should be active after threshold");
     }
 
     /**
@@ -677,7 +682,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Timeout metrics recorded and queryable
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutMetricsTracking_EventCountingAndReporting() throws Exception {
         mockSession.setConnectTimeout(TIMEOUT_SHORT);
         mockSession.setRetryPolicy(2, 100);
@@ -686,7 +692,7 @@ public class ConnectionTimeoutPairwiseTest {
         mockSession.connect(SLOW_HOST, VALID_PORT);
         long endCount = mockSession.getTimeoutEventCount();
 
-        assertTrue("Timeout events should be tracked", endCount > startCount);
+        assertTrue(endCount > startCount,"Timeout events should be tracked");
     }
 
     /**
@@ -699,7 +705,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Partial message handled (retry or discard)
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWriteTimeoutWithPartialMessage_IncompleteMessageHandling() throws Exception {
         mockSession.setWriteTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
@@ -708,7 +715,7 @@ public class ConnectionTimeoutPairwiseTest {
         byte[] largeMessage = new byte[10000];
         mockSession.simulatePartialWrite(5000, TIMEOUT_SHORT);
 
-        assertTrue("Should handle partial write on timeout", mockSession.hasTimeoutOccurred());
+        assertTrue(mockSession.hasTimeoutOccurred(),"Should handle partial write on timeout");
     }
 
     /**
@@ -721,7 +728,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: No spurious timeout if operation completes in time
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutRaceCondition_OperationCompletesBeforeTimeout() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
@@ -738,8 +746,8 @@ public class ConnectionTimeoutPairwiseTest {
             }
         });
 
-        assertTrue("Operation should complete before timeout", done.await(2, TimeUnit.SECONDS));
-        assertTrue("Should still be connected", mockSession.isConnected());
+        assertTrue(done.await(2, TimeUnit.SECONDS),"Operation should complete before timeout");
+        assertTrue(mockSession.isConnected(),"Should still be connected");
     }
 
     /**
@@ -752,7 +760,8 @@ public class ConnectionTimeoutPairwiseTest {
      *
      * Expected: Disconnect completes despite timeout, no resource leak
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testTimeoutDuringDisconnect_CleanupCompletion() throws Exception {
         mockSession.setReadTimeout(TIMEOUT_SHORT);
         mockSession.connect(VALID_HOST, VALID_PORT);
@@ -761,7 +770,7 @@ public class ConnectionTimeoutPairwiseTest {
         mockSession.simulateTimeoutDuringDisconnect();
         mockSession.disconnect();
 
-        assertFalse("Should be disconnected despite timeout", mockSession.isConnected());
+        assertFalse(mockSession.isConnected(),"Should be disconnected despite timeout");
     }
 
     // ============================================================================
@@ -829,6 +838,8 @@ public class ConnectionTimeoutPairwiseTest {
                             Thread.sleep(10);
                         }
                         // Timeout occurred
+                        timeoutOccurred = true;
+                        timeoutEventCount++;
                         circuitBreakerFailureCount++;
                         if (circuitBreakerFailureCount >= circuitBreakerThreshold) {
                             circuitBreakerOpen = true;

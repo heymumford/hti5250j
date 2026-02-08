@@ -1,33 +1,22 @@
-/**
- * PluginExtensionPairwiseTest.java - Pairwise TDD Tests for Plugin Architecture
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover bugs in the
- * HTI5250j plugin/extension architecture by combining multiple test dimensions:
- *
- * Pairwise Dimensions:
- * 1. Plugin type: [screen-decorator, key-handler, protocol-filter]
- * 2. Lifecycle: [load, activate, deactivate, unload]
- * 3. API version: [current (1.0.0), legacy (0.9.0), future (2.0.0)]
- * 4. Dependency: [standalone, chained (A->B), conflicting (A<->B)]
- * 5. Error handling: [graceful, fatal, recovery]
- *
- * Test Categories:
- * - POSITIVE: Valid plugins, correct lifecycle, no errors
- * - ADVERSARIAL: Malicious plugins, circular deps, version conflicts
- * - STATE: Lifecycle transitions, state consistency
- * - BOUNDARY: Null plugins, empty names, extreme API versions
- * - ROBUSTNESS: Partial failures, plugin crashes, resource exhaustion
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.plugin;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PluginExtensionPairwiseTest {
 
@@ -35,7 +24,7 @@ public class PluginExtensionPairwiseTest {
     private PluginLifecycleListener listener;
     private List<String> lifecycleEvents;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         pluginManager = new TestPluginManager();
         lifecycleEvents = new ArrayList<>();
@@ -43,7 +32,7 @@ public class PluginExtensionPairwiseTest {
         pluginManager.addLifecycleListener(listener);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         try {
             pluginManager.shutdown();

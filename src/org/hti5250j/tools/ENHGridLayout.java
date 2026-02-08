@@ -1,29 +1,16 @@
-package org.hti5250j.tools;
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.1
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
+
+package org.hti5250j.tools;
 
 import java.awt.GridLayout;
 import java.awt.Container;
@@ -64,12 +51,12 @@ public class ENHGridLayout extends GridLayout {
     /** Array of row heights.
      * It is accurate only after a call to getGridSizes()
      */
-    protected int row_heights[] = new int[0];
+    protected int[] rowHeights = new int[0];
 
     /** Array of column widths.
      * It is accurate only after a call to getGridSizes()
      */
-    protected int col_widths[] = new int[0];
+    protected int[] colWidths = new int[0];
 
     public final static int VARIABLE = 0;
 
@@ -106,30 +93,30 @@ public class ENHGridLayout extends GridLayout {
      * @param min if true, the minimum size is used. Otherwise, the preferred size
      * is used.
      */
-    protected void getGridSizes(Container parent, boolean min) {
-        int ncomponents = parent.getComponentCount();
-        if (ncomponents == 0) return;
-        int nrows = rows, ncols = cols;
-        if (nrows > 0)
-            ncols = (ncomponents + nrows - 1) / nrows;
+    protected void getGridSizes(Container parent, boolean useMinimum) {
+        int componentCount = parent.getComponentCount();
+        if (componentCount == 0) return;
+        int rowCount = rows, columnCount = cols;
+        if (rowCount > 0)
+            columnCount = (componentCount + rowCount - 1) / rowCount;
         else
-            nrows = (ncomponents + ncols - 1) / ncols;
+            rowCount = (componentCount + columnCount - 1) / columnCount;
 
-        row_heights = new int[nrows];
-        col_widths = new int[ncols];
+        rowHeights = new int[rowCount];
+        colWidths = new int[columnCount];
 
-        for (int i = 0; i < ncomponents; i++) {
-            Component comp = parent.getComponent(i);
-            Dimension d = min ? comp.getMinimumSize() :
-                    comp.getPreferredSize();
+        for (int index = 0; index < componentCount; index++) {
+            Component component = parent.getComponent(index);
+            Dimension size = useMinimum ? component.getMinimumSize() :
+                    component.getPreferredSize();
 
-            int row = i / ncols;
-            if (d.height > row_heights[row])
-                row_heights[row] = d.height;
+            int row = index / columnCount;
+            if (size.height > rowHeights[row])
+                rowHeights[row] = size.height;
 
-            int col = i % ncols;
-            if (d.width > col_widths[col])
-                col_widths[col] = d.width;
+            int col = index % columnCount;
+            if (size.width > colWidths[col])
+                colWidths[col] = size.width;
         }
     }
 
@@ -138,10 +125,10 @@ public class ENHGridLayout extends GridLayout {
      */
     final int sum(int[] array) {
         if (array == null) return 0;
-        int s = 0;
+        int total = 0;
         for (int i = 0; i < array.length; i++)
-            s += array[i];
-        return s;
+            total += array[i];
+        return total;
     }
 
     /**
@@ -152,10 +139,10 @@ public class ENHGridLayout extends GridLayout {
 
         Insets insets = parent.getInsets();
         getGridSizes(parent, false);
-        return new Dimension(insets.left + insets.right + sum(col_widths)
-                + (col_widths.length + 1) * hgap,
-                insets.top + insets.bottom + sum(row_heights)
-                        + (row_heights.length + 1) * vgap);
+        return new Dimension(insets.left + insets.right + sum(colWidths)
+                + (colWidths.length + 1) * hgap,
+                insets.top + insets.bottom + sum(rowHeights)
+                        + (rowHeights.length + 1) * vgap);
     }
 
     /**
@@ -167,21 +154,21 @@ public class ENHGridLayout extends GridLayout {
 
         Insets insets = parent.getInsets();
         getGridSizes(parent, true);
-        return new Dimension(insets.left + insets.right + sum(col_widths)
-                + (col_widths.length + 1) * hgap,
-                insets.top + insets.bottom + sum(row_heights)
-                        + (row_heights.length + 1) * vgap);
+        return new Dimension(insets.left + insets.right + sum(colWidths)
+                + (colWidths.length + 1) * hgap,
+                insets.top + insets.bottom + sum(rowHeights)
+                        + (rowHeights.length + 1) * vgap);
     }
 
     /**
      * Positions the component.
      * @param pos the component's index in its parents child list
-     * @param row,col component's position
+     * @param row col component's position
      */
     protected void setBounds(int pos, int row, int col,
-                             Component comp, int x, int y, int w, int h) {
+                             Component component, int x, int y, int width, int height) {
 
-        comp.setBounds(x, y, w, h);
+        component.setBounds(x, y, width, height);
 
     }
 
@@ -194,34 +181,34 @@ public class ENHGridLayout extends GridLayout {
      * @see #reshape
      */
     public void layoutContainer(Container parent) {
-        int ncomponents = parent.getComponentCount();
-        if (ncomponents == 0) {
+        int componentCount = parent.getComponentCount();
+        if (componentCount == 0) {
             return;
         }
         Insets insets = parent.getInsets();
 
         getGridSizes(parent, false);
-        int nrows = rows, ncols = cols;
+        int rowCount = rows, columnCount = cols;
 
-        if (nrows > 0)
-            ncols = (ncomponents + nrows - 1) / nrows;
+        if (rowCount > 0)
+            columnCount = (componentCount + rowCount - 1) / rowCount;
         else
-            nrows = (ncomponents + ncols - 1) / ncols;
+            rowCount = (componentCount + columnCount - 1) / columnCount;
 
-        Dimension psize = parent.getSize();
-        for (int col = 0, x = insets.left + hgap; col < ncols; col++) {
-            for (int row = 0, y = insets.top + vgap; row < nrows; row++) {
-                int i = row * ncols + col;
-                if (i < ncomponents) {
-                    int w = Math.max(0, Math.min(col_widths[col],
-                            psize.width - insets.right - x));
-                    int h = Math.max(0, Math.min(row_heights[row],
-                            psize.height - insets.bottom - y));
-                    setBounds(i, row, col, parent.getComponent(i), x, y, w, h);
+        Dimension parentSize = parent.getSize();
+        for (int col = 0, x = insets.left + hgap; col < columnCount; col++) {
+            for (int row = 0, y = insets.top + vgap; row < rowCount; row++) {
+                int index = row * columnCount + col;
+                if (index < componentCount) {
+                    int width = Math.max(0, Math.min(colWidths[col],
+                            parentSize.width - insets.right - x));
+                    int height = Math.max(0, Math.min(rowHeights[row],
+                            parentSize.height - insets.bottom - y));
+                    setBounds(index, row, col, parent.getComponent(index), x, y, width, height);
                 }
-                y += row_heights[row] + vgap;
+                y += rowHeights[row] + vgap;
             }
-            x += col_widths[col] + hgap;
+            x += colWidths[col] + hgap;
         }
     }
 

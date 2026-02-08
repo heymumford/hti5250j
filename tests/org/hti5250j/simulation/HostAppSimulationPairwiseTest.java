@@ -1,29 +1,23 @@
-/**
- * HostAppSimulationPairwiseTest.java - Pairwise TDD for Host Application Simulation
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests host application behavior and screen flow simulation covering:
- * - Screen type transitions: [signon, menu, data-entry, report, subfile]
- * - Navigation actions: [forward, backward, help, exit]
- * - Response timing: [immediate, delayed, timeout]
- * - Data validation: [server-side, client-side, both]
- * - Error responses: [message, lock, disconnect]
- *
- * Focus: Mock host responses, screen flow navigation, error handling,
- * timing constraints, and adversarial/unexpected host behaviors.
- *
- * Pairwise coverage: 25+ tests covering critical host interaction patterns.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.simulation;
 
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PAIRWISE TEST MATRIX:
@@ -391,13 +385,13 @@ public class HostAppSimulationPairwiseTest {
     private MockHostScreen hostScreen;
     private HostResponseHandler responseHandler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Default: start with signon screen, immediate response
         hostScreen = new MockHostScreen(ScreenType.SIGNON, ResponseTiming.IMMEDIATE);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         hostScreen = null;
         responseHandler = null;
@@ -424,9 +418,9 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, loginData);
 
         // ASSERT
-        assertTrue("Signon forward should succeed", result);
-        assertEquals("Should transition to menu", ScreenType.MENU, hostScreen.getCurrentScreenType());
-        assertTrue("No errors should occur", responseHandler.getErrorMessages().isEmpty());
+        assertTrue(result,"Signon forward should succeed");
+        assertEquals(ScreenType.MENU, hostScreen.getCurrentScreenType(),"Should transition to menu");
+        assertTrue(responseHandler.getErrorMessages().isEmpty(),"No errors should occur");
     }
 
     /**
@@ -443,8 +437,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.BACKWARD, null);
 
         // ASSERT
-        assertFalse("Cannot go backward from signon", result);
-        assertEquals("Should remain on signon", ScreenType.SIGNON, hostScreen.getCurrentScreenType());
+        assertFalse(result,"Cannot go backward from signon");
+        assertEquals(ScreenType.SIGNON, hostScreen.getCurrentScreenType(),"Should remain on signon");
     }
 
     /**
@@ -463,9 +457,9 @@ public class HostAppSimulationPairwiseTest {
         long duration = System.currentTimeMillis() - startTime;
 
         // ASSERT
-        assertTrue("Help should succeed", result);
-        assertTrue("Delayed response should take time", duration >= 200);
-        assertTrue("Help transitions to help screen", hostScreen.getScreenData().contains("HELP SCREEN"));
+        assertTrue(result,"Help should succeed");
+        assertTrue(duration >= 200,"Delayed response should take time");
+        assertTrue(hostScreen.getScreenData().contains("HELP SCREEN"),"Help transitions to help screen");
     }
 
     /**
@@ -504,8 +498,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, data);
 
         // ASSERT
-        assertTrue("Should succeed with valid data", result);
-        assertEquals("Should reach menu", ScreenType.MENU, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Should succeed with valid data");
+        assertEquals(ScreenType.MENU, hostScreen.getCurrentScreenType(),"Should reach menu");
     }
 
     // ========== Group 2: MENU Screen Tests ==========
@@ -526,8 +520,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, selection);
 
         // ASSERT
-        assertTrue("Menu forward should succeed", result);
-        assertEquals("Should transition to data-entry", ScreenType.DATA_ENTRY, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Menu forward should succeed");
+        assertEquals(ScreenType.DATA_ENTRY, hostScreen.getCurrentScreenType(),"Should transition to data-entry");
     }
 
     /**
@@ -544,8 +538,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.BACKWARD, null);
 
         // ASSERT
-        assertTrue("Menu backward should succeed", result);
-        assertEquals("Should return to signon", ScreenType.SIGNON, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Menu backward should succeed");
+        assertEquals(ScreenType.SIGNON, hostScreen.getCurrentScreenType(),"Should return to signon");
     }
 
     /**
@@ -562,8 +556,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.HELP, null);
 
         // ASSERT
-        assertTrue("Help should succeed", result);
-        assertTrue("Should show help overlay", hostScreen.getScreenData().contains("HELP"));
+        assertTrue(result,"Help should succeed");
+        assertTrue(hostScreen.getScreenData().contains("HELP"),"Should show help overlay");
     }
 
     /**
@@ -625,8 +619,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, entryData);
 
         // ASSERT
-        assertTrue("Forward should succeed with valid data", result);
-        assertEquals("Should transition to report", ScreenType.REPORT, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Forward should succeed with valid data");
+        assertEquals(ScreenType.REPORT, hostScreen.getCurrentScreenType(),"Should transition to report");
     }
 
     /**
@@ -645,8 +639,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.BACKWARD, data);
 
         // ASSERT
-        assertTrue("Backward should succeed", result);
-        assertEquals("Should return to menu", ScreenType.MENU, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Backward should succeed");
+        assertEquals(ScreenType.MENU, hostScreen.getCurrentScreenType(),"Should return to menu");
     }
 
     /**
@@ -665,8 +659,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.HELP, data);
 
         // ASSERT
-        assertTrue("Help should succeed with client-side validation only", result);
-        assertTrue("Help overlay should appear", hostScreen.getScreenData().contains("HELP"));
+        assertTrue(result,"Help should succeed with client-side validation only");
+        assertTrue(hostScreen.getScreenData().contains("HELP"),"Help overlay should appear");
     }
 
     /**
@@ -685,8 +679,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.EXIT, data);
 
         // ASSERT
-        assertTrue("Exit should succeed even with both validations", result);
-        assertTrue("Keyboard should be locked after exit", hostScreen.isKeyboardLocked());
+        assertTrue(result,"Exit should succeed even with both validations");
+        assertTrue(hostScreen.isKeyboardLocked(),"Keyboard should be locked after exit");
     }
 
     /**
@@ -705,8 +699,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, invalidData);
 
         // ASSERT
-        assertFalse("Forward should fail with invalid data (exceeds 100 chars)", result);
-        assertTrue("Error message should be populated", !responseHandler.getErrorMessages().isEmpty());
+        assertFalse(result,"Forward should fail with invalid data (exceeds 100 chars)");
+        assertTrue(!responseHandler.getErrorMessages().isEmpty(),"Error message should be populated");
     }
 
     // ========== Group 4: REPORT Screen Tests ==========
@@ -725,8 +719,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.BACKWARD, null);
 
         // ASSERT
-        assertTrue("Backward from report should succeed", result);
-        assertEquals("Should return to data-entry", ScreenType.DATA_ENTRY, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Backward from report should succeed");
+        assertEquals(ScreenType.DATA_ENTRY, hostScreen.getCurrentScreenType(),"Should return to data-entry");
     }
 
     /**
@@ -745,8 +739,8 @@ public class HostAppSimulationPairwiseTest {
         long duration = System.currentTimeMillis() - startTime;
 
         // ASSERT
-        assertTrue("Help should succeed", result);
-        assertTrue("Should have delayed response", duration >= 200);
+        assertTrue(result,"Help should succeed");
+        assertTrue(duration >= 200,"Should have delayed response");
     }
 
     /**
@@ -763,8 +757,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, null);
 
         // ASSERT
-        assertFalse("Cannot forward from report", result);
-        assertEquals("Should remain on report", ScreenType.REPORT, hostScreen.getCurrentScreenType());
+        assertFalse(result,"Cannot forward from report");
+        assertEquals(ScreenType.REPORT, hostScreen.getCurrentScreenType(),"Should remain on report");
     }
 
     /**
@@ -804,7 +798,7 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, subfileData);
 
         // ASSERT
-        assertTrue("Subfile forward should succeed", result);
+        assertTrue(result,"Subfile forward should succeed");
     }
 
     /**
@@ -821,8 +815,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.BACKWARD, null);
 
         // ASSERT
-        assertTrue("Backward from subfile should succeed", result);
-        assertEquals("Should return to menu", ScreenType.MENU, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Backward from subfile should succeed");
+        assertEquals(ScreenType.MENU, hostScreen.getCurrentScreenType(),"Should return to menu");
     }
 
     /**
@@ -858,8 +852,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.EXIT, null);
 
         // ASSERT
-        assertTrue("Exit should succeed", result);
-        assertTrue("Keyboard should be locked", hostScreen.isKeyboardLocked());
+        assertTrue(result,"Exit should succeed");
+        assertTrue(hostScreen.isKeyboardLocked(),"Keyboard should be locked");
     }
 
     // ========== Group 6: Adversarial & Edge Cases ==========
@@ -880,8 +874,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, invalidData);
 
         // ASSERT: Should navigate successfully with valid selection
-        assertTrue("Navigation with valid data should succeed", result);
-        assertEquals("Should have transitioned once", 1, hostScreen.getTransitionCount());
+        assertTrue(result,"Navigation with valid data should succeed");
+        assertEquals(1, hostScreen.getTransitionCount(),"Should have transitioned once");
     }
 
     /**
@@ -898,8 +892,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, null);
 
         // ASSERT
-        assertTrue("Null data on menu forward should succeed (menu doesn't require data)", result);
-        assertEquals("Should transition to data-entry", ScreenType.DATA_ENTRY, hostScreen.getCurrentScreenType());
+        assertTrue(result,"Null data on menu forward should succeed (menu doesn't require data)");
+        assertEquals(ScreenType.DATA_ENTRY, hostScreen.getCurrentScreenType(),"Should transition to data-entry");
     }
 
     /**
@@ -916,7 +910,7 @@ public class HostAppSimulationPairwiseTest {
         boolean result = responseHandler.validateAndNavigate(NavigationAction.FORWARD, new HashMap<>());
 
         // ASSERT
-        assertFalse("Empty data on data-entry should fail", result);
+        assertFalse(result,"Empty data on data-entry should fail");
     }
 
     /**
@@ -933,8 +927,8 @@ public class HostAppSimulationPairwiseTest {
         boolean result = hostScreen.navigate(NavigationAction.FORWARD);
 
         // ASSERT
-        assertFalse("Locked keyboard should prevent navigation", result);
-        assertTrue("Keyboard should remain locked", hostScreen.isKeyboardLocked());
+        assertFalse(result,"Locked keyboard should prevent navigation");
+        assertTrue(hostScreen.isKeyboardLocked(),"Keyboard should remain locked");
     }
 
     /**
@@ -954,8 +948,8 @@ public class HostAppSimulationPairwiseTest {
 
         // ASSERT
         Queue<String> errors = responseHandler.getErrorMessages();
-        assertEquals("Should have 3 errors", 3, errors.size());
-        assertEquals("First error should be queued", "Error 1", errors.poll());
+        assertEquals(3, errors.size(),"Should have 3 errors");
+        assertEquals("Error 1", errors.poll(),"First error should be queued");
     }
 
     /**
@@ -972,8 +966,8 @@ public class HostAppSimulationPairwiseTest {
         String menuData = hostScreen.getScreenData();
 
         // ASSERT
-        assertEquals("Should be on menu", ScreenType.MENU, hostScreen.getCurrentScreenType());
-        assertTrue("Screen data should contain menu markers", menuData.contains("MAIN MENU"));
+        assertEquals(ScreenType.MENU, hostScreen.getCurrentScreenType(),"Should be on menu");
+        assertTrue(menuData.contains("MAIN MENU"),"Screen data should contain menu markers");
     }
 
     /**
@@ -993,7 +987,7 @@ public class HostAppSimulationPairwiseTest {
         boolean result = hostScreen.navigate(NavigationAction.FORWARD);
 
         // ASSERT
-        assertFalse("Locked host should not navigate", result);
-        assertTrue("Host should be locked", hostScreen.isKeyboardLocked());
+        assertFalse(result,"Locked host should not navigate");
+        assertTrue(hostScreen.isKeyboardLocked(),"Host should be locked");
     }
 }

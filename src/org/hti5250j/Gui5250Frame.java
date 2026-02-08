@@ -1,28 +1,14 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001-2003
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001-2003
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.4
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import java.awt.AWTEvent;
@@ -71,13 +57,13 @@ public class Gui5250Frame extends GUIViewInterface implements
 
 
     //Construct the frame
-    public Gui5250Frame(My5250 m) {
-        super(m);
+    public Gui5250Frame(My5250 my5250) {
+        super(my5250);
         enableEvents(AWTEvent.WINDOW_EVENT_MASK);
         try {
             jbInit();
-        } catch (Exception e) {
-            log.warn("Error during initializing!", e);
+        } catch (Exception exception) {
+            log.warn("Error during initializing!", exception);
         }
     }
 
@@ -117,8 +103,8 @@ public class Gui5250Frame extends GUIViewInterface implements
 
     //Overridden so we can exit on System Close
     @Override
-    protected void processWindowEvent(WindowEvent e) {
-        if (e.getID() == WindowEvent.WINDOW_CLOSING) {
+    protected void processWindowEvent(WindowEvent windowEvent) {
+        if (windowEvent.getID() == WindowEvent.WINDOW_CLOSING) {
             final int oldidx = sessTabbedPane.getSelectedIndex();
             boolean close = true;
 
@@ -144,15 +130,15 @@ public class Gui5250Frame extends GUIViewInterface implements
                 return;
             }
             // process regular window closing ...
-            super.processWindowEvent(e);
+            super.processWindowEvent(windowEvent);
             me.closingDown(this);
         }
     }
 
 
     @Override
-    public void update(Graphics g) {
-        paint(g);
+    public void update(Graphics graphics) {
+        paint(graphics);
     }
 
     @Override
@@ -210,9 +196,9 @@ public class Gui5250Frame extends GUIViewInterface implements
      * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
      */
     @Override
-    public void stateChanged(ChangeEvent e) {
-        JTabbedPane p = (JTabbedPane) e.getSource();
-        setSessionTitle((SessionPanel) p.getSelectedComponent());
+    public void stateChanged(ChangeEvent changeEvent) {
+        JTabbedPane tabbedPane = (JTabbedPane) changeEvent.getSource();
+        setSessionTitle((SessionPanel) tabbedPane.getSelectedComponent());
     }
 
     /**

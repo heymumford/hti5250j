@@ -1,6 +1,12 @@
-# Sum_Area.py will sum the values selected by a bounded area of the screen
-# August 14, 2002 version 0.1
-# Author Kenneth J. Pouncey
+# SPDX-FileCopyrightText: TN5250J Community
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+# SPDX-FileContributor: Kenneth J. Pouncey
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+
+
+
 
 from java  import awt
 from javax import swing

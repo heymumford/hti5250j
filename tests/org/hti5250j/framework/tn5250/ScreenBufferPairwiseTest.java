@@ -1,37 +1,23 @@
-/**
- * Title: ScreenBufferPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for Screen5250 buffer management operations
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for Screen5250 buffer management operations.
@@ -47,15 +33,14 @@ import static org.junit.Assert.*;
  * Tests discover: Buffer allocation failures, resize boundary violations,
  * state corruption, color plane consistency, double-byte handling bugs.
  */
-@RunWith(Parameterized.class)
 public class ScreenBufferPairwiseTest {
 
     // Test parameters (pairwise combinations)
-    private final int screenSize;           // Dimension 1: screen size
-    private final String bufferOp;          // Dimension 2: buffer operation
-    private final String initialState;      // Dimension 3: initial state
-    private final int colorDepth;           // Dimension 4: color depth
-    private final boolean doubleByteEnabled; // Dimension 5: double-byte support
+    private int screenSize;           // Dimension 1: screen size
+    private String bufferOp;          // Dimension 2: buffer operation
+    private String initialState;      // Dimension 3: initial state
+    private int colorDepth;           // Dimension 4: color depth
+    private boolean doubleByteEnabled; // Dimension 5: double-byte support
 
     // Instance variables
     private ScreenPlanes screenPlanes;
@@ -92,8 +77,7 @@ public class ScreenBufferPairwiseTest {
      * Pairwise parameter combinations (25+ test cases).
      * Each combination covers critical 2-way interactions between dimensions.
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // Pairwise set 1: Standard screen (80x24) with all operations
                 { SIZE_80x24, OP_ALLOCATE, STATE_EMPTY, COLOR_MONOCHROME, false },
@@ -136,7 +120,7 @@ public class ScreenBufferPairwiseTest {
         });
     }
 
-    public ScreenBufferPairwiseTest(int screenSize, String bufferOp, String initialState,
+    private void setParameters(int screenSize, String bufferOp, String initialState,
                                      int colorDepth, boolean doubleByteEnabled) {
         this.screenSize = screenSize;
         this.bufferOp = bufferOp;
@@ -145,8 +129,7 @@ public class ScreenBufferPairwiseTest {
         this.doubleByteEnabled = doubleByteEnabled;
     }
 
-    @Before
-    public void setUp() throws NoSuchFieldException, IllegalAccessException {
+        public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble(screenSize);
         screenPlanes = new ScreenPlanes(screen5250, screenSize);
 
@@ -248,31 +231,28 @@ public class ScreenBufferPairwiseTest {
      * Positive test: Verify buffer is allocated with correct dimensions
      * for all screen sizes.
      */
-    @Test
-    public void testBufferAllocationCorrectSize() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBufferAllocationCorrectSize(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_ALLOCATE)) {
             return; // Skip if not allocate operation
         }
 
         int expectedSize = getScreenSizeInCells();
 
-        assertEquals(
-            String.format("Screen buffer wrong size for %d cell screen", expectedSize),
-            expectedSize,
-            screenBuffer.length
-        );
+        assertEquals(expectedSize,screenBuffer.length
+        ,
+            String.format("Screen buffer wrong size for %d cell screen", expectedSize));
 
-        assertEquals(
-            String.format("Color buffer wrong size for %d cell screen", expectedSize),
-            expectedSize,
-            colorBuffer.length
-        );
+        assertEquals(expectedSize,colorBuffer.length
+        ,
+            String.format("Color buffer wrong size for %d cell screen", expectedSize));
 
-        assertEquals(
-            String.format("Extended buffer wrong size for %d cell screen", expectedSize),
-            expectedSize,
-            extendedBuffer.length
-        );
+        assertEquals(expectedSize,extendedBuffer.length
+        ,
+            String.format("Extended buffer wrong size for %d cell screen", expectedSize));
     }
 
     /**
@@ -280,19 +260,22 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify all buffer planes are allocated and accessible
      */
-    @Test
-    public void testBufferAllocationInitializesAllPlanes() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBufferAllocationInitializesAllPlanes(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_ALLOCATE)) {
             return;
         }
 
-        assertNotNull("Screen buffer should not be null", screenBuffer);
-        assertNotNull("Color buffer should not be null", colorBuffer);
-        assertNotNull("Extended buffer should not be null", extendedBuffer);
+        assertNotNull(screenBuffer,"Screen buffer should not be null");
+        assertNotNull(colorBuffer,"Color buffer should not be null");
+        assertNotNull(extendedBuffer,"Extended buffer should not be null");
 
-        assertTrue("Screen buffer should be non-empty", screenBuffer.length > 0);
-        assertTrue("Color buffer should be non-empty", colorBuffer.length > 0);
-        assertTrue("Extended buffer should be non-empty", extendedBuffer.length > 0);
+        assertTrue(screenBuffer.length > 0,"Screen buffer should be non-empty");
+        assertTrue(colorBuffer.length > 0,"Color buffer should be non-empty");
+        assertTrue(extendedBuffer.length > 0,"Extended buffer should be non-empty");
     }
 
     /**
@@ -300,20 +283,23 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify color buffer is properly initialized for color depth
      */
-    @Test
-    public void testAllocationRespectsColorDepth() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAllocationRespectsColorDepth(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_ALLOCATE)) {
             return;
         }
 
         // For allocated buffer, color initialization should match color depth
         // (color depth affects how colors are stored in colorBuffer)
-        assertNotNull("Color buffer must be allocated", colorBuffer);
-        assertTrue("Color buffer must have content", colorBuffer.length > 0);
+        assertNotNull(colorBuffer,"Color buffer must be allocated");
+        assertTrue(colorBuffer.length > 0,"Color buffer must have content");
 
         // Sample first cell should reflect color depth setting
         if (colorDepth > 0) {
-            assertTrue("Color should be initialized for non-monochrome", true);
+            assertTrue(true,"Color should be initialized for non-monochrome");
         }
     }
 
@@ -326,8 +312,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify resize properly reallocates buffers to new size
      */
-    @Test
-    public void testResizeChangesBufferDimensions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResizeChangesBufferDimensions(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_RESIZE)) {
             return;
         }
@@ -338,14 +327,13 @@ public class ScreenBufferPairwiseTest {
 
         // Perform resize operation
         screenPlanes.setSize(newScreenSize);
+        screenBuffer = getPrivateField("screen", char[].class);
 
         // Verify new size
         int actualNewSize = (newScreenSize == SIZE_132x27) ? 132 * 27 : 80 * 24;
-        assertEquals(
-            String.format("Buffer not resized correctly (expected %d)", actualNewSize),
-            actualNewSize,
-            screenBuffer.length
-        );
+        assertEquals(actualNewSize,screenBuffer.length
+        ,
+            String.format("Buffer not resized correctly (expected %d)", actualNewSize));
     }
 
     /**
@@ -353,8 +341,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify data survives resize when expanding from smaller to larger
      */
-    @Test
-    public void testResizePreservesDataWhenExpanding() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResizePreservesDataWhenExpanding(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_RESIZE)) {
             return;
         }
@@ -373,11 +364,10 @@ public class ScreenBufferPairwiseTest {
         }
 
         // Verify marker survived resize
-        assertEquals(
-            "Marker character should survive resize",
-            markerChar,
+        assertEquals(markerChar,
             screenPlanes.getChar(0)
-        );
+        ,
+            "Marker character should survive resize");
     }
 
     /**
@@ -385,21 +375,24 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify resize to minimum screen size is accepted
      */
-    @Test
-    public void testResizeToMinimumSize() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResizeToMinimumSize(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_RESIZE)) {
             return;
         }
 
         // Resize to standard 80x24
         screenPlanes.setSize(SIZE_80x24);
+        screenBuffer = getPrivateField("screen", char[].class);
 
         int expectedSize = 80 * 24;
-        assertEquals(
-            "Should resize to minimum size",
-            expectedSize,
+        assertEquals(expectedSize,
             screenBuffer.length
-        );
+        ,
+            "Should resize to minimum size");
     }
 
     // ============================================================================
@@ -411,15 +404,18 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify clear empties entire buffer
      */
-    @Test
-    public void testClearZerosAllBufferContent() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearZerosAllBufferContent(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_CLEAR)) {
             return;
         }
 
         // Fill buffer first
-        int screenSize = getScreenSizeInCells();
-        for (int i = 0; i < screenSize; i++) {
+        int computedScreenSize = getScreenSizeInCells();
+        for (int i = 0; i < computedScreenSize; i++) {
             screenPlanes.setChar(i, (char) ('A' + (i % 26)));
         }
 
@@ -427,12 +423,9 @@ public class ScreenBufferPairwiseTest {
         screenPlanes.initalizePlanes();
 
         // Verify all zeros
-        for (int i = 0; i < Math.min(10, screenSize); i++) { // Sample first 10 positions
-            assertEquals(
-                String.format("Position %d not cleared", i),
-                '\0',
-                screenPlanes.getChar(i)
-            );
+        for (int i = 0; i < Math.min(10, computedScreenSize); i++) { // Sample first 10 positions
+            assertEquals('\0', screenPlanes.getChar(i),
+                String.format("Position %d not cleared", i));
         }
     }
 
@@ -441,8 +434,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify clear on empty buffer is idempotent
      */
-    @Test
-    public void testClearOnEmptyBufferIsIdempotent() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearOnEmptyBufferIsIdempotent(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_CLEAR)) {
             return;
         }
@@ -455,11 +451,10 @@ public class ScreenBufferPairwiseTest {
         screenPlanes.initalizePlanes();
 
         // Verify still empty
-        assertEquals(
-            "Cleared empty buffer should remain empty",
-            '\0',
+        assertEquals('\0',
             screenPlanes.getChar(0)
-        );
+        ,
+            "Cleared empty buffer should remain empty");
     }
 
     /**
@@ -467,8 +462,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify color planes are also cleared
      */
-    @Test
-    public void testClearResetsAllColorPlanes() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearResetsAllColorPlanes(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_CLEAR)) {
             return;
         }
@@ -483,11 +481,10 @@ public class ScreenBufferPairwiseTest {
 
         // Verify colors reset to default (initAttr = 32)
         int initialAttr = screenPlanes.getCharAttr(0);
-        assertEquals(
-            "Color planes should be reset to default",
-            32, // initAttr constant
+        assertEquals(32, // initAttr constant
             initialAttr
-        );
+        ,
+            "Color planes should be reset to default");
     }
 
     // ============================================================================
@@ -499,8 +496,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify error line save/restore cycle preserves data
      */
-    @Test
-    public void testRestoreFromErrorLineCycle() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRestoreFromErrorLineCycle(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_RESTORE)) {
             return;
         }
@@ -525,11 +525,10 @@ public class ScreenBufferPairwiseTest {
         screenPlanes.restoreErrorLine();
 
         // Verify restoration
-        assertEquals(
-            "Error line should be restored",
-            testChar,
+        assertEquals(testChar,
             screenPlanes.getChar(errorLinePos)
-        );
+        ,
+            "Error line should be restored");
     }
 
     /**
@@ -537,8 +536,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify restore without prior save doesn't crash
      */
-    @Test
-    public void testRestoreWithoutSaveIsSafe() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRestoreWithoutSaveIsSafe(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_RESTORE)) {
             return;
         }
@@ -547,7 +549,7 @@ public class ScreenBufferPairwiseTest {
         screenPlanes.restoreErrorLine();
 
         // Verify buffer still accessible
-        assertNotNull("Buffer should still be valid", screenBuffer);
+        assertNotNull(screenBuffer,"Buffer should still be valid");
     }
 
     /**
@@ -555,8 +557,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify restore is isolated to error line
      */
-    @Test
-    public void testRestoreOnlyAffectsErrorLine() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRestoreOnlyAffectsErrorLine(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_RESTORE)) {
             return;
         }
@@ -572,11 +577,10 @@ public class ScreenBufferPairwiseTest {
         screenPlanes.restoreErrorLine();
 
         // Verify non-error position unchanged
-        assertEquals(
-            "Non-error lines should not be affected",
-            nonErrorChar,
+        assertEquals(nonErrorChar,
             screenPlanes.getChar(10)
-        );
+        ,
+            "Non-error lines should not be affected");
     }
 
     // ============================================================================
@@ -588,8 +592,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify copy operation extracts data correctly
      */
-    @Test
-    public void testCopyPlaneDataReturnsCorrectBuffer() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCopyPlaneDataReturnsCorrectBuffer(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_COPY)) {
             return;
         }
@@ -602,8 +609,8 @@ public class ScreenBufferPairwiseTest {
         // Copy from position 0 to 3
         char[] copiedData = screenPlanes.getPlaneData(0, 3, 0); // 0 = PLANE_TEXT
 
-        assertNotNull("Copied data should not be null", copiedData);
-        assertTrue("Copied data should have content", copiedData.length > 0);
+        assertNotNull(copiedData,"Copied data should not be null");
+        assertTrue(copiedData.length > 0,"Copied data should have content");
     }
 
     /**
@@ -611,8 +618,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify copied data matches original
      */
-    @Test
-    public void testCopyPreservesCharacterContent() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCopyPreservesCharacterContent(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_COPY)) {
             return;
         }
@@ -625,15 +635,14 @@ public class ScreenBufferPairwiseTest {
         int copyLen = Math.min(5, getScreenSizeInCells());
         char[] copiedData = screenPlanes.getPlaneData(0, copyLen, 0); // PLANE_TEXT
 
-        assertNotNull("Copy should not return null", copiedData);
+        assertNotNull(copiedData,"Copy should not return null");
 
         // Verify first character in copy matches original
         if (copiedData.length > 0 && screenBuffer.length > 0) {
-            assertEquals(
-                "Copied first character should match original",
-                screenBuffer[0],
+            assertEquals(screenBuffer[0],
                 copiedData[0]
-            );
+            ,
+                "Copied first character should match original");
         }
     }
 
@@ -642,8 +651,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify different plane copies have different content
      */
-    @Test
-    public void testCopyDifferentPlanesReturnDifferentData() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCopyDifferentPlanesReturnDifferentData(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!bufferOp.equals(OP_COPY)) {
             return;
         }
@@ -657,13 +669,12 @@ public class ScreenBufferPairwiseTest {
         // Copy attribute plane
         char[] attrCopy = screenPlanes.getPlaneData(0, 1, 1); // PLANE_ATTR
 
-        assertNotNull("Text plane copy should exist", textCopy);
-        assertNotNull("Attr plane copy should exist", attrCopy);
+        assertNotNull(textCopy,"Text plane copy should exist");
+        assertNotNull(attrCopy,"Attr plane copy should exist");
 
         // Planes should have been retrieved (may not be different in all cases)
-        assertTrue("Both planes should be retrievable",
-            textCopy.length > 0 && attrCopy.length > 0
-        );
+        assertTrue(textCopy.length > 0 && attrCopy.length > 0
+        ,"Both planes should be retrievable");
     }
 
     // ============================================================================
@@ -675,8 +686,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Adversarial test: Verify buffer can recover from corruption
      */
-    @Test
-    public void testCorruptedStateCanBeRecovered() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCorruptedStateCanBeRecovered(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!initialState.equals(STATE_CORRUPTED)) {
             return; // Only test corrupted state
         }
@@ -686,7 +700,7 @@ public class ScreenBufferPairwiseTest {
         try {
             char c = screenPlanes.getChar(0);
             // If we reach here, buffer is still functional
-            assertTrue("Corrupted buffer should still be readable", true);
+            assertTrue(true,"Corrupted buffer should still be readable");
         } catch (Exception e) {
             fail("Corrupted buffer should not throw exception: " + e.getMessage());
         }
@@ -697,8 +711,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Adversarial test: Verify clear restores buffer from corruption
      */
-    @Test
-    public void testClearRecoveredFromCorruptedState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearRecoveredFromCorruptedState(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!initialState.equals(STATE_CORRUPTED)) {
             return;
         }
@@ -707,17 +724,15 @@ public class ScreenBufferPairwiseTest {
         screenPlanes.initalizePlanes();
 
         // Verify recovery - should be empty and consistent
-        assertEquals(
-            "Cleared buffer should be empty",
-            '\0',
+        assertEquals('\0',
             screenPlanes.getChar(0)
-        );
+        ,
+            "Cleared buffer should be empty");
 
-        assertEquals(
-            "Default attribute should be set",
-            32, // initAttr
+        assertEquals(32, // initAttr
             screenPlanes.getCharAttr(0)
-        );
+        ,
+            "Default attribute should be set");
     }
 
     /**
@@ -725,16 +740,18 @@ public class ScreenBufferPairwiseTest {
      *
      * Adversarial test: Verify double-byte flag doesn't corrupt normal characters
      */
-    @Test
-    public void testDoubleByteSupportPreserveSingleByteData() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testDoubleByteSupportPreserveSingleByteData(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         // Set single-byte character
         screenPlanes.setChar(0, 'A');
 
-        assertEquals(
-            "Single-byte character should survive double-byte mode",
-            'A',
+        assertEquals('A',
             screenPlanes.getChar(0)
-        );
+        ,
+            "Single-byte character should survive double-byte mode");
     }
 
     /**
@@ -742,8 +759,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Adversarial test: Verify resize works even from corrupted state
      */
-    @Test
-    public void testResizeFromCorruptedStateSucceeds() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testResizeFromCorruptedStateSucceeds(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!initialState.equals(STATE_CORRUPTED)) {
             return;
         }
@@ -752,7 +772,7 @@ public class ScreenBufferPairwiseTest {
         try {
             screenPlanes.setSize((screenSize == SIZE_80x24) ? SIZE_132x27 : SIZE_80x24);
             // Should succeed
-            assertTrue("Resize from corrupted state should succeed", true);
+            assertTrue(true,"Resize from corrupted state should succeed");
         } catch (Exception e) {
             fail("Resize should not fail on corrupted state: " + e.getMessage());
         }
@@ -763,22 +783,25 @@ public class ScreenBufferPairwiseTest {
      *
      * Adversarial test: Verify buffer state remains consistent across multiple operations
      */
-    @Test
-    public void testMultipleSequentialOperationsMaintainConsistency() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleSequentialOperationsMaintainConsistency(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         // Allocate
-        assertNotNull("Allocated buffer should not be null", screenBuffer);
+        assertNotNull(screenBuffer,"Allocated buffer should not be null");
 
         // Set some data
         screenPlanes.setChar(0, 'T');
         screenPlanes.setScreenAttr(0, 32);
 
         // Verify consistency after operations
-        assertEquals("Character should be set", 'T', screenPlanes.getChar(0));
-        assertEquals("Attribute should be set", 32, screenPlanes.getCharAttr(0));
+        assertEquals('T', screenPlanes.getChar(0),"Character should be set");
+        assertEquals(32, screenPlanes.getCharAttr(0),"Attribute should be set");
 
         // Clear and verify cleared
         screenPlanes.initalizePlanes();
-        assertEquals("Cleared character should be null", '\0', screenPlanes.getChar(0));
+        assertEquals('\0', screenPlanes.getChar(0),"Cleared character should be null");
     }
 
     /**
@@ -786,16 +809,19 @@ public class ScreenBufferPairwiseTest {
      *
      * Adversarial test: Verify buffer bounds are respected
      */
-    @Test
-    public void testBufferBoundaryPositionsHandledGracefully() {
-        int screenSize = getScreenSizeInCells();
-        int lastValidPos = screenSize - 1;
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testBufferBoundaryPositionsHandledGracefully(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
+        int computedScreenSize = getScreenSizeInCells();
+        int lastValidPos = computedScreenSize - 1;
 
         try {
             // Should succeed at last valid position
             screenPlanes.setChar(lastValidPos, 'E');
-            assertEquals("Last position should be writable", 'E',
-                screenPlanes.getChar(lastValidPos));
+            assertEquals('E',
+                screenPlanes.getChar(lastValidPos),"Last position should be writable");
         } catch (ArrayIndexOutOfBoundsException e) {
             fail("Last valid position should be accessible: " + e.getMessage());
         }
@@ -806,8 +832,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify empty state buffer can be cleared without data loss
      */
-    @Test
-    public void testEmptyStateClearsProperly() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEmptyStateClearsProperly(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!initialState.equals(STATE_EMPTY)) {
             return;
         }
@@ -816,8 +845,7 @@ public class ScreenBufferPairwiseTest {
         screenPlanes.initalizePlanes();
 
         // Should remain empty
-        assertEquals("Empty state should remain empty after clear",
-            '\0', screenPlanes.getChar(0));
+        assertEquals('\0', screenPlanes.getChar(0),"Empty state should remain empty after clear");
     }
 
     /**
@@ -825,8 +853,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify copy on partial state captures correct portion
      */
-    @Test
-    public void testPartialStateCopyCapturesPartialContent() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPartialStateCopyCapturesPartialContent(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!initialState.equals(STATE_PARTIAL) || !bufferOp.equals(OP_COPY)) {
             return;
         }
@@ -834,8 +865,8 @@ public class ScreenBufferPairwiseTest {
         int halfSize = getScreenSizeInCells() / 2;
         char[] copiedFirst = screenPlanes.getPlaneData(0, halfSize / 2, 0);
 
-        assertNotNull("Copy should return data", copiedFirst);
-        assertTrue("Copy should have content", copiedFirst.length > 0);
+        assertNotNull(copiedFirst,"Copy should return data");
+        assertTrue(copiedFirst.length > 0,"Copy should have content");
     }
 
     /**
@@ -843,8 +874,11 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify copy on full state captures entire buffer
      */
-    @Test
-    public void testFullStateCopyRetrievesCompleteBuffer() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFullStateCopyRetrievesCompleteBuffer(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         if (!initialState.equals(STATE_FULL) || !bufferOp.equals(OP_COPY)) {
             return;
         }
@@ -852,8 +886,8 @@ public class ScreenBufferPairwiseTest {
         int totalSize = getScreenSizeInCells();
         char[] copiedFull = screenPlanes.getPlaneData(0, totalSize / 2, 0);
 
-        assertNotNull("Full copy should return data", copiedFull);
-        assertTrue("Full copy should have significant content", copiedFull.length > 0);
+        assertNotNull(copiedFull,"Full copy should return data");
+        assertTrue(copiedFull.length > 0,"Full copy should have significant content");
     }
 
     /**
@@ -861,18 +895,19 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify character data is independent of color depth
      */
-    @Test
-    public void testColorDepthDoesntAffectCharacterStorage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testColorDepthDoesntAffectCharacterStorage(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         // Set character
         char testChar = 'C';
         screenPlanes.setChar(0, testChar);
 
         // Verify character is stored regardless of color depth
-        assertEquals(
-            String.format("Character should be stored regardless of color depth %d", colorDepth),
-            testChar,
-            screenPlanes.getChar(0)
-        );
+        assertEquals(testChar,screenPlanes.getChar(0)
+        ,
+            String.format("Character should be stored regardless of color depth %d", colorDepth));
     }
 
     /**
@@ -880,16 +915,18 @@ public class ScreenBufferPairwiseTest {
      *
      * Positive test: Verify large screen sizes are properly accommodated
      */
-    @Test
-    public void testExtendedScreenSizesAllocateCapacity() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExtendedScreenSizesAllocateCapacity(int screenSize, String bufferOp, String initialState, int colorDepth, boolean doubleByteEnabled) throws Exception {
+        setParameters(screenSize, bufferOp, initialState, colorDepth, doubleByteEnabled);
+        setUp();
         int expectedCells = getScreenSizeInCells();
         int rows = getScreenRows();
         int cols = getScreenCols();
 
-        assertTrue(
-            String.format("Screen %dx%d should have %d cells", rows, cols, expectedCells),
-            screenBuffer.length >= expectedCells
-        );
+        assertTrue(screenBuffer.length >= expectedCells
+        ,
+            String.format("Screen %dx%d should have %d cells", rows, cols, expectedCells));
     }
 
     // ============================================================================

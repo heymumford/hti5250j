@@ -1,32 +1,15 @@
-/**
- * Title: ScreenRestorePairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for screen save/restore operations with
- * error line preservation, format save/restore, and state stack management.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -35,7 +18,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for Screen5250 save/restore operations.
@@ -56,14 +41,13 @@ import static org.junit.Assert.*;
  * - Error state transitions (pending → cleared → none)
  * - Partial content scope handling (text-only vs full state)
  */
-@RunWith(Parameterized.class)
 public class ScreenRestorePairwiseTest {
 
-    private final int saveType;
-    private final int restoreTrigger;
-    private final int contentScope;
-    private final int stackDepth;
-    private final int errorState;
+    private int saveType;
+    private int restoreTrigger;
+    private int contentScope;
+    private int stackDepth;
+    private int errorState;
 
     // Screen configuration
     private static final int SIZE_24 = 24;
@@ -109,8 +93,7 @@ public class ScreenRestorePairwiseTest {
     private Stack<ScreenState> saveStack;
     private int currentErrorState;
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { 0, SAVE_FULL, TRIGGER_EXPLICIT, SCOPE_TEXT, 0, ERROR_NONE },
                 { 1, SAVE_FULL, TRIGGER_ERROR_CLEAR, SCOPE_ATTR, 1, ERROR_PENDING },
@@ -143,7 +126,7 @@ public class ScreenRestorePairwiseTest {
         });
     }
 
-    public ScreenRestorePairwiseTest(int testIndex, int saveType, int restoreTrigger,
+    private void setParameters(int testIndex, int saveType, int restoreTrigger,
             int contentScope, int stackDepth, int errorState) {
         this.saveType = saveType;
         this.restoreTrigger = restoreTrigger;
@@ -152,8 +135,7 @@ public class ScreenRestorePairwiseTest {
         this.errorState = errorState;
     }
 
-    @Before
-    public void setUp() throws NoSuchFieldException, IllegalAccessException {
+        public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble(SIZE_24);
         screenPlanes = new ScreenPlanes(screen5250, SIZE_24);
 
@@ -183,22 +165,29 @@ public class ScreenRestorePairwiseTest {
         }
     }
 
-    @Test
-    public void testSaveErrorLineFullScopePreservesAllContent() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testSaveErrorLineFullScopePreservesAllContent(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         int errorLineStart = screen5250.getPos(ERROR_LINE_24 - 1, 0);
         char originalChar = screen[errorLineStart];
         int originalAttr = screenAttr[errorLineStart];
 
         screenPlanes.saveErrorLine();
 
-        assertTrue(
-            "Error line should be marked as saved after saveErrorLine()",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertTrue(screenPlanes.isErrorLineSaved()
+        ,
+            "Error line should be marked as saved after saveErrorLine()");
     }
 
-    @Test
-    public void testRestoreErrorLineRecoversTextContent() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testRestoreErrorLineRecoversTextContent(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         int errorLineStart = screen5250.getPos(ERROR_LINE_24 - 1, 0);
         char originalChar = screen[errorLineStart];
 
@@ -208,42 +197,46 @@ public class ScreenRestorePairwiseTest {
 
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "Error line text should be restored (not corrupted Z)",
-            screen[errorLineStart] == 'Z'
-        );
+        assertFalse(screen[errorLineStart] == 'Z'
+        ,
+            "Error line text should be restored (not corrupted Z)");
 
-        assertFalse(
-            "Error line save buffer should be cleared after restore",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "Error line save buffer should be cleared after restore");
     }
 
-    @Test
-    public void testDoubleSaveErrorLinePreventOverwrite() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testDoubleSaveErrorLinePreventOverwrite(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         int errorLineStart = screen5250.getPos(ERROR_LINE_24 - 1, 0);
         char firstSaveChar = screen[errorLineStart];
 
         screenPlanes.saveErrorLine();
-        assertTrue("First save should succeed", screenPlanes.isErrorLineSaved());
+        assertTrue(screenPlanes.isErrorLineSaved(),"First save should succeed");
 
         screen[errorLineStart] = 'Z';
         screenPlanes.saveErrorLine();
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "Restore should recover first save, not second modified value",
-            screen[errorLineStart] == 'Z'
-        );
+        assertFalse(screen[errorLineStart] == 'Z'
+        ,
+            "Restore should recover first save, not second modified value");
 
-        assertFalse(
-            "Error line should be cleared after restore",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "Error line should be cleared after restore");
     }
 
-    @Test
-    public void testSaveFullScopeTextPreservesCharacters() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testSaveFullScopeTextPreservesCharacters(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (saveType != SAVE_FULL || contentScope != SCOPE_TEXT) {
             return;
         }
@@ -255,12 +248,15 @@ public class ScreenRestorePairwiseTest {
         screen[testPos] = 'Z';
         screenPlanes.restoreErrorLine();
 
-        assertFalse("After restore, save buffer should be cleared",
-            screenPlanes.isErrorLineSaved());
+        assertFalse(screenPlanes.isErrorLineSaved(),"After restore, save buffer should be cleared");
     }
 
-    @Test
-    public void testSaveAttributeScopePreservesAttributes() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testSaveAttributeScopePreservesAttributes(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (contentScope != SCOPE_ATTR) {
             return;
         }
@@ -273,32 +269,39 @@ public class ScreenRestorePairwiseTest {
         screenAttr[errorLineStart] = (char) ATTR_NORMAL;
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "Save buffer should be cleared after restore",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "Save buffer should be cleared after restore");
     }
 
-    @Test
-    public void testStackDepthZeroSingleCycle() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testStackDepthZeroSingleCycle(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 0) {
             return;
         }
 
-        assertTrue("Save stack should start empty", saveStack.isEmpty());
+        assertTrue(saveStack.isEmpty(),"Save stack should start empty");
 
         ScreenState saved = captureScreenState();
         saveStack.push(saved);
 
-        assertTrue("Stack should have one element", saveStack.size() == 1);
+        assertTrue(saveStack.size() == 1,"Stack should have one element");
 
         ScreenState restored = saveStack.pop();
-        assertTrue("Stack should be empty after pop", saveStack.isEmpty());
-        assertNotNull("Restored state should exist", restored);
+        assertTrue(saveStack.isEmpty(),"Stack should be empty after pop");
+        assertNotNull(restored,"Restored state should exist");
     }
 
-    @Test
-    public void testStackDepthOneSaveFrame() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testStackDepthOneSaveFrame(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 1) {
             return;
         }
@@ -309,19 +312,23 @@ public class ScreenRestorePairwiseTest {
         ScreenState saved2 = captureScreenState();
         saveStack.push(saved2);
 
-        assertTrue("Stack should have 2 frames at depth 1", saveStack.size() == 2);
+        assertTrue(saveStack.size() == 2,"Stack should have 2 frames at depth 1");
 
         ScreenState restored2 = saveStack.pop();
-        assertNotNull("Second restore should succeed", restored2);
+        assertNotNull(restored2,"Second restore should succeed");
 
         ScreenState restored1 = saveStack.pop();
-        assertNotNull("First restore should succeed", restored1);
+        assertNotNull(restored1,"First restore should succeed");
 
-        assertTrue("Stack should be empty after restores", saveStack.isEmpty());
+        assertTrue(saveStack.isEmpty(),"Stack should be empty after restores");
     }
 
-    @Test
-    public void testStackDepthFiveNestedCycles() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testStackDepthFiveNestedCycles(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 5) {
             return;
         }
@@ -336,22 +343,25 @@ public class ScreenRestorePairwiseTest {
             savedStates.add(state);
         }
 
-        assertTrue("Stack should have 5 frames", saveStack.size() == maxDepth);
+        assertTrue(saveStack.size() == maxDepth,"Stack should have 5 frames");
 
         for (int i = maxDepth - 1; i >= 0; i--) {
             ScreenState restored = saveStack.pop();
-            assertEquals(
-                "Restored states should be in LIFO order",
-                i,
+            assertEquals(i,
                 restored.getId()
-            );
+            ,
+                "Restored states should be in LIFO order");
         }
 
-        assertTrue("Stack should be empty after all pops", saveStack.isEmpty());
+        assertTrue(saveStack.isEmpty(),"Stack should be empty after all pops");
     }
 
-    @Test
-    public void testStackDepthMaxPreventOverflow() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testStackDepthMaxPreventOverflow(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 10) {
             return;
         }
@@ -365,15 +375,14 @@ public class ScreenRestorePairwiseTest {
                 saveStack.push(state);
             }
 
-            assertEquals("Stack should reach max depth", maxDepth, saveStack.size());
+            assertEquals(maxDepth, saveStack.size(),"Stack should reach max depth");
 
             ScreenState overflow = captureScreenState();
             saveStack.push(overflow);
 
-            assertTrue(
-                "Stack exceeded max depth, should be prevented",
-                saveStack.size() > maxDepth
-            );
+            assertTrue(saveStack.size() > maxDepth
+            ,
+                "Stack exceeded max depth, should be prevented");
 
             while (!saveStack.isEmpty()) {
                 saveStack.pop();
@@ -383,8 +392,12 @@ public class ScreenRestorePairwiseTest {
         }
     }
 
-    @Test
-    public void testErrorStateNoneCleansave() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testErrorStateNoneCleansave(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (errorState != ERROR_NONE) {
             return;
         }
@@ -393,15 +406,18 @@ public class ScreenRestorePairwiseTest {
         ScreenState saved = captureScreenState();
         saved.setErrorState(currentErrorState);
 
-        assertEquals(
-            "Saved error state should be NONE",
-            ERROR_NONE,
+        assertEquals(ERROR_NONE,
             saved.getErrorState()
-        );
+        ,
+            "Saved error state should be NONE");
     }
 
-    @Test
-    public void testErrorStatePendingSavePreserves() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testErrorStatePendingSavePreserves(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (errorState != ERROR_PENDING) {
             return;
         }
@@ -412,20 +428,22 @@ public class ScreenRestorePairwiseTest {
         ScreenState saved = captureScreenState();
         saved.setErrorState(currentErrorState);
 
-        assertEquals(
-            "Saved error state should be PENDING",
-            ERROR_PENDING,
+        assertEquals(ERROR_PENDING,
             saved.getErrorState()
-        );
+        ,
+            "Saved error state should be PENDING");
 
-        assertTrue(
-            "Error line should be marked saved when error pending",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertTrue(screenPlanes.isErrorLineSaved()
+        ,
+            "Error line should be marked saved when error pending");
     }
 
-    @Test
-    public void testErrorStateClearedRestoreAllows() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testErrorStateClearedRestoreAllows(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (errorState != ERROR_CLEARED) {
             return;
         }
@@ -436,33 +454,39 @@ public class ScreenRestorePairwiseTest {
         currentErrorState = ERROR_CLEARED;
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "After clearing error, save buffer should be empty",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "After clearing error, save buffer should be empty");
 
         currentErrorState = ERROR_NONE;
     }
 
-    @Test
-    public void testRestoreTriggerExplicitManualInvoke() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testRestoreTriggerExplicitManualInvoke(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (restoreTrigger != TRIGGER_EXPLICIT) {
             return;
         }
 
         screenPlanes.saveErrorLine();
-        assertTrue("Error line should be saved", screenPlanes.isErrorLineSaved());
+        assertTrue(screenPlanes.isErrorLineSaved(),"Error line should be saved");
 
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "Explicit restore should clear save buffer",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "Explicit restore should clear save buffer");
     }
 
-    @Test
-    public void testRestoreTriggerErrorClearAutomatic() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testRestoreTriggerErrorClearAutomatic(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (restoreTrigger != TRIGGER_ERROR_CLEAR) {
             return;
         }
@@ -473,31 +497,37 @@ public class ScreenRestorePairwiseTest {
         currentErrorState = ERROR_CLEARED;
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "Error-clear should trigger restore",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "Error-clear should trigger restore");
     }
 
-    @Test
-    public void testRestoreTriggerScreenChangeAutomatic() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testRestoreTriggerScreenChangeAutomatic(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (restoreTrigger != TRIGGER_SCREEN_CHANGE) {
             return;
         }
 
         screenPlanes.saveErrorLine();
-        assertTrue("Save should be ready before screen change", screenPlanes.isErrorLineSaved());
+        assertTrue(screenPlanes.isErrorLineSaved(),"Save should be ready before screen change");
 
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "Screen change restore should clear save buffer",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "Screen change restore should clear save buffer");
     }
 
-    @Test
-    public void testAdversarialDoubleSaveWithErrorPending() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testAdversarialDoubleSaveWithErrorPending(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 2 || errorState != ERROR_PENDING) {
             return;
         }
@@ -505,7 +535,7 @@ public class ScreenRestorePairwiseTest {
         currentErrorState = ERROR_PENDING;
 
         screenPlanes.saveErrorLine();
-        assertTrue("First save should succeed", screenPlanes.isErrorLineSaved());
+        assertTrue(screenPlanes.isErrorLineSaved(),"First save should succeed");
 
         int testPos = screen5250.getPos(0, 0);
         screen[testPos] = 'X';
@@ -513,23 +543,26 @@ public class ScreenRestorePairwiseTest {
         screenPlanes.saveErrorLine();
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "After restore, save buffer should be empty",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "After restore, save buffer should be empty");
     }
 
-    @Test
-    public void testAdversarialRestoreWithoutSave() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testAdversarialRestoreWithoutSave(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 0) {
             return;
         }
 
-        assertTrue("Save stack should start empty", saveStack.isEmpty());
+        assertTrue(saveStack.isEmpty(),"Save stack should start empty");
 
         try {
             screenPlanes.restoreErrorLine();
-            assertTrue("Restore on empty save should not crash", true);
+            assertTrue(true,"Restore on empty save should not crash");
         } catch (NullPointerException e) {
             fail("Restore without save should be gracefully ignored: " + e.getMessage());
         } catch (Exception e) {
@@ -537,8 +570,12 @@ public class ScreenRestorePairwiseTest {
         }
     }
 
-    @Test
-    public void testAdversarialStackOverflowMaxDepth() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testAdversarialStackOverflowMaxDepth(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 10) {
             return;
         }
@@ -563,14 +600,17 @@ public class ScreenRestorePairwiseTest {
             }
         }
 
-        assertTrue(
-            "Stack overflow should be prevented or detected",
-            true
-        );
+        assertTrue(true
+        ,
+            "Stack overflow should be prevented or detected");
     }
 
-    @Test
-    public void testAdversarialNestedSaveErrorTransition() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testAdversarialNestedSaveErrorTransition(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 3) {
             return;
         }
@@ -588,25 +628,27 @@ public class ScreenRestorePairwiseTest {
         saved2.setErrorState(currentErrorState);
         saveStack.push(saved2);
 
-        assertTrue("Stack should have 2 frames", saveStack.size() == 2);
+        assertTrue(saveStack.size() == 2,"Stack should have 2 frames");
 
         ScreenState restored2 = saveStack.pop();
-        assertEquals(
-            "Second save should have CLEARED error state",
-            ERROR_CLEARED,
+        assertEquals(ERROR_CLEARED,
             restored2.getErrorState()
-        );
+        ,
+            "Second save should have CLEARED error state");
 
         ScreenState restored1 = saveStack.pop();
-        assertEquals(
-            "First save should have PENDING error state",
-            ERROR_PENDING,
+        assertEquals(ERROR_PENDING,
             restored1.getErrorState()
-        );
+        ,
+            "First save should have PENDING error state");
     }
 
-    @Test
-    public void testAdversarialPartialSaveLosesNonScoped() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testAdversarialPartialSaveLosesNonScoped(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (saveType != SAVE_PARTIAL || contentScope != SCOPE_TEXT) {
             return;
         }
@@ -622,14 +664,17 @@ public class ScreenRestorePairwiseTest {
 
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "After restore, save buffer should be cleared",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "After restore, save buffer should be cleared");
     }
 
-    @Test
-    public void testAdversarialFormatSaveWithErrorState() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testAdversarialFormatSaveWithErrorState(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (saveType != SAVE_FORMAT || errorState != ERROR_PENDING) {
             return;
         }
@@ -640,20 +685,22 @@ public class ScreenRestorePairwiseTest {
         ScreenState saved = captureScreenState();
         saved.setErrorState(currentErrorState);
 
-        assertEquals(
-            "Format save should preserve error state",
-            ERROR_PENDING,
+        assertEquals(ERROR_PENDING,
             saved.getErrorState()
-        );
+        ,
+            "Format save should preserve error state");
 
-        assertTrue(
-            "Format save should mark line as saved",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertTrue(screenPlanes.isErrorLineSaved()
+        ,
+            "Format save should mark line as saved");
     }
 
-    @Test
-    public void testAdversarialCursorSaveScreenChangeTrigger() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testAdversarialCursorSaveScreenChangeTrigger(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (saveType != SAVE_CURSOR || restoreTrigger != TRIGGER_SCREEN_CHANGE) {
             return;
         }
@@ -666,15 +713,18 @@ public class ScreenRestorePairwiseTest {
 
         ScreenState restored = saveStack.pop();
 
-        assertEquals(
-            "Cursor position should be preserved through screen change",
-            cursorPos,
+        assertEquals(cursorPos,
             restored.getCursorPosition()
-        );
+        ,
+            "Cursor position should be preserved through screen change");
     }
 
-    @Test
-    public void testStressMaxDepthAllScopes() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testStressMaxDepthAllScopes(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 10 && contentScope != SCOPE_ALL) {
             return;
         }
@@ -689,24 +739,26 @@ public class ScreenRestorePairwiseTest {
             saveStack.push(state);
         }
 
-        assertEquals(
-            "Stack should contain max depth frames",
-            maxDepth,
+        assertEquals(maxDepth,
             saveStack.size()
-        );
+        ,
+            "Stack should contain max depth frames");
 
         while (!saveStack.isEmpty()) {
             ScreenState restored = saveStack.pop();
-            assertEquals(
-                "Content scope should be preserved",
-                SCOPE_ALL,
+            assertEquals(SCOPE_ALL,
                 restored.getContentScope()
-            );
+            ,
+                "Content scope should be preserved");
         }
     }
 
-    @Test
-    public void testRapidFireCycles() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testRapidFireCycles(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 5) {
             return;
         }
@@ -718,18 +770,22 @@ public class ScreenRestorePairwiseTest {
             saved.setId(i);
             saveStack.push(saved);
 
-            assertTrue("Save should succeed in cycle " + i, saveStack.size() == 1);
+            assertTrue(saveStack.size() == 1,"Save should succeed in cycle " + i);
 
             ScreenState restored = saveStack.pop();
-            assertEquals("Restored ID should match in cycle " + i, i, restored.getId());
-            assertTrue("Stack should be empty after restore in cycle " + i, saveStack.isEmpty());
+            assertEquals(i, restored.getId(),"Restored ID should match in cycle " + i);
+            assertTrue(saveStack.isEmpty(),"Stack should be empty after restore in cycle " + i);
         }
 
-        assertTrue("Stack should be empty after all cycles", saveStack.isEmpty());
+        assertTrue(saveStack.isEmpty(),"Stack should be empty after all cycles");
     }
 
-    @Test
-    public void testEmptyErrorLineSaveRestore() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testEmptyErrorLineSaveRestore(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (stackDepth != 0) {
             return;
         }
@@ -743,14 +799,17 @@ public class ScreenRestorePairwiseTest {
         screenPlanes.saveErrorLine();
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "Empty error line should be saved and restored",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "Empty error line should be saved and restored");
     }
 
-    @Test
-    public void testPartialScopePendingError() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testPartialScopePendingError(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (saveType != SAVE_PARTIAL || contentScope != SCOPE_ATTR || errorState != ERROR_PENDING) {
             return;
         }
@@ -762,38 +821,38 @@ public class ScreenRestorePairwiseTest {
         saved.setContentScope(SCOPE_ATTR);
         saveStack.push(saved);
 
-        assertEquals(
-            "Pending error should be preserved in partial save",
-            ERROR_PENDING,
+        assertEquals(ERROR_PENDING,
             saved.getErrorState()
-        );
+        ,
+            "Pending error should be preserved in partial save");
 
-        assertEquals(
-            "Content scope should be ATTR",
-            SCOPE_ATTR,
+        assertEquals(SCOPE_ATTR,
             saved.getContentScope()
-        );
+        ,
+            "Content scope should be ATTR");
     }
 
-    @Test
-    public void testFormatSaveCursorTriggerMismatch() {
+    @ParameterizedTest
+
+    @MethodSource("data")
+    public void testFormatSaveCursorTriggerMismatch(int testIndex, int saveType, int restoreTrigger, int contentScope, int stackDepth, int errorState) throws Exception {
+        setParameters(testIndex, saveType, restoreTrigger, contentScope, stackDepth, errorState);
+        setUp();
         if (saveType != SAVE_FORMAT || restoreTrigger != TRIGGER_EXPLICIT || contentScope != SCOPE_FIELDS) {
             return;
         }
 
         screenPlanes.saveErrorLine();
 
-        assertTrue(
-            "Format save should work regardless of trigger type",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertTrue(screenPlanes.isErrorLineSaved()
+        ,
+            "Format save should work regardless of trigger type");
 
         screenPlanes.restoreErrorLine();
 
-        assertFalse(
-            "After restore, save buffer should be empty",
-            screenPlanes.isErrorLineSaved()
-        );
+        assertFalse(screenPlanes.isErrorLineSaved()
+        ,
+            "After restore, save buffer should be empty");
     }
 
     @SuppressWarnings("unchecked")

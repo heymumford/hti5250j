@@ -1,81 +1,22 @@
-/**
- * Title: SFCommandPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise TDD tests for HTI5250j SF (Start Field) command.
- *
- * The SF (Start Field) command initializes screen fields with various attributes
- * that control field behavior in 5250 terminal emulation:
- *
- * COMMAND STRUCTURE:
- * SF = 0x1D (Start Field order)
- * Parameters: attr (1 byte), ffw1/ffw2 (Field Format Words), fcw1/fcw2 (Field Control Words)
- *
- * PAIRWISE TEST DIMENSIONS (5 dimensions x 5 values = 25 combinations, testing 20+):
- * 1. Field Type (4 types via FFW1 bits 5-7):
- *    - Input (shift=0): User can enter data
- *    - Output (shift=1): Display-only
- *    - Both (shift=2): Input/output
- *    - Hidden (shift=5): Non-visible field
- *
- * 2. Protection Status (FFW1 bit 5):
- *    - Unprotected: Normal user input allowed
- *    - Protected: Read-only, no input (bypass field)
- *    - Auto-skip: Skip to next field automatically
- *
- * 3. Intensity Attribute (attr byte high nibble):
- *    - Normal (0x20): Standard display
- *    - High (0xC0): Enhanced visibility
- *    - Non-display (0x00): Hidden on screen
- *
- * 4. Field Length (len parameter):
- *    - 0 (degenerate): Single position marker
- *    - 1: Minimal field
- *    - 80: Full row
- *    - 255: Large field
- *    - Max (1920 for 24x80): Entire screen
- *
- * 5. Field Position (row/col at creation):
- *    - Row start (row 0): Top of screen
- *    - Mid-row (row 11): Center of screen
- *    - Row end (row 23): Bottom of screen
- *    - Column variations: start, mid, end
- *
- * ADVERSARIAL SCENARIOS:
- * - Overlapping field ranges
- * - Malformed FFW/FCW values (0x00, 0xFF)
- * - Fields that exceed screen bounds
- * - Continued fields (FCW1 bit 1 & 2 set)
- * - Cursor progression fields (FCW1=0x88)
- *
- * POSITIVE TESTS (15+): Valid field creation and attribute verification
- * ADVERSARIAL TESTS (10+): Boundary conditions, malformed data, overlaps
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for Screen5250 SF (Start Field) command.
@@ -128,7 +69,7 @@ public class SFCommandPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         screen = new Screen5250TestDouble();
         screenFields = screen.getScreenFields();
@@ -188,11 +129,11 @@ public class SFCommandPairwiseTest {
         addField(0x20, 10, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT: Field created
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertNotNull("Field should exist", field);
-        assertEquals("Field length should be 10", 10, field.getLength());
-        assertFalse("Field should be unprotected", field.isBypassField());
+        assertNotNull(field,"Field should exist");
+        assertEquals(10, field.getLength(),"Field length should be 10");
+        assertFalse(field.isBypassField(),"Field should be unprotected");
     }
 
     /**
@@ -211,11 +152,11 @@ public class SFCommandPairwiseTest {
         addField(0xC0, 20, 0x21, 0x00, 0x00, 0x00);
 
         // ASSERT: Field created with protection
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field length should be 20", 20, field.getLength());
-        assertTrue("Field should be protected (bypass)", field.isBypassField());
-        assertEquals("Field attribute should be high intensity", 0xC0, field.getAttr());
+        assertEquals(20, field.getLength(),"Field length should be 20");
+        assertTrue(field.isBypassField(),"Field should be protected (bypass)");
+        assertEquals(0xC0, field.getAttr(),"Field attribute should be high intensity");
     }
 
     /**
@@ -233,9 +174,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 80, 0x22, 0x00, 0x00, 0x00);
 
         // ASSERT: Field spans full row
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field length should be 80 (full row)", 80, field.getLength());
+        assertEquals(80, field.getLength(),"Field length should be 80 (full row)");
     }
 
     /**
@@ -255,10 +196,10 @@ public class SFCommandPairwiseTest {
         addField(0x00, 1, 0x05, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field length should be 1", 1, field.getLength());
-        assertEquals("Field attribute should be non-display", 0x00, field.getAttr());
+        assertEquals(1, field.getLength(),"Field length should be 1");
+        assertEquals(0x00, field.getAttr(),"Field attribute should be non-display");
     }
 
     /**
@@ -277,9 +218,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 30, 0x08, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("FFW1 should have MDT bit set", 0x08, field.getFFW1() & 0x08);
+        assertEquals(0x08, field.getFFW1() & 0x08,"FFW1 should have MDT bit set");
     }
 
     /**
@@ -297,9 +238,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 15, 0x00, 0x40, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should have FER flag", field.isFER());
+        assertTrue(field.isFER(),"Field should have FER flag");
     }
 
     /**
@@ -317,9 +258,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 12, 0x00, 0x08, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should have mandatory enter flag", field.isMandatoryEnter());
+        assertTrue(field.isMandatoryEnter(),"Field should have mandatory enter flag");
     }
 
     /**
@@ -337,9 +278,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 25, 0x10, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should have duplicate enable", field.isDupEnabled());
+        assertTrue(field.isDupEnabled(),"Field should have duplicate enable");
     }
 
     /**
@@ -357,9 +298,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 10, 0x03, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should be numeric", field.isNumeric());
+        assertTrue(field.isNumeric(),"Field should be numeric");
     }
 
     /**
@@ -377,9 +318,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 10, 0x07, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should be signed numeric", field.isSignedNumeric());
+        assertTrue(field.isSignedNumeric(),"Field should be signed numeric");
     }
 
     /**
@@ -397,9 +338,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 20, 0x00, 0x20, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should have to-upper flag", field.isToUpper());
+        assertTrue(field.isToUpper(),"Field should have to-upper flag");
     }
 
     /**
@@ -417,9 +358,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 5, 0x00, 0x80, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should have auto-enter flag", field.isAutoEnter());
+        assertTrue(field.isAutoEnter(),"Field should have auto-enter flag");
     }
 
     /**
@@ -437,9 +378,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 15, 0x00, 0x00, 0x88, 0x05);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Cursor progression value should be set", 0x05, field.getCursorProgression());
+        assertEquals(0x05, field.getCursorProgression(),"Cursor progression value should be set");
     }
 
     /**
@@ -455,9 +396,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 255, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field length should be 255", 255, field.getLength());
+        assertEquals(255, field.getLength(),"Field length should be 255");
     }
 
     /**
@@ -475,15 +416,14 @@ public class SFCommandPairwiseTest {
         addField(0x20, 10, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT: Both fields exist without overlap
-        assertEquals("Should have two fields", 2, screenFields.getSize());
+        assertEquals(2, screenFields.getSize(),"Should have two fields");
         ScreenField field1 = screenFields.getField(0);
         ScreenField field2 = screenFields.getField(1);
 
         // Fields exist and don't overlap
-        assertTrue("Field 1 should not overlap field 2",
-                field1.endPos() < field2.startPos());
-        assertEquals("Field 1 length should be 10", 10, field1.getLength());
-        assertEquals("Field 2 length should be 10", 10, field2.getLength());
+        assertTrue(field1.endPos() < field2.startPos(),"Field 1 should not overlap field 2");
+        assertEquals(10, field1.getLength(),"Field 1 length should be 10");
+        assertEquals(10, field2.getLength(),"Field 2 length should be 10");
     }
 
     /**
@@ -500,9 +440,8 @@ public class SFCommandPairwiseTest {
 
         // ASSERT: Field created with correct length and end position relative to start
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field length should be 20", 20, field.getLength());
-        assertEquals("End position should be start + length - 1",
-                field.startPos() + 20 - 1, field.endPos());
+        assertEquals(20, field.getLength(),"Field length should be 20");
+        assertEquals(field.startPos() + 20 - 1, field.endPos(),"End position should be start + length - 1");
     }
 
     // ========================================================================
@@ -522,9 +461,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 0, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT: Field should be created even with length 0
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field length should be 0", 0, field.getLength());
+        assertEquals(0, field.getLength(),"Field length should be 0");
     }
 
     /**
@@ -540,9 +479,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 1, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field should have length 1", 1, field.getLength());
+        assertEquals(1, field.getLength(),"Field should have length 1");
     }
 
     /**
@@ -558,12 +497,12 @@ public class SFCommandPairwiseTest {
         addField(0xFF, 10, 0xFF, 0xFF, 0xFF, 0xFF);
 
         // ASSERT: Field should still be created (no validation error)
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("FFW1 should preserve all bits", 0xFF, field.getFFW1());
-        assertEquals("FFW2 should preserve all bits", 0xFF, field.getFFW2());
-        assertEquals("FCW1 should preserve all bits", 0xFF, field.getFCW1());
-        assertEquals("FCW2 should preserve all bits", 0xFF, field.getFCW2());
+        assertEquals(0xFF, field.getFFW1(),"FFW1 should preserve all bits");
+        assertEquals(0xFF, field.getFFW2(),"FFW2 should preserve all bits");
+        assertEquals(0xFF, field.getFCW1(),"FCW1 should preserve all bits");
+        assertEquals(0xFF, field.getFCW2(),"FCW2 should preserve all bits");
     }
 
     /**
@@ -579,10 +518,10 @@ public class SFCommandPairwiseTest {
         addField(0x00, 10, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("FFW1 should be 0x00", 0x00, field.getFFW1());
-        assertEquals("FFW2 should be 0x00", 0x00, field.getFFW2());
+        assertEquals(0x00, field.getFFW1(),"FFW1 should be 0x00");
+        assertEquals(0x00, field.getFFW2(),"FFW2 should be 0x00");
     }
 
     /**
@@ -601,7 +540,7 @@ public class SFCommandPairwiseTest {
 
         // ASSERT: Either two fields exist or second one updated first
         // This tests field coalescing behavior per IBM 5250 spec
-        assertTrue("Should have at least one field", screenFields.getSize() >= 1);
+        assertTrue(screenFields.getSize() >= 1,"Should have at least one field");
     }
 
     /**
@@ -617,9 +556,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 100, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT: Field is created with requested length (overflow handling in screen)
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field should retain requested length", 100, field.getLength());
+        assertEquals(100, field.getLength(),"Field should retain requested length");
     }
 
     /**
@@ -635,9 +574,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 20, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Field should span 20 characters across rows", 20, field.getLength());
+        assertEquals(20, field.getLength(),"Field should span 20 characters across rows");
     }
 
     /**
@@ -656,10 +595,10 @@ public class SFCommandPairwiseTest {
         addField(0x20, 40, 0x00, 0x00, 0x86, 0x01);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should be continued", field.isContinued());
-        assertTrue("Field should be continued first", field.isContinuedFirst());
+        assertTrue(field.isContinued(),"Field should be continued");
+        assertTrue(field.isContinuedFirst(),"Field should be continued first");
     }
 
     /**
@@ -675,9 +614,9 @@ public class SFCommandPairwiseTest {
         addField(0x20, 10, 0x00, 0x07, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertEquals("Adjustment should be 7", 7, field.getAdjustment());
+        assertEquals(7, field.getAdjustment(),"Adjustment should be 7");
     }
 
     /**
@@ -695,8 +634,7 @@ public class SFCommandPairwiseTest {
 
         // ASSERT
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field start position should not exceed screen",
-                field.startPos() <= expectedMaxPos);
+        assertTrue(field.startPos() <= expectedMaxPos,"Field start position should not exceed screen");
     }
 
     /**
@@ -713,12 +651,12 @@ public class SFCommandPairwiseTest {
         addField(0xC0, 15, 0x23, 0x28, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have one field", 1, screenFields.getSize());
+        assertEquals(1, screenFields.getSize(),"Should have one field");
         ScreenField field = screenFields.getField(0);
-        assertTrue("Field should be protected (bypass)", field.isBypassField());
-        assertTrue("Field should be numeric", field.isNumeric());
-        assertTrue("Field should have mandatory enter", field.isMandatoryEnter());
-        assertTrue("Field should have to-upper", field.isToUpper());
+        assertTrue(field.isBypassField(),"Field should be protected (bypass)");
+        assertTrue(field.isNumeric(),"Field should be numeric");
+        assertTrue(field.isMandatoryEnter(),"Field should have mandatory enter");
+        assertTrue(field.isToUpper(),"Field should have to-upper");
     }
 
     // ========================================================================
@@ -744,10 +682,10 @@ public class SFCommandPairwiseTest {
         addField(0x20, 10, 0x00, 0x00, 0x00, 0x00);
 
         // ASSERT
-        assertEquals("Should have three fields", 3, screenFields.getSize());
-        assertFalse("Field 1 should be unprotected", screenFields.getField(0).isBypassField());
-        assertTrue("Field 2 should be protected", screenFields.getField(1).isBypassField());
-        assertFalse("Field 3 should be unprotected", screenFields.getField(2).isBypassField());
+        assertEquals(3, screenFields.getSize(),"Should have three fields");
+        assertFalse(screenFields.getField(0).isBypassField(),"Field 1 should be unprotected");
+        assertTrue(screenFields.getField(1).isBypassField(),"Field 2 should be protected");
+        assertFalse(screenFields.getField(2).isBypassField(),"Field 3 should be unprotected");
     }
 
     /**
@@ -772,11 +710,10 @@ public class SFCommandPairwiseTest {
         }
 
         // ASSERT
-        assertEquals("Should have 5 fields", 5, screenFields.getSize());
+        assertEquals(5, screenFields.getSize(),"Should have 5 fields");
         for (int i = 0; i < fieldPositions.length; i++) {
             ScreenField field = screenFields.getField(i);
-            assertEquals("Field " + i + " length mismatch",
-                    fieldPositions[i][2], field.getLength());
+            assertEquals(fieldPositions[i][2], field.getLength(),"Field " + i + " length mismatch");
         }
     }
 
@@ -797,13 +734,13 @@ public class SFCommandPairwiseTest {
         ScreenField field1 = screenFields.getField(0);
         ScreenField field2 = screenFields.getField(1);
 
-        assertTrue("Field 1 should have FER", field1.isFER());
-        assertFalse("Field 2 should not have FER", field2.isFER());
+        assertTrue(field1.isFER(),"Field 1 should have FER");
+        assertFalse(field2.isFER(),"Field 2 should not have FER");
 
-        assertFalse("Field 1 should not have MDT", (field1.getFFW1() & 0x08) == 0x08);
-        assertTrue("Field 2 should have MDT", (field2.getFFW1() & 0x08) == 0x08);
+        assertFalse((field1.getFFW1() & 0x08) == 0x08,"Field 1 should not have MDT");
+        assertTrue((field2.getFFW1() & 0x08) == 0x08,"Field 2 should have MDT");
 
-        assertFalse("Field 1 should not have auto-enter", field1.isAutoEnter());
-        assertTrue("Field 2 should have auto-enter", field2.isAutoEnter());
+        assertFalse(field1.isAutoEnter(),"Field 1 should not have auto-enter");
+        assertTrue(field2.isAutoEnter(),"Field 2 should have auto-enter");
     }
 }

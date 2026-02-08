@@ -1,28 +1,14 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.4
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
 public class Stream5250 {
@@ -78,10 +64,13 @@ public class Stream5250 {
      * @return
      */
     public final byte getNextByte() {
-        if (buffer == null || pos > buffer.length)
+        if (buffer == null) {
+            throw new IllegalStateException("Buffer is null");
+        }
+        if (pos < 0 || pos >= buffer.length) {
             throw new IllegalStateException("Buffer length exceeded: " + pos);
-        else
-            return buffer[pos++];
+        }
+        return buffer[pos++];
     }
 
     public final void setPrevByte()
@@ -105,10 +94,17 @@ public class Stream5250 {
     public final byte getByteOffset(int off)
             throws Exception {
 
-        if (buffer == null || (pos + off) > buffer.length)
-            throw new Exception("Buffer length exceeded: " + pos);
-        else
-            return buffer[pos + off];
+        if (buffer == null) {
+            throw new Exception("Buffer is null");
+        }
+        int index = pos + off;
+        if (index < 0) {
+            throw new Exception("Buffer index underflow: " + index);
+        }
+        if (index >= buffer.length) {
+            throw new Exception("Buffer length exceeded: " + index);
+        }
+        return buffer[index];
 
     }
 
@@ -137,6 +133,12 @@ public class Stream5250 {
     public final byte[] getSegment() throws Exception {
 
         // The first two bytes contain the length of the segment.
+        if (buffer == null) {
+            throw new Exception("Buffer is null");
+        }
+        if (pos < 0 || pos + 1 >= buffer.length) {
+            throw new Exception("Buffer length exceeded: start " + pos);
+        }
         int length = ((buffer[pos] & 0xff) << 8 | (buffer[pos + 1] & 0xff));
         // allocate space for it.
         byte[] segment = new byte[length];
@@ -161,7 +163,10 @@ public class Stream5250 {
             throws Exception {
 
         // If the length is larger than what is available throw an exception
-        if ((pos + length) > buffer.length)
+        if (buffer == null) {
+            throw new Exception("Buffer is null");
+        }
+        if (pos < 0 || (pos + length) > buffer.length)
             throw new Exception("Buffer length exceeded: start " + pos
                     + " length " + length);
         // use the system array copy to move the bytes from the buffer

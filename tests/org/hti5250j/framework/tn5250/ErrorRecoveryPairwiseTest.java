@@ -1,37 +1,16 @@
-/**
- * Title: ErrorRecoveryPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company: Guild Mortgage
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise error recovery test suite for HTI5250j framework.
- *
- * Tests error handling in critical components:
- *   - tnvt: Session management, connection state, data stream processing
- *   - Screen5250: Screen state, error display, field processing
- *   - DataStreamProducer: Stream parsing, buffer management, I/O error recovery
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING. If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
 
 import java.io.*;
 import java.util.Arrays;
@@ -40,7 +19,11 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized test suite for HTI5250j error recovery mechanisms.
@@ -62,16 +45,15 @@ import static org.junit.Assert.*;
  * POSITIVE TESTS (10): Valid error recovery scenarios
  * ADVERSARIAL TESTS (10+): Cascading failures, stale state, retry exhaustion
  */
-@RunWith(Parameterized.class)
 public class ErrorRecoveryPairwiseTest {
 
     // Test parameters - pairwise combinations
-    private final String errorType;          // protocol, connection, timeout, parse, state
-    private final String recoveryAction;     // retry, reconnect, reset, abort
-    private final String sessionState;       // connecting, connected, disconnecting, error
-    private final String bufferState;        // empty, partial, full, corrupted
-    private final int retryCount;            // 0, 1, max (3), exceeded (>3)
-    private final boolean isAdversarial;     // positive vs. adversarial test
+    private String errorType;          // protocol, connection, timeout, parse, state
+    private String recoveryAction;     // retry, reconnect, reset, abort
+    private String sessionState;       // connecting, connected, disconnecting, error
+    private String bufferState;        // empty, partial, full, corrupted
+    private int retryCount;            // 0, 1, max (3), exceeded (>3)
+    private boolean isAdversarial;     // positive vs. adversarial test
 
     // Instance variables
     private MocktnvtSession session;
@@ -91,8 +73,7 @@ public class ErrorRecoveryPairwiseTest {
      * POSITIVE TESTS (isAdversarial = false): Valid error recovery
      * ADVERSARIAL TESTS (isAdversarial = true): Cascading failures, edge cases
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // ========== POSITIVE TESTS (10): Valid error recovery scenarios ==========
 
@@ -166,7 +147,7 @@ public class ErrorRecoveryPairwiseTest {
         });
     }
 
-    public ErrorRecoveryPairwiseTest(String errorType, String recoveryAction,
+    private void setParameters(String errorType, String recoveryAction,
                                      String sessionState, String bufferState,
                                      int retryCount, boolean isAdversarial) {
         this.errorType = errorType;
@@ -177,15 +158,14 @@ public class ErrorRecoveryPairwiseTest {
         this.isAdversarial = isAdversarial;
     }
 
-    @Before
-    public void setUp() throws Exception {
+        public void setUp() throws Exception {
         session = new MocktnvtSession(null, null);
         screen = new MockScreen5250();
         producer = new MockDataStreamProducer();
         executor = Executors.newFixedThreadPool(2);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         executor.shutdownNow();
         if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
@@ -201,8 +181,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Error should trigger retry, session should remain valid
      * GREEN: Verify session state preserved, retry count tracked
      */
-    @Test(timeout = 2000)
-    public void testProtocolErrorTriggersRetryRecovery() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testProtocolErrorTriggersRetryRecovery(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("protocol") || !recoveryAction.equals("retry")) return;
 
         session.setState(sessionState);
@@ -219,12 +203,12 @@ public class ErrorRecoveryPairwiseTest {
             } catch (IOException e) {
                 if (i < retryCount) {
                     // Retry recovery action
-                    assertTrue("Should recover from protocol error", producer.reset());
+                    assertTrue(producer.reset(),"Should recover from protocol error");
                 }
             }
         }
 
-        assertTrue("Should complete retry recovery", recoveryAttempts.get() > 0 || retryCount >= 0);
+        assertTrue(recoveryAttempts.get() > 0 || retryCount >= 0,"Should complete retry recovery");
     }
 
     /**
@@ -233,8 +217,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should disconnect and re-establish connection
      * GREEN: Verify session transitions through disconnecting->connecting->connected
      */
-    @Test(timeout = 2000)
-    public void testConnectionErrorTriggersReconnect() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConnectionErrorTriggersReconnect(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("connection") || !recoveryAction.equals("reconnect")) return;
 
         session.setState("disconnecting");
@@ -245,12 +233,11 @@ public class ErrorRecoveryPairwiseTest {
             fail("Should throw IOException on connection error");
         } catch (IOException e) {
             // Expected: connection error
-            assertTrue("Error message should indicate connection issue",
-                    e.getMessage().toLowerCase().contains("connect") || e.getMessage().length() > 0);
+            assertTrue(e.getMessage().toLowerCase().contains("connect") || e.getMessage().length() > 0,"Error message should indicate connection issue");
         }
 
         // Verify reconnect action available
-        assertTrue("Should support reconnect action", session.supportsAction("reconnect"));
+        assertTrue(session.supportsAction("reconnect"),"Should support reconnect action");
     }
 
     /**
@@ -259,20 +246,24 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Timeout should trigger reset, session continues after reset
      * GREEN: Verify state is cleared, buffer is reset, operation resumes
      */
-    @Test(timeout = 2000)
-    public void testTimeoutErrorWithResetRecovery() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTimeoutErrorWithResetRecovery(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("timeout") || !recoveryAction.equals("reset")) return;
 
         session.setState("connecting");
         producer.injectError("timeout");
-        assertTrue("Buffer should be initialized before timeout", producer.getBufferSize() >= 0);
+        assertTrue(producer.getBufferSize() >= 0,"Buffer should be initialized before timeout");
 
         // Simulate timeout and reset
         try {
             producer.processWithError();
         } catch (IOException e) {
             // Expected timeout
-            assertTrue("Reset should clear state", producer.reset());
+            assertTrue(producer.reset(),"Reset should clear state");
         }
     }
 
@@ -282,8 +273,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should detect corruption, attempt retry with buffer state validated
      * GREEN: Verify recovery preserves valid data, corrupted portions handled
      */
-    @Test(timeout = 2000)
-    public void testParseErrorWithCorruptedBufferRetry() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testParseErrorWithCorruptedBufferRetry(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("parse") || !bufferState.equals("corrupted")) return;
 
         session.setState("connected");
@@ -295,11 +290,11 @@ public class ErrorRecoveryPairwiseTest {
             fail("Should throw IOException on parse error");
         } catch (IOException e) {
             // Expected: parse error from corrupted data
-            assertTrue("Parse error should be detected", e.getMessage() != null);
+            assertTrue(e.getMessage() != null,"Parse error should be detected");
         }
 
         // Verify buffer recovery available
-        assertFalse("Buffer should be marked invalid after corruption", producer.isBufferValid());
+        assertFalse(producer.isBufferValid(),"Buffer should be marked invalid after corruption");
     }
 
     /**
@@ -308,17 +303,21 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Abort should gracefully stop, transition to consistent state
      * GREEN: Verify session leaves error state, resources cleaned up
      */
-    @Test(timeout = 2000)
-    public void testStateErrorWithAbortRecovery() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testStateErrorWithAbortRecovery(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("state") || !recoveryAction.equals("abort")) return;
 
         session.setState("error");
-        assertTrue("Session should be in error state", session.getState().equals("error"));
+        assertTrue(session.getState().equals("error"),"Session should be in error state");
 
         // Abort recovery
         boolean aborted = session.abort();
-        assertTrue("Abort should succeed from error state", aborted);
-        assertFalse("Should be disconnected after abort", session.isConnected());
+        assertTrue(aborted,"Abort should succeed from error state");
+        assertFalse(session.isConnected(),"Should be disconnected after abort");
     }
 
     /**
@@ -327,14 +326,18 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Error in error state should trigger reconnect, not compound error
      * GREEN: Verify recovery action available and executable
      */
-    @Test(timeout = 2000)
-    public void testProtocolErrorInErrorStateWithReconnect() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testProtocolErrorInErrorStateWithReconnect(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("protocol") || !sessionState.equals("error")) return;
 
         session.setState("error");
         producer.injectError("protocol");
 
-        assertTrue("Reconnect should be available in error state", session.supportsAction("reconnect"));
+        assertTrue(session.supportsAction("reconnect"),"Reconnect should be available in error state");
     }
 
     /**
@@ -343,8 +346,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should exhaust retries gracefully, not infinitely loop
      * GREEN: Verify retry count reaches max, recovery completes or fails safely
      */
-    @Test(timeout = 2000)
-    public void testTimeoutErrorWithMaxRetriesCompletes() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTimeoutErrorWithMaxRetriesCompletes(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("timeout") || retryCount != MAX_RETRIES) return;
 
         session.setState("connected");
@@ -358,12 +365,12 @@ public class ErrorRecoveryPairwiseTest {
             } catch (IOException e) {
                 // Expected on timeout
                 if (i < retryCount) {
-                    assertTrue("Reset should be available for retry", producer.reset());
+                    assertTrue(producer.reset(),"Reset should be available for retry");
                 }
             }
         }
 
-        assertEquals("Should attempt up to max retries", MAX_RETRIES + 1, attemptCount.get());
+        assertEquals(MAX_RETRIES + 1, attemptCount.get(),"Should attempt up to max retries");
     }
 
     /**
@@ -372,8 +379,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should reset connection attempt, not leave session in limbo
      * GREEN: Verify state transitions cleanly, ready for next connection
      */
-    @Test(timeout = 2000)
-    public void testConnectionErrorWithResetInConnectingState() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConnectionErrorWithResetInConnectingState(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("connection") || !sessionState.equals("connecting")) return;
 
         session.setState("connecting");
@@ -383,11 +394,11 @@ public class ErrorRecoveryPairwiseTest {
             producer.processWithError();
         } catch (IOException e) {
             // Expected connection error
-            assertTrue("Reset should be available", producer.reset());
+            assertTrue(producer.reset(),"Reset should be available");
         }
 
         // Verify clean state after reset
-        assertTrue("Buffer should be clean after reset", producer.getBufferSize() == 0 || producer.isBufferValid());
+        assertTrue(producer.getBufferSize() == 0 || producer.isBufferValid(),"Buffer should be clean after reset");
     }
 
     /**
@@ -396,14 +407,18 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should not reconnect while disconnecting, wait for clean disconnect
      * GREEN: Verify state machine respected, no premature reconnection
      */
-    @Test(timeout = 2000)
-    public void testParseErrorWithReconnectInDisconnectingState() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testParseErrorWithReconnectInDisconnectingState(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("parse") || !sessionState.equals("disconnecting")) return;
 
         session.setState("disconnecting");
         producer.injectError("parse");
 
-        assertTrue("Reconnect should queue until disconnect completes", session.supportsAction("reconnect"));
+        assertTrue(session.supportsAction("reconnect"),"Reconnect should queue until disconnect completes");
     }
 
     /**
@@ -412,16 +427,19 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should clear error, restore valid operation
      * GREEN: Verify session is usable after reset
      */
-    @Test(timeout = 2000)
-    public void testStateErrorWithResetRecovery() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testStateErrorWithResetRecovery(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (isAdversarial || !errorType.equals("state") || !recoveryAction.equals("reset")) return;
 
         session.setState("error");
-        assertTrue("Reset should be available from error", producer.reset());
+        assertTrue(producer.reset(),"Reset should be available from error");
 
         // After reset, should be able to continue
-        assertTrue("Session should support normal operations after reset",
-                session.supportsAction("disconnect") || !session.isConnected());
+        assertTrue(session.supportsAction("disconnect") || !session.isConnected(),"Session should support normal operations after reset");
     }
 
     // ========== ADVERSARIAL TESTS (A1-A12): Cascading failures, retry exhaustion ==========
@@ -432,8 +450,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should stop retrying, fail gracefully after max attempts
      * GREEN: Verify no infinite loop, abort triggered, session recoverable
      */
-    @Test(timeout = 3000)
-    public void testProtocolErrorRetryExhaustion() {
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testProtocolErrorRetryExhaustion(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("protocol") || retryCount <= MAX_RETRIES) return;
 
         session.setState("connected");
@@ -449,13 +471,13 @@ public class ErrorRecoveryPairwiseTest {
                     producer.reset();
                 } else {
                     // Should abort after exhaustion
-                    assertTrue("Should abort after retry exhaustion", session.abort());
+                    assertTrue(session.abort(),"Should abort after retry exhaustion");
                     break;
                 }
             }
         }
 
-        assertTrue("Should have failed at least once", failureCount.get() > 0);
+        assertTrue(failureCount.get() > 0,"Should have failed at least once");
     }
 
     /**
@@ -464,8 +486,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Failed reconnect should not get stuck in error state
      * GREEN: Verify can transition to disconnected or manual recovery
      */
-    @Test(timeout = 2000)
-    public void testConnectionErrorReconnectCascadeFailure() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConnectionErrorReconnectCascadeFailure(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("connection") || !sessionState.equals("error")) return;
 
         session.setState("error");
@@ -475,7 +501,7 @@ public class ErrorRecoveryPairwiseTest {
         // Should fail to reconnect but not deadlock
         boolean reconnected = session.supportsAction("reconnect");
         if (reconnected) {
-            assertFalse("Reconnection should be blocked", session.isConnected());
+            assertFalse(session.isConnected(),"Reconnection should be blocked");
         }
     }
 
@@ -485,8 +511,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Multiple timeouts should not compound, should fail cleanly
      * GREEN: Verify cascading handled, abort triggered, recovery possible
      */
-    @Test(timeout = 3000)
-    public void testTimeoutCascadeWithRetryExhaustion() {
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTimeoutCascadeWithRetryExhaustion(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("timeout") || retryCount <= MAX_RETRIES) return;
 
         session.setState("connecting");
@@ -513,8 +543,7 @@ public class ErrorRecoveryPairwiseTest {
         });
 
         try {
-            assertTrue("Recovery should complete or timeout",
-                    recoveryLatch.await(2, TimeUnit.SECONDS));
+            assertTrue(recoveryLatch.await(2, TimeUnit.SECONDS),"Recovery should complete or timeout");
         } catch (InterruptedException e) {
             fail("Recovery thread interrupted: " + e.getMessage());
         }
@@ -526,17 +555,21 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Reset should clear buffer, parse should not fail again
      * GREEN: Verify buffer actually clears, no stale data persists
      */
-    @Test(timeout = 2000)
-    public void testParseErrorAfterResetWithFullBuffer() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testParseErrorAfterResetWithFullBuffer(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("parse") || !bufferState.equals("full")) return;
 
         session.setState("connected");
         producer.fillBuffer();  // Fill buffer with full data
         producer.injectError("parse");
 
-        assertTrue("Buffer should be full before reset", producer.getBufferSize() > 0);
-        assertTrue("Reset should clear buffer", producer.reset());
-        assertTrue("Buffer should be empty after reset", producer.getBufferSize() == 0);
+        assertTrue(producer.getBufferSize() > 0,"Buffer should be full before reset");
+        assertTrue(producer.reset(),"Reset should clear buffer");
+        assertTrue(producer.getBufferSize() == 0,"Buffer should be empty after reset");
     }
 
     /**
@@ -545,8 +578,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Abort should force transition, not leave in error state
      * GREEN: Verify state is changed to disconnected after abort
      */
-    @Test(timeout = 2000)
-    public void testStateErrorAbortTransitionFailure() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testStateErrorAbortTransitionFailure(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("state") || !sessionState.equals("error")) return;
 
         session.setState("error");
@@ -555,7 +592,7 @@ public class ErrorRecoveryPairwiseTest {
 
         // Manual recovery: force disconnect
         session.disconnect();
-        assertFalse("Should be disconnected after forced disconnect", session.isConnected());
+        assertFalse(session.isConnected(),"Should be disconnected after forced disconnect");
     }
 
     /**
@@ -564,8 +601,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Mixed errors during reconnect should fail cleanly
      * GREEN: Verify recovery fails safely, no partial state
      */
-    @Test(timeout = 2000)
-    public void testCompoundProtocolParseErrorsRetryExhaustion() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCompoundProtocolParseErrorsRetryExhaustion(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || retryCount <= MAX_RETRIES) return;
 
         session.setState("disconnecting");
@@ -577,11 +618,11 @@ public class ErrorRecoveryPairwiseTest {
             fail("Should fail with compound errors");
         } catch (IOException e) {
             // Expected: compound error
-            assertTrue("Error should be detected", e.getMessage() != null);
+            assertTrue(e.getMessage() != null,"Error should be detected");
         }
 
         // Should still be recoverable
-        assertTrue("Session should support abort", session.supportsAction("abort"));
+        assertTrue(session.supportsAction("abort"),"Session should support abort");
     }
 
     /**
@@ -590,8 +631,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Should not corrupt data during connection failure
      * GREEN: Verify buffer state remains valid or is cleared, or error is expected
      */
-    @Test(timeout = 2000)
-    public void testConnectionLossWithFullBufferRecovery() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testConnectionLossWithFullBufferRecovery(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("connection") || !bufferState.equals("full")) return;
 
         session.setState("connected");
@@ -601,12 +646,11 @@ public class ErrorRecoveryPairwiseTest {
         try {
             producer.processWithError();
             // If no exception, buffer should still be valid
-            assertTrue("Buffer should be valid if no connection error thrown",
-                    producer.isBufferValid() || producer.getBufferSize() > 0);
+            assertTrue(producer.isBufferValid() || producer.getBufferSize() > 0,"Buffer should be valid if no connection error thrown");
         } catch (IOException e) {
             // Expected: connection lost while processing
             // After error, buffer may be marked invalid - that's acceptable
-            assertTrue("Connection error should be detected", e.getMessage() != null);
+            assertTrue(e.getMessage() != null,"Connection error should be detected");
         }
     }
 
@@ -616,8 +660,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Empty buffer after corruption should not cause null pointer
      * GREEN: Verify handles empty state gracefully
      */
-    @Test(timeout = 2000)
-    public void testParseErrorEmptyBufferAfterCorruption() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testParseErrorEmptyBufferAfterCorruption(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("parse") || !bufferState.equals("empty")) return;
 
         session.setState("connecting");
@@ -627,7 +675,7 @@ public class ErrorRecoveryPairwiseTest {
             producer.processWithError();
         } catch (IOException e) {
             // Expected: parse error
-            assertTrue("Should handle empty buffer after corruption", true);
+            assertTrue(true,"Should handle empty buffer after corruption");
         }
     }
 
@@ -637,8 +685,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Retry when abort needed should eventually stop, not retry infinitely
      * GREEN: Verify system detects exhaustion and forces abort
      */
-    @Test(timeout = 3000)
-    public void testRetryAbortMismatchWithExhaustion() {
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRetryAbortMismatchWithExhaustion(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !recoveryAction.equals("retry") || !sessionState.equals("error")) return;
 
         session.setState("error");
@@ -658,7 +710,7 @@ public class ErrorRecoveryPairwiseTest {
             }
         }
 
-        assertTrue("Should have attempted multiple retries before abort", retryAttempts.get() > 1);
+        assertTrue(retryAttempts.get() > 1,"Should have attempted multiple retries before abort");
     }
 
     /**
@@ -667,8 +719,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Timeout recovery itself should not timeout, or should fail cleanly
      * GREEN: Verify recovery timeout is distinct from operation timeout
      */
-    @Test(timeout = 3000)
-    public void testCascadingTimeoutsDuringRecovery() {
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCascadingTimeoutsDuringRecovery(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("timeout") || !sessionState.equals("error")) return;
 
         session.setState("error");
@@ -679,12 +735,11 @@ public class ErrorRecoveryPairwiseTest {
             producer.processWithError();
         } catch (IOException e) {
             // Expected: timeout
-            assertTrue("Should handle timeout gracefully", true);
+            assertTrue(true,"Should handle timeout gracefully");
         }
 
         // Recovery should not itself timeout
-        assertTrue("Recovery should be available even after timeout error",
-                session.supportsAction("reset") || session.supportsAction("abort"));
+        assertTrue(session.supportsAction("reset") || session.supportsAction("abort"),"Recovery should be available even after timeout error");
     }
 
     /**
@@ -693,8 +748,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Error mid-transition should not leave session in limbo
      * GREEN: Verify clean rollback, session either connected or disconnected
      */
-    @Test(timeout = 2000)
-    public void testProtocolErrorDuringStateTransition() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testProtocolErrorDuringStateTransition(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !errorType.equals("protocol") || !sessionState.equals("connecting")) return;
 
         session.setState("connecting");
@@ -711,7 +770,7 @@ public class ErrorRecoveryPairwiseTest {
             }
         }
 
-        assertTrue("State should be clean after protocol error during transition", stateClean.get() || true);
+        assertTrue(stateClean.get() || true,"State should be clean after protocol error during transition");
     }
 
     /**
@@ -720,8 +779,12 @@ public class ErrorRecoveryPairwiseTest {
      * RED: Worst case should fail gracefully, no resource leak
      * GREEN: Verify abort succeeds, session is recoverable
      */
-    @Test(timeout = 3000)
-    public void testWorstCaseFullBufferCorruptionRetryExhaustion() {
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testWorstCaseFullBufferCorruptionRetryExhaustion(String errorType, String recoveryAction, String sessionState, String bufferState, int retryCount, boolean isAdversarial) throws Exception {
+        setParameters(errorType, recoveryAction, sessionState, bufferState, retryCount, isAdversarial);
+        setUp();
         if (!isAdversarial || !bufferState.equals("corrupted") || retryCount <= MAX_RETRIES) return;
 
         session.setState("connected");
@@ -742,8 +805,8 @@ public class ErrorRecoveryPairwiseTest {
             }
         }
 
-        assertTrue("Abort should succeed after exhaustion", abortCalled.get());
-        assertFalse("Session should not be connected after worst-case failure", session.isConnected());
+        assertTrue(abortCalled.get(),"Abort should succeed after exhaustion");
+        assertFalse(session.isConnected(),"Session should not be connected after worst-case failure");
     }
 
     // ========== TEST HELPERS ==========

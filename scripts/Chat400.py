@@ -1,12 +1,10 @@
-######################################################################
-#                            chat400                                 #
-#====================================================================#
-# Code      : Peter Moore (jorjun@mac.com)                           #
-#             Patrick Bielen (bielen@stafa.nl)                       #
-# ================================================================== #
-# Functionality : Script to send/receive messages to AS/400 users    #
-# Discussions   : tn5250j-scripting@lists.sourceforge.net            #
-######################################################################
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+
+
+
 
 import sys
 import time

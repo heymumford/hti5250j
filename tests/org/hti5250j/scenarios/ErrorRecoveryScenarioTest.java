@@ -1,17 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Scenario Test Suite
- * Error Recovery & Retry Logic - End-to-End Verification
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests error scenarios and recovery workflows:
- * - Network failures and reconnection
- * - Timeout handling and automatic retry
- * - Transaction rollback on failure
- * - State consistency after recovery
- * - Circuit breaker patterns
- *
- * This scenario ensures that transient failures don't corrupt state and that
- * automatic retry logic prevents manual intervention for expected outages.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.scenarios;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -255,7 +250,7 @@ public class ErrorRecoveryScenarioTest {
 
         private final Map<String, Double> accountBalances =
             new ConcurrentHashMap<>();
-        private final Map<String, String> transactions =
+        private final Map<String, TransactionRecord> transactions =
             new ConcurrentHashMap<>();
         private final Map<String, List<String>> txnLog =
             new ConcurrentHashMap<>();
@@ -350,12 +345,21 @@ public class ErrorRecoveryScenarioTest {
 
         String beginTransaction(String accountId, double amount) {
             String txnId = "TXN" + System.currentTimeMillis();
-            transactions.put(txnId, "PENDING");
+            transactions.put(txnId, new TransactionRecord(accountId, amount, "PENDING"));
             return txnId;
         }
 
         void commitTransaction(String txnId) {
-            transactions.put(txnId, "COMMITTED");
+            transactions.computeIfPresent(txnId, (id, record) -> {
+                if ("COMMITTED".equals(record.status)) {
+                    return record;
+                }
+                accountBalances.compute(record.accountId, (acct, balance) -> {
+                    double current = balance == null ? 0.0 : balance;
+                    return current - record.amount;
+                });
+                return new TransactionRecord(record.accountId, record.amount, "COMMITTED");
+            });
         }
 
         void setCircuitBreakerThreshold(int threshold) {
@@ -405,8 +409,10 @@ public class ErrorRecoveryScenarioTest {
         void recover() {
             // Discard pending transactions
             transactions.keySet().stream()
-                .filter(txnId -> "PENDING".equals(transactions.get(txnId)))
+                .filter(txnId -> "PENDING".equals(transactions.get(txnId).status))
                 .forEach(txnId -> transactions.remove(txnId));
         }
+
+        private record TransactionRecord(String accountId, double amount, String status) {}
     }
 }

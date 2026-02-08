@@ -1,33 +1,19 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Test Suite
  *
- * @author Test Suite
- * @version 0.5
- * <p>
- * Description: Comprehensive pairwise TDD test suite for color theme handling
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.gui;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.Color;
 import java.io.File;
@@ -40,7 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Test Suite for color theme management
@@ -67,7 +53,7 @@ public class ColorThemePairwiseTest {
     private File tempConfigFile;
     private ExecutorService executor;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         themeManager = new TestColorThemeManager();
         executor = Executors.newFixedThreadPool(4);
@@ -75,7 +61,7 @@ public class ColorThemePairwiseTest {
         tempConfigFile.deleteOnExit();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (executor != null) {
             executor.shutdownNow();
@@ -95,17 +81,17 @@ public class ColorThemePairwiseTest {
     @Test
     public void testLoadTheme_ClassicGreen_ShouldSetCorrectColors() {
         // ARRANGE: Theme not loaded
-        assertNull("Precondition: colors not initialized", themeManager.getThemeColor("background"));
+        assertNull(themeManager.getThemeColor("background"),"Precondition: colors not initialized");
 
         // ACT: Load classic-green theme
         themeManager.loadTheme("classic-green");
 
         // ASSERT: Colors match classic-green specification
         Color bg = themeManager.getThemeColor("background");
-        assertNotNull("Background color should be set", bg);
-        assertEquals("Background should be dark green", 0, bg.getRed());
-        assertTrue("Green component should be > 0", bg.getGreen() > 0);
-        assertEquals("Blue component should be minimal", 0, bg.getBlue());
+        assertNotNull(bg,"Background color should be set");
+        assertEquals(0, bg.getRed(),"Background should be dark green");
+        assertTrue(bg.getGreen() > 0,"Green component should be > 0");
+        assertEquals(0, bg.getBlue(),"Blue component should be minimal");
     }
 
     /**
@@ -123,8 +109,8 @@ public class ColorThemePairwiseTest {
 
         // ASSERT: Colors updated
         Color newBg = themeManager.getThemeColor("background");
-        assertNotNull("New background should be set", newBg);
-        assertFalse("Background should change", originalBg.getRGB() == newBg.getRGB());
+        assertNotNull(newBg,"New background should be set");
+        assertFalse(originalBg.getRGB() == newBg.getRGB(),"Background should change");
     }
 
     /**
@@ -140,10 +126,10 @@ public class ColorThemePairwiseTest {
         Color fg = themeManager.getThemeColor("foreground");
 
         // ASSERT: Valid foreground color
-        assertNotNull("Foreground color should exist", fg);
+        assertNotNull(fg,"Foreground color should exist");
         // White (255,255,255) has brightness sum >= 600
         int brightness = fg.getRed() + fg.getGreen() + fg.getBlue();
-        assertTrue("Foreground should be light (brightness > 500)", brightness > 500);
+        assertTrue(brightness > 500,"Foreground should be light (brightness > 500)");
     }
 
     /**
@@ -159,8 +145,8 @@ public class ColorThemePairwiseTest {
         Color cursor = themeManager.getThemeColor("cursor");
 
         // ASSERT: Valid cursor color
-        assertNotNull("Cursor color should exist", cursor);
-        assertTrue("Cursor RGB should be valid", cursor.getRGB() != 0);
+        assertNotNull(cursor,"Cursor color should exist");
+        assertTrue(cursor.getRGB() != 0,"Cursor RGB should be valid");
     }
 
     /**
@@ -179,11 +165,11 @@ public class ColorThemePairwiseTest {
 
         // ASSERT: Custom color applied to field
         Color appliedColor = themeManager.getFieldColor(fieldId, "foreground");
-        assertEquals("Field should have custom color", customColor.getRGB(), appliedColor.getRGB());
+        assertEquals(customColor.getRGB(), appliedColor.getRGB(),"Field should have custom color");
 
         // Verify other fields unaffected
         Color otherFieldColor = themeManager.getFieldColor("FIELD_002", "foreground");
-        assertFalse("Other fields should retain theme color", customColor.getRGB() == otherFieldColor.getRGB());
+        assertFalse(customColor.getRGB() == otherFieldColor.getRGB(),"Other fields should retain theme color");
     }
 
     /**
@@ -202,11 +188,11 @@ public class ColorThemePairwiseTest {
 
         // ASSERT: Custom color applied to screen
         Color screenBg = themeManager.getScreenColor(screenId, "background");
-        assertEquals("Screen should have custom background", customBg.getRGB(), screenBg.getRGB());
+        assertEquals(customBg.getRGB(), screenBg.getRGB(),"Screen should have custom background");
 
         // Verify other screens unaffected
         Color otherScreenBg = themeManager.getScreenColor("SCREEN_B", "background");
-        assertFalse("Other screens should retain theme color", customBg.getRGB() == otherScreenBg.getRGB());
+        assertFalse(customBg.getRGB() == otherScreenBg.getRGB(),"Other screens should retain theme color");
     }
 
     /**
@@ -223,10 +209,10 @@ public class ColorThemePairwiseTest {
         Color highlighted = themeManager.applyAttribute(baseColor, "highlight");
 
         // ASSERT: Color should be brighter/more saturated
-        assertNotNull("Highlighted color should exist", highlighted);
+        assertNotNull(highlighted,"Highlighted color should exist");
         int baseBrightness = baseColor.getRed() + baseColor.getGreen() + baseColor.getBlue();
         int highlightBrightness = highlighted.getRed() + highlighted.getGreen() + highlighted.getBlue();
-        assertTrue("Highlight should increase brightness", highlightBrightness >= baseBrightness);
+        assertTrue(highlightBrightness >= baseBrightness,"Highlight should increase brightness");
     }
 
     /**
@@ -243,10 +229,10 @@ public class ColorThemePairwiseTest {
         Color reversed = themeManager.applyAttribute(baseColor, "reverse");
 
         // ASSERT: Color should be inverted
-        assertNotNull("Reversed color should exist", reversed);
-        assertEquals("Red should be inverted", 255 - baseColor.getRed(), reversed.getRed());
-        assertEquals("Green should be inverted", 255 - baseColor.getGreen(), reversed.getGreen());
-        assertEquals("Blue should be inverted", 255 - baseColor.getBlue(), reversed.getBlue());
+        assertNotNull(reversed,"Reversed color should exist");
+        assertEquals(255 - baseColor.getRed(), reversed.getRed(),"Red should be inverted");
+        assertEquals(255 - baseColor.getGreen(), reversed.getGreen(),"Green should be inverted");
+        assertEquals(255 - baseColor.getBlue(), reversed.getBlue(),"Blue should be inverted");
     }
 
     /**
@@ -268,7 +254,7 @@ public class ColorThemePairwiseTest {
 
         // ASSERT: Custom colors restored
         Color restoredColor = reloadedManager.getFieldColor(fieldId, "foreground");
-        assertEquals("Custom color should persist", customColor.getRGB(), restoredColor.getRGB());
+        assertEquals(customColor.getRGB(), restoredColor.getRGB(),"Custom color should persist");
     }
 
     /**
@@ -285,10 +271,10 @@ public class ColorThemePairwiseTest {
         Color bg = themeManager.getThemeColor("background");
 
         // ASSERT: Contrast ratio meets WCAG AA standard
-        assertNotNull("Foreground should exist", fg);
-        assertNotNull("Background should exist", bg);
+        assertNotNull(fg,"Foreground should exist");
+        assertNotNull(bg,"Background should exist");
         double contrastRatio = calculateContrastRatio(fg, bg);
-        assertTrue("Contrast ratio should >= 4.5 (WCAG AA)", contrastRatio >= 4.5);
+        assertTrue(contrastRatio >= 4.5,"Contrast ratio should >= 4.5 (WCAG AA)");
     }
 
     /**
@@ -302,7 +288,7 @@ public class ColorThemePairwiseTest {
         String fieldId = "FIELD_RESET";
         themeManager.setFieldColor(fieldId, "foreground", new Color(255, 0, 0)); // Red
         Color customColor = themeManager.getFieldColor(fieldId, "foreground");
-        assertEquals("Custom color set", 255, customColor.getRed());
+        assertEquals(255, customColor.getRed(),"Custom color set");
 
         // ACT: Reset to theme defaults
         themeManager.resetFieldColor(fieldId, "foreground");
@@ -310,7 +296,7 @@ public class ColorThemePairwiseTest {
         // ASSERT: Theme default restored
         Color defaultColor = themeManager.getFieldColor(fieldId, "foreground");
         Color themeDefault = themeManager.getThemeColor("foreground");
-        assertEquals("Should restore theme default", themeDefault.getRGB(), defaultColor.getRGB());
+        assertEquals(themeDefault.getRGB(), defaultColor.getRGB(),"Should restore theme default");
     }
 
     /**
@@ -326,8 +312,8 @@ public class ColorThemePairwiseTest {
         Color selection = themeManager.getThemeColor("selection");
 
         // ASSERT: Valid selection color
-        assertNotNull("Selection color should exist", selection);
-        assertTrue("Selection should be distinct", selection.getRGB() != 0);
+        assertNotNull(selection,"Selection color should exist");
+        assertTrue(selection.getRGB() != 0,"Selection should be distinct");
     }
 
     // ========== ADVERSARIAL / NEGATIVE PATH TESTS ==========
@@ -336,170 +322,192 @@ public class ColorThemePairwiseTest {
      * Test Case 13: Reject invalid RGB value (out of range)
      * Adversarial: Invalid color specification
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetColor_InvalidRGBValue_ShouldThrowException() {
-        // ARRANGE: Invalid RGB (> 255)
-        Color invalidColor = new Color(300, 100, 50); // Red channel out of range
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Invalid RGB (> 255)
+            Color invalidColor = new Color(300, 100, 50); // Red channel out of range
 
-        // ACT: Attempt to set invalid color
-        themeManager.validateAndSetColor("background", invalidColor);
+            // ACT: Attempt to set invalid color
+            themeManager.validateAndSetColor("background", invalidColor);
 
-        // ASSERT: Exception thrown (via @Test annotation)
+            // ASSERT: Exception thrown (via @Test annotation)
+        });
     }
 
     /**
      * Test Case 14: Reject null color in required field
      * Adversarial: Null color specification
      */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testSetColor_NullColor_ShouldThrowException() {
-        // ARRANGE: Null color
-        Color nullColor = null;
+        assertThrows(NullPointerException.class, () -> {
+            // ARRANGE: Null color
+            Color nullColor = null;
 
-        // ACT: Attempt to set null color
-        themeManager.validateAndSetColor("background", nullColor);
+            // ACT: Attempt to set null color
+            themeManager.validateAndSetColor("background", nullColor);
 
-        // ASSERT: NullPointerException thrown
+            // ASSERT: NullPointerException thrown
+        });
     }
 
     /**
      * Test Case 15: Reject negative RGB value
      * Adversarial: Malformed color specification
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetColor_NegativeRGBValue_ShouldThrowException() {
-        // ARRANGE: Negative RGB values
-        Color invalidColor = new Color(-1, 100, 50);
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Negative RGB values
+            Color invalidColor = new Color(-1, 100, 50);
 
-        // ACT: Attempt to set color with negative component
-        themeManager.validateAndSetColor("cursor", invalidColor);
+            // ACT: Attempt to set color with negative component
+            themeManager.validateAndSetColor("cursor", invalidColor);
 
-        // ASSERT: Exception thrown
+            // ASSERT: Exception thrown
+        });
     }
 
     /**
      * Test Case 16: Reject unknown theme name
      * Adversarial: Invalid theme specification
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testLoadTheme_UnknownThemeName_ShouldThrowException() {
-        // ARRANGE: Unknown theme
-        String unknownTheme = "non-existent-theme-xyz";
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Unknown theme
+            String unknownTheme = "non-existent-theme-xyz";
 
-        // ACT: Load unknown theme
-        themeManager.loadTheme(unknownTheme);
+            // ACT: Load unknown theme
+            themeManager.loadTheme(unknownTheme);
 
-        // ASSERT: Exception thrown
+            // ASSERT: Exception thrown
+        });
     }
 
     /**
      * Test Case 17: Reject empty theme name
      * Adversarial: Empty string input
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testLoadTheme_EmptyThemeName_ShouldThrowException() {
-        // ARRANGE: Empty theme name
-        String emptyTheme = "";
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Empty theme name
+            String emptyTheme = "";
 
-        // ACT: Load empty theme
-        themeManager.loadTheme(emptyTheme);
+            // ACT: Load empty theme
+            themeManager.loadTheme(emptyTheme);
 
-        // ASSERT: Exception thrown
+            // ASSERT: Exception thrown
+        });
     }
 
     /**
      * Test Case 18: Reject malformed RGB hex string
      * Adversarial: Invalid hex format
      */
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testLoadColorFromHex_MalformedHexString_ShouldThrowException() {
-        // ARRANGE: Invalid hex string
-        String malformedHex = "GGGGGG"; // Invalid hex characters
+        assertThrows(NumberFormatException.class, () -> {
+            // ARRANGE: Invalid hex string
+            String malformedHex = "GGGGGG"; // Invalid hex characters
 
-        // ACT: Parse invalid hex
-        themeManager.loadColorFromHexString(malformedHex);
+            // ACT: Parse invalid hex
+            themeManager.loadColorFromHexString(malformedHex);
 
-        // ASSERT: NumberFormatException thrown
+            // ASSERT: NumberFormatException thrown
+        });
     }
 
     /**
      * Test Case 19: Reject RGB hex string with invalid length
      * Adversarial: Wrong hex string length
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testLoadColorFromHex_InvalidLength_ShouldThrowException() {
-        // ARRANGE: Hex string with wrong length (need 6 or 8 chars)
-        String shortHex = "FF00"; // Only 4 characters
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Hex string with wrong length (need 6 or 8 chars)
+            String shortHex = "FF00"; // Only 4 characters
 
-        // ACT: Parse short hex
-        themeManager.loadColorFromHexString(shortHex);
+            // ACT: Parse short hex
+            themeManager.loadColorFromHexString(shortHex);
 
-        // ASSERT: Exception thrown
+            // ASSERT: Exception thrown
+        });
     }
 
     /**
      * Test Case 20: Reject color contrast below accessibility threshold
      * Adversarial: Low contrast configuration
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testValidateContrast_LowContrast_ShouldThrowException() {
-        // ARRANGE: Colors with low contrast
-        Color almostWhite = new Color(250, 250, 250);
-        Color almostWhiteAgain = new Color(240, 240, 240);
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Colors with low contrast
+            Color almostWhite = new Color(250, 250, 250);
+            Color almostWhiteAgain = new Color(240, 240, 240);
 
-        // ACT: Validate low contrast pair
-        themeManager.validateAccessibilityContrast(almostWhite, almostWhiteAgain);
+            // ACT: Validate low contrast pair
+            themeManager.validateAccessibilityContrast(almostWhite, almostWhiteAgain);
 
-        // ASSERT: Exception thrown (contrast ratio < 4.5)
+            // ASSERT: Exception thrown (contrast ratio < 4.5)
+        });
     }
 
     /**
      * Test Case 21: Reject color override for invalid field ID
      * Adversarial: Nonexistent field identifier
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetFieldColor_InvalidFieldId_ShouldThrowException() {
-        // ARRANGE: Invalid field ID (null)
-        String invalidFieldId = null;
-        Color color = new Color(100, 100, 100);
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Invalid field ID (null)
+            String invalidFieldId = null;
+            Color color = new Color(100, 100, 100);
 
-        // ACT: Set color for invalid field
-        themeManager.setFieldColor(invalidFieldId, "foreground", color);
+            // ACT: Set color for invalid field
+            themeManager.setFieldColor(invalidFieldId, "foreground", color);
 
-        // ASSERT: Exception thrown
+            // ASSERT: Exception thrown
+        });
     }
 
     /**
      * Test Case 22: Reject unknown color component name
      * Adversarial: Nonexistent color component
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetFieldColor_UnknownComponent_ShouldThrowException() {
-        // ARRANGE: Unknown color component
-        String fieldId = "FIELD_001";
-        String unknownComponent = "neon-glow"; // Not a valid component
-        Color color = new Color(100, 100, 100);
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Unknown color component
+            String fieldId = "FIELD_001";
+            String unknownComponent = "neon-glow"; // Not a valid component
+            Color color = new Color(100, 100, 100);
 
-        // ACT: Set color for unknown component
-        themeManager.setFieldColor(fieldId, unknownComponent, color);
+            // ACT: Set color for unknown component
+            themeManager.setFieldColor(fieldId, unknownComponent, color);
 
-        // ASSERT: Exception thrown
+            // ASSERT: Exception thrown
+        });
     }
 
     /**
      * Test Case 23: Reject unknown attribute type
      * Adversarial: Invalid attribute specification
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testApplyAttribute_UnknownAttribute_ShouldThrowException() {
-        // ARRANGE: Unknown attribute
-        Color baseColor = new Color(100, 100, 100);
-        String unknownAttribute = "sparkle"; // Not a valid attribute
+        assertThrows(IllegalArgumentException.class, () -> {
+            // ARRANGE: Unknown attribute
+            Color baseColor = new Color(100, 100, 100);
+            String unknownAttribute = "sparkle"; // Not a valid attribute
 
-        // ACT: Apply unknown attribute
-        themeManager.applyAttribute(baseColor, unknownAttribute);
+            // ACT: Apply unknown attribute
+            themeManager.applyAttribute(baseColor, unknownAttribute);
 
-        // ASSERT: Exception thrown
+            // ASSERT: Exception thrown
+        });
     }
 
     // ========== CONCURRENCY TESTS ==========
@@ -528,7 +536,7 @@ public class ColorThemePairwiseTest {
 
                         // Verify consistency
                         Color bg = themeManager.getThemeColor("background");
-                        assertNotNull("Background should be set after switch", bg);
+                        assertNotNull(bg,"Background should be set after switch");
                     }
                 } catch (Exception e) {
                     exception.set(e);
@@ -540,8 +548,8 @@ public class ColorThemePairwiseTest {
 
         // ASSERT: All threads complete successfully
         boolean completed = latch.await(5, TimeUnit.SECONDS);
-        assertTrue("All threads should complete", completed);
-        assertNull("No exceptions should occur", exception.get());
+        assertTrue(completed,"All threads should complete");
+        assertNull(exception.get(),"No exceptions should occur");
     }
 
     /**
@@ -570,7 +578,7 @@ public class ColorThemePairwiseTest {
 
                         // Verify isolation
                         Color retrieved = themeManager.getFieldColor(fieldId, "foreground");
-                        assertEquals("Field color should match", customColor.getRGB(), retrieved.getRGB());
+                        assertEquals(customColor.getRGB(), retrieved.getRGB(),"Field color should match");
                     } catch (Exception e) {
                         exception.set(e);
                     } finally {
@@ -582,8 +590,8 @@ public class ColorThemePairwiseTest {
 
         // ASSERT: All concurrent operations complete successfully
         boolean completed = latch.await(5, TimeUnit.SECONDS);
-        assertTrue("All operations should complete", completed);
-        assertNull("No exceptions should occur", exception.get());
+        assertTrue(completed,"All operations should complete");
+        assertNull(exception.get(),"No exceptions should occur");
     }
 
     // ========== HELPER METHODS ==========

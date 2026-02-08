@@ -1,35 +1,28 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Stephen M. Kennedy
+ * SPDX-FileContributor: Stephen M. Kennedy <skennedy@tenthpowertech.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j.framework.transport.SSL;
 
-/*
- * @(#)SSLImplementation.java
- * @author Stephen M. Kennedy
- *
- * Copyright:    Copyright (c) 2001
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
- *
- */
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Locale;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -58,7 +51,7 @@ public class SSLImplementation implements SSLInterface, X509TrustManager {
 
     KeyStore userks = null;
     private String userKsPath;
-    private char[] userksPassword = "changeit".toCharArray();
+    private char[] userksPassword;
 
     KeyManagerFactory userkmf = null;
 
@@ -72,17 +65,73 @@ public class SSLImplementation implements SSLInterface, X509TrustManager {
 
     public SSLImplementation() {
         logger = HTI5250jLogFactory.getLogger(getClass());
+        userksPassword = resolveKeystorePassword();
     }
 
     public void init(String sslType) {
         try {
+            if (sslType == null || sslType.trim().isEmpty()) {
+                sslContext = null;
+                return;
+            }
+            String normalizedType = sslType.trim().toUpperCase(Locale.ROOT);
+            if ("SSLV3".equals(normalizedType) || "SSLV2".equals(normalizedType)) {
+                logger.error("Rejected insecure SSL protocol: " + sslType);
+                sslContext = null;
+                return;
+            }
+
             logger.debug("Initializing User KeyStore");
             userKsPath = System.getProperty("user.home") + File.separator
                     + GlobalConfigure.TN5250J_FOLDER + File.separator + "keystore";
             File userKsFile = new File(userKsPath);
             userks = KeyStore.getInstance(KeyStore.getDefaultType());
-            userks.load(userKsFile.exists() ? new FileInputStream(userKsFile)
-                    : null, userksPassword);
+            boolean keystoreLoaded = false;
+            try {
+                if (userKsFile.exists()) {
+                    try (FileInputStream input = new FileInputStream(userKsFile)) {
+                        userks.load(input, userksPassword);
+                    }
+                } else {
+                    userks.load(null, userksPassword);
+                }
+                keystoreLoaded = true;
+            } catch (Exception loadError) {
+                logger.error("Error loading keystore with configured password [" + loadError.getMessage() + "]");
+            }
+
+            if (!keystoreLoaded && userKsFile.exists()) {
+                char[] legacyPassword = "changeit".toCharArray();
+                try (FileInputStream input = new FileInputStream(userKsFile)) {
+                    userks.load(input, legacyPassword);
+                    keystoreLoaded = true;
+                    char[] newPassword = generateSecurePassword();
+                    try (FileOutputStream output = new FileOutputStream(userKsFile)) {
+                        userks.store(output, newPassword);
+                        userksPassword = newPassword;
+                    } catch (Exception storeError) {
+                        logger.error("Error migrating keystore password [" + storeError.getMessage() + "]");
+                        userksPassword = legacyPassword;
+                    }
+                } catch (Exception legacyError) {
+                    logger.error("Error loading keystore with legacy password [" + legacyError.getMessage() + "]");
+                }
+            }
+
+            if (!keystoreLoaded) {
+                try {
+                    userks.load(null, userksPassword);
+                    if (userKsFile.getParentFile() != null) {
+                        userKsFile.getParentFile().mkdirs();
+                    }
+                    try (FileOutputStream output = new FileOutputStream(userKsFile)) {
+                        userks.store(output, userksPassword);
+                    }
+                } catch (Exception storeError) {
+                    logger.error("Error initializing empty keystore [" + storeError.getMessage() + "]");
+                }
+            }
+
             logger.debug("Initializing User Key Manager Factory");
             userkmf = KeyManagerFactory.getInstance(KeyManagerFactory
                     .getDefaultAlgorithm());
@@ -97,21 +146,26 @@ public class SSLImplementation implements SSLInterface, X509TrustManager {
             sslContext.init(userkmf.getKeyManagers(), new TrustManager[]{this}, null);
         } catch (Exception ex) {
             logger.error("Error initializing SSL [" + ex.getMessage() + "]");
+            sslContext = null;
         }
 
     }
 
     public Socket createSSLSocket(String destination, int port) {
-        if (sslContext == null)
+        if (sslContext == null) {
             throw new IllegalStateException("SSL Context Not Initialized");
-        SSLSocket socket = null;
-        try {
-            socket = (SSLSocket) sslContext.getSocketFactory().createSocket(
-                    destination, port);
-        } catch (Exception e) {
-            logger.error("Error creating ssl socket [" + e.getMessage() + "]");
         }
-        return socket;
+        if (destination == null || destination.trim().isEmpty()) {
+            throw new IllegalArgumentException("Destination is required");
+        }
+        if (port <= 0 || port > 65535) {
+            throw new IllegalArgumentException("Invalid port: " + port);
+        }
+        try {
+            return (SSLSocket) sslContext.getSocketFactory().createSocket(destination, port);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating ssl socket [" + e.getMessage() + "]", e);
+        }
     }
 
     // X509TrustManager Methods
@@ -147,6 +201,12 @@ public class SSLImplementation implements SSLInterface, X509TrustManager {
      */
     public void checkServerTrusted(X509Certificate[] chain, String type)
             throws CertificateException {
+        if (chain == null || chain.length == 0) {
+            throw new CertificateException("Certificate chain is empty");
+        }
+        if (userTrustManagers == null || userTrustManagers.length == 0) {
+            throw new CertificateException("No trust managers available");
+        }
         try {
             for (int i = 0; i < userTrustManagers.length; i++) {
                 if (userTrustManagers[i] instanceof X509TrustManager) {
@@ -206,5 +266,26 @@ public class SSLImplementation implements SSLInterface, X509TrustManager {
             }
         }
 
+    }
+
+    private char[] resolveKeystorePassword() {
+        String configured = System.getProperty("hti5250j.keystore.password");
+        if (configured == null || configured.trim().isEmpty()) {
+            configured = System.getenv("HTI5250J_KEYSTORE_PASSWORD");
+        }
+        if (configured != null && !configured.trim().isEmpty()) {
+            return configured.toCharArray();
+        }
+        return generateSecurePassword();
+    }
+
+    private char[] generateSecurePassword() {
+        final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        char[] generated = new char[24];
+        for (int i = 0; i < generated.length; i++) {
+            generated[i] = alphabet.charAt(random.nextInt(alphabet.length()));
+        }
+        return generated;
     }
 }

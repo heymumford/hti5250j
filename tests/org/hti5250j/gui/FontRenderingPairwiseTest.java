@@ -1,28 +1,17 @@
-/**
- * FontRenderingPairwiseTest.java - Pairwise TDD Tests for Font Rendering
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover bugs
- * in font rendering operations by combining multiple test dimensions:
- *
- * Pairwise Dimensions:
- * 1. Font family: monospace, system, custom
- * 2. Font size: small (10pt), medium (14pt), large (18pt), scaled
- * 3. Rendering: aliased, anti-aliased, subpixel
- * 4. Character set: ASCII, extended, graphic
- * 5. Display DPI: standard (96), retina (192), custom (144)
- *
- * Test strategy: Combine pairs of dimensions to create adversarial scenarios
- * that expose font selection gaps, rendering issues, character metric bugs,
- * and missing glyph handling failures.
- *
- * Writing style: RED phase tests that expose bugs in font rendering,
- * character metrics, and glyph availability.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.gui;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.awt.font.GlyphVector;
@@ -30,7 +19,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Pairwise Tests for Font Rendering Operations
@@ -61,7 +50,7 @@ public class FontRenderingPairwiseTest {
     private Graphics2D graphics2D;
     private BufferedImage testImage;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         graphicsEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
         testImage = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
@@ -69,7 +58,7 @@ public class FontRenderingPairwiseTest {
         graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (graphics2D != null) {
             graphics2D.dispose();
@@ -87,9 +76,9 @@ public class FontRenderingPairwiseTest {
     @Test
     public void testMonospaceFontSmallSizeNotNull() {
         Font font = findOrCreateFont("Courier New", Font.PLAIN, 10);
-        assertNotNull("Monospace 10pt font should not be null", font);
-        assertTrue("Font should be monospaced", font.getSize() == 10 || font.getFontName().length() > 0);
-        assertEquals("Font size should be 10", 10, font.getSize());
+        assertNotNull(font,"Monospace 10pt font should not be null");
+        assertTrue(font.getSize() == 10 || font.getFontName().length() > 0,"Font should be monospaced");
+        assertEquals(10, font.getSize(),"Font size should be 10");
     }
 
     /**
@@ -99,8 +88,8 @@ public class FontRenderingPairwiseTest {
     @Test
     public void testSystemFontMediumSizeValid() {
         Font font = findOrCreateFont("Arial", Font.PLAIN, 14);
-        assertNotNull("System font 14pt should not be null", font);
-        assertEquals("Font size should be 14", 14, font.getSize());
+        assertNotNull(font,"System font 14pt should not be null");
+        assertEquals(14, font.getSize(),"Font size should be 14");
     }
 
     /**
@@ -110,8 +99,8 @@ public class FontRenderingPairwiseTest {
     @Test
     public void testCustomFontLargeSizeAvailability() {
         Font font = findOrCreateFont("Consolas", Font.PLAIN, 18);
-        assertNotNull("Custom font 18pt should not be null", font);
-        assertEquals("Font size should be 18", 18, font.getSize());
+        assertNotNull(font,"Custom font 18pt should not be null");
+        assertEquals(18, font.getSize(),"Font size should be 18");
     }
 
     /**
@@ -122,8 +111,8 @@ public class FontRenderingPairwiseTest {
     public void testScaledFontSizePositive() {
         Font baseFont = findOrCreateFont("Courier New", Font.PLAIN, 12);
         Font scaledFont = baseFont.deriveFont(12f * 1.5f);
-        assertTrue("Scaled font size should be positive", scaledFont.getSize() > 0);
-        assertEquals("Scaled font size should be 18", 18, scaledFont.getSize());
+        assertTrue(scaledFont.getSize() > 0,"Scaled font size should be positive");
+        assertEquals(18, scaledFont.getSize(),"Scaled font size should be 18");
     }
 
     /**
@@ -133,9 +122,9 @@ public class FontRenderingPairwiseTest {
     @Test
     public void testZeroFontSizeHandledGracefully() {
         Font font = findOrCreateFont("Arial", Font.PLAIN, 0);
-        assertNotNull("Zero size font should still produce Font object", font);
+        assertNotNull(font,"Zero size font should still produce Font object");
         // Java allows zero-size fonts but behavior is undefined; we accept it
-        assertTrue("Font should exist", font != null);
+        assertTrue(font != null,"Font should exist");
     }
 
     /**
@@ -147,7 +136,7 @@ public class FontRenderingPairwiseTest {
         Font font = new Font("Courier New", Font.PLAIN, 12);
         Font derived = font.deriveFont(-14f);
         // Java may create with negative size; we should handle or reject it
-        assertTrue("Negative font size should be handled", derived != null || font.getSize() > 0);
+        assertTrue(derived != null || font.getSize() > 0,"Negative font size should be handled");
     }
 
     // ============================================================================
@@ -214,7 +203,7 @@ public class FontRenderingPairwiseTest {
 
         for (char c : ASCII_CHARS.toCharArray()) {
             GlyphVector glyphVector = font.createGlyphVector(graphics2D.getFontRenderContext(), String.valueOf(c));
-            assertNotNull("Glyph vector for ASCII char should not be null", glyphVector);
+            assertNotNull(glyphVector,"Glyph vector for ASCII char should not be null");
         }
     }
 
@@ -230,7 +219,7 @@ public class FontRenderingPairwiseTest {
 
         for (char c : EXTENDED_CHARS.toCharArray()) {
             GlyphVector glyphVector = font.createGlyphVector(graphics2D.getFontRenderContext(), String.valueOf(c));
-            assertNotNull("Glyph vector for extended char should not be null", glyphVector);
+            assertNotNull(glyphVector,"Glyph vector for extended char should not be null");
         }
     }
 
@@ -246,7 +235,7 @@ public class FontRenderingPairwiseTest {
 
         for (char c : GRAPHIC_CHARS.toCharArray()) {
             GlyphVector glyphVector = font.createGlyphVector(graphics2D.getFontRenderContext(), String.valueOf(c));
-            assertNotNull("Graphic character should produce glyph vector", glyphVector);
+            assertNotNull(glyphVector,"Graphic character should produce glyph vector");
         }
     }
 
@@ -267,9 +256,9 @@ public class FontRenderingPairwiseTest {
         int descent = metrics.getDescent();
         int lineHeight = metrics.getHeight();
 
-        assertTrue("Ascent should be positive", ascent > 0);
-        assertTrue("Descent should be non-negative", descent >= 0);
-        assertTrue("Line height should be greater than ascent", lineHeight > ascent);
+        assertTrue(ascent > 0,"Ascent should be positive");
+        assertTrue(descent >= 0,"Descent should be non-negative");
+        assertTrue(lineHeight > ascent,"Line height should be greater than ascent");
     }
 
     /**
@@ -286,8 +275,8 @@ public class FontRenderingPairwiseTest {
 
         int baseCharWidth = baseMetrics.charWidth('M');
         int scaledCharWidth = scaledMetrics.charWidth('M');
-        assertTrue("Character width should be positive", scaledCharWidth > 0);
-        assertTrue("Scaled font character width should be larger", scaledCharWidth > baseCharWidth);
+        assertTrue(scaledCharWidth > 0,"Character width should be positive");
+        assertTrue(scaledCharWidth > baseCharWidth,"Scaled font character width should be larger");
     }
 
     /**
@@ -301,7 +290,7 @@ public class FontRenderingPairwiseTest {
         FontMetrics metrics = graphics2D.getFontMetrics(scaledFont);
 
         int advanceWidth = metrics.charWidth('─');
-        assertTrue("Advance width should be non-negative", advanceWidth >= 0);
+        assertTrue(advanceWidth >= 0,"Advance width should be non-negative");
     }
 
     // ============================================================================
@@ -322,8 +311,8 @@ public class FontRenderingPairwiseTest {
         int widthSpace = metrics.charWidth(' ');
 
         // Monospace fonts should have equal widths for most characters
-        assertEquals("Monospace font should have consistent width for I and M", widthI, widthM);
-        assertEquals("Monospace font should have consistent width for space", widthSpace, widthI);
+        assertEquals(widthI, widthM,"Monospace font should have consistent width for I and M");
+        assertEquals(widthSpace, widthI,"Monospace font should have consistent width for space");
     }
 
     /**
@@ -340,8 +329,8 @@ public class FontRenderingPairwiseTest {
         int widthM = metrics.charWidth('M');
 
         // System fonts may have proportional spacing (M > I)
-        assertNotNull("Metrics should not be null", metrics);
-        assertTrue("Widths should be positive", widthI > 0 && widthM > 0);
+        assertNotNull(metrics,"Metrics should not be null");
+        assertTrue(widthI > 0 && widthM > 0,"Widths should be positive");
     }
 
     /**
@@ -353,12 +342,11 @@ public class FontRenderingPairwiseTest {
         Font baseFont = findOrCreateFont("Consolas", Font.PLAIN, 12);
         Font scaledFont = baseFont.deriveFont(18f);
 
-        assertEquals("Scaled font size should be 18", 18, scaledFont.getSize());
+        assertEquals(18, scaledFont.getSize(),"Scaled font size should be 18");
         FontMetrics scaledMetrics = graphics2D.getFontMetrics(scaledFont);
         FontMetrics baseMetrics = graphics2D.getFontMetrics(baseFont);
 
-        assertTrue("Scaled font height should be larger",
-            scaledMetrics.getHeight() > baseMetrics.getHeight());
+        assertTrue(scaledMetrics.getHeight() > baseMetrics.getHeight(),"Scaled font height should be larger");
     }
 
     // ============================================================================
@@ -374,7 +362,7 @@ public class FontRenderingPairwiseTest {
         Font font = findOrCreateFont("Courier New", Font.PLAIN, 12);
         for (char c = 32; c < 127; c++) {
             int code = font.canDisplay(c) ? 1 : 0;
-            assertTrue("Monospace should display ASCII char: " + c, code == 1);
+            assertTrue(code == 1,"Monospace should display ASCII char: " + c);
         }
     }
 
@@ -393,7 +381,7 @@ public class FontRenderingPairwiseTest {
             }
         }
 
-        assertTrue("System font should display some extended Latin chars", displayedCount > 0);
+        assertTrue(displayedCount > 0,"System font should display some extended Latin chars");
     }
 
     /**
@@ -407,7 +395,7 @@ public class FontRenderingPairwiseTest {
             if (!font.canDisplay(c)) {
                 // Should have fallback mechanism
                 GlyphVector gv = font.createGlyphVector(graphics2D.getFontRenderContext(), String.valueOf(c));
-                assertNotNull("Should have fallback glyph vector", gv);
+                assertNotNull(gv,"Should have fallback glyph vector");
             }
         }
     }
@@ -432,7 +420,7 @@ public class FontRenderingPairwiseTest {
         }
         long duration = System.nanoTime() - startTime;
 
-        assertTrue("Aliased rendering should complete in reasonable time", duration < 1_000_000_000);  // 1 second
+        assertTrue(duration < 1_000_000_000,"Aliased rendering should complete in reasonable time");  // 1 second
     }
 
     /**
@@ -454,7 +442,7 @@ public class FontRenderingPairwiseTest {
         }
         long duration = System.nanoTime() - startTime;
 
-        assertTrue("Anti-aliased rendering should complete in reasonable time", duration < 2_000_000_000);  // 2 seconds
+        assertTrue(duration < 2_000_000_000,"Anti-aliased rendering should complete in reasonable time");  // 2 seconds
     }
 
     /**
@@ -470,8 +458,8 @@ public class FontRenderingPairwiseTest {
         graphics2D.setFont(scaledFont);
 
         GlyphVector glyphVector = scaledFont.createGlyphVector(graphics2D.getFontRenderContext(), "Subpixel");
-        assertNotNull("Glyph vector for subpixel rendering should be valid", glyphVector);
-        assertEquals("Glyph count should match string length", 8, glyphVector.getNumGlyphs());
+        assertNotNull(glyphVector,"Glyph vector for subpixel rendering should be valid");
+        assertEquals(8, glyphVector.getNumGlyphs(),"Glyph count should match string length");
     }
 
     // ============================================================================
@@ -488,7 +476,7 @@ public class FontRenderingPairwiseTest {
 
         for (char c : MISSING_GLYPH_TEST.toCharArray()) {
             GlyphVector gv = font.createGlyphVector(graphics2D.getFontRenderContext(), String.valueOf(c));
-            assertNotNull("Glyph vector should exist even for zero-width chars", gv);
+            assertNotNull(gv,"Glyph vector should exist even for zero-width chars");
         }
     }
 
@@ -499,7 +487,7 @@ public class FontRenderingPairwiseTest {
     @Test
     public void testNullFontHandled() {
         Font currentFont = graphics2D.getFont();
-        assertNotNull("Graphics should have default font", currentFont);
+        assertNotNull(currentFont,"Graphics should have default font");
         // Setting null font may or may not throw; behavior is implementation-specific
     }
 
@@ -527,11 +515,11 @@ public class FontRenderingPairwiseTest {
     @Test
     public void testExtremelyLargeFontSize() {
         Font font = findOrCreateFont("Arial", Font.PLAIN, 256);
-        assertNotNull("Very large font should still be created", font);
-        assertEquals("Font size should be 256", 256, font.getSize());
+        assertNotNull(font,"Very large font should still be created");
+        assertEquals(256, font.getSize(),"Font size should be 256");
 
         FontMetrics metrics = graphics2D.getFontMetrics(font);
-        assertTrue("Large font metrics should be reasonable", metrics.getHeight() > 0);
+        assertTrue(metrics.getHeight() > 0,"Large font metrics should be reasonable");
     }
 
     /**
@@ -545,9 +533,9 @@ public class FontRenderingPairwiseTest {
         Font italicFont = plainFont.deriveFont(Font.ITALIC);
         Font boldItalicFont = plainFont.deriveFont(Font.BOLD | Font.ITALIC);
 
-        assertNotNull("Bold font should not be null", boldFont);
-        assertNotNull("Italic font should not be null", italicFont);
-        assertNotNull("Bold italic font should not be null", boldItalicFont);
+        assertNotNull(boldFont,"Bold font should not be null");
+        assertNotNull(italicFont,"Italic font should not be null");
+        assertNotNull(boldItalicFont,"Bold italic font should not be null");
 
         graphics2D.setFont(boldFont);
         assertDoesNotThrow("Bold font should render", () -> graphics2D.drawString("Bold", 10, 20));
@@ -565,9 +553,9 @@ public class FontRenderingPairwiseTest {
         FontMetrics metrics2 = graphics2D.getFontMetrics(font);
         FontMetrics metrics3 = graphics2D.getFontMetrics(font);
 
-        assertEquals("Metrics ascent should be consistent", metrics1.getAscent(), metrics2.getAscent());
-        assertEquals("Metrics descent should be consistent", metrics1.getDescent(), metrics3.getDescent());
-        assertEquals("Metrics height should be consistent", metrics1.getHeight(), metrics2.getHeight());
+        assertEquals(metrics1.getAscent(), metrics2.getAscent(),"Metrics ascent should be consistent");
+        assertEquals(metrics1.getDescent(), metrics3.getDescent(),"Metrics descent should be consistent");
+        assertEquals(metrics1.getHeight(), metrics2.getHeight(),"Metrics height should be consistent");
     }
 
     // ============================================================================

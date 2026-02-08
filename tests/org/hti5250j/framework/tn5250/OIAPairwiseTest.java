@@ -1,38 +1,24 @@
-/**
- * Title: OIAPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for ScreenOIA (Operator Information Area) status line operations
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.hti5250j.event.ScreenOIAListener;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Vector;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for ScreenOIA (Operator Information Area).
@@ -47,15 +33,14 @@ import static org.junit.Assert.*;
  * Critical discovery area: OIA state transitions, listener notifications,
  * input inhibition race conditions, keyboard lock state consistency.
  */
-@RunWith(Parameterized.class)
 public class OIAPairwiseTest {
 
     // Test parameters
-    private final String oiaState;
-    private final String keyboardState;
-    private final String messageType;
-    private final int inhibitCode;
-    private final boolean expectedLocked;
+    private String oiaState;
+    private String keyboardState;
+    private String messageType;
+    private int inhibitCode;
+    private boolean expectedLocked;
 
     // Instance variables
     private ScreenOIA oia;
@@ -90,8 +75,7 @@ public class OIAPairwiseTest {
      *
      * Pairwise minimum: 20 combinations covering critical interaction pairs
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // Positive tests: Valid combinations
                 // Row 1: OIA clear + keyboard unlocked + no message
@@ -177,7 +161,7 @@ public class OIAPairwiseTest {
         });
     }
 
-    public OIAPairwiseTest(String oiaState, String keyboardState, String messageType,
+    private void setParameters(String oiaState, String keyboardState, String messageType,
                           int inhibitCode, boolean expectedLocked) {
         this.oiaState = oiaState;
         this.keyboardState = keyboardState;
@@ -186,8 +170,7 @@ public class OIAPairwiseTest {
         this.expectedLocked = expectedLocked;
     }
 
-    @Before
-    public void setUp() {
+        public void setUp() {
         screen5250 = new Screen5250TestDouble();
         oia = new ScreenOIA(screen5250);
         oiaListener = new TestOIAListener();
@@ -199,13 +182,15 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify keyboard starts unlocked and query returns correct state
      */
-    @Test
-    public void testKeyboardLockStateInitial() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardLockStateInitial(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         // RED: Will fail if isKeyBoardLocked() doesn't return initial state
-        assertFalse(
-            "Keyboard should start unlocked in new OIA instance",
-            oia.isKeyBoardLocked()
-        );
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should start unlocked in new OIA instance");
     }
 
     /**
@@ -213,8 +198,11 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify keyboard lock/unlock triggers listener and state reflects change
      */
-    @Test
-    public void testKeyboardLockStateTransitions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardLockStateTransitions(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         if (!keyboardState.equals(KBD_LOCKED_SYSTEM) && !keyboardState.equals(KBD_LOCKED_ERROR)) {
             return; // Only test locking transitions in this case
         }
@@ -223,16 +211,14 @@ public class OIAPairwiseTest {
         oia.setKeyBoardLocked(true);
 
         // GREEN: Verify locked state
-        assertTrue(
-            String.format("Keyboard should be locked when set to locked in state %s", keyboardState),
-            oia.isKeyBoardLocked()
-        );
+        assertTrue(oia.isKeyBoardLocked()
+        ,
+            String.format("Keyboard should be locked when set to locked in state %s", keyboardState));
 
         // Verify listener was notified
-        assertTrue(
-            "Listener should have been notified of keyboard lock change",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Listener should have been notified of keyboard lock change");
     }
 
     /**
@@ -240,26 +226,27 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify keyboard can transition from locked to unlocked
      */
-    @Test
-    public void testKeyboardUnlockTransition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardUnlockTransition(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         // Lock the keyboard first
         oia.setKeyBoardLocked(true);
-        assertTrue("Setup: Keyboard should be locked", oia.isKeyBoardLocked());
+        assertTrue(oia.isKeyBoardLocked(),"Setup: Keyboard should be locked");
 
         // Unlock it
         oia.setKeyBoardLocked(false);
 
         // GREEN: Verify unlocked state
-        assertFalse(
-            "Keyboard should be unlocked after unlock transition",
-            oia.isKeyBoardLocked()
-        );
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should be unlocked after unlock transition");
 
         // Verify listener notified of unlock
-        assertTrue(
-            "Listener should be notified when keyboard unlocks",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Listener should be notified when keyboard unlocks");
     }
 
     /**
@@ -267,8 +254,11 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify input inhibition can be set and queried with code
      */
-    @Test
-    public void testInputInhibitedSystemWait() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInputInhibitedSystemWait(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         if (!oiaState.equals(OIA_INPUT_INHIBITED) && !oiaState.equals(OIA_SYSTEM_WAIT)) {
             return; // Focus on inhibited states
         }
@@ -277,17 +267,14 @@ public class OIAPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, inhibitCode);
 
         // GREEN: Verify inhibited state
-        assertEquals(
-            String.format("Input should be inhibited with SYSTEM_WAIT in state %s", oiaState),
-            ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
-            oia.getInputInhibited()
-        );
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,oia.getInputInhibited()
+        ,
+            String.format("Input should be inhibited with SYSTEM_WAIT in state %s", oiaState));
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified of input inhibit change",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "Listener should be notified of input inhibit change");
     }
 
     /**
@@ -295,19 +282,21 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify inhibited state can carry optional message text
      */
-    @Test
-    public void testInputInhibitWithMessage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInputInhibitWithMessage(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         String testMessage = "PROCESSING...";
 
         // Set inhibited with message
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0, testMessage);
 
         // GREEN: Verify message is stored
-        assertEquals(
-            "Inhibited text should be retrieved correctly",
-            testMessage,
+        assertEquals(testMessage,
             oia.getInhibitedText()
-        );
+        ,
+            "Inhibited text should be retrieved correctly");
     }
 
     /**
@@ -315,41 +304,40 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify message light can toggle on and off with notification
      */
-    @Test
-    public void testMessageLightTransitions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightTransitions(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         if (!messageType.equals(MSG_ERROR) && !messageType.equals(MSG_WARNING) && !messageType.equals(MSG_INFO)) {
             return; // Only test message transitions when message expected
         }
 
         // Initially should be off
-        assertFalse(
-            "Message light should start off",
-            oia.isMessageWait()
-        );
+        assertFalse(oia.isMessageWait()
+        ,
+            "Message light should start off");
 
         // Turn on message light
         oia.setMessageLightOn();
 
         // GREEN: Verify on state
-        assertTrue(
-            "Message light should be on after setMessageLightOn",
-            oia.isMessageWait()
-        );
+        assertTrue(oia.isMessageWait()
+        ,
+            "Message light should be on after setMessageLightOn");
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified of message light on",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_MESSAGELIGHT)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_MESSAGELIGHT)
+        ,
+            "Listener should be notified of message light on");
 
         // Turn off message light
         oia.setMessageLightOff();
 
         // GREEN: Verify off state
-        assertFalse(
-            "Message light should be off after setMessageLightOff",
-            oia.isMessageWait()
-        );
+        assertFalse(oia.isMessageWait()
+        ,
+            "Message light should be off after setMessageLightOff");
     }
 
     /**
@@ -357,41 +345,40 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify insert mode can toggle with listener notification
      */
-    @Test
-    public void testInsertModeToggle() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInsertModeToggle(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         if (!oiaState.equals(OIA_INSERT_MODE)) {
             return; // Focus on insert mode tests
         }
 
         // Initially off
-        assertFalse(
-            "Insert mode should start off",
-            oia.isInsertMode()
-        );
+        assertFalse(oia.isInsertMode()
+        ,
+            "Insert mode should start off");
 
         // Turn on
         oia.setInsertMode(true);
 
         // GREEN: Verify on
-        assertTrue(
-            "Insert mode should be on after setInsertMode(true)",
-            oia.isInsertMode()
-        );
+        assertTrue(oia.isInsertMode()
+        ,
+            "Insert mode should be on after setInsertMode(true)");
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified of insert mode change",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INSERT_MODE)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INSERT_MODE)
+        ,
+            "Listener should be notified of insert mode change");
 
         // Turn off
         oia.setInsertMode(false);
 
         // GREEN: Verify off
-        assertFalse(
-            "Insert mode should be off after setInsertMode(false)",
-            oia.isInsertMode()
-        );
+        assertFalse(oia.isInsertMode()
+        ,
+            "Insert mode should be off after setInsertMode(false)");
     }
 
     /**
@@ -399,28 +386,28 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify buffered keys flag can be set and monitored
      */
-    @Test
-    public void testKeysBufferedState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeysBufferedState(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         // Initially false
-        assertFalse(
-            "Keys buffered should start false",
-            oia.isKeysBuffered()
-        );
+        assertFalse(oia.isKeysBuffered()
+        ,
+            "Keys buffered should start false");
 
         // Set true
         oia.setKeysBuffered(true);
 
         // GREEN: Verify true
-        assertTrue(
-            "Keys buffered should be true after setKeysBuffered(true)",
-            oia.isKeysBuffered()
-        );
+        assertTrue(oia.isKeysBuffered()
+        ,
+            "Keys buffered should be true after setKeysBuffered(true)");
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified when keys buffered state changes",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYS_BUFFERED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYS_BUFFERED)
+        ,
+            "Listener should be notified when keys buffered state changes");
     }
 
     /**
@@ -428,37 +415,36 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify script execution state can be toggled
      */
-    @Test
-    public void testScriptActiveState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testScriptActiveState(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         // Initially false
-        assertFalse(
-            "Script should not be active initially",
-            oia.isScriptActive()
-        );
+        assertFalse(oia.isScriptActive()
+        ,
+            "Script should not be active initially");
 
         // Activate script
         oia.setScriptActive(true);
 
         // GREEN: Verify active
-        assertTrue(
-            "Script should be active after setScriptActive(true)",
-            oia.isScriptActive()
-        );
+        assertTrue(oia.isScriptActive()
+        ,
+            "Script should be active after setScriptActive(true)");
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified of script state change",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_SCRIPT)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_SCRIPT)
+        ,
+            "Listener should be notified of script state change");
 
         // Deactivate
         oia.setScriptActive(false);
 
         // GREEN: Verify inactive
-        assertFalse(
-            "Script should be inactive after setScriptActive(false)",
-            oia.isScriptActive()
-        );
+        assertFalse(oia.isScriptActive()
+        ,
+            "Script should be inactive after setScriptActive(false)");
     }
 
     /**
@@ -466,19 +452,21 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify owner ID can be set and retrieved
      */
-    @Test
-    public void testOwnerFieldAccess() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testOwnerFieldAccess(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         int testOwner = 42;
 
         // Set owner
         oia.setOwner(testOwner);
 
         // GREEN: Verify retrieved
-        assertEquals(
-            "Owner ID should be retrievable after setting",
-            testOwner,
+        assertEquals(testOwner,
             oia.getOwner()
-        );
+        ,
+            "Owner ID should be retrievable after setting");
     }
 
     /**
@@ -486,10 +474,13 @@ public class OIAPairwiseTest {
      *
      * Adversarial test: Verify locking an already-locked keyboard is safe
      */
-    @Test
-    public void testKeyboardLockIdempotencyDoubleLock() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardLockIdempotencyDoubleLock(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         oia.setKeyBoardLocked(true);
-        assertTrue("Setup: Should be locked", oia.isKeyBoardLocked());
+        assertTrue(oia.isKeyBoardLocked(),"Setup: Should be locked");
 
         // Clear listener notifications from setup
         oiaListener.clear();
@@ -498,16 +489,14 @@ public class OIAPairwiseTest {
         oia.setKeyBoardLocked(true);
 
         // GREEN: Should still be locked
-        assertTrue(
-            "Keyboard should remain locked after double lock",
-            oia.isKeyBoardLocked()
-        );
+        assertTrue(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should remain locked after double lock");
 
         // Verify no spurious notification (state didn't change)
-        assertFalse(
-            "Listener should NOT be notified when locking already-locked keyboard",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertFalse(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Listener should NOT be notified when locking already-locked keyboard");
     }
 
     /**
@@ -515,8 +504,11 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify multiple listeners all receive notifications
      */
-    @Test
-    public void testMultipleListenerNotification() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleListenerNotification(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         TestOIAListener listener2 = new TestOIAListener();
         TestOIAListener listener3 = new TestOIAListener();
 
@@ -527,18 +519,15 @@ public class OIAPairwiseTest {
         oia.setKeyBoardLocked(true);
 
         // GREEN: Verify all listeners notified
-        assertTrue(
-            "Original listener should be notified",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
-        assertTrue(
-            "Second listener should be notified",
-            listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
-        assertTrue(
-            "Third listener should be notified",
-            listener3.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Original listener should be notified");
+        assertTrue(listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Second listener should be notified");
+        assertTrue(listener3.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Third listener should be notified");
     }
 
     /**
@@ -546,8 +535,11 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify removed listeners no longer receive notifications
      */
-    @Test
-    public void testListenerRemovalStopsNotifications() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testListenerRemovalStopsNotifications(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         TestOIAListener listener2 = new TestOIAListener();
         oia.addOIAListener(listener2);
 
@@ -561,16 +553,14 @@ public class OIAPairwiseTest {
         oia.setKeyBoardLocked(true);
 
         // GREEN: Verify removed listener not notified
-        assertFalse(
-            "Removed listener should NOT be notified",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertFalse(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Removed listener should NOT be notified");
 
         // But remaining listener should be
-        assertTrue(
-            "Remaining listener should still be notified",
-            listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertTrue(listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Remaining listener should still be notified");
     }
 
     /**
@@ -578,18 +568,20 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify bell event triggers listener notification
      */
-    @Test
-    public void testAudibleBellNotification() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAudibleBellNotification(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         oiaListener.clear();
 
         // Trigger bell
         oia.setAudibleBell();
 
         // GREEN: Verify listener notified
-        assertTrue(
-            "Listener should be notified of bell event",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_BELL)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_BELL)
+        ,
+            "Listener should be notified of bell event");
     }
 
     /**
@@ -597,18 +589,20 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify clear screen event triggers listener notification
      */
-    @Test
-    public void testClearScreenNotification() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearScreenNotification(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         oiaListener.clear();
 
         // Trigger clear
         oia.clearScreen();
 
         // GREEN: Verify listener notified
-        assertTrue(
-            "Listener should be notified of clear screen event",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_CLEAR_SCREEN)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_CLEAR_SCREEN)
+        ,
+            "Listener should be notified of clear screen event");
     }
 
     /**
@@ -616,19 +610,21 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify comm check code is preserved across inhibit states
      */
-    @Test
-    public void testCommCheckCodePreservation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCommCheckCodePreservation(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         int commCheckCode = 0x42;
 
         // Set comm check inhibition
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_COMMCHECK, commCheckCode);
 
         // GREEN: Verify code preserved
-        assertEquals(
-            "Comm check code should be preserved",
-            commCheckCode,
+        assertEquals(commCheckCode,
             oia.getCommCheckCode()
-        );
+        ,
+            "Comm check code should be preserved");
     }
 
     /**
@@ -636,19 +632,21 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify machine check code is stored and retrieved
      */
-    @Test
-    public void testMachineCheckCodePreservation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMachineCheckCodePreservation(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         int machineCheckCode = 0x55;
 
         // Set machine check inhibition
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_MACHINECHECK, machineCheckCode);
 
         // GREEN: Verify code preserved
-        assertEquals(
-            "Machine check code should be preserved",
-            machineCheckCode,
+        assertEquals(machineCheckCode,
             oia.getMachineCheckCode()
-        );
+        ,
+            "Machine check code should be preserved");
     }
 
     /**
@@ -656,34 +654,34 @@ public class OIAPairwiseTest {
      *
      * Adversarial test: Verify complex state transition doesn't corrupt state
      */
-    @Test
-    public void testStateTransitionClearToInhibited() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testStateTransitionClearToInhibited(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         // Start in clear state (not inhibited)
-        assertEquals(
-            "Setup: Should start clear",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Setup: Should start clear");
 
         // Transition to inhibited
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, inhibitCode);
 
         // GREEN: Verify inhibited
-        assertEquals(
-            "Should transition to inhibited state",
-            ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
             oia.getInputInhibited()
-        );
+        ,
+            "Should transition to inhibited state");
 
         // Transition back to clear
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
 
         // GREEN: Verify clear
-        assertEquals(
-            "Should transition back to clear state",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Should transition back to clear state");
     }
 
     /**
@@ -691,27 +689,28 @@ public class OIAPairwiseTest {
      *
      * Positive test: Verify level field reflects the last OIA-changing operation
      */
-    @Test
-    public void testLevelFieldReflectsLastOperation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLevelFieldReflectsLastOperation(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         // Perform keyboard lock operation
         oia.setKeyBoardLocked(true);
 
         // GREEN: Level should reflect keyboard operation
-        assertEquals(
-            "Level should reflect last keyboard operation",
-            ScreenOIA.OIA_LEVEL_KEYBOARD,
+        assertEquals(ScreenOIA.OIA_LEVEL_KEYBOARD,
             oia.getLevel()
-        );
+        ,
+            "Level should reflect last keyboard operation");
 
         // Perform insert mode operation
         oia.setInsertMode(true);
 
         // GREEN: Level should now reflect insert mode operation
-        assertEquals(
-            "Level should reflect last insert mode operation",
-            ScreenOIA.OIA_LEVEL_INSERT_MODE,
+        assertEquals(ScreenOIA.OIA_LEVEL_INSERT_MODE,
             oia.getLevel()
-        );
+        ,
+            "Level should reflect last insert mode operation");
     }
 
     /**
@@ -719,8 +718,11 @@ public class OIAPairwiseTest {
      *
      * Adversarial test: Verify message light changes don't affect keyboard or inhibit state
      */
-    @Test
-    public void testMessageLightPreservesOtherState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightPreservesOtherState(String oiaState, String keyboardState, String messageType, int inhibitCode, boolean expectedLocked) throws Exception {
+        setParameters(oiaState, keyboardState, messageType, inhibitCode, expectedLocked);
+        setUp();
         // Set up complex state
         oia.setKeyBoardLocked(true);
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0);
@@ -733,17 +735,15 @@ public class OIAPairwiseTest {
         oia.setMessageLightOff();
 
         // GREEN: Verify other state unchanged
-        assertEquals(
-            "Keyboard lock state should not change when toggling message light",
-            originalLocked,
+        assertEquals(originalLocked,
             oia.isKeyBoardLocked()
-        );
+        ,
+            "Keyboard lock state should not change when toggling message light");
 
-        assertEquals(
-            "Input inhibit state should not change when toggling message light",
-            originalInhibit,
+        assertEquals(originalInhibit,
             oia.getInputInhibited()
-        );
+        ,
+            "Input inhibit state should not change when toggling message light");
     }
 
     /**

@@ -1,30 +1,19 @@
-/**
- * Title: tn5250J
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD test suite for TN5250E protocol extensions
- *
- * This test suite covers high-risk areas for TN5250E (Enhanced TN5250) protocol:
- * - Device type negotiation (display, printer, combined)
- * - Device name configuration (default, custom 8-char, invalid)
- * - Bypass flag handling (disabled, enabled)
- * - Record mode negotiation (character, record)
- * - Response mode negotiation (normal, structured field)
- * - Protocol negotiation success/failure scenarios
- * - Adversarial protocol violations and fuzzing
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise parameter testing for TN5250E protocol negotiation.
@@ -107,7 +96,7 @@ public class TN5250EProtocolPairwiseTest {
     private byte[] negotiationPacket;
     private TN5250EProtocolHandler handler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         handler = new TN5250EProtocolHandler();
         negotiationPacket = null;
@@ -143,11 +132,11 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert: Negotiation should succeed
-        assertTrue("Valid negotiation should succeed", result);
-        assertEquals("Device type should be display", DEVICE_TYPE_DISPLAY, handler.getDeviceType());
-        assertEquals("Bypass should be disabled", false, handler.isBypassEnabled());
-        assertEquals("Record mode should be character", RECORD_MODE_CHARACTER, handler.getRecordMode());
-        assertEquals("Response mode should be normal", RESPONSE_MODE_NORMAL, handler.getResponseMode());
+        assertTrue(result,"Valid negotiation should succeed");
+        assertEquals(DEVICE_TYPE_DISPLAY, handler.getDeviceType(),"Device type should be display");
+        assertEquals(false, handler.isBypassEnabled(),"Bypass should be disabled");
+        assertEquals(RECORD_MODE_CHARACTER, handler.getRecordMode(),"Record mode should be character");
+        assertEquals(RESPONSE_MODE_NORMAL, handler.getResponseMode(),"Response mode should be normal");
     }
 
     /**
@@ -175,11 +164,11 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertTrue("Valid printer negotiation should succeed", result);
-        assertEquals("Device type should be printer", DEVICE_TYPE_PRINTER, handler.getDeviceType());
-        assertEquals("Bypass should be enabled", true, handler.isBypassEnabled());
-        assertEquals("Device name should match", "PRINTER1", handler.getDeviceName());
-        assertEquals("Record mode should be record", RECORD_MODE_RECORD, handler.getRecordMode());
+        assertTrue(result,"Valid printer negotiation should succeed");
+        assertEquals(DEVICE_TYPE_PRINTER, handler.getDeviceType(),"Device type should be printer");
+        assertEquals(true, handler.isBypassEnabled(),"Bypass should be enabled");
+        assertEquals("PRINTER1", handler.getDeviceName(),"Device name should match");
+        assertEquals(RECORD_MODE_RECORD, handler.getRecordMode(),"Record mode should be record");
     }
 
     /**
@@ -207,11 +196,11 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertTrue("Valid combined device negotiation should succeed", result);
-        assertEquals("Device type should be combined", DEVICE_TYPE_COMBINED, handler.getDeviceType());
-        assertEquals("Bypass should be enabled", true, handler.isBypassEnabled());
-        assertEquals("Response mode should be structured", RESPONSE_MODE_STRUCTURED, handler.getResponseMode());
-        assertTrue("Should support combined device mode", handler.isCombinedMode());
+        assertTrue(result,"Valid combined device negotiation should succeed");
+        assertEquals(DEVICE_TYPE_COMBINED, handler.getDeviceType(),"Device type should be combined");
+        assertEquals(true, handler.isBypassEnabled(),"Bypass should be enabled");
+        assertEquals(RESPONSE_MODE_STRUCTURED, handler.getResponseMode(),"Response mode should be structured");
+        assertTrue(handler.isCombinedMode(),"Should support combined device mode");
     }
 
     /**
@@ -240,9 +229,9 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertTrue("Should accept 8-char device name", result);
-        assertEquals("Device name should be stored exactly", maxLengthName, handler.getDeviceName());
-        assertEquals("Device name length should be 8", 8, handler.getDeviceName().length());
+        assertTrue(result,"Should accept 8-char device name");
+        assertEquals(maxLengthName, handler.getDeviceName(),"Device name should be stored exactly");
+        assertEquals(8, handler.getDeviceName().length(),"Device name length should be 8");
     }
 
     /**
@@ -270,11 +259,11 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertTrue("Should accept both record and structured modes", result);
-        assertEquals("Record mode should be enabled", RECORD_MODE_RECORD,
-                handler.getRecordMode() & RECORD_MODE_RECORD);
-        assertEquals("Response mode should be enabled", RESPONSE_MODE_STRUCTURED,
-                handler.getResponseMode() & RESPONSE_MODE_STRUCTURED);
+        assertTrue(result,"Should accept both record and structured modes");
+        assertEquals(RECORD_MODE_RECORD,
+                handler.getRecordMode() & RECORD_MODE_RECORD,"Record mode should be enabled");
+        assertEquals(RESPONSE_MODE_STRUCTURED,
+                handler.getResponseMode() & RESPONSE_MODE_STRUCTURED,"Response mode should be enabled");
     }
 
     // ========== TEST 6-10: BOUNDARY - Device Name Length Limits ==========
@@ -299,8 +288,8 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertTrue("Should accept single-char device name", result);
-        assertEquals("Device name should be 'X'", "X", handler.getDeviceName());
+        assertTrue(result,"Should accept single-char device name");
+        assertEquals("X", handler.getDeviceName(),"Device name should be 'X'");
     }
 
     /**
@@ -325,11 +314,10 @@ public class TN5250EProtocolPairwiseTest {
         // Assert: Should either reject or truncate to 8 chars
         if (result) {
             // If accepted, verify truncation
-            assertTrue("Device name length should not exceed 8",
-                    handler.getDeviceName().length() <= MAX_DEVICE_NAME_LENGTH);
+            assertTrue(handler.getDeviceName().length() <= MAX_DEVICE_NAME_LENGTH,"Device name length should not exceed 8");
         } else {
             // If rejected, that's also acceptable
-            assertFalse("Nine-char name should be rejected or truncated", true);
+            assertFalse(true,"Nine-char name should be rejected or truncated");
         }
     }
 
@@ -354,8 +342,7 @@ public class TN5250EProtocolPairwiseTest {
 
         // Assert: Should handle at protocol limit
         if (result) {
-            assertTrue("Device name length should not exceed 10",
-                    handler.getDeviceName().length() <= PROTOCOL_MAX_DEVICE_NAME);
+            assertTrue(handler.getDeviceName().length() <= PROTOCOL_MAX_DEVICE_NAME,"Device name length should not exceed 10");
         }
     }
 
@@ -379,8 +366,8 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertTrue("Should accept empty name even with bypass", result);
-        assertTrue("Bypass should be enabled", handler.isBypassEnabled());
+        assertTrue(result,"Should accept empty name even with bypass");
+        assertTrue(handler.isBypassEnabled(),"Bypass should be enabled");
     }
 
     /**
@@ -403,8 +390,8 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertTrue("Should accept device name with special chars", result);
-        assertEquals("Device name should preserve special characters", "DEV-123", handler.getDeviceName());
+        assertTrue(result,"Should accept device name with special chars");
+        assertEquals("DEV-123", handler.getDeviceName(),"Device name should preserve special characters");
     }
 
     // ========== TEST 11-15: ADVERSARIAL - Invalid Device Types and Names ==========
@@ -429,8 +416,8 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject invalid device type", result);
-        assertFalse("Error handling should set invalid flag", handler.isNegotiationSuccessful());
+        assertFalse(result,"Should reject invalid device type");
+        assertFalse(handler.isNegotiationSuccessful(),"Error handling should set invalid flag");
     }
 
     /**
@@ -452,8 +439,8 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert: Should handle gracefully
-        assertTrue("Should handle null device name gracefully", result);
-        assertTrue("Device name should be empty", handler.getDeviceName().isEmpty());
+        assertTrue(result,"Should handle null device name gracefully");
+        assertTrue(handler.getDeviceName().isEmpty(),"Device name should be empty");
     }
 
     /**
@@ -478,7 +465,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert: Should reject reserved bits violation
-        assertFalse("Should reject reserved bits set", result);
+        assertFalse(result,"Should reject reserved bits set");
     }
 
     /**
@@ -503,7 +490,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject reserved bits in mode mask", result);
+        assertFalse(result,"Should reject reserved bits in mode mask");
     }
 
     /**
@@ -528,7 +515,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject corrupt reserved byte", result);
+        assertFalse(result,"Should reject corrupt reserved byte");
     }
 
     // ========== TEST 16-20: PROTOCOL VIOLATIONS - Invalid Combinations ==========
@@ -554,7 +541,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject invalid mode mask", result);
+        assertFalse(result,"Should reject invalid mode mask");
     }
 
     /**
@@ -573,7 +560,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject packet that is too short", result);
+        assertFalse(result,"Should reject packet that is too short");
     }
 
     /**
@@ -593,7 +580,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject length field exceeding actual size", result);
+        assertFalse(result,"Should reject length field exceeding actual size");
     }
 
     /**
@@ -617,7 +604,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject invalid command code", result);
+        assertFalse(result,"Should reject invalid command code");
     }
 
     /**
@@ -641,7 +628,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject invalid device type bit position", result);
+        assertFalse(result,"Should reject invalid device type bit position");
     }
 
     // ========== TEST 21-25: FUZZING - Protocol Fuzzing and Injection ==========
@@ -671,9 +658,8 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert: Should handle gracefully by truncating at null
-        assertTrue("Should handle embedded null gracefully", result);
-        assertTrue("Device name should be truncated at null",
-                handler.getDeviceName().length() <= 3 || !handler.getDeviceName().contains("007"));
+        assertTrue(result,"Should handle embedded null gracefully");
+        assertTrue(handler.getDeviceName().length() <= 3 || !handler.getDeviceName().contains("007"),"Device name should be truncated at null");
     }
 
     /**
@@ -697,7 +683,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject flags byte with all bits set", result);
+        assertFalse(result,"Should reject flags byte with all bits set");
     }
 
     /**
@@ -721,7 +707,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject mode mask with all bits set", result);
+        assertFalse(result,"Should reject mode mask with all bits set");
     }
 
     /**
@@ -738,7 +724,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject zero-length packet", result);
+        assertFalse(result,"Should reject zero-length packet");
     }
 
     /**
@@ -759,7 +745,7 @@ public class TN5250EProtocolPairwiseTest {
         boolean result = handler.negotiateProtocol(negotiationPacket);
 
         // Assert
-        assertFalse("Should reject fuzzing pattern", result);
+        assertFalse(result,"Should reject fuzzing pattern");
     }
 
     // ========== Helper Methods ==========

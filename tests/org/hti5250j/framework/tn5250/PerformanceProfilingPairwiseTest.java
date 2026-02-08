@@ -1,44 +1,24 @@
-/**
- * PerformanceProfilingPairwiseTest.java - Pairwise Performance Profiling for HTI5250j
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite measures and profiles the rendering latency, memory usage, CPU
- * utilization, and throughput of HTI5250j terminal emulator operations using
- * systematic pairwise testing across multiple performance dimensions.
- *
- * Pairwise Testing Dimensions:
- * 1. Operation type: screen-draw, field-update, scroll, refresh
- * 2. Screen complexity: simple (10 fields), medium (50 fields), complex (200+ fields)
- * 3. Update frequency: single, burst (10/sec), continuous
- * 4. Memory pressure: low, medium, high
- * 5. Measurement: latency, throughput, memory, CPU
- *
- * Test Strategy:
- * POSITIVE tests establish baseline performance expectations for normal operations.
- * ADVERSARIAL tests stress the system with high frequency updates, large data
- * volumes, and memory constraints to reveal performance degradation patterns.
- * PROFILING tests collect metrics for optimization opportunities.
- *
- * Performance Acceptance Criteria:
- * - Latency: Single screen draw < 50ms, field update < 20ms, scroll < 30ms
- * - Throughput: Minimum 100 ops/sec at burst frequency
- * - Memory: Usage stable, no unbounded growth (< 200MB for all operations)
- * - CPU: Usage proportional to operation frequency (linear scaling)
- *
- * Write style: TDD RED phase tests that verify performance characteristics and
- * expose regressions in rendering pipeline, memory management, and CPU utilization.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadMXBean;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Pairwise Performance Profiling Tests for HTI5250j
@@ -73,7 +53,7 @@ public class PerformanceProfilingPairwiseTest {
     private static final long THROUGHPUT_THRESHOLD_OPS_SEC = 100;
     private static final long MEMORY_THRESHOLD_MB = 200;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         screen = new Screen5250();
         metrics = new PerformanceMetrics();
@@ -82,7 +62,7 @@ public class PerformanceProfilingPairwiseTest {
         threadBean = ManagementFactory.getThreadMXBean();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         screen = null;
         metrics = null;
@@ -112,7 +92,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawBaseline_SimpleScreen() {
         // ARRANGE: Minimal operations
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Screen planes should be accessible", planes);
+        assertNotNull(planes,"Screen planes should be accessible");
 
         long memBefore = getMemoryUsedBytes();
         long cpuTimeBefore = recordCpuTime();
@@ -129,8 +109,8 @@ public class PerformanceProfilingPairwiseTest {
         long latencyMs = (timeAfter - timeBefore) / 1_000_000;
         long memUsedMB = Math.max(0, (memAfter - memBefore) / (1024 * 1024));
 
-        assertTrue("Screen draw should complete in under 50ms", latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS);
-        assertTrue("Memory usage should be under 200MB", memUsedMB < MEMORY_THRESHOLD_MB);
+        assertTrue(latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS,"Screen draw should complete in under 50ms");
+        assertTrue(memUsedMB < MEMORY_THRESHOLD_MB,"Memory usage should be under 200MB");
 
         metrics.recordLatency("screen-draw", "simple", latencyMs);
         metrics.recordMemory("screen-draw", "simple", memUsedMB);
@@ -145,7 +125,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testFieldUpdateBaseline_SimpleScreen() {
         // ARRANGE: Initialize screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long timeBefore = System.nanoTime();
 
@@ -156,7 +136,7 @@ public class PerformanceProfilingPairwiseTest {
         long latencyMs = (timeAfter - timeBefore) / 1_000_000;
 
         // ASSERT: Field update should be fast
-        assertTrue("Field update should complete in under 20ms", latencyMs < LATENCY_THRESHOLD_FIELD_UPDATE_MS);
+        assertTrue(latencyMs < LATENCY_THRESHOLD_FIELD_UPDATE_MS,"Field update should complete in under 20ms");
         metrics.recordLatency("field-update", "simple", latencyMs);
     }
 
@@ -169,7 +149,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testRefreshBaseline_SimpleScreen() {
         // ARRANGE: Set up screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long memBefore = getMemoryUsedBytes();
         long timeBefore = System.nanoTime();
@@ -184,8 +164,8 @@ public class PerformanceProfilingPairwiseTest {
         long memUsedMB = Math.max(0, (memAfter - memBefore) / (1024 * 1024));
 
         // ASSERT: Refresh should be fast and minimal memory
-        assertTrue("Refresh should complete in under 50ms", latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS);
-        assertTrue("Memory overhead should be minimal", memUsedMB < 50);
+        assertTrue(latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS,"Refresh should complete in under 50ms");
+        assertTrue(memUsedMB < 50,"Memory overhead should be minimal");
 
         metrics.recordLatency("refresh", "simple", latencyMs);
         metrics.recordMemory("refresh", "simple", memUsedMB);
@@ -204,7 +184,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawMedium_MediumComplexity() {
         // ARRANGE: Set up medium complexity screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long timeBefore = System.nanoTime();
 
@@ -215,7 +195,7 @@ public class PerformanceProfilingPairwiseTest {
         long latencyMs = (timeAfter - timeBefore) / 1_000_000;
 
         // ASSERT: Latency should degrade gracefully (not exponentially)
-        assertTrue("Screen draw should still be under 50ms", latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS);
+        assertTrue(latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS,"Screen draw should still be under 50ms");
         metrics.recordLatency("screen-draw", "medium", latencyMs);
     }
 
@@ -228,7 +208,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testFieldUpdateMedium_SingleFrequency() {
         // ARRANGE: Medium complexity, single updates
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long totalLatency = 0;
         int iterations = BASELINE_ITERATIONS;
@@ -244,7 +224,7 @@ public class PerformanceProfilingPairwiseTest {
         long avgLatencyMs = totalLatency / iterations;
 
         // ASSERT: Average latency should be reasonable
-        assertTrue("Average field update should be under 20ms", avgLatencyMs < LATENCY_THRESHOLD_FIELD_UPDATE_MS);
+        assertTrue(avgLatencyMs < LATENCY_THRESHOLD_FIELD_UPDATE_MS,"Average field update should be under 20ms");
         metrics.recordLatency("field-update", "medium", avgLatencyMs);
     }
 
@@ -257,7 +237,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testRefreshMedium_MediumComplexity() {
         // ARRANGE: Medium screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long memBefore = getMemoryUsedBytes();
 
@@ -268,7 +248,7 @@ public class PerformanceProfilingPairwiseTest {
         long memUsedMB = Math.max(0, (memAfter - memBefore) / (1024 * 1024));
 
         // ASSERT: Memory usage should scale linearly
-        assertTrue("Memory should scale reasonably", memUsedMB < MEMORY_THRESHOLD_MB);
+        assertTrue(memUsedMB < MEMORY_THRESHOLD_MB,"Memory should scale reasonably");
         metrics.recordMemory("refresh", "medium", memUsedMB);
     }
 
@@ -285,7 +265,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawComplex_ComplexScreen() {
         // ARRANGE: Complex screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long timeBefore = System.nanoTime();
 
@@ -296,7 +276,7 @@ public class PerformanceProfilingPairwiseTest {
         long latencyMs = (timeAfter - timeBefore) / 1_000_000;
 
         // ASSERT: Even complex screens should draw reasonably fast
-        assertTrue("Complex screen draw should complete in reasonable time", latencyMs < 100);
+        assertTrue(latencyMs < 100,"Complex screen draw should complete in reasonable time");
         metrics.recordLatency("screen-draw", "complex", latencyMs);
     }
 
@@ -309,7 +289,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testFieldUpdateComplex_ComplexScreen() {
         // ARRANGE: Complex screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long totalLatency = 0;
         int iterations = 50; // Fewer iterations for complex scenario
@@ -325,7 +305,7 @@ public class PerformanceProfilingPairwiseTest {
         long avgLatencyMs = totalLatency / iterations;
 
         // ASSERT: Complex screen updates should still be responsive
-        assertTrue("Complex field updates should be under 40ms average", avgLatencyMs < 40);
+        assertTrue(avgLatencyMs < 40,"Complex field updates should be under 40ms average");
         metrics.recordLatency("field-update", "complex", avgLatencyMs);
     }
 
@@ -338,7 +318,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testRefreshComplex_ComplexScreen() {
         // ARRANGE: Complex screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long memBefore = getMemoryUsedBytes();
 
@@ -349,7 +329,7 @@ public class PerformanceProfilingPairwiseTest {
         long memUsedMB = Math.max(0, (memAfter - memBefore) / (1024 * 1024));
 
         // ASSERT: Memory usage should not exceed threshold even for complex screens
-        assertTrue("Complex screen refresh memory should be under 200MB", memUsedMB < MEMORY_THRESHOLD_MB);
+        assertTrue(memUsedMB < MEMORY_THRESHOLD_MB,"Complex screen refresh memory should be under 200MB");
         metrics.recordMemory("refresh", "complex", memUsedMB);
     }
 
@@ -366,7 +346,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawBurst_SimpleScreen_BurstFrequency() {
         // ARRANGE: Simple screen, high frequency updates
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         int opsCount = 0;
         long startTime = System.currentTimeMillis();
@@ -378,7 +358,7 @@ public class PerformanceProfilingPairwiseTest {
         }
 
         // ASSERT: Throughput should meet minimum threshold
-        assertTrue("Burst throughput should be at least 100 ops/sec", opsCount >= THROUGHPUT_THRESHOLD_OPS_SEC);
+        assertTrue(opsCount >= THROUGHPUT_THRESHOLD_OPS_SEC,"Burst throughput should be at least 100 ops/sec");
         metrics.recordThroughput("screen-draw", "simple", "burst", opsCount);
     }
 
@@ -391,7 +371,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testFieldUpdateBurst_MediumScreen_BurstFrequency() {
         // ARRANGE: Medium screen, burst frequency
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         int opsCount = 0;
         long startTime = System.currentTimeMillis();
@@ -403,7 +383,7 @@ public class PerformanceProfilingPairwiseTest {
         }
 
         // ASSERT: Throughput should be reasonable
-        assertTrue("Burst throughput on medium screen should be at least 50 ops/sec", opsCount >= 50);
+        assertTrue(opsCount >= 50,"Burst throughput on medium screen should be at least 50 ops/sec");
         metrics.recordThroughput("field-update", "medium", "burst", opsCount);
     }
 
@@ -416,7 +396,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testRefreshBurst_ComplexScreen_BurstFrequency() {
         // ARRANGE: Complex screen, high frequency
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         int opsCount = 0;
         long startTime = System.currentTimeMillis();
@@ -428,7 +408,7 @@ public class PerformanceProfilingPairwiseTest {
         }
 
         // ASSERT: Throughput should remain reasonable even under load
-        assertTrue("Burst refresh on complex screen should achieve at least 30 ops/sec", opsCount >= 30);
+        assertTrue(opsCount >= 30,"Burst refresh on complex screen should achieve at least 30 ops/sec");
         metrics.recordThroughput("refresh", "complex", "burst", opsCount);
     }
 
@@ -445,7 +425,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawContinuous_MediumScreen_5Seconds() {
         // ARRANGE: Medium screen, continuous draw load
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long memBefore = getMemoryUsedBytes();
         long startTime = System.currentTimeMillis();
@@ -463,8 +443,8 @@ public class PerformanceProfilingPairwiseTest {
         long throughputOpsPerSec = opsCount / durationSec;
 
         // ASSERT: Memory should not grow unbounded, throughput should be steady
-        assertTrue("Memory usage under continuous load should be under 200MB", memUsedMB < MEMORY_THRESHOLD_MB);
-        assertTrue("Continuous throughput should be at least 50 ops/sec", throughputOpsPerSec >= 50);
+        assertTrue(memUsedMB < MEMORY_THRESHOLD_MB,"Memory usage under continuous load should be under 200MB");
+        assertTrue(throughputOpsPerSec >= 50,"Continuous throughput should be at least 50 ops/sec");
 
         metrics.recordLatency("screen-draw-continuous", "medium", memUsedMB);
         metrics.recordThroughput("screen-draw-continuous", "medium", "continuous", throughputOpsPerSec);
@@ -479,7 +459,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testFieldUpdateContinuous_SimpleScreen_5Seconds() {
         // ARRANGE: Simple screen, continuous updates
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long memBefore = getMemoryUsedBytes();
         long cpuTimeBefore = recordCpuTime();
@@ -499,8 +479,8 @@ public class PerformanceProfilingPairwiseTest {
         long cpuTimeMs = (cpuTimeAfter - cpuTimeBefore) / 1_000_000;
 
         // ASSERT: No unbounded memory growth, CPU usage reasonable
-        assertTrue("Memory should not grow unbounded", memUsedMB < MEMORY_THRESHOLD_MB);
-        assertTrue("CPU time should be proportional to operation count", cpuTimeMs >= 0);
+        assertTrue(memUsedMB < MEMORY_THRESHOLD_MB,"Memory should not grow unbounded");
+        assertTrue(cpuTimeMs >= 0,"CPU time should be proportional to operation count");
 
         metrics.recordMemory("field-update-continuous", "simple", memUsedMB);
     }
@@ -514,7 +494,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testRefreshContinuous_ComplexScreen_5Seconds() {
         // ARRANGE: Complex screen, high refresh frequency
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long startTime = System.currentTimeMillis();
         long opsCount = 0;
@@ -529,7 +509,7 @@ public class PerformanceProfilingPairwiseTest {
         long throughputOpsPerSec = opsCount / durationSec;
 
         // ASSERT: High frequency refresh should maintain throughput
-        assertTrue("Sustained refresh throughput should be at least 100 ops/sec", throughputOpsPerSec >= 100);
+        assertTrue(throughputOpsPerSec >= 100,"Sustained refresh throughput should be at least 100 ops/sec");
 
         metrics.recordThroughput("refresh-continuous", "complex", "continuous", throughputOpsPerSec);
     }
@@ -547,7 +527,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawLowMemory_SimpleScreen() {
         // ARRANGE: Simple screen, note initial memory
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         // Force garbage collection to simulate memory pressure
         System.gc();
@@ -560,7 +540,7 @@ public class PerformanceProfilingPairwiseTest {
         long latencyMs = (timeAfter - timeBefore) / 1_000_000;
 
         // ASSERT: Performance should not degrade significantly under memory pressure
-        assertTrue("Latency under low memory should be acceptable", latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS * 2);
+        assertTrue(latencyMs < LATENCY_THRESHOLD_SCREEN_DRAW_MS * 2,"Latency under low memory should be acceptable");
 
         metrics.recordLatency("screen-draw-low-mem", "simple", latencyMs);
     }
@@ -574,7 +554,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testFieldUpdateMediumMemory_MediumScreen() {
         // ARRANGE: Medium screen, multiple allocations to consume memory
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long totalLatency = 0;
         int iterations = 50;
@@ -590,7 +570,7 @@ public class PerformanceProfilingPairwiseTest {
         long avgLatencyMs = totalLatency / iterations;
 
         // ASSERT: Latency should remain consistent
-        assertTrue("Average latency should be under 25ms", avgLatencyMs < 25);
+        assertTrue(avgLatencyMs < 25,"Average latency should be under 25ms");
 
         metrics.recordLatency("field-update-med-mem", "medium", avgLatencyMs);
     }
@@ -604,7 +584,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testRefreshHighMemory_BurstFrequency() {
         // ARRANGE: Complex screen with memory pressure
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         // Allocate memory to increase pressure
         @SuppressWarnings("unused")
@@ -621,7 +601,7 @@ public class PerformanceProfilingPairwiseTest {
             }
 
             // ASSERT: Throughput should degrade gracefully
-            assertTrue("Refresh should maintain minimum throughput under memory pressure", opsCount >= 25);
+            assertTrue(opsCount >= 25,"Refresh should maintain minimum throughput under memory pressure");
 
             metrics.recordThroughput("refresh-high-mem", "complex", "burst", opsCount);
         } finally {
@@ -643,7 +623,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawScalability_AllComplexityLevels() {
         // ARRANGE: Measure baseline with simple screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long simpleLatency = 0;
         long timeStart = System.nanoTime();
@@ -664,8 +644,8 @@ public class PerformanceProfilingPairwiseTest {
         double mediumScale = (simpleLatency > 0) ? (double) mediumLatency / simpleLatency : 1.0;
         double complexScale = (simpleLatency > 0) ? (double) complexLatency / simpleLatency : 1.0;
 
-        assertTrue("Medium latency should scale linearly (< 3x)", mediumScale < 3.0 || simpleLatency == 0);
-        assertTrue("Complex latency should scale linearly (< 5x)", complexScale < 5.0 || simpleLatency == 0);
+        assertTrue(mediumScale < 3.0 || simpleLatency == 0,"Medium latency should scale linearly (< 3x)");
+        assertTrue(complexScale < 5.0 || simpleLatency == 0,"Complex latency should scale linearly (< 5x)");
 
         metrics.recordLatency("scalability-draw", "all", complexLatency);
     }
@@ -696,7 +676,7 @@ public class PerformanceProfilingPairwiseTest {
         long memComplex = Math.max(0, (mem2 - mem1) / (1024 * 1024));
 
         // ASSERT: Memory should scale linearly
-        assertTrue("Memory usage should scale reasonably", memComplex < MEMORY_THRESHOLD_MB);
+        assertTrue(memComplex < MEMORY_THRESHOLD_MB,"Memory usage should scale reasonably");
 
         metrics.recordMemory("scalability-memory", "all", memComplex);
     }
@@ -714,7 +694,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testScreenDrawRegressionDetection_SimpleScreen() {
         // ARRANGE: Establish baseline
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long totalLatency = 0;
         int iterations = 100;
@@ -732,7 +712,7 @@ public class PerformanceProfilingPairwiseTest {
         long regressionThreshold = baselineLatencyMs + (baselineLatencyMs / 5); // +20%
 
         // ASSERT: No regression detected
-        assertTrue("Latency should not regress by > 20%", avgLatencyMs <= regressionThreshold || baselineLatencyMs == 0);
+        assertTrue(avgLatencyMs <= regressionThreshold || baselineLatencyMs == 0,"Latency should not regress by > 20%");
 
         metrics.recordLatency("regression-draw", "simple", avgLatencyMs);
     }
@@ -746,7 +726,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testFieldUpdateRegressionDetection_BurstFrequency() {
         // ARRANGE: Medium screen, burst frequency
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         int opsCount = 0;
         long startTime = System.currentTimeMillis();
@@ -759,7 +739,7 @@ public class PerformanceProfilingPairwiseTest {
         }
 
         // ASSERT: Throughput should not regress
-        assertTrue("Throughput should not drop below baseline", opsCount >= baselineThroughput);
+        assertTrue(opsCount >= baselineThroughput,"Throughput should not drop below baseline");
 
         metrics.recordThroughput("regression-update", "medium", "burst", opsCount);
     }
@@ -773,7 +753,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testMemoryLeakDetection_ContinuousRefresh() {
         // ARRANGE: Complex screen, continuous refresh
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long memCheckpoints[] = new long[5];
         long maxMemUsed = 0;
@@ -797,8 +777,7 @@ public class PerformanceProfilingPairwiseTest {
         // ASSERT: Memory should not grow unboundedly over repeated operations
         // Note: Memory fluctuations are normal, we look for monotonic growth
         // Max memory should not exceed reasonable threshold
-        assertTrue("No unbounded memory growth detected",
-                maxMemUsed < MEMORY_THRESHOLD_MB);
+        assertTrue(maxMemUsed < MEMORY_THRESHOLD_MB,"No unbounded memory growth detected");
 
         metrics.recordMemory("regression-leak", "complex", maxMemUsed);
     }
@@ -812,7 +791,7 @@ public class PerformanceProfilingPairwiseTest {
     public void testCpuScalingLinearRegression() {
         // ARRANGE: Simple screen
         ScreenPlanes planes = screen.getPlanes();
-        assertNotNull("Planes should exist", planes);
+        assertNotNull(planes,"Planes should exist");
 
         long cpuBefore = recordCpuTime();
         long opsCount = 0;
@@ -829,8 +808,8 @@ public class PerformanceProfilingPairwiseTest {
         long cpuTimePerOp = (opsCount > 0) ? cpuTimeMs / opsCount : 0;
 
         // ASSERT: CPU time should be proportional to operations
-        assertTrue("CPU scaling should be linear (measurable)", cpuTimeMs >= 0);
-        assertTrue("CPU time per operation should be consistent", cpuTimePerOp >= 0);
+        assertTrue(cpuTimeMs >= 0,"CPU scaling should be linear (measurable)");
+        assertTrue(cpuTimePerOp >= 0,"CPU time per operation should be consistent");
 
         metrics.recordLatency("cpu-scaling", "simple", cpuTimePerOp);
     }

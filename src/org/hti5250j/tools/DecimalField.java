@@ -1,3 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j.tools;
 
 import javax.swing.*;
@@ -7,12 +17,12 @@ import java.text.*;
 
 public class DecimalField extends JTextField {
     private static final long serialVersionUID = 1L;
-    private NumberFormat format;
+    private NumberFormat numberFormat;
 
-    public DecimalField(double value, int columns, NumberFormat f) {
+    public DecimalField(double value, int columns, NumberFormat numberFormat) {
         super(columns);
-        setDocument(new FormattedDocument(f));
-        format = f;
+        setDocument(new FormattedDocument(numberFormat));
+        this.numberFormat = numberFormat;
         setValue(value);
     }
 
@@ -20,8 +30,8 @@ public class DecimalField extends JTextField {
         double retVal = 0.0;
 
         try {
-            retVal = format.parse(getText()).doubleValue();
-        } catch (ParseException e) {
+            retVal = numberFormat.parse(getText()).doubleValue();
+        } catch (ParseException parseException) {
             // This should never happen because insertString allows
             // only properly formatted data to get in the field.
             Toolkit.getDefaultToolkit().beep();
@@ -31,6 +41,6 @@ public class DecimalField extends JTextField {
     }
 
     public void setValue(double value) {
-        setText(format.format(value));
+        setText(numberFormat.format(value));
     }
 }

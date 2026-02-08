@@ -1,28 +1,14 @@
 /*
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.5
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import org.hti5250j.framework.tn5250.Screen5250;
@@ -60,23 +46,23 @@ public class SessionPopup {
     private final tnvt vt;
     private final HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
 
-    public SessionPopup(SessionPanel ses, MouseEvent me) {
+    public SessionPopup(SessionPanel sessionPanel, MouseEvent mouseEvent) {
 
         JMenuItem menuItem;
         Action action;
         JPopupMenu popup = new JPopupMenu();
-        this.sessiongui = ses;
+        this.sessiongui = sessionPanel;
         vt = sessiongui.getSession().getVT();
         screen = sessiongui.getScreen();
 
-        final int pos = sessiongui.getPosFromView(me.getX(), me.getY());
+        final int pos = sessiongui.getPosFromView(mouseEvent.getX(), mouseEvent.getY());
 
         if (!sessiongui.rubberband.isAreaSelected() && screen.isInField(pos, false)) {
             action = new AbstractAction(LangTool.getString("popup.copy")) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     String fcontent = screen.copyTextField(pos);
                     StringSelection contents = new StringSelection(fcontent);
                     Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -92,7 +78,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     paste(false);
                 }
             };
@@ -102,7 +88,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     paste(true);
                 }
             };
@@ -114,7 +100,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     showHexMap();
                     sessiongui.getFocusForMe();
                 }
@@ -128,7 +114,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     sessiongui.actionCopy();
                     sessiongui.getFocusForMe();
                 }
@@ -140,7 +126,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     paste(false);
                 }
             };
@@ -150,27 +136,27 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     paste(true);
                 }
             };
             popup.add(action);
 
-            Rectangle workR = new Rectangle();
+            Rectangle workRect = new Rectangle();
             if (sessiongui.rubberband.isAreaSelected()) {
 
                 // get the bounded area of the selection
-                sessiongui.getBoundingArea(workR);
+                sessiongui.getBoundingArea(workRect);
 
                 popup.addSeparator();
 
                 menuItem = new JMenuItem(LangTool.getString("popup.selectedColumns")
-                        + " " + workR.width);
+                        + " " + workRect.width);
                 menuItem.setArmed(false);
                 popup.add(menuItem);
 
                 menuItem = new JMenuItem(LangTool.getString("popup.selectedRows")
-                        + " " + workR.height);
+                        + " " + workRect.height);
                 menuItem.setArmed(false);
                 popup.add(menuItem);
 
@@ -181,7 +167,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sumArea(true);
                     }
                 };
@@ -191,7 +177,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sumArea(false);
                     }
                 };
@@ -205,7 +191,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     sessiongui.printMe();
                     sessiongui.getFocusForMe();
                 }
@@ -222,7 +208,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
 
                     mapMeKeys();
                 }
@@ -245,7 +231,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         vt.systemRequest('4');
                     }
                 };
@@ -272,7 +258,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         vt.hostPrint(1);
                     }
                 };
@@ -288,7 +274,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         vt.systemRequest('4');
                     }
                 };
@@ -301,7 +287,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     showHexMap();
                     sessiongui.getFocusForMe();
                 }
@@ -312,7 +298,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
 
                     mapMeKeys();
                     sessiongui.getFocusForMe();
@@ -326,7 +312,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sessiongui.actionAttributes();
                         sessiongui.getFocusForMe();
                     }
@@ -342,7 +328,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sessiongui.setStopMacroRequested();
                     }
                 };
@@ -356,7 +342,7 @@ public class SessionPopup {
                         private static final long serialVersionUID = 1L;
 
                         @Override
-                        public void actionPerformed(ActionEvent e) {
+                        public void actionPerformed(ActionEvent actionEvent) {
                             sessiongui.stopRecordingMe();
                             sessiongui.getFocusForMe();
                         }
@@ -367,7 +353,7 @@ public class SessionPopup {
                         private static final long serialVersionUID = 1L;
 
                         @Override
-                        public void actionPerformed(ActionEvent e) {
+                        public void actionPerformed(ActionEvent actionEvent) {
                             sessiongui.startRecordingMe();
                             sessiongui.getFocusForMe();
 
@@ -392,7 +378,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         doMeTransfer();
                         sessiongui.getFocusForMe();
                     }
@@ -407,7 +393,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         doMeSpool();
                         sessiongui.getFocusForMe();
                     }
@@ -427,7 +413,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sendQuickEMail();
                         sessiongui.getFocusForMe();
                     }
@@ -441,7 +427,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sendScreenEMail();
                         sessiongui.getFocusForMe();
                     }
@@ -454,7 +440,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     sendMeToFile();
                 }
             };
@@ -465,7 +451,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     sendMeToImageFile();
                 }
             };
@@ -482,7 +468,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     sessiongui.startNewSession();
                 }
             };
@@ -499,7 +485,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sessiongui.toggleConnection();
                         sessiongui.getFocusForMe();
                     }
@@ -510,7 +496,7 @@ public class SessionPopup {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ActionEvent actionEvent) {
                         sessiongui.toggleConnection();
                         sessiongui.getFocusForMe();
                     }
@@ -528,7 +514,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     sessiongui.confirmCloseSession(true);
                 }
             };
@@ -537,8 +523,8 @@ public class SessionPopup {
 
         }
 
-        GUIGraphicsUtils.positionPopup(me.getComponent(), popup,
-                me.getX(), me.getY());
+        GUIGraphicsUtils.positionPopup(mouseEvent.getComponent(), popup,
+                mouseEvent.getX(), mouseEvent.getY());
 
     }
 
@@ -554,7 +540,7 @@ public class SessionPopup {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     screen.sendKeys(key2);
                 }
             };
@@ -574,40 +560,40 @@ public class SessionPopup {
     }
 
     private JMenuItem createMenuItem(Action action, String accelKey) {
-        JMenuItem mi = new JMenuItem();
-        mi.setAction(action);
+        JMenuItem menuItem = new JMenuItem();
+        menuItem.setAction(action);
         if (sessiongui.keyHandler.isKeyStrokeDefined(accelKey)) {
-            mi.setAccelerator(sessiongui.keyHandler.getKeyStroke(accelKey));
+            menuItem.setAccelerator(sessiongui.keyHandler.getKeyStroke(accelKey));
         } else {
             InputMap map = sessiongui.getInputMap();
             KeyStroke[] allKeys = map.allKeys();
             for (KeyStroke keyStroke : allKeys) {
                 if (map.get(keyStroke).equals(accelKey)) {
-                    mi.setAccelerator(keyStroke);
+                    menuItem.setAccelerator(keyStroke);
                     break;
                 }
             }
         }
-        return mi;
+        return menuItem;
     }
 
     private void createShortCutItems(JMenu menu) {
 
-        JMenu sm = new JMenu(LangTool.getString("popup.shortCuts"));
+        JMenu shortcutMenu = new JMenu(LangTool.getString("popup.shortCuts"));
         menu.addSeparator();
-        menu.add(sm);
+        menu.add(shortcutMenu);
 
         InputMap map = sessiongui.getInputMap();
         KeyStroke[] allKeys = map.allKeys();
         ActionMap aMap = sessiongui.getActionMap();
 
         for (KeyStroke allKey : allKeys) {
-            Action a = aMap.get(map.get(allKey));
-            JMenuItem mi = new JMenuItem();
-            mi.setAction(a);
-            mi.setText(LangTool.getString("key." + map.get(allKey)));
-            mi.setAccelerator(allKey);
-            sm.add(mi);
+            Action menuAction = aMap.get(map.get(allKey));
+            JMenuItem menuItem = new JMenuItem();
+            menuItem.setAction(menuAction);
+            menuItem.setText(LangTool.getString("key." + map.get(allKey)));
+            menuItem.setAccelerator(allKey);
+            shortcutMenu.add(menuItem);
         }
     }
 
@@ -615,19 +601,19 @@ public class SessionPopup {
 
 
         List<Double> sumVector = sessiongui.sumThem(which);
-        Iterator<Double> l = sumVector.iterator();
+        Iterator<Double> sumIterator = sumVector.iterator();
         double sum = 0.0;
-        double inter;
-        while (l.hasNext()) {
+        double currentValue;
+        while (sumIterator.hasNext()) {
 
-            inter = 0.0;
+            currentValue = 0.0;
             try {
-                inter = l.next();
-            } catch (Exception e) {
-                log.warn(e);
+                currentValue = sumIterator.next();
+            } catch (Exception exception) {
+                log.warn(exception);
             }
 
-            sum += inter;
+            sum += currentValue;
 
         }
         if (log.isDebugEnabled()) {
@@ -721,19 +707,19 @@ public class SessionPopup {
 
     private void paste(boolean special) {
         try {
-            Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-            final Transferable transferable = cb.getContents(this);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            final Transferable transferable = clipboard.getContents(this);
             if (transferable != null) {
                 final String content = (String) transferable.getTransferData(DataFlavor.stringFlavor);
                 screen.pasteText(content, special);
                 sessiongui.getFocusForMe();
             }
-        } catch (HeadlessException e1) {
-            log.debug("HeadlessException", e1);
-        } catch (UnsupportedFlavorException e1) {
-            log.debug("the requested data flavor is not supported", e1);
-        } catch (IOException e1) {
-            log.debug("data is no longer available in the requested flavor", e1);
+        } catch (HeadlessException headlessException) {
+            log.debug("HeadlessException", headlessException);
+        } catch (UnsupportedFlavorException unsupportedFlavorException) {
+            log.debug("the requested data flavor is not supported", unsupportedFlavorException);
+        } catch (IOException ioException) {
+            log.debug("data is no longer available in the requested flavor", ioException);
         }
 
     }

@@ -1,58 +1,21 @@
-/**
- * Title: SubfileHandlingPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD pairwise tests for HTI5250j subfile handling and display.
- *
- * This test suite focuses on subfile behaviors critical for terminal automation:
- * - Subfile type detection (display-only, input, selection, expandable)
- * - Record counting and iteration
- * - Navigation operations (page-up, page-down, position-to, home, end)
- * - Record selection (single, multiple, none)
- * - Overflow handling (truncate, scroll, error)
- * - Scrolling within subfiles
- * - Page navigation with various record counts
- * - Selection mode enforcement
- * - Boundary conditions and edge cases
- * - Adversarial large-record scenarios
- *
- * Test dimensions (pairwise combination):
- * 1. Subfile type: [display-only (0), input (1), selection (2), expandable (3)]
- * 2. Record count: [0, 1, page-size (20), multi-page (50), max (1000)]
- * 3. Navigation: [page-up, page-down, position-to, home, end]
- * 4. Selection mode: [single, multiple, none]
- * 5. Overflow: [truncate, scroll, error]
- *
- * POSITIVE TESTS (15): Valid subfile operations and expected behaviors
- * ADVERSARIAL TESTS (12): Edge cases, boundary conditions, large-record scenarios
- * CRITICAL TESTS (10): High-risk behaviors with multiple dimensions
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for Screen5250 subfile operations.
@@ -69,7 +32,6 @@ import static org.junit.Assert.*;
  * 9. Empty subfile navigation
  * 10. Bidirectional navigation state consistency
  */
-@RunWith(JUnit4.class)
 public class SubfileHandlingPairwiseTest {
 
     private TestSubfileModel subfileModel;
@@ -258,7 +220,7 @@ public class SubfileHandlingPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         subfileModel = null;
     }
@@ -280,11 +242,11 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(DEFAULT_PAGE_SIZE);
 
-        assertEquals("Display-only should have page-size records", DEFAULT_PAGE_SIZE, subfileModel.getRecordCount());
-        assertEquals("Initial page start at 0", 0, subfileModel.getCurrentPageStart());
+        assertEquals(DEFAULT_PAGE_SIZE, subfileModel.getRecordCount(),"Display-only should have page-size records");
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Initial page start at 0");
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Page has all records", DEFAULT_PAGE_SIZE, page.size());
-        assertTrue("Display-only subfile type", subfileModel.isDisplayOnly());
+        assertEquals(DEFAULT_PAGE_SIZE, page.size(),"Page has all records");
+        assertTrue(subfileModel.isDisplayOnly(),"Display-only subfile type");
     }
 
     /**
@@ -300,11 +262,11 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(1);
 
-        assertEquals("Input subfile should have 1 record", 1, subfileModel.getRecordCount());
+        assertEquals(1, subfileModel.getRecordCount(),"Input subfile should have 1 record");
         SubfileRecord record = subfileModel.getRecord(0);
-        assertNotNull("Record exists", record);
-        assertEquals("Record index is 0", 0, record.getIndex());
-        assertTrue("Input type detected", subfileModel.isInputType());
+        assertNotNull(record,"Record exists");
+        assertEquals(0, record.getIndex(),"Record index is 0");
+        assertTrue(subfileModel.isInputType(),"Input type detected");
     }
 
     /**
@@ -320,11 +282,11 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(DEFAULT_PAGE_SIZE);
 
-        assertTrue("Position to record 5", subfileModel.positionTo(5));
-        assertTrue("Select record 5", subfileModel.selectRecord(5));
-        assertTrue("Record 5 is selected", subfileModel.isRecordSelected(5));
-        assertEquals("Only 1 record selected", 1, subfileModel.getSelectedRecords().size());
-        assertTrue("Selection type", subfileModel.isSelectionType());
+        assertTrue(subfileModel.positionTo(5),"Position to record 5");
+        assertTrue(subfileModel.selectRecord(5),"Select record 5");
+        assertTrue(subfileModel.isRecordSelected(5),"Record 5 is selected");
+        assertEquals(1, subfileModel.getSelectedRecords().size(),"Only 1 record selected");
+        assertTrue(subfileModel.isSelectionType(),"Selection type");
     }
 
     /**
@@ -341,17 +303,17 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(DEFAULT_PAGE_SIZE);
 
         subfileModel.home();
-        assertEquals("Home positioned", 0, subfileModel.getCurrentPageStart());
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Home positioned");
 
-        assertTrue("Select record 0", subfileModel.selectRecord(0));
-        assertTrue("Select record 5", subfileModel.selectRecord(5));
-        assertTrue("Select record 10", subfileModel.selectRecord(10));
+        assertTrue(subfileModel.selectRecord(0),"Select record 0");
+        assertTrue(subfileModel.selectRecord(5),"Select record 5");
+        assertTrue(subfileModel.selectRecord(10),"Select record 10");
 
         Set<Integer> selected = subfileModel.getSelectedRecords();
-        assertEquals("Three records selected", 3, selected.size());
-        assertTrue("Record 0 selected", selected.contains(0));
-        assertTrue("Record 5 selected", selected.contains(5));
-        assertTrue("Record 10 selected", selected.contains(10));
+        assertEquals(3, selected.size(),"Three records selected");
+        assertTrue(selected.contains(0),"Record 0 selected");
+        assertTrue(selected.contains(5),"Record 5 selected");
+        assertTrue(selected.contains(10),"Record 10 selected");
     }
 
     /**
@@ -367,15 +329,15 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(50);  // 2.5 pages
 
-        assertTrue("Page down from start", subfileModel.pageDown());
-        assertEquals("Page 2 start position", DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart());
+        assertTrue(subfileModel.pageDown(),"Page down from start");
+        assertEquals(DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart(),"Page 2 start position");
 
-        assertTrue("Page down from page 2", subfileModel.pageDown());
-        assertEquals("Page 3 start position", 40, subfileModel.getCurrentPageStart());
+        assertTrue(subfileModel.pageDown(),"Page down from page 2");
+        assertEquals(40, subfileModel.getCurrentPageStart(),"Page 3 start position");
 
-        assertFalse("Page down from page 3 (last)", subfileModel.pageDown());
-        assertEquals("Still at page 3", 40, subfileModel.getCurrentPageStart());
-        assertTrue("Expandable type", subfileModel.isExpandableType());
+        assertFalse(subfileModel.pageDown(),"Page down from page 3 (last)");
+        assertEquals(40, subfileModel.getCurrentPageStart(),"Still at page 3");
+        assertTrue(subfileModel.isExpandableType(),"Expandable type");
     }
 
     /**
@@ -390,15 +352,15 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
 
-        assertEquals("Empty subfile", 0, subfileModel.getRecordCount());
+        assertEquals(0, subfileModel.getRecordCount(),"Empty subfile");
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Page is empty", 0, page.size());
+        assertEquals(0, page.size(),"Page is empty");
 
-        assertFalse("Cannot page down from empty", subfileModel.pageDown());
-        assertFalse("Cannot page up from empty", subfileModel.pageUp());
+        assertFalse(subfileModel.pageDown(),"Cannot page down from empty");
+        assertFalse(subfileModel.pageUp(),"Cannot page up from empty");
 
         subfileModel.home();
-        assertEquals("Home on empty", 0, subfileModel.getCurrentPageStart());
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Home on empty");
     }
 
     /**
@@ -416,10 +378,10 @@ public class SubfileHandlingPairwiseTest {
 
         subfileModel.pageDown();
         subfileModel.pageDown();
-        assertEquals("At page 3", 40, subfileModel.getCurrentPageStart());
+        assertEquals(40, subfileModel.getCurrentPageStart(),"At page 3");
 
         subfileModel.home();
-        assertEquals("Home returns to page 1", 0, subfileModel.getCurrentPageStart());
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Home returns to page 1");
     }
 
     /**
@@ -436,9 +398,9 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(45);
 
         subfileModel.end();
-        assertEquals("End positioned at last page", 40, subfileModel.getCurrentPageStart());
+        assertEquals(40, subfileModel.getCurrentPageStart(),"End positioned at last page");
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Last page has remaining records", 5, page.size());
+        assertEquals(5, page.size(),"Last page has remaining records");
     }
 
     /**
@@ -454,11 +416,11 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(50);
 
-        assertTrue("Position to record 25", subfileModel.positionTo(25));
-        assertEquals("Page positioned for record 25", 20, subfileModel.getCurrentPageStart());
+        assertTrue(subfileModel.positionTo(25),"Position to record 25");
+        assertEquals(20, subfileModel.getCurrentPageStart(),"Page positioned for record 25");
 
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Page has 20 records", 20, page.size());
+        assertEquals(20, page.size(),"Page has 20 records");
     }
 
     /**
@@ -476,11 +438,11 @@ public class SubfileHandlingPairwiseTest {
 
         subfileModel.selectRecord(5);
         subfileModel.selectRecord(10);
-        assertEquals("2 records selected on page 1", 2, subfileModel.getSelectedRecords().size());
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"2 records selected on page 1");
 
         subfileModel.pageDown();
-        assertEquals("Selection preserved on page 2", 2, subfileModel.getSelectedRecords().size());
-        assertTrue("Record 5 still selected", subfileModel.isRecordSelected(5));
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"Selection preserved on page 2");
+        assertTrue(subfileModel.isRecordSelected(5),"Record 5 still selected");
     }
 
     /**
@@ -499,11 +461,11 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.selectRecord(0);
         subfileModel.selectRecord(5);
         subfileModel.selectRecord(10);
-        assertEquals("3 records selected", 3, subfileModel.getSelectedRecords().size());
+        assertEquals(3, subfileModel.getSelectedRecords().size(),"3 records selected");
 
         subfileModel.deselectRecord(5);
-        assertEquals("2 records after deselect", 2, subfileModel.getSelectedRecords().size());
-        assertFalse("Record 5 deselected", subfileModel.isRecordSelected(5));
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"2 records after deselect");
+        assertFalse(subfileModel.isRecordSelected(5),"Record 5 deselected");
     }
 
     /**
@@ -521,15 +483,15 @@ public class SubfileHandlingPairwiseTest {
 
         subfileModel.pageDown();
         subfileModel.pageDown();
-        assertEquals("At page 3", 40, subfileModel.getCurrentPageStart());
+        assertEquals(40, subfileModel.getCurrentPageStart(),"At page 3");
 
-        assertTrue("Page up to page 2", subfileModel.pageUp());
-        assertEquals("Page 2 position", 20, subfileModel.getCurrentPageStart());
+        assertTrue(subfileModel.pageUp(),"Page up to page 2");
+        assertEquals(20, subfileModel.getCurrentPageStart(),"Page 2 position");
 
-        assertTrue("Page up to page 1", subfileModel.pageUp());
-        assertEquals("Page 1 position", 0, subfileModel.getCurrentPageStart());
+        assertTrue(subfileModel.pageUp(),"Page up to page 1");
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Page 1 position");
 
-        assertFalse("Cannot page up from page 1", subfileModel.pageUp());
+        assertFalse(subfileModel.pageUp(),"Cannot page up from page 1");
     }
 
     /**
@@ -547,8 +509,8 @@ public class SubfileHandlingPairwiseTest {
 
         for (int i = 0; i < DEFAULT_PAGE_SIZE; i++) {
             SubfileRecord record = subfileModel.getRecord(i);
-            assertNotNull("Record " + i + " exists", record);
-            assertEquals("Record " + i + " index", i, record.getIndex());
+            assertNotNull(record,"Record " + i + " exists");
+            assertEquals(i, record.getIndex(),"Record " + i + " index");
         }
     }
 
@@ -566,11 +528,11 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(DEFAULT_PAGE_SIZE + 1);  // 21 records
 
         List<SubfileRecord> page1 = subfileModel.getPageRecords();
-        assertEquals("Page 1 has full page", DEFAULT_PAGE_SIZE, page1.size());
+        assertEquals(DEFAULT_PAGE_SIZE, page1.size(),"Page 1 has full page");
 
-        assertTrue("Page down", subfileModel.pageDown());
+        assertTrue(subfileModel.pageDown(),"Page down");
         List<SubfileRecord> page2 = subfileModel.getPageRecords();
-        assertEquals("Page 2 has 1 record", 1, page2.size());
+        assertEquals(1, page2.size(),"Page 2 has 1 record");
     }
 
     // ========================================================================
@@ -591,10 +553,10 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(MAX_RECORDS);
 
-        assertFalse("Position to invalid record (negative)", subfileModel.positionTo(-1));
-        assertFalse("Position to invalid record (beyond max)", subfileModel.positionTo(MAX_RECORDS));
-        assertFalse("Position to invalid record (way beyond)", subfileModel.positionTo(999999));
-        assertEquals("Position unchanged", 0, subfileModel.getCurrentPageStart());
+        assertFalse(subfileModel.positionTo(-1),"Position to invalid record (negative)");
+        assertFalse(subfileModel.positionTo(MAX_RECORDS),"Position to invalid record (beyond max)");
+        assertFalse(subfileModel.positionTo(999999),"Position to invalid record (way beyond)");
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Position unchanged");
     }
 
     /**
@@ -611,8 +573,8 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(DEFAULT_PAGE_SIZE);
 
-        assertFalse("Cannot select in NONE mode", subfileModel.selectRecord(0));
-        assertEquals("No records selected", 0, subfileModel.getSelectedRecords().size());
+        assertFalse(subfileModel.selectRecord(0),"Cannot select in NONE mode");
+        assertEquals(0, subfileModel.getSelectedRecords().size(),"No records selected");
     }
 
     /**
@@ -637,9 +599,9 @@ public class SubfileHandlingPairwiseTest {
         }
 
         long duration = System.currentTimeMillis() - startTime;
-        assertTrue("Navigation completes in reasonable time (< 1 sec)", duration < 1000);
+        assertTrue(duration < 1000,"Navigation completes in reasonable time (< 1 sec)");
         // With 1000 records and 20 per page: 50 pages total, can move 49 times to reach last page
-        assertEquals("49 pages navigated (can only move from page 1 to page 50)", 49, pagesMoved);
+        assertEquals(49, pagesMoved,"49 pages navigated (can only move from page 1 to page 50)");
     }
 
     /**
@@ -657,12 +619,12 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(DEFAULT_PAGE_SIZE);
 
         subfileModel.selectRecord(0);
-        assertEquals("First selection recorded", 1, subfileModel.getSelectedRecords().size());
+        assertEquals(1, subfileModel.getSelectedRecords().size(),"First selection recorded");
 
         subfileModel.selectRecord(5);
-        assertEquals("Second selection replaces first", 1, subfileModel.getSelectedRecords().size());
-        assertFalse("Record 0 no longer selected", subfileModel.isRecordSelected(0));
-        assertTrue("Record 5 selected", subfileModel.isRecordSelected(5));
+        assertEquals(1, subfileModel.getSelectedRecords().size(),"Second selection replaces first");
+        assertFalse(subfileModel.isRecordSelected(0),"Record 0 no longer selected");
+        assertTrue(subfileModel.isRecordSelected(5),"Record 5 selected");
     }
 
     /**
@@ -679,11 +641,11 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(25);
 
-        assertTrue("Page down from start", subfileModel.pageDown());
-        assertEquals("Page 2 start", DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart());
+        assertTrue(subfileModel.pageDown(),"Page down from start");
+        assertEquals(DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart(),"Page 2 start");
 
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Partial page has 5 records", 5, page.size());
+        assertEquals(5, page.size(),"Partial page has 5 records");
     }
 
     /**
@@ -702,11 +664,11 @@ public class SubfileHandlingPairwiseTest {
 
         subfileModel.selectRecord(0);
         subfileModel.selectRecord(25);
-        assertEquals("Two records selected", 2, subfileModel.getSelectedRecords().size());
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"Two records selected");
 
         // Simulate going to next page (doesn't change selection)
         subfileModel.pageDown();
-        assertEquals("Selection preserved", 2, subfileModel.getSelectedRecords().size());
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"Selection preserved");
     }
 
     /**
@@ -725,10 +687,10 @@ public class SubfileHandlingPairwiseTest {
 
         subfileModel.end();
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Last page has 1 record", 1, page.size());
+        assertEquals(1, page.size(),"Last page has 1 record");
 
         // Try to page down beyond last (should fail)
-        assertFalse("Cannot page down beyond end", subfileModel.pageDown());
+        assertFalse(subfileModel.pageDown(),"Cannot page down beyond end");
     }
 
     /**
@@ -746,10 +708,10 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(MAX_RECORDS);
 
         subfileModel.end();
-        assertEquals("End positioned correctly", 980, subfileModel.getCurrentPageStart());
+        assertEquals(980, subfileModel.getCurrentPageStart(),"End positioned correctly");
 
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Last page has 20 records", 20, page.size());
+        assertEquals(20, page.size(),"Last page has 20 records");
     }
 
     /**
@@ -775,8 +737,8 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.pageUp();
         int returnPage = subfileModel.getCurrentPageStart();
 
-        assertEquals("Navigation returns to original position", initialPage, returnPage);
-        assertTrue("Intermediate page was different", initialPage != secondPage);
+        assertEquals(initialPage, returnPage,"Navigation returns to original position");
+        assertTrue(initialPage != secondPage,"Intermediate page was different");
     }
 
     /**
@@ -795,10 +757,10 @@ public class SubfileHandlingPairwiseTest {
 
         subfileModel.selectRecord(0);
         subfileModel.selectRecord(18);
-        assertEquals("Two records selected on partial page", 2, subfileModel.getSelectedRecords().size());
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"Two records selected on partial page");
 
         List<SubfileRecord> page = subfileModel.getPageRecords();
-        assertEquals("Page truncated to 19 records", 19, page.size());
+        assertEquals(19, page.size(),"Page truncated to 19 records");
     }
 
     /**
@@ -816,16 +778,16 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(100);
 
         subfileModel.home();
-        assertEquals("Home", 0, subfileModel.getCurrentPageStart());
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Home");
 
         subfileModel.end();
-        assertEquals("End", 80, subfileModel.getCurrentPageStart());
+        assertEquals(80, subfileModel.getCurrentPageStart(),"End");
 
         subfileModel.home();
-        assertEquals("Home again", 0, subfileModel.getCurrentPageStart());
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Home again");
 
         subfileModel.end();
-        assertEquals("End again", 80, subfileModel.getCurrentPageStart());
+        assertEquals(80, subfileModel.getCurrentPageStart(),"End again");
     }
 
     // ========================================================================
@@ -847,14 +809,14 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(50);
 
         subfileModel.selectRecord(5);
-        assertTrue("Record 5 selected", subfileModel.isRecordSelected(5));
+        assertTrue(subfileModel.isRecordSelected(5),"Record 5 selected");
 
         subfileModel.positionTo(25);
         subfileModel.selectRecord(25);
 
-        assertEquals("Only record 25 selected", 1, subfileModel.getSelectedRecords().size());
-        assertTrue("Record 25 selected", subfileModel.isRecordSelected(25));
-        assertFalse("Record 5 no longer selected", subfileModel.isRecordSelected(5));
+        assertEquals(1, subfileModel.getSelectedRecords().size(),"Only record 25 selected");
+        assertTrue(subfileModel.isRecordSelected(25),"Record 25 selected");
+        assertFalse(subfileModel.isRecordSelected(5),"Record 5 no longer selected");
     }
 
     /**
@@ -871,13 +833,13 @@ public class SubfileHandlingPairwiseTest {
         );
         subfileModel.addRecords(DEFAULT_PAGE_SIZE * 2);  // Exactly 2 pages
 
-        assertEquals("Page 1 start", 0, subfileModel.getCurrentPageStart());
+        assertEquals(0, subfileModel.getCurrentPageStart(),"Page 1 start");
 
-        assertTrue("Page down to page 2", subfileModel.pageDown());
-        assertEquals("Page 2 start", DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart());
+        assertTrue(subfileModel.pageDown(),"Page down to page 2");
+        assertEquals(DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart(),"Page 2 start");
 
-        assertFalse("Cannot page down beyond page 2", subfileModel.pageDown());
-        assertEquals("Still at page 2", DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart());
+        assertFalse(subfileModel.pageDown(),"Cannot page down beyond page 2");
+        assertEquals(DEFAULT_PAGE_SIZE, subfileModel.getCurrentPageStart(),"Still at page 2");
     }
 
     /**
@@ -898,7 +860,7 @@ public class SubfileHandlingPairwiseTest {
         for (int i : new int[]{0, 5, 10, 15}) {
             subfileModel.selectRecord(i);
         }
-        assertEquals("Four records selected", 4, subfileModel.getSelectedRecords().size());
+        assertEquals(4, subfileModel.getSelectedRecords().size(),"Four records selected");
 
         // Deselect: 5, 15, 0
         subfileModel.deselectRecord(5);
@@ -906,8 +868,8 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.deselectRecord(0);
 
         Set<Integer> remaining = subfileModel.getSelectedRecords();
-        assertEquals("Only record 10 remains", 1, remaining.size());
-        assertTrue("Record 10 still selected", remaining.contains(10));
+        assertEquals(1, remaining.size(),"Only record 10 remains");
+        assertTrue(remaining.contains(10),"Record 10 still selected");
     }
 
     /**
@@ -926,7 +888,7 @@ public class SubfileHandlingPairwiseTest {
 
         // Single-select mode: record 100
         subfileModel.selectRecord(100);
-        assertEquals("Single selection", 1, subfileModel.getSelectedRecords().size());
+        assertEquals(1, subfileModel.getSelectedRecords().size(),"Single selection");
 
         // Simulate mode change to multiple (would require new subfile in real scenario)
         TestSubfileModel multiModel = new TestSubfileModel(
@@ -939,7 +901,7 @@ public class SubfileHandlingPairwiseTest {
         multiModel.selectRecord(500);
         multiModel.selectRecord(900);
 
-        assertEquals("Multiple selections in new mode", 3, multiModel.getSelectedRecords().size());
+        assertEquals(3, multiModel.getSelectedRecords().size(),"Multiple selections in new mode");
     }
 
     /**
@@ -955,9 +917,9 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.MODE_NONE,
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
-        assertFalse("Cannot navigate empty", empty.pageDown());
+        assertFalse(empty.pageDown(),"Cannot navigate empty");
         empty.home();
-        assertEquals("Home on empty", 0, empty.getCurrentPageStart());
+        assertEquals(0, empty.getCurrentPageStart(),"Home on empty");
 
         // Test with 1 record
         TestSubfileModel single = new TestSubfileModel(
@@ -966,9 +928,9 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
         single.addRecords(1);
-        assertFalse("Cannot page down with 1 record", single.pageDown());
+        assertFalse(single.pageDown(),"Cannot page down with 1 record");
         single.end();
-        assertEquals("End with 1 record", 0, single.getCurrentPageStart());
+        assertEquals(0, single.getCurrentPageStart(),"End with 1 record");
 
         // Test with MAX records
         TestSubfileModel max = new TestSubfileModel(
@@ -978,7 +940,7 @@ public class SubfileHandlingPairwiseTest {
         );
         max.addRecords(MAX_RECORDS);
         max.end();
-        assertEquals("End with max records", 980, max.getCurrentPageStart());
+        assertEquals(980, max.getCurrentPageStart(),"End with max records");
     }
 
     /**
@@ -997,7 +959,7 @@ public class SubfileHandlingPairwiseTest {
 
         subfileModel.end();
         List<SubfileRecord> lastPage = subfileModel.getPageRecords();
-        assertEquals("Last page has remaining records", 19, lastPage.size());
+        assertEquals(19, lastPage.size(),"Last page has remaining records");
     }
 
     /**
@@ -1015,16 +977,16 @@ public class SubfileHandlingPairwiseTest {
         subfileModel.addRecords(50);
 
         subfileModel.positionTo(25);
-        assertEquals("Positioned to record 25 page", 20, subfileModel.getCurrentPageStart());
+        assertEquals(20, subfileModel.getCurrentPageStart(),"Positioned to record 25 page");
 
         subfileModel.selectRecord(25);
         subfileModel.selectRecord(26);
         subfileModel.selectRecord(27);
 
-        assertEquals("Three records selected", 3, subfileModel.getSelectedRecords().size());
-        assertTrue("Record 25 selected", subfileModel.isRecordSelected(25));
-        assertTrue("Record 26 selected", subfileModel.isRecordSelected(26));
-        assertTrue("Record 27 selected", subfileModel.isRecordSelected(27));
+        assertEquals(3, subfileModel.getSelectedRecords().size(),"Three records selected");
+        assertTrue(subfileModel.isRecordSelected(25),"Record 25 selected");
+        assertTrue(subfileModel.isRecordSelected(26),"Record 26 selected");
+        assertTrue(subfileModel.isRecordSelected(27),"Record 27 selected");
     }
 
     /**
@@ -1040,8 +1002,8 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.MODE_NONE,
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
-        assertTrue("Display-only identified", displayOnly.isDisplayOnly());
-        assertFalse("Not input", displayOnly.isInputType());
+        assertTrue(displayOnly.isDisplayOnly(),"Display-only identified");
+        assertFalse(displayOnly.isInputType(),"Not input");
 
         // Type 1: Input
         TestSubfileModel input = new TestSubfileModel(
@@ -1049,8 +1011,8 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.MODE_NONE,
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
-        assertTrue("Input identified", input.isInputType());
-        assertFalse("Not display-only", input.isDisplayOnly());
+        assertTrue(input.isInputType(),"Input identified");
+        assertFalse(input.isDisplayOnly(),"Not display-only");
 
         // Type 2: Selection
         TestSubfileModel selection = new TestSubfileModel(
@@ -1058,7 +1020,7 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.MODE_SINGLE,
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
-        assertTrue("Selection identified", selection.isSelectionType());
+        assertTrue(selection.isSelectionType(),"Selection identified");
 
         // Type 3: Expandable
         TestSubfileModel expandable = new TestSubfileModel(
@@ -1066,7 +1028,7 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.MODE_NONE,
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
-        assertTrue("Expandable identified", expandable.isExpandableType());
+        assertTrue(expandable.isExpandableType(),"Expandable identified");
     }
 
     /**
@@ -1083,7 +1045,7 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.OVERFLOW_TRUNCATE
         );
         truncate.addRecords(25);
-        assertEquals("Truncate behavior set", TestSubfileModel.OVERFLOW_TRUNCATE, truncate.getOverflowBehavior());
+        assertEquals(TestSubfileModel.OVERFLOW_TRUNCATE, truncate.getOverflowBehavior(),"Truncate behavior set");
 
         // Input with scroll
         TestSubfileModel scroll = new TestSubfileModel(
@@ -1092,7 +1054,7 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.OVERFLOW_SCROLL
         );
         scroll.addRecords(25);
-        assertEquals("Scroll behavior set", TestSubfileModel.OVERFLOW_SCROLL, scroll.getOverflowBehavior());
+        assertEquals(TestSubfileModel.OVERFLOW_SCROLL, scroll.getOverflowBehavior(),"Scroll behavior set");
 
         // Selection with error
         TestSubfileModel error = new TestSubfileModel(
@@ -1101,7 +1063,7 @@ public class SubfileHandlingPairwiseTest {
             TestSubfileModel.OVERFLOW_ERROR
         );
         error.addRecords(25);
-        assertEquals("Error behavior set", TestSubfileModel.OVERFLOW_ERROR, error.getOverflowBehavior());
+        assertEquals(TestSubfileModel.OVERFLOW_ERROR, error.getOverflowBehavior(),"Error behavior set");
     }
 
     /**
@@ -1128,11 +1090,11 @@ public class SubfileHandlingPairwiseTest {
 
         // Back to page 1
         subfileModel.home();
-        assertEquals("Record 5 still selected after navigation", 2, subfileModel.getSelectedRecords().size());
-        assertTrue("Record 5 present", subfileModel.isRecordSelected(5));
-        assertTrue("Record 45 present", subfileModel.isRecordSelected(45));
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"Record 5 still selected after navigation");
+        assertTrue(subfileModel.isRecordSelected(5),"Record 5 present");
+        assertTrue(subfileModel.isRecordSelected(45),"Record 45 present");
 
         // Verify page shows all selection state across pages
-        assertEquals("Both selections preserved", 2, subfileModel.getSelectedRecords().size());
+        assertEquals(2, subfileModel.getSelectedRecords().size(),"Both selections preserved");
     }
 }

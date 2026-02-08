@@ -1,17 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Surface Test Suite
- * Concurrency Surface - Operation Ordering & Idempotency Verification
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests the contract between concurrent execution and correct behavior:
- * - Operations maintain order from BlockingQueue
- * - Operations are idempotent (can be retried safely)
- * - No race conditions in state updates
- * - No lost updates from concurrent operations
- * - Proper synchronization across threads
- *
- * This surface ensures that concurrent i5 sessions don't corrupt each other's state.
- * Virtual threads make concurrent testing critical (we'll have 1000+ concurrent sessions).
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.surfaces;
 
 import org.junit.jupiter.api.BeforeEach;

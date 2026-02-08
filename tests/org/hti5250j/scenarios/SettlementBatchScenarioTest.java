@@ -1,17 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Scenario Test Suite
- * Settlement Batch Processing - End-to-End Verification
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests the batch settlement workflow:
- * - Collecting multiple pending transactions
- * - Validating batch totals match transaction sum
- * - Processing batch atomically (all-or-nothing)
- * - Generating settlement reports
- * - Handling partial batch failures
- *
- * This scenario ensures that settlement batches maintain financial integrity
- * and that no transactions are lost or duplicated.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.scenarios;
 
 import org.junit.jupiter.api.BeforeEach;

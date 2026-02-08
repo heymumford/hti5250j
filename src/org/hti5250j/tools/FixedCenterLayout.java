@@ -1,28 +1,14 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.5
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 
 package org.hti5250j.tools;
 
@@ -123,17 +109,17 @@ public class FixedCenterLayout implements LayoutManager2, Serializable {
      */
     public Dimension minimumLayoutSize(Container target) {
         synchronized (target.getTreeLock()) {
-            Dimension d = new Dimension(0, 0);
+            Dimension size = new Dimension(0, 0);
 
-            addMinimumSize(d, east);
-            addMinimumSize(d, west);
-            addMinimumSize(d, center);
+            addMinimumSize(size, east);
+            addMinimumSize(size, west);
+            addMinimumSize(size, center);
 
             Insets insets = target.getInsets();
-            d.width += insets.left + insets.right;
-            d.height += insets.top + insets.bottom;
+            size.width += insets.left + insets.right;
+            size.height += insets.top + insets.bottom;
 
-            return d;
+            return size;
         }
     }
 
@@ -142,17 +128,17 @@ public class FixedCenterLayout implements LayoutManager2, Serializable {
      */
     public Dimension preferredLayoutSize(Container target) {
         synchronized (target.getTreeLock()) {
-            Dimension d = new Dimension(0, 0);
+            Dimension size = new Dimension(0, 0);
 
-            addPreferredSize(d, east);
-            addPreferredSize(d, west);
-            addPreferredSize(d, center);
+            addPreferredSize(size, east);
+            addPreferredSize(size, west);
+            addPreferredSize(size, center);
 
             Insets insets = target.getInsets();
-            d.width += insets.left + insets.right;
-            d.height += insets.top + insets.bottom;
+            size.width += insets.left + insets.right;
+            size.height += insets.top + insets.bottom;
 
-            return d;
+            return size;
         }
     }
 
@@ -201,10 +187,10 @@ public class FixedCenterLayout implements LayoutManager2, Serializable {
             int rightCenter = leftCenter;
 
             if (center != null) {
-                Dimension d = center.getPreferredSize();
-                leftCenter = (right - left - d.width) / 2;
-                rightCenter = leftCenter + d.width;
-                center.setBounds(leftCenter, top, d.width, bottom - top);
+                Dimension preferredSize = center.getPreferredSize();
+                leftCenter = (right - left - preferredSize.width) / 2;
+                rightCenter = leftCenter + preferredSize.width;
+                center.setBounds(leftCenter, top, preferredSize.width, bottom - top);
             }
             if (west != null) {
                 west.setBounds(left, top, leftCenter - left - hgap, bottom - top);
@@ -215,21 +201,21 @@ public class FixedCenterLayout implements LayoutManager2, Serializable {
         }
     }
 
-    private void addMinimumSize(Dimension d, Component c) {
-        if (c != null) {
-            addSize(d, c.getMinimumSize());
+    private void addMinimumSize(Dimension size, Component component) {
+        if (component != null) {
+            addSize(size, component.getMinimumSize());
         }
     }
 
-    private void addPreferredSize(Dimension d, Component c) {
-        if (c != null) {
-            addSize(d, c.getPreferredSize());
+    private void addPreferredSize(Dimension size, Component component) {
+        if (component != null) {
+            addSize(size, component.getPreferredSize());
         }
     }
 
-    private void addSize(Dimension d, Dimension size) {
-        d.width += size.width + hgap;
-        d.height = Math.max(size.height, d.height);
+    private void addSize(Dimension size, Dimension componentSize) {
+        size.width += componentSize.width + hgap;
+        size.height = Math.max(componentSize.height, size.height);
     }
 
     /**

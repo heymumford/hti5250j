@@ -1,28 +1,14 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.4
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import java.awt.Cursor;
@@ -120,10 +106,10 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
                     break;
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception exception) {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ex) {
+            } catch (Exception fallbackException) {
                 // we don't care. Cause this should always work.
             }
         }
@@ -142,11 +128,11 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             // parse args into a string to send to the other instance of
             //    tn5250j
             String opts = null;
-            for (int x = 0; x < args.length; x++) {
+            for (int index = 0; index < args.length; index++) {
                 if (opts != null)
-                    opts += args[x] + " ";
+                    opts += args[index] + " ";
                 else
-                    opts = args[x] + " ";
+                    opts = args[index] + " ";
             }
             out.println(opts);
             out.flush();
@@ -154,10 +140,10 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             boot.close();
             return true;
 
-        } catch (UnknownHostException e) {
+        } catch (UnknownHostException unknownHostException) {
             // TODO: Should be logged @ DEBUG level
             //         System.err.println("localhost not known.");
-        } catch (IOException e) {
+        } catch (IOException ioException) {
             // TODO: Should be logged @ DEBUG level
             //         System.err.println("No other instances of tn5250j running.");
         }
@@ -251,17 +237,17 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             }
         }
 
-        My5250 m = new My5250();
+        My5250 application = new My5250();
 
         if (strapper != null)
-            strapper.addBootListener(m);
+            strapper.addBootListener(application);
 
         if (args.length > 0) {
 
             if (isSpecified("-width", args) ||
                     isSpecified("-height", args)) {
-                int width = m.frame1.getWidth();
-                int height = m.frame1.getHeight();
+                int width = application.frame1.getWidth();
+                int height = application.frame1.getHeight();
 
                 if (isSpecified("-width", args)) {
                     width = Integer.parseInt(My5250.getParm("-width", args));
@@ -270,8 +256,8 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
                     height = Integer.parseInt(My5250.getParm("-height", args));
                 }
 
-                m.frame1.setSize(width, height);
-                m.frame1.centerFrame();
+                application.frame1.setSize(width, height);
+                application.frame1.centerFrame();
 
 
             }
@@ -312,29 +298,29 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
         if (lastViewNames.size() > 0) {
             insertDefaultSessionIfConfigured(lastViewNames);
-            startSessionsFromList(m, lastViewNames);
+            startSessionsFromList(application, lastViewNames);
             if (sessions.containsKey("emul.showConnectDialog")) {
-                m.openConnectSessionDialogAndStartSelectedSession();
+                application.openConnectSessionDialogAndStartSelectedSession();
             }
         } else {
-            m.startNewSession();
+            application.startNewSession();
         }
 
     }
 
-    private static void startSessionsFromList(My5250 m, List<String> lastViewNames) {
+    private static void startSessionsFromList(My5250 application, List<String> lastViewNames) {
         for (int i = 0; i < lastViewNames.size(); i++) {
             String viewName = lastViewNames.get(i);
-            if (!m.frame1.isVisible()) {
-                m.splash.updateProgress(++m.step);
-                m.splash.setVisible(false);
-                m.frame1.setVisible(true);
-                m.frame1.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            if (!application.frame1.isVisible()) {
+                application.splash.updateProgress(++application.step);
+                application.splash.setVisible(false);
+                application.frame1.setVisible(true);
+                application.frame1.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
 
-            m.sessionArgs = new String[HTI5250jConstants.NUM_PARMS];
-            My5250.parseArgs(sessions.getProperty(viewName), m.sessionArgs);
-            m.newSession(viewName, m.sessionArgs);
+            application.sessionArgs = new String[HTI5250jConstants.NUM_PARMS];
+            My5250.parseArgs(sessions.getProperty(viewName), application.sessionArgs);
+            application.newSession(viewName, application.sessionArgs);
         }
     }
 
@@ -391,8 +377,8 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
     private static boolean containsNotOnlyNullValues(String[] stringArray) {
         if (stringArray != null) {
-            for (String s : stringArray) {
-                if (s != null) {
+            for (String value : stringArray) {
+                if (value != null) {
                     return true;
                 }
             }
@@ -408,25 +394,25 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
     }
 
-    static private String getParm(String parm, String[] args) {
+    static private String getParm(String parameter, String[] args) {
 
-        for (int x = 0; x < args.length; x++) {
+        for (int index = 0; index < args.length; index++) {
 
-            if (args[x].equals(parm))
-                return args[x + 1];
+            if (args[index].equals(parameter))
+                return args[index + 1];
 
         }
         return null;
     }
 
-    private static boolean isSpecified(String parm, String[] args) {
+    private static boolean isSpecified(String parameter, String[] args) {
 
         if (args == null)
             return false;
 
-        for (int x = 0; x < args.length; x++) {
+        for (int index = 0; index < args.length; index++) {
 
-            if (args[x] != null && args[x].equals(parm))
+            if (args[index] != null && args[index].equals(parameter))
                 return true;
 
         }
@@ -481,26 +467,26 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
         }
     }
 
-    private void startDuplicateSession(SessionPanel ses) {
+    private void startDuplicateSession(SessionPanel sessionPanel) {
 
         loadSessions();
-        if (ses == null) {
+        if (sessionPanel == null) {
             Sessions sess = manager.getSessions();
-            for (int x = 0; x < sess.getCount(); x++) {
+            for (int index = 0; index < sess.getCount(); index++) {
 
-                if ((sess.item(x).getGUI()).isVisible()) {
+                if ((sess.item(index).getGUI()).isVisible()) {
 
-                    ses = sess.item(x).getGUI();
+                    sessionPanel = sess.item(index).getGUI();
                     break;
                 }
             }
         }
 
-        String selArgs = sessions.getProperty(ses.getSessionName());
+        String selArgs = sessions.getProperty(sessionPanel.getSessionName());
         sessionArgs = new String[HTI5250jConstants.NUM_PARMS];
         parseArgs(selArgs, sessionArgs);
 
-        newSession(ses.getSessionName(), sessionArgs);
+        newSession(sessionPanel.getSessionName(), sessionArgs);
     }
 
     private String openConnectSessionDialog() {
@@ -590,7 +576,7 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
         int sessionCount = manager.getSessions().getCount();
 
         Session5250 s2 = manager.openSession(sesProps, propFileName, sel);
-        SessionPanel s = new SessionPanel(s2);
+        SessionPanel sessionPanel = new SessionPanel(s2);
 
 
         if (!frame1.isVisible()) {
@@ -620,13 +606,13 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
         }
 
         if (isSpecified("-t", args))
-            frame1.addSessionView(sel, s);
+            frame1.addSessionView(sel, sessionPanel);
         else
-            frame1.addSessionView(session, s);
+            frame1.addSessionView(session, sessionPanel);
 
-        s.connect();
+        sessionPanel.connect();
 
-        s.addEmulatorActionListener(this);
+        sessionPanel.addEmulatorActionListener(this);
     }
 
     private void newView() {
@@ -664,12 +650,12 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
     private void restoreFrame(GUIViewInterface frame, String location) {
 
         StringTokenizer tokenizer = new StringTokenizer(location, ",");
-        int x = Integer.parseInt(tokenizer.nextToken());
-        int y = Integer.parseInt(tokenizer.nextToken());
+        int locationX = Integer.parseInt(tokenizer.nextToken());
+        int locationY = Integer.parseInt(tokenizer.nextToken());
         int width = Integer.parseInt(tokenizer.nextToken());
         int height = Integer.parseInt(tokenizer.nextToken());
 
-        frame.setLocation(x, y);
+        frame.setLocation(locationX, locationY);
         frame.setSize(width, height);
     }
 
@@ -735,36 +721,36 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
      * @param sesspanel
      */
     protected void closeSessionInternal(SessionPanel sesspanel) {
-        GUIViewInterface f = getParentView(sesspanel);
-        if (f == null) {
+        GUIViewInterface parentFrame = getParentView(sesspanel);
+        if (parentFrame == null) {
             return;
         }
         Sessions sessions = manager.getSessions();
         if ((sessions.item(sesspanel.getSession())) != null) {
-            f.removeSessionView(sesspanel);
+            parentFrame.removeSessionView(sesspanel);
             manager.closeSession(sesspanel);
         }
         if (manager.getSessions().getCount() < 1) {
-            closingDown(f);
+            closingDown(parentFrame);
         }
     }
 
-    private static void parseArgs(String theStringList, String[] s) {
-        int x = 0;
+    private static void parseArgs(String theStringList, String[] values) {
+        int index = 0;
         StringTokenizer tokenizer = new StringTokenizer(theStringList, " ");
         while (tokenizer.hasMoreTokens()) {
-            s[x++] = tokenizer.nextToken();
+            values[index++] = tokenizer.nextToken();
         }
     }
 
-    private static Locale parseLocal(String localString) {
-        int x = 0;
-        String[] s = {"", "", ""};
-        StringTokenizer tokenizer = new StringTokenizer(localString, "_");
+    private static Locale parseLocal(String localeString) {
+        int index = 0;
+        String[] localeParts = {"", "", ""};
+        StringTokenizer tokenizer = new StringTokenizer(localeString, "_");
         while (tokenizer.hasMoreTokens()) {
-            s[x++] = tokenizer.nextToken();
+            localeParts[index++] = tokenizer.nextToken();
         }
-        return new Locale(s[0], s[1], s[2]);
+        return new Locale(localeParts[0], localeParts[1], localeParts[2]);
     }
 
     private static void loadSessions() {
@@ -776,22 +762,22 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
     public void onSessionChanged(SessionChangeEvent changeEvent) {
 
         Session5250 ses5250 = (Session5250) changeEvent.getSource();
-        SessionPanel ses = ses5250.getGUI();
+        SessionPanel sessionPanel = ses5250.getGUI();
 
         switch (changeEvent.getState()) {
             case HTI5250jConstants.STATE_REMOVE:
-                closeSessionInternal(ses);
+                closeSessionInternal(sessionPanel);
                 break;
         }
     }
 
     public void onEmulatorAction(EmulatorActionEvent actionEvent) {
 
-        SessionPanel ses = (SessionPanel) actionEvent.getSource();
+        SessionPanel sessionPanel = (SessionPanel) actionEvent.getSource();
 
         switch (actionEvent.getAction()) {
             case EmulatorActionEvent.CLOSE_SESSION:
-                closeSessionInternal(ses);
+                closeSessionInternal(sessionPanel);
                 break;
             case EmulatorActionEvent.CLOSE_EMULATOR:
                 throw new UnsupportedOperationException("Not yet implemented!");
@@ -799,19 +785,19 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
                 startNewSession();
                 break;
             case EmulatorActionEvent.START_DUPLICATE:
-                startDuplicateSession(ses);
+                startDuplicateSession(sessionPanel);
                 break;
         }
     }
 
     private GUIViewInterface getParentView(SessionPanel session) {
 
-        GUIViewInterface f = null;
+        GUIViewInterface parentFrame = null;
 
-        for (int x = 0; x < frames.size(); x++) {
-            f = frames.get(x);
-            if (f.containsSession(session))
-                return f;
+        for (int index = 0; index < frames.size(); index++) {
+            parentFrame = frames.get(index);
+            if (parentFrame.containsSession(session))
+                return parentFrame;
         }
 
         return null;
@@ -830,10 +816,10 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             log.warn("Information Message: Can not find scripting support"
                     + " files, scripting will not be available: "
                     + "Failed to load interpreter drivers " + ncdfe);
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             log.warn("Information Message: Can not find scripting support"
                     + " files, scripting will not be available: "
-                    + "Failed to load interpreter drivers " + ex);
+                    + "Failed to load interpreter drivers " + exception);
         }
 
         splash.updateProgress(++step);

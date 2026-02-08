@@ -1,39 +1,26 @@
-package org.hti5250j;
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.4
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
+
+package org.hti5250j;
 
 import java.awt.*;
 import java.awt.event.*;
 
 public interface RubberBandCanvasIF {
-    void addMouseListener(MouseListener l);
+    void addMouseListener(MouseListener mouseListener);
 
-    void addMouseMotionListener(MouseMotionListener l);
+    void addMouseMotionListener(MouseMotionListener mouseMotionListener);
 
-    void areaBounded(RubberBand b, int startX, int startY, int endX, int endY);
+    void areaBounded(RubberBand rubberBand, int startX, int startY, int endX, int endY);
 
     boolean canDrawRubberBand(RubberBand band);
 

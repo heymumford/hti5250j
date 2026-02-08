@@ -1,42 +1,27 @@
-/**
- * Title: ConcurrencyPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company: Guild Mortgage
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise concurrency test suite for tnvt, DataStreamProducer,
- * Session5250, and Sessions classes. Tests combinations of thread counts, operation types,
- * timing patterns, session states, and data sizes to discover race conditions, deadlocks,
- * livelocks, and resource management issues.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING. If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Pairwise concurrency test suite for tn5250j-headless.
@@ -65,18 +50,17 @@ import static org.junit.Assert.*;
  *   14. Exception handling under contention
  *   15. Resource cleanup guarantees
  */
-@RunWith(JUnit4.class)
 public class ConcurrencyPairwiseTest {
 
     private ExecutorService executorService;
     private static final int TIMEOUT_SECONDS = 10;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         executorService = Executors.newCachedThreadPool();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         executorService.shutdownNow();
         if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -96,7 +80,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All reads succeed, no deadlock
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testMultipleReadersFromBlockingQueue_2ThreadsConcurrent() throws Exception {
         BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>(10);
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -148,8 +133,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("Both consumers should complete", completed);
-        assertEquals("All 5 items should be read", 5, readCount.get());
+        assertTrue(completed,"Both consumers should complete");
+        assertEquals(5, readCount.get(),"All 5 items should be read");
     }
 
     /**
@@ -160,7 +145,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All writes succeed with queue backpressure handling
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSingleWriterToBlockingQueue_4ThreadsWrite() throws Exception {
         BlockingQueue<Integer> queue = new LinkedBlockingQueue<>(2);
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -202,8 +188,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertEquals("All 8 writes should succeed", 8, writeCount.get());
+        assertTrue(completed,"All threads should complete");
+        assertEquals(8, writeCount.get(),"All 8 writes should succeed");
     }
 
     /**
@@ -214,7 +200,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All transitions complete in correct order without deadlock
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testMixedReadWriteWithStateTransitions_8ThreadsInterleaved() throws Exception {
         BlockingQueue<String> stateQueue = new LinkedBlockingQueue<>();
         CyclicBarrier barrier = new CyclicBarrier(8);
@@ -260,8 +247,8 @@ public class ConcurrencyPairwiseTest {
 
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertEquals("All 8 threads × 4 states = 32 transitions", 32, stateTransitions.get());
+        assertTrue(completed,"All threads should complete");
+        assertEquals(32, stateTransitions.get(),"All 8 threads × 4 states = 32 transitions");
     }
 
     /**
@@ -272,7 +259,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All data transferred correctly, no corruption
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testLargeDataTransfer_4ThreadsSequential() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(4);
@@ -302,9 +290,9 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertNull("No exceptions should occur", error.get());
-        assertEquals("4 threads × ~65536 bytes", 4 * 65536, bytesTransferred.get());
+        assertTrue(completed,"All threads should complete");
+        assertNull(error.get(),"No exceptions should occur");
+        assertEquals(4 * 65536, bytesTransferred.get(),"4 threads × ~65536 bytes");
     }
 
     /**
@@ -315,7 +303,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All lifecycles complete without resource leaks
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testRapidSessionLifecycle_16ThreadsConcurrent() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(16);
@@ -352,9 +341,9 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertEquals("All 16 × 10 = 160 session cycles should complete", 160, sessionsClosed.get());
-        assertEquals("No exceptions should occur", 0, exceptions.get());
+        assertTrue(completed,"All threads should complete");
+        assertEquals(160, sessionsClosed.get(),"All 16 × 10 = 160 session cycles should complete");
+        assertEquals(0, exceptions.get(),"No exceptions should occur");
     }
 
     // ============================================================================
@@ -370,7 +359,8 @@ public class ConcurrencyPairwiseTest {
      * Known bug: tnvt.java lines 89-91 (sock, bin, bout not synchronized)
      * Expected: Data loss or corruption detected
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testRaceOnUnsynchronizedOutputStream_2ThreadsMixed() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BufferedOutputStream bout = new BufferedOutputStream(baos, 32);
@@ -423,7 +413,7 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("Both threads should complete", completed);
+        assertTrue(completed,"Both threads should complete");
 
         try {
             bout.close();
@@ -433,7 +423,7 @@ public class ConcurrencyPairwiseTest {
         // Document the race condition: we expect data loss due to unsynchronized access
         if (bytesWritten.get() < 50) {
             System.out.println("DATA LOSS DETECTED: " + bytesWritten.get() + " of 50 bytes written");
-            assertTrue("Race condition caused data loss", bytesWritten.get() < 50);
+            assertTrue(bytesWritten.get() < 50,"Race condition caused data loss");
         }
     }
 
@@ -445,7 +435,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Potential deadlock if synchronization is faulty
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testReaderBlocksWriterAtBoundary_4ThreadsInterleaved() throws Exception {
         PipedInputStream input = new PipedInputStream(32);
         PipedOutputStream output = new PipedOutputStream(input);
@@ -506,8 +497,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertTrue("Some I/O should succeed", readOps.get() > 0 || writeOps.get() > 0);
+        assertTrue(completed,"All threads should complete");
+        assertTrue(readOps.get() > 0 || writeOps.get() > 0,"Some I/O should succeed");
     }
 
     /**
@@ -519,7 +510,8 @@ public class ConcurrencyPairwiseTest {
      * Known bug: tnvt.java line 123 (keepTrucking not volatile)
      * Expected: Some threads may not see the flag change
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testVolatileVisibilityIssue_8ThreadsRead() throws Exception {
         // Non-volatile flag (simulating the bug)
         boolean[] keepRunning = {true};
@@ -565,7 +557,7 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
+        assertTrue(completed,"All threads should complete");
 
         // Document visibility delay
         if (observedTrue.get() > observedFalse.get()) {
@@ -583,7 +575,8 @@ public class ConcurrencyPairwiseTest {
      * Known bug: Sessions.java uses unsynchronized ArrayList
      * Expected: ConcurrentModificationException during concurrent add/remove/iterate
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testConcurrentModificationInSessionList_16ThreadsMixed() throws Exception {
         List<String> sessions = new ArrayList<>();
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -662,12 +655,12 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
+        assertTrue(completed,"All threads should complete");
 
         // Document the race condition
         if (exceptions.get() > 0) {
             System.out.println("ConcurrentModificationExceptions detected: " + exceptions.get());
-            assertTrue("Race condition in ArrayList access detected", exceptions.get() > 0);
+            assertTrue(exceptions.get() > 0,"Race condition in ArrayList access detected");
         }
     }
 
@@ -679,7 +672,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Writers may be starved, leading to service unavailability
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testWriterStarvation_100ThreadsHighContention() throws Exception {
         BlockingQueue<Integer> queue = new LinkedBlockingQueue<>(5);
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -731,8 +725,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertEquals("All 100 writes should succeed despite contention", 100, writesCompleted.get());
+        assertTrue(completed,"All threads should complete");
+        assertEquals(100, writesCompleted.get(),"All 100 writes should succeed despite contention");
 
         if (starvedWrites.get() > 50) {
             System.out.println("WRITER STARVATION DETECTED: " + starvedWrites.get() + " of 100 writes delayed");
@@ -747,10 +741,11 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Potential deadlock if threads wait in wrong order
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDeadlockInCircularWait_4ThreadsInterleaved() throws Exception {
-        BlockingQueue<Integer> queue1 = new LinkedBlockingQueue<>(1);
-        BlockingQueue<Integer> queue2 = new LinkedBlockingQueue<>(1);
+        BlockingQueue<Integer> queue1 = new LinkedBlockingQueue<>(2);
+        BlockingQueue<Integer> queue2 = new LinkedBlockingQueue<>(2);
 
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(4);
@@ -819,8 +814,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete without deadlock", completed);
-        assertEquals("All 4 threads × 2 operations = 8 completions", 8, completions.get());
+        assertTrue(completed,"All threads should complete without deadlock");
+        assertEquals(8, completions.get(),"All 4 threads × 2 operations = 8 completions");
     }
 
     /**
@@ -831,7 +826,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: High CPU usage with low throughput indicates livelock
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testLivelock_8ThreadsSpinWait() throws Exception {
         AtomicBoolean[] lockFlags = {new AtomicBoolean(false), new AtomicBoolean(false)};
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -873,7 +869,7 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
+        assertTrue(completed,"All threads should complete");
 
         if (progressCount.get() < 4) {
             System.out.println("LIVELOCK DETECTED: Only " + progressCount.get() + " of 8 threads made progress");
@@ -888,7 +884,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Data loss or IOException detection
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testDataLossOnClose_16ThreadsMixed() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(16);
@@ -938,7 +935,7 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
+        assertTrue(completed,"All threads should complete");
 
         // Document data loss due to early close
         int expectedBytes = 16 * 10 * 100;
@@ -956,9 +953,10 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Proper exception handling and cleanup
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testExceptionHandlingDuringStateChange_8ThreadsMixed() throws Exception {
-        BlockingQueue<Integer> sharedQueue = new LinkedBlockingQueue<>(10);
+        BlockingQueue<Integer> sharedQueue = new LinkedBlockingQueue<>();
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(8);
         AtomicInteger exceptionsHandled = new AtomicInteger(0);
@@ -993,9 +991,9 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertTrue("Some operations should complete normally", normalCompletions.get() > 0);
-        assertTrue("Some exceptions should be handled", exceptionsHandled.get() > 0);
+        assertTrue(completed,"All threads should complete");
+        assertTrue(normalCompletions.get() > 0,"Some operations should complete normally");
+        assertTrue(exceptionsHandled.get() > 0,"Some exceptions should be handled");
     }
 
     /**
@@ -1006,7 +1004,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: No resource leak despite high concurrency
      */
-    @Test(timeout = 10000)
+    @Timeout(value = 10000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testResourceLeakUnderRapidLifecycle_100ThreadsConcurrent() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(100);
@@ -1040,9 +1039,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertEquals("All allocated resources should be freed",
-                resourcesAllocated.get(), resourcesFreed.get());
+        assertTrue(completed,"All threads should complete");
+        assertEquals(resourcesAllocated.get(), resourcesFreed.get(),"All allocated resources should be freed");
     }
 
     /**
@@ -1053,7 +1051,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Data corruption or loss due to unsynchronized access
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testStreamCorruptionAtBoundary_8ThreadsInterleaved() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BufferedOutputStream bout = new BufferedOutputStream(baos, 32);  // Small buffer for boundary hits
@@ -1093,7 +1092,7 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
+        assertTrue(completed,"All threads should complete");
 
         try {
             bout.close();
@@ -1115,7 +1114,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Invalid state transitions or data loss
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSessionStateTransitionRace_4ThreadsConcurrent() throws Exception {
         // Simulate session state (not volatile)
         String[] sessionState = {"DISCONNECTED"};
@@ -1202,7 +1202,7 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
+        assertTrue(completed,"All threads should complete");
 
         // The race condition is that final state is unpredictable
         System.out.println("Final state: " + sessionState[0]);
@@ -1221,7 +1221,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All data written successfully
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testSingleThreadLargeData_BaselinePerformance() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(1);
@@ -1251,8 +1252,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("Thread should complete", completed);
-        assertEquals("All 65535 bytes should be written", 65535, bytesWritten.get());
+        assertTrue(completed,"Thread should complete");
+        assertEquals(65535, bytesWritten.get(),"All 65535 bytes should be written");
     }
 
     /**
@@ -1263,7 +1264,8 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Timeout or null return without exception
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testEmptyQueueOperations_2ThreadsRead() throws Exception {
         BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -1291,8 +1293,8 @@ public class ConcurrencyPairwiseTest {
         startLatch.countDown();
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete", completed);
-        assertEquals("Both threads should get 10 nulls from empty queue", 20, nullsReceived.get());
+        assertTrue(completed,"All threads should complete");
+        assertEquals(20, nullsReceived.get(),"Both threads should get 10 nulls from empty queue");
     }
 
     /**
@@ -1303,17 +1305,18 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: InterruptedException caught and handled gracefully
      */
-    @Test(timeout = 5000)
+    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Test
     public void testInterruptHandlingInBlockingOp_4ThreadsConcurrent() throws Exception {
         BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch endLatch = new CountDownLatch(4);
         AtomicInteger interruptsHandled = new AtomicInteger(0);
 
-        List<Thread> threads = new ArrayList<>();
+        List<Future<?>> futures = new ArrayList<>();
 
         for (int t = 0; t < 4; t++) {
-            Thread thread = new Thread(() -> {
+            Future<?> future = executorService.submit(() -> {
                 try {
                     startLatch.await();
                     // This will block forever since queue is empty
@@ -1325,8 +1328,7 @@ public class ConcurrencyPairwiseTest {
                     endLatch.countDown();
                 }
             });
-            threads.add(thread);
-            executorService.execute(thread);
+            futures.add(future);
         }
 
         startLatch.countDown();
@@ -1335,13 +1337,13 @@ public class ConcurrencyPairwiseTest {
         Thread.sleep(1000);
 
         // Interrupt all threads
-        for (Thread t : threads) {
-            t.interrupt();
+        for (Future<?> future : futures) {
+            future.cancel(true);
         }
 
         boolean completed = endLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
-        assertTrue("All threads should complete after interrupt", completed);
-        assertEquals("All 4 threads should handle interrupt", 4, interruptsHandled.get());
+        assertTrue(completed,"All threads should complete after interrupt");
+        assertEquals(4, interruptsHandled.get(),"All 4 threads should handle interrupt");
     }
 }

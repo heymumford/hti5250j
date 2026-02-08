@@ -1,18 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Performance Benchmark
- * Session Pooling with Virtual Threads
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Measures throughput improvement from virtual threads:
- * - Expected: 30-40% improvement at 100 concurrent sessions
- * - Expected: 411% improvement at 1000 concurrent sessions
- *
- * This benchmark demonstrates the efficiency of Java 21 virtual threads
- * for I/O-bound network operations compared to platform threads.
- *
- * To run:
- *   java -cp ".:lib/development/jmh-*.jar" \
- *     org.hti5250j.benchmarks.SessionPoolingBenchmark
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.benchmarks;
 
 import java.util.concurrent.*;

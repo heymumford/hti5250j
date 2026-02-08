@@ -1,76 +1,78 @@
 # Contributing to TN5250J Headless
 
-This project is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250j). All contributions must respect the GPL v2 license and maintain attribution.
+This repository is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250j). Contributions must comply with GPL-2.0-or-later and preserve upstream attribution.
 
-## Copyright & Attribution
+## Project and License Summary
 
-### Original Project
-**TN5250J** — 5250 terminal emulator for IBM i
-**Authors:** TN5250J Community
-**Repository:** https://github.com/tn5250j/tn5250j
-**License:** GNU General Public License v2
+**Upstream (TN5250J):**
+- Repository: https://github.com/tn5250j/tn5250j
+- Authors: TN5250J Community
+- License: GPL-2.0-or-later
 
-### This Fork
-**TN5250J Headless Edition** — Headless mode, session management, testing
-**Maintainer:** Eric C. Mumford (@heymumford)
-**Repository:** https://github.com/heymumford/tn5250j
-**License:** GNU General Public License v2
+**This Fork (TN5250J Headless):**
+- Repository: https://github.com/heymumford/tn5250j
+- Maintainer: Eric C. Mumford (@heymumford)
+- License: GPL-2.0-or-later
 
 ## Contribution Guidelines
 
-1. **Fork from this repository** (not the original upstream)
-2. **Create feature branch:** `feature/[description]`
-3. **Mark your changes:** Add file header or comment documenting modification
-4. **Test thoroughly:** Run existing test suites + add tests for new features
-5. **Write clear commits:** Explain *why*, not just *what*
-6. **Attribution:** Keep original copyright notices intact
+1. Fork from this repository (not the upstream repo).
+2. Create a feature branch: `feature/<short-description>`.
+3. Preserve existing attribution headers and add your own where appropriate.
+4. Run tests and add coverage for new behavior (`./gradlew test`).
+5. Write commits that explain the intent, not just the diff.
 
-## GPL v2 Compliance
+## Versioning Policy (Fork SemVer)
 
-When contributing, understand that:
-- All code is distributed under GPL v2
-- You retain copyright to your contributions
-- Your contributions must be compatible with GPL v2
-- Derivative works must be licensed under GPL v2
-- Original authors must retain credit
+This fork follows SemVer with an upstream‑anchored pre‑release suffix:
 
-## File Header Example
+- Base version tracks upstream: `UPSTREAM_VERSION`
+- Fork releases add a suffix: `-headless.N`
+- Optional build metadata links upstream: `+upstream.<tag>.<sha>`
 
-For new files or significant modifications:
+Examples:
+
+- `0.8.0-headless.1`
+- `0.8.0-headless.2+upstream.0.8.0.abcdef`
+
+Increment rules:
+
+- MAJOR: breaking changes to the fork’s public APIs or workflows.
+- MINOR: backward‑compatible features.
+- PATCH: backward‑compatible fixes.
+
+While upstream remains `0.y.z`, minor bumps may still introduce breaking changes per SemVer guidance for pre‑1.0 releases.
+
+## SPDX Header Example
+
+Use SPDX headers for new files and when updating legacy headers:
 
 ```java
-/**
- * Brief description
+/*
+ * SPDX-FileCopyrightText: 2001-2004 TN5250J Community
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Your Name <you@example.com>
  *
- * Original (C) TN5250J Community
- * Headless extensions (C) 2026 Eric Mumford
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * Modifications:
- * - [2026-02-07] Added headless session pooling support
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
 ```
 
-## Pull Request Process
+## Pull Request Checklist
 
-1. **Description:** Clearly describe what you're changing and why
-2. **Testing:** Include test evidence (passing test results)
-3. **Attribution:** Ensure original and fork authors are credited
-4. **License:** Confirm changes are GPL v2 compatible
+- Clear problem statement and rationale
+- Tests added or updated, with results reported
+- Attribution preserved (SPDX headers)
+- License compatibility confirmed (GPL-2.0-or-later)
 
-## Questions?
+## Questions
 
-- **Original Project Issues:** https://github.com/tn5250j/tn5250j/issues
-- **This Fork Issues:** https://github.com/heymumford/tn5250j/issues
-- **GPL v2 License:** See [LICENSE](./LICENSE)
+- Upstream issues: https://github.com/tn5250j/tn5250j/issues
+- Fork issues: https://github.com/heymumford/tn5250j/issues
+- License text: [LICENSE](./LICENSE)
 
 ## Legal
 
-By contributing to this project, you agree that:
-1. Your contributions are distributed under GPL v2
-2. You have the right to contribute the code
-3. You understand the implications of GPL v2
+By contributing, you confirm:
+- You have the right to contribute the code.
+- Your contributions are licensed under GPL-2.0-or-later.
+- You accept that attribution will be preserved.

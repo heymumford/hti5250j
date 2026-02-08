@@ -1,15 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Contract Test Suite
- * tnvt - Telnet 5250 Protocol Handler Contract
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Establishes behavioral contracts for tnvt (telnet virtual terminal):
- * - Telnet negotiation state machine compliance
- * - Socket closure handling (graceful shutdown)
- * - Connection state accuracy (isConnected matches reality)
- * - Timeout behavior (read/write operations don't hang forever)
- * - Device name negotiation and allocation
- * - Thread safety for concurrent operations
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.contracts;
 
 import org.junit.jupiter.api.BeforeEach;

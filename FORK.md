@@ -1,63 +1,58 @@
 # TN5250J Headless Fork
 
-## Fork Status
+| Field | Value |
+| --- | --- |
+| Status | Maintained fork focused on headless automation |
+| Upstream | https://github.com/tn5250j/tn5250j |
+| License | GPL-2.0-or-later (GPL v2 or later) |
 
-This is a **maintained fork** of the original [TN5250J](https://github.com/tn5250j/tn5250j) project, specialized for headless terminal emulation and session management.
+## Upstream Project
 
-## Original Project
-
-**TN5250J** — A 5250 terminal emulator for IBM i (AS/400)
-**Original Repository:** https://github.com/tn5250j/tn5250j
-**Original Author:** TN5250J Community
-**License:** GNU General Public License v2
+- Name: TN5250J
+- Description: 5250 terminal emulator for IBM i (AS/400)
+- Authors: TN5250J Community
+- Repository: https://github.com/tn5250j/tn5250j
 
 ## This Fork
 
-**Purpose:** Headless mode support with enhanced session pooling, lifecycle management, and protocol extensions
-**Maintainer:** Eric C. Mumford (@heymumford)
-**Repository:** https://github.com/heymumford/tn5250j
-**License:** GNU General Public License v2 (inherited from original)
+- Purpose: Headless mode, session pooling, lifecycle management, and protocol extensions
+- Maintainer: Eric C. Mumford (@heymumford)
+- Repository: https://github.com/heymumford/tn5250j
 
 ## Key Differences
 
-This fork extends the original with:
 - Headless operation (no GUI requirement)
 - Session pooling and lifecycle management
-- Pairwise testing framework (25+ test suites)
+- Pairwise testing framework (25+ suites)
 - Plugin architecture for protocol extensions
 - Enhanced diagnostics and logging
-- Attribute plane operations testing
+- Attribute-plane operations testing
 - Screen refresh and restore validation
 
-## Compatibility
+## Compatibility and Sync
 
-- **Upstream:** Tracks tn5250j/tn5250j master branch
-- **Sync Frequency:** Pull upstream changes regularly
-- **Breaking Changes:** Documented in CHANGELOG.md
-- **Contribution Path:** PRs welcome to this fork; significant changes should consider upstream integration
+- Upstream tracking: master branch
+- Sync cadence: regular upstream pulls
+- Breaking changes: document in CHANGELOG.md when applicable
+- Contribution path: PRs welcome in this fork; upstreaming is encouraged for broadly useful changes
 
 ## Attribution
 
-This fork maintains perpetual credit to:
-- **Original Authors:** TN5250J Community (original development)
-- **This Fork:** Eric Mumford (headless extensions, testing, architecture)
+- Original authors: TN5250J Community
+- Headless extensions: Eric C. Mumford
 
 ## License Compliance
 
-This project is distributed under GPL v2, which permits:
-- Free and paid distribution (see Section 2.a and Section 1)
-- Modification and derivative works
-- Shareware models
+This project is distributed under GPL-2.0-or-later. Derivative work must:
 
-All derivative work must:
-- Include full GPL v2 license
-- Maintain original copyright notices
+- Include the GPL v2 license text
+- Preserve original copyright notices
 - Document modifications
-- Provide source code
-- Use same (GPL v2) license
+- Provide complete corresponding source code
+- Use a GPL-compatible license (GPL v2 or later)
 
 See [LICENSE](./LICENSE) for full terms.
 
 ## Contributions
 
-Contributions are welcome! By contributing, you agree that your changes will be distributed under GPL v2 with attribution as described above.
+By contributing, you agree your changes will be distributed under GPL-2.0-or-later with attribution preserved.

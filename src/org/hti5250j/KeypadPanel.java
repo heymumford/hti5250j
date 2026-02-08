@@ -1,29 +1,16 @@
-package org.hti5250j;
 /*
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.4
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
+
+package org.hti5250j;
 
 import org.hti5250j.keyboard.KeyMnemonic;
 import org.hti5250j.keyboard.KeyMnemonicResolver;
@@ -88,13 +75,13 @@ class KeypadPanel extends JPanel {
         FontMetrics fm = referenceButton.getFontMetrics(buttonFont);
         Rectangle viewRect = referenceButton.getVisibleRect();
 
-        Insets i = referenceButton.getInsets();
+        Insets insets = referenceButton.getInsets();
 
         // we now subtract the insets which include the border insets as well
-        viewRect.x = i.left;
-        viewRect.y = i.top;
-        viewRect.width = referenceButton.getWidth() - (i.right + viewRect.x);
-        viewRect.height = referenceButton.getHeight() - (i.bottom + viewRect.y);
+        viewRect.x = insets.left;
+        viewRect.y = insets.top;
+        viewRect.width = referenceButton.getWidth() - (insets.right + viewRect.x);
+        viewRect.height = referenceButton.getHeight() - (insets.bottom + viewRect.y);
 
         Rectangle textRect = new Rectangle();
         Rectangle iconRect = new Rectangle();
@@ -126,12 +113,12 @@ class KeypadPanel extends JPanel {
     }
 
     private JButton createButton(KeyMnemonic mnemonic, Insets noMargin, CompoundBorder minimalBorder) {
-        JButton b = new JButton();
-        b.setMargin(noMargin);
-        b.setBorder(minimalBorder);
-        b.setText(getString("KP_" + mnemonic.name(), keyMnemonicResolver.getDescription(mnemonic)));
-        b.setActionCommand(mnemonic.mnemonic);
-        return b;
+        JButton button = new JButton();
+        button.setMargin(noMargin);
+        button.setBorder(minimalBorder);
+        button.setText(getString("KP_" + mnemonic.name(), keyMnemonicResolver.getDescription(mnemonic)));
+        button.setActionCommand(mnemonic.mnemonic);
+        return button;
     }
 
     private void addInvisibleButtonsToPreventLayout(JPanel bottomPanel) {
@@ -166,12 +153,12 @@ class KeypadPanel extends JPanel {
 
     private class KeypadPanelComponentListener extends ComponentAdapter {
         @Override
-        public void componentShown(ComponentEvent e) {
+        public void componentShown(ComponentEvent componentEvent) {
             maximizeButtonSize();
         }
 
         @Override
-        public void componentResized(ComponentEvent e) {
+        public void componentResized(ComponentEvent componentEvent) {
             maximizeButtonSize();
         }
     }

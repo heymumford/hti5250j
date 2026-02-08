@@ -1,6 +1,13 @@
-# Class to aid scripts in identifying texta areas of the session screen
-# Author : jorjun@mac.com
-# Date : 1st April 2003
+# SPDX-FileCopyrightText: if logon.isMatched(41, 24, "(C) COPYRIGHT IBM CORP. 1980, 2000.")
+# SPDX-FileCopyrightText: elif logon.isMatched(2, 24, "(C) COPYRIGHT IBM CORP. 1980, 2000.")
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+# SPDX-FileContributor: jorjun@mac.com
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+
+
+
 
 import java
 

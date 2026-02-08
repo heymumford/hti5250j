@@ -1,52 +1,21 @@
-/**
- * Title: FieldValidationPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD pairwise tests for ScreenField input validation.
- *
- * This test suite focuses on field validation critical for terminal automation:
- * - Field type detection (alpha, numeric, signed-numeric, alphanumeric)
- * - Mandatory field enforcement
- * - Numeric range validation
- * - Format validation (signed numbers)
- * - Auto-enter behavior
- * - Field Exit Required (FER) enforcement
- * - Bypass field handling
- *
- * Test dimensions (pairwise combination):
- * 1. Field type: [alpha (0), numeric (3), signed-numeric (7), alphanumeric (0)]
- * 2. Validation rule: [none, mandatory, range-check, format-check]
- * 3. Input value: [empty, valid, boundary, overflow, special-chars]
- * 4. Auto-enter: [disabled, enabled]
- * 5. Error handling: [highlight, beep, reject]
- *
- * POSITIVE TESTS (13): Valid inputs and expected field behaviors
- * ADVERSARIAL TESTS (12): Injection, bypass, overflow, format violations
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for ScreenField input validation.
@@ -101,7 +70,7 @@ public class FieldValidationPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble();
         screenFields = new ScreenFields(screen5250);
@@ -162,10 +131,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(0, 10, 0, false, false, false);
         field.setString("HELLO");
 
-        assertFalse("Alpha field should not be numeric", field.isNumeric());
-        assertFalse("Alpha field should not be signed numeric", field.isSignedNumeric());
-        assertEquals("Field should retain alpha input length", 10, field.getText().length());
-        assertTrue("Field should start with input", field.getText().startsWith("HELLO"));
+        assertFalse(field.isNumeric(),"Alpha field should not be numeric");
+        assertFalse(field.isSignedNumeric(),"Alpha field should not be signed numeric");
+        assertEquals(10, field.getText().length(),"Field should retain alpha input length");
+        assertTrue(field.getText().startsWith("HELLO"),"Field should start with input");
     }
 
     /**
@@ -177,9 +146,9 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(80, 5, 3, false, false, false);
         field.setString("12345");
 
-        assertTrue("Numeric field should be detected as numeric", field.isNumeric());
-        assertFalse("Numeric field should not be signed numeric", field.isSignedNumeric());
-        assertEquals("Field should have numeric input", 5, field.getText().length());
+        assertTrue(field.isNumeric(),"Numeric field should be detected as numeric");
+        assertFalse(field.isSignedNumeric(),"Numeric field should not be signed numeric");
+        assertEquals(5, field.getText().length(),"Field should have numeric input");
     }
 
     /**
@@ -191,9 +160,9 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(160, 6, 7, false, false, false);
         field.setString("-12345");
 
-        assertTrue("Signed numeric field should be detected", field.isSignedNumeric());
-        assertFalse("Signed numeric is NOT the same as numeric (different field shift)", field.isNumeric());
-        assertEquals("Field should have signed numeric input", 6, field.getText().length());
+        assertTrue(field.isSignedNumeric(),"Signed numeric field should be detected");
+        assertFalse(field.isNumeric(),"Signed numeric is NOT the same as numeric (different field shift)");
+        assertEquals(6, field.getText().length(),"Field should have signed numeric input");
     }
 
     /**
@@ -205,8 +174,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(240, 10, 0, true, false, false);
         field.setString("REQUIRED");
 
-        assertTrue("Field should be mandatory", field.isMandatoryEnter());
-        assertEquals("Mandatory field should accept valid input", 10, field.getText().length());
+        assertTrue(field.isMandatoryEnter(),"Field should be mandatory");
+        assertEquals(10, field.getText().length(),"Mandatory field should accept valid input");
     }
 
     /**
@@ -218,8 +187,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(320, 5, 3, false, true, false);
         field.setString("999");
 
-        assertTrue("Field should have auto-enter enabled", field.isAutoEnter());
-        assertTrue("Numeric field accepts numeric input", field.isNumeric());
+        assertTrue(field.isAutoEnter(),"Field should have auto-enter enabled");
+        assertTrue(field.isNumeric(),"Numeric field accepts numeric input");
     }
 
     /**
@@ -231,8 +200,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(400, 8, 0, false, false, true);
         field.setString("COMPLETE");
 
-        assertTrue("Field should require exit", field.isFER());
-        assertEquals("Field with FER should accept input", 8, field.getText().length());
+        assertTrue(field.isFER(),"Field should require exit");
+        assertEquals(8, field.getText().length(),"Field with FER should accept input");
     }
 
     /**
@@ -263,8 +232,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(0, 10, 0, false, false, false);
         field.setString("");
 
-        assertFalse("Field should not be mandatory", field.isMandatoryEnter());
-        assertEquals("Empty field should have padded length", 10, field.getText().length());
+        assertFalse(field.isMandatoryEnter(),"Field should not be mandatory");
+        assertEquals(10, field.getText().length(),"Empty field should have padded length");
     }
 
     /**
@@ -276,8 +245,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(80, 5, 3, false, false, false);
         field.setString("00123");
 
-        assertTrue("Numeric field should accept leading zeros", field.isNumeric());
-        assertEquals("Field should preserve numeric input", 5, field.getText().length());
+        assertTrue(field.isNumeric(),"Numeric field should accept leading zeros");
+        assertEquals(5, field.getText().length(),"Field should preserve numeric input");
     }
 
     /**
@@ -289,8 +258,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(160, 6, 7, false, false, false);
         field.setString("+12345");
 
-        assertTrue("Signed field accepts positive sign", field.isSignedNumeric());
-        assertEquals("Field should preserve signed input", 6, field.getText().length());
+        assertTrue(field.isSignedNumeric(),"Signed field accepts positive sign");
+        assertEquals(6, field.getText().length(),"Field should preserve signed input");
     }
 
     /**
@@ -302,8 +271,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(240, 10, 0, true, false, false);
         field.setString("NORMAL");
 
-        assertFalse("Standard field should not be bypass", field.isBypassField());
-        assertTrue("Standard field should be mandatory", field.isMandatoryEnter());
+        assertFalse(field.isBypassField(),"Standard field should not be bypass");
+        assertTrue(field.isMandatoryEnter(),"Standard field should be mandatory");
     }
 
     /**
@@ -315,8 +284,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(320, 5, 3, false, true, false);
         field.setString("99999");
 
-        assertTrue("Field should have auto-enter", field.isAutoEnter());
-        assertEquals("Field at max length should have numeric input", 5, field.getText().length());
+        assertTrue(field.isAutoEnter(),"Field should have auto-enter");
+        assertEquals(5, field.getText().length(),"Field at max length should have numeric input");
     }
 
     /**
@@ -328,8 +297,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(160, 3, 7, false, false, false);
         field.setString("000");
 
-        assertTrue("Signed field should accept zero", field.isSignedNumeric());
-        assertEquals("Field should preserve zero input", 3, field.getText().length());
+        assertTrue(field.isSignedNumeric(),"Signed field should accept zero");
+        assertEquals(3, field.getText().length(),"Field should preserve zero input");
     }
 
     // ========================================================================
@@ -347,10 +316,10 @@ public class FieldValidationPairwiseTest {
         // Attempt: "1' OR '1'='1"
         field.setString("1' OR '1'=");
 
-        assertTrue("Field is numeric", field.isNumeric());
+        assertTrue(field.isNumeric(),"Field is numeric");
         // Field type should prevent interpretation as numeric comparison
         String text = field.getText();
-        assertNotNull("Field should not throw on special chars (stored as-is)", text);
+        assertNotNull(text,"Field should not throw on special chars (stored as-is)");
     }
 
     /**
@@ -363,10 +332,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(160, 6, 7, false, false, false);
         field.setString("--1234");
 
-        assertTrue("Field is signed numeric", field.isSignedNumeric());
+        assertTrue(field.isSignedNumeric(),"Field is signed numeric");
         // Verify field stores content (validation would occur at submission layer)
         String text = field.getText();
-        assertNotNull("Field stores input", text);
+        assertNotNull(text,"Field stores input");
     }
 
     /**
@@ -379,10 +348,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(240, 10, 0, true, false, false);
         field.setString("");
 
-        assertTrue("Field is marked mandatory", field.isMandatoryEnter());
+        assertTrue(field.isMandatoryEnter(),"Field is marked mandatory");
         // Validation logic should catch empty mandatory field
         // The canSend logic checks mandatoried flag
-        assertEquals("Empty mandatory field should have padded length", 10, field.getText().length());
+        assertEquals(10, field.getText().length(),"Empty mandatory field should have padded length");
     }
 
     /**
@@ -397,8 +366,7 @@ public class FieldValidationPairwiseTest {
         String longInput = "1234567890";
         field.setString(longInput);
 
-        assertEquals("Overflow should be truncated to field length",
-                5, field.getText().length());
+        assertEquals(5, field.getText().length(),"Overflow should be truncated to field length");
     }
 
     /**
@@ -411,10 +379,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(80, 10, 3, false, false, false);
         field.setString("%x%x%x%x");
 
-        assertTrue("Field is numeric type", field.isNumeric());
+        assertTrue(field.isNumeric(),"Field is numeric type");
         // Field stores input; validation layer should reject at submission
         String text = field.getText();
-        assertNotNull("Field stores input without crash", text);
+        assertNotNull(text,"Field stores input without crash");
     }
 
     /**
@@ -429,10 +397,10 @@ public class FieldValidationPairwiseTest {
         String escapeSeq = "\u001b[2J";
         field.setString(escapeSeq);
 
-        assertFalse("Field is not numeric", field.isNumeric());
+        assertFalse(field.isNumeric(),"Field is not numeric");
         // Field should store control chars (rendering layer handles safety)
         String text = field.getText();
-        assertNotNull("Field stores control chars", text);
+        assertNotNull(text,"Field stores control chars");
     }
 
     /**
@@ -445,9 +413,9 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(400, 10, 0, false, false, true);
         field.setString("SHORT");
 
-        assertTrue("Field requires exit", field.isFER());
+        assertTrue(field.isFER(),"Field requires exit");
         // Validation logic checks FER; field stores input for validation
-        assertEquals("Partial input stored but FER prevents exit", 10, field.getText().length());
+        assertEquals(10, field.getText().length(),"Partial input stored but FER prevents exit");
     }
 
     /**
@@ -460,10 +428,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(80, 5, 3, false, false, false);
         field.setString("1 2 3");
 
-        assertTrue("Field is numeric", field.isNumeric());
+        assertTrue(field.isNumeric(),"Field is numeric");
         String text = field.getText();
         // Field stores content; numeric validation would occur at submission
-        assertEquals("Whitespace stored in field", "1 2 3", text);
+        assertEquals("1 2 3", text,"Whitespace stored in field");
     }
 
     /**
@@ -476,11 +444,11 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(320, 5, 3, true, true, false);
         field.setString("123");
 
-        assertTrue("Field has mandatory constraint", field.isMandatoryEnter());
-        assertTrue("Field has auto-enter enabled", field.isAutoEnter());
-        assertTrue("Field is numeric", field.isNumeric());
+        assertTrue(field.isMandatoryEnter(),"Field has mandatory constraint");
+        assertTrue(field.isAutoEnter(),"Field has auto-enter enabled");
+        assertTrue(field.isNumeric(),"Field is numeric");
         // Both flags present; validation layer determines precedence
-        assertEquals("Field stores input", 5, field.getText().length());
+        assertEquals(5, field.getText().length(),"Field stores input");
     }
 
     /**
@@ -493,9 +461,9 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(0, 10, 0, false, false, false);
         field.setString("ABC\u202eXYZ");  // Right-to-left override
 
-        assertFalse("Field not numeric", field.isNumeric());
+        assertFalse(field.isNumeric(),"Field not numeric");
         String text = field.getText();
-        assertNotNull("Field stores unicode", text);
+        assertNotNull(text,"Field stores unicode");
         // Rendering layer handles unicode safety
     }
 
@@ -509,10 +477,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(160, 8, 7, false, false, false);
         field.setString("123.456");
 
-        assertTrue("Field is signed numeric", field.isSignedNumeric());
+        assertTrue(field.isSignedNumeric(),"Field is signed numeric");
         // Field stores input; numeric validation at submission layer
         String text = field.getText();
-        assertNotNull("Field stores decimal input", text);
+        assertNotNull(text,"Field stores decimal input");
     }
 
     /**
@@ -525,8 +493,8 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(480, 8, 0, false, false, false);
         field.setString("EXACTLEN");  // Exactly 8 chars
 
-        assertEquals("Field length", 8, field.getLength());
-        assertEquals("Exact length input preserved", 8, field.getText().length());
+        assertEquals(8, field.getLength(),"Field length");
+        assertEquals(8, field.getText().length(),"Exact length input preserved");
     }
 
     // ========================================================================
@@ -543,11 +511,11 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(80, 5, 3, false, false, false);
         field.setString("+123");
 
-        assertTrue("Field is numeric", field.isNumeric());
-        assertFalse("Numeric field should NOT be signed-numeric", field.isSignedNumeric());
+        assertTrue(field.isNumeric(),"Field is numeric");
+        assertFalse(field.isSignedNumeric(),"Numeric field should NOT be signed-numeric");
         // Field stores the input; validation layer should reject at submission
         String text = field.getText();
-        assertNotNull("Field stores attempted signed input", text);
+        assertNotNull(text,"Field stores attempted signed input");
     }
 
     /**
@@ -560,10 +528,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(240, 5, 0, true, false, false);
         field.setString("     ");  // All spaces
 
-        assertTrue("Field is mandatory", field.isMandatoryEnter());
+        assertTrue(field.isMandatoryEnter(),"Field is mandatory");
         // Field stores spaces; validation layer determines if spaces count as filled
         String text = field.getText();
-        assertEquals("Spaces stored in mandatory field", 5, text.length());
+        assertEquals(5, text.length(),"Spaces stored in mandatory field");
     }
 
     /**
@@ -576,11 +544,11 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(560, 5, 0x4, false, false, false);
         field.setString("12345");
 
-        assertTrue("Field should be right-to-left", field.isRightToLeft());
-        assertFalse("RTL field is not numeric (different field shift)", field.isNumeric());
+        assertTrue(field.isRightToLeft(),"Field should be right-to-left");
+        assertFalse(field.isNumeric(),"RTL field is not numeric (different field shift)");
         // RTL field with numeric content should be handled specially
         String text = field.getText();
-        assertEquals("RTL field preserves length", 5, text.length());
+        assertEquals(5, text.length(),"RTL field preserves length");
     }
 
     /**
@@ -593,10 +561,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(640, 10, 0, true, false, true);
         field.setString("SHORT");
 
-        assertTrue("Field should have mandatory constraint", field.isMandatoryEnter());
-        assertTrue("Field should have FER constraint", field.isFER());
+        assertTrue(field.isMandatoryEnter(),"Field should have mandatory constraint");
+        assertTrue(field.isFER(),"Field should have FER constraint");
         // Both constraints active; validation determines which takes precedence
-        assertEquals("Partial input stored with dual constraints", 10, field.getText().length());
+        assertEquals(10, field.getText().length(),"Partial input stored with dual constraints");
     }
 
     /**
@@ -609,10 +577,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(320, 5, 3, false, true, false);
         field.setString("12");  // Only 2 of 5 chars
 
-        assertTrue("Field has auto-enter", field.isAutoEnter());
-        assertTrue("Field is numeric", field.isNumeric());
+        assertTrue(field.isAutoEnter(),"Field has auto-enter");
+        assertTrue(field.isNumeric(),"Field is numeric");
         // Auto-enter with partial fill; validation layer decides if trigger is valid
-        assertEquals("Partial numeric stored for auto-enter", 5, field.getText().length());
+        assertEquals(5, field.getText().length(),"Partial numeric stored for auto-enter");
     }
 
     /**
@@ -625,10 +593,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(160, 6, 7, false, false, false);
         field.setString("-00123");
 
-        assertTrue("Field is signed numeric", field.isSignedNumeric());
+        assertTrue(field.isSignedNumeric(),"Field is signed numeric");
         // Leading zeros before sign is a format edge case
         String text = field.getText();
-        assertEquals("Signed numeric with leading zeros stored", 6, text.length());
+        assertEquals(6, text.length(),"Signed numeric with leading zeros stored");
     }
 
     /**
@@ -642,9 +610,9 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(pos, 5, 0, false, false, false);
         field.setString("WRAP");
 
-        assertEquals("Field should span rows", 5, field.getLength());
+        assertEquals(5, field.getLength(),"Field should span rows");
         // Field wraps from end of row 1 to start of row 2
-        assertTrue("Field position should be within screen", field.withinField(pos));
+        assertTrue(field.withinField(pos),"Field position should be within screen");
     }
 
     /**
@@ -657,10 +625,10 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(0, 5, 0, false, false, false);
         field.setString("12345");
 
-        assertFalse("Field is alpha, not numeric", field.isNumeric());
+        assertFalse(field.isNumeric(),"Field is alpha, not numeric");
         // Content is all-digits but field type is alpha; no validation error
         String text = field.getText();
-        assertEquals("Numeric content in alpha field", 5, text.length());
+        assertEquals(5, text.length(),"Numeric content in alpha field");
     }
 
     /**
@@ -672,15 +640,15 @@ public class FieldValidationPairwiseTest {
     public void testFieldFlagMutationAfterCreation() {
         ScreenField field = createField(0, 10, 0, false, false, false);
 
-        assertFalse("Initially not mandatory", field.isMandatoryEnter());
-        assertFalse("Initially not auto-enter", field.isAutoEnter());
+        assertFalse(field.isMandatoryEnter(),"Initially not mandatory");
+        assertFalse(field.isAutoEnter(),"Initially not auto-enter");
 
         // Simulate flag mutation (would occur via setFFWs in real scenario)
         // This tests that field state can be verified at different stages
         field.setString("TEST");
 
         // After setting content, flags should remain unchanged
-        assertFalse("Remains non-mandatory after content", field.isMandatoryEnter());
+        assertFalse(field.isMandatoryEnter(),"Remains non-mandatory after content");
     }
 
     /**
@@ -694,9 +662,9 @@ public class FieldValidationPairwiseTest {
         String hugeNumber = "999999999999999999999999999999";  // Way beyond 3 chars
         field.setString(hugeNumber);
 
-        assertTrue("Field is numeric", field.isNumeric());
+        assertTrue(field.isNumeric(),"Field is numeric");
         // Input truncated to field length; numeric validation at submission layer
-        assertEquals("Extreme overflow truncated to field length", 3, field.getText().length());
+        assertEquals(3, field.getText().length(),"Extreme overflow truncated to field length");
     }
 
     /**
@@ -710,8 +678,8 @@ public class FieldValidationPairwiseTest {
 
         // Before setting any content, getText should return padded field
         String text = field.getText();
-        assertNotNull("Text should not be null", text);
-        assertEquals("Uninitialized field returns padded content", 10, text.length());
+        assertNotNull(text,"Text should not be null");
+        assertEquals(10, text.length(),"Uninitialized field returns padded content");
     }
 
     /**
@@ -724,9 +692,9 @@ public class FieldValidationPairwiseTest {
         ScreenField field = createField(160, 5, 7, false, false, false);
         field.setString("-");
 
-        assertTrue("Field is signed numeric", field.isSignedNumeric());
+        assertTrue(field.isSignedNumeric(),"Field is signed numeric");
         // Field stores the sign; validation layer should reject as invalid
         String text = field.getText();
-        assertEquals("Sign-only content stored", 5, text.length());
+        assertEquals(5, text.length(),"Sign-only content stored");
     }
 }

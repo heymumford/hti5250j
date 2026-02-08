@@ -1,14 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Contract Test Suite
- * SessionInterface - 5250 Session Contract
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Establishes behavioral contracts for SessionInterface:
- * - connect()/disconnect() idempotency (safe to call multiple times)
- * - Connection state accuracy (isConnected matches reality)
- * - Listener notification order and consistency
- * - Thread safety for concurrent session operations
- * - Bell signal and system request handling
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.contracts;
 
 import org.hti5250j.event.SessionListener;

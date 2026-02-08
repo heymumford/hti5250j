@@ -1,28 +1,14 @@
-/**
- * Title: Macronizer.java
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.1
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.tools;
 
 import java.awt.BorderLayout;
@@ -88,11 +74,11 @@ public class Macronizer {
         Set<Object> macroSet = macros.keySet();
         Iterator<Object> macroIterator = macroSet.iterator();
         String byName = null;
-        int x = 0;
+        int index = 0;
         while (macroIterator.hasNext()) {
             byName = (String) macroIterator.next();
             int period = byName.indexOf(".");
-            macroList[x++] = byName.substring(period + 1);
+            macroList[index++] = byName.substring(period + 1);
         }
 
         return macroList;
@@ -153,7 +139,7 @@ public class Macronizer {
      */
     public final static void setMacro(String name, String keyStrokes) {
 
-        int x = 0;
+        int index = 0;
 
         // first let's go through all the macros and replace the macro entry if it
         //   already exists.
@@ -175,10 +161,10 @@ public class Macronizer {
         } else {
             // If it did not exist and get replaced then we need to find the next
             //  available slot to place the macro in.
-            while (getMacroByNumber(++x) != null) {
+            while (getMacroByNumber(++index) != null) {
             }
 
-            macros.put("macro" + x + "." + name, keyStrokes);
+            macros.put("macro" + index + "." + name, keyStrokes);
             macrosExist = true;
         }
         saveMacros();
@@ -214,8 +200,8 @@ public class Macronizer {
         // add the listener that will set the focus to
         // the desired option
         dialog.addWindowListener(new WindowAdapter() {
-            public void windowOpened(WindowEvent e) {
-                super.windowOpened(e);
+            public void windowOpened(WindowEvent windowEvent) {
+                super.windowOpened(windowEvent);
 
                 // now we're setting the focus to the desired component
                 // it's not the best solution as it depends on internals

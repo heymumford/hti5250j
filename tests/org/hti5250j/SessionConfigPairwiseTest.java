@@ -1,45 +1,17 @@
-/**
- * SessionConfigPairwiseTest.java - Comprehensive TDD Pairwise Test Suite for SessionConfig
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses N-wise pairwise testing to systematically validate SessionConfig
- * behavior across all configuration dimensions and property types. Tests exercise both
- * positive scenarios (valid configurations) and adversarial scenarios (conflicting,
- * invalid, and boundary-case settings).
- *
- * Pairwise Dimensions:
- * 1. Property type: connection (host/port), display (font/color), keyboard (mapping),
- *    color (RGB values), audio (enable/volume)
- * 2. Value type: string, integer, boolean, enum, composite (Rectangle)
- * 3. Source: default (built-in), file (loaded), programmatic (setProperty), override
- * 4. Validation: none, range (min/max), format (regex), required (must-exist)
- * 5. Persistence: transient (memory-only), session (current session), permanent (saved)
- *
- * Test Strategy: Combine pairs of dimensions to create:
- * - POSITIVE: Valid configurations that should succeed
- * - ADVERSARIAL: Invalid combinations, conflicting settings, boundary violations
- * - STATE: Configuration changes, listener notifications, reload behavior
- * - EDGE CASES: Empty values, null handling, type coercion, overflow scenarios
- *
- * Coverage Goals:
- * - 25+ test cases covering configuration operations
- * - Configuration creation, modification, validation, persistence
- * - Listener notification for configuration changes
- * - Error handling for invalid/conflicting settings
- * - Type coercion (string to int, bool, float, color)
- * - Boundary conditions (min port, max dimensions, font sizes)
- *
- * Test Categories:
- * 1. POSITIVE: Valid key/value pairs with valid sources
- * 2. ADVERSARIAL: Invalid/conflicting settings, boundary violations
- * 3. STATE: Configuration state transitions, listener notifications
- * 4. PERSISTENCE: Save/load/reload cycles
- * 5. TYPE_COERCION: String to int/float/bool/color conversions
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.event.SessionConfigEvent;
 import org.hti5250j.event.SessionConfigListener;
 
@@ -52,7 +24,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD Test Suite for SessionConfig
@@ -69,13 +41,13 @@ public class SessionConfigPairwiseTest {
 
     private SessionConfigTestDouble config;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Create test double with Properties backing store
         config = new SessionConfigTestDouble();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         config = null;
     }
@@ -100,8 +72,8 @@ public class SessionConfigPairwiseTest {
         config.setProperty(hostKey, hostValue);
 
         // ASSERT: Property persists in memory
-        assertTrue("Property should exist", config.isPropertyExists(hostKey));
-        assertEquals("Host should match", hostValue, config.getStringProperty(hostKey));
+        assertTrue(config.isPropertyExists(hostKey),"Property should exist");
+        assertEquals(hostValue, config.getStringProperty(hostKey),"Host should match");
     }
 
     /**
@@ -119,7 +91,7 @@ public class SessionConfigPairwiseTest {
         int port = config.getIntegerProperty(portKey);
 
         // ASSERT: Integer parsing works
-        assertEquals("Port should parse to integer", 5250, port);
+        assertEquals(5250, port,"Port should parse to integer");
     }
 
     /**
@@ -136,8 +108,8 @@ public class SessionConfigPairwiseTest {
         config.setProperty(keypadKey, keypadValue);
 
         // ASSERT: Property retrievable
-        assertTrue("Property should exist", config.isPropertyExists(keypadKey));
-        assertEquals("Keypad value should be Yes", "Yes", config.getStringProperty(keypadKey));
+        assertTrue(config.isPropertyExists(keypadKey),"Property should exist");
+        assertEquals("Yes", config.getStringProperty(keypadKey),"Keypad value should be Yes");
     }
 
     /**
@@ -155,7 +127,7 @@ public class SessionConfigPairwiseTest {
         float fontSize = config.getFloatProperty(fontSizeKey, 12.0f);
 
         // ASSERT: Float parsing works
-        assertEquals("Font size should match", 14.5f, fontSize, 0.01f);
+        assertEquals(14.5f, fontSize, 0.01f,"Font size should match");
     }
 
     /**
@@ -174,8 +146,8 @@ public class SessionConfigPairwiseTest {
         Color color = config.getColorProperty(colorKey);
 
         // ASSERT: Color created correctly
-        assertNotNull("Color should not be null", color);
-        assertEquals("Color RGB should match", colorValue, color.getRGB() & 0xFFFFFF);
+        assertNotNull(color,"Color should not be null");
+        assertEquals(colorValue, color.getRGB() & 0xFFFFFF,"Color RGB should match");
     }
 
     /**
@@ -193,10 +165,10 @@ public class SessionConfigPairwiseTest {
 
         // ASSERT: Rectangle retrieved correctly
         Rectangle retrieved = config.getRectangleProperty(rectKey);
-        assertEquals("X should match", 100, retrieved.x);
-        assertEquals("Y should match", 50, retrieved.y);
-        assertEquals("Width should match", 800, retrieved.width);
-        assertEquals("Height should match", 600, retrieved.height);
+        assertEquals(100, retrieved.x,"X should match");
+        assertEquals(50, retrieved.y,"Y should match");
+        assertEquals(800, retrieved.width,"Width should match");
+        assertEquals(600, retrieved.height,"Height should match");
     }
 
     /**
@@ -218,10 +190,10 @@ public class SessionConfigPairwiseTest {
         float fontSize = config.getFloatProperty("fontSize", 0f);
 
         // ASSERT: All properties accessible
-        assertEquals("Host should be localhost", "localhost", host);
-        assertEquals("Port should be 5250", 5250, port);
-        assertTrue("Enabled should be true", enabled);
-        assertEquals("Font size should be 12.0", 12.0f, fontSize, 0.01f);
+        assertEquals("localhost", host,"Host should be localhost");
+        assertEquals(5250, port,"Port should be 5250");
+        assertTrue(enabled,"Enabled should be true");
+        assertEquals(12.0f, fontSize, 0.01f,"Font size should be 12.0");
     }
 
     /**
@@ -238,8 +210,8 @@ public class SessionConfigPairwiseTest {
         config.setProperty(complexKey, value);
 
         // ASSERT: Property retrievable
-        assertTrue("Complex key should exist", config.isPropertyExists(complexKey));
-        assertEquals("Value should match", value, config.getStringProperty(complexKey));
+        assertTrue(config.isPropertyExists(complexKey),"Complex key should exist");
+        assertEquals(value, config.getStringProperty(complexKey),"Value should match");
     }
 
     /**
@@ -260,8 +232,7 @@ public class SessionConfigPairwiseTest {
 
         // ASSERT: Long value persists
         String retrieved = config.getStringProperty(key);
-        assertEquals("Long value should be retrieved completely",
-                longValue.length(), retrieved.length());
+        assertEquals(longValue.length(), retrieved.length(),"Long value should be retrieved completely");
     }
 
     /**
@@ -278,7 +249,7 @@ public class SessionConfigPairwiseTest {
         float result = config.getFloatProperty(missingKey, defaultValue);
 
         // ASSERT: Default value returned
-        assertEquals("Should return default value", defaultValue, result, 0.01f);
+        assertEquals(defaultValue, result, 0.01f,"Should return default value");
     }
 
     // ==========================================================================
@@ -303,7 +274,7 @@ public class SessionConfigPairwiseTest {
 
         // ASSERT: Currently accepts invalid port (documents behavior)
         // TODO: Add validation layer to reject ports < 1024 or < 1
-        assertEquals("Currently accepts port 0", 0, port);
+        assertEquals(0, port,"Currently accepts port 0");
     }
 
     /**
@@ -322,7 +293,7 @@ public class SessionConfigPairwiseTest {
 
         // ASSERT: Currently accepts invalid port
         // TODO: Add validation to reject ports > 65535
-        assertEquals("Currently accepts port 65536", 65536, port);
+        assertEquals(65536, port,"Currently accepts port 65536");
     }
 
     /**
@@ -342,7 +313,7 @@ public class SessionConfigPairwiseTest {
         int port = config.getIntegerProperty(portKey);
 
         // ASSERT: Returns 0 on parse failure (defensive behavior)
-        assertEquals("Should return 0 for non-numeric port", 0, port);
+        assertEquals(0, port,"Should return 0 for non-numeric port");
     }
 
     /**
@@ -359,8 +330,8 @@ public class SessionConfigPairwiseTest {
         config.setProperty(key, emptyValue);
 
         // ASSERT: Empty value accepted
-        assertTrue("Empty property should exist", config.isPropertyExists(key));
-        assertEquals("Should return empty string", "", config.getStringProperty(key));
+        assertTrue(config.isPropertyExists(key),"Empty property should exist");
+        assertEquals("", config.getStringProperty(key),"Should return empty string");
     }
 
     /**
@@ -379,8 +350,8 @@ public class SessionConfigPairwiseTest {
         // ASSERT: Currently accepts negative dimensions
         // TODO: Add validation layer
         Rectangle retrieved = config.getRectangleProperty(rectKey);
-        assertEquals("Currently accepts negative width", -800, retrieved.width);
-        assertEquals("Currently accepts negative height", -600, retrieved.height);
+        assertEquals(-800, retrieved.width,"Currently accepts negative width");
+        assertEquals(-600, retrieved.height,"Currently accepts negative height");
     }
 
     /**
@@ -398,7 +369,7 @@ public class SessionConfigPairwiseTest {
         Color color = config.getColorProperty(colorKey);
 
         // ASSERT: Color created (may appear black or invalid)
-        assertNotNull("Color object created even for negative value", color);
+        assertNotNull(color,"Color object created even for negative value");
     }
 
     /**
@@ -416,7 +387,7 @@ public class SessionConfigPairwiseTest {
         float fontSize = config.getFloatProperty(fontKey);
 
         // ASSERT: Float parsed (precision may be lost)
-        assertTrue("Float should be parsed", fontSize > 0);
+        assertTrue(fontSize > 0,"Float should be parsed");
     }
 
     /**
@@ -433,7 +404,7 @@ public class SessionConfigPairwiseTest {
         boolean portExists = config.isPropertyExists("connection.port");
 
         // ASSERT: Missing port not detected by property check
-        assertFalse("Port not set", portExists);
+        assertFalse(portExists,"Port not set");
         // TODO: Add configuration validation to require port when host is set
     }
 
@@ -453,7 +424,7 @@ public class SessionConfigPairwiseTest {
 
         // ASSERT: Accepts unreasonable value
         // TODO: Add validation bounds (e.g., 8.0 - 72.0)
-        assertEquals("Currently accepts extreme font size", 500.0f, fontSize, 0.01f);
+        assertEquals(500.0f, fontSize, 0.01f,"Currently accepts extreme font size");
     }
 
     /**
@@ -471,7 +442,7 @@ public class SessionConfigPairwiseTest {
         float fontSize = config.getFloatProperty(fontKey);
 
         // ASSERT: Accepts invalid size
-        assertEquals("Currently accepts zero font size", 0.0f, fontSize, 0.01f);
+        assertEquals(0.0f, fontSize, 0.01f,"Currently accepts zero font size");
     }
 
     /**
@@ -488,7 +459,7 @@ public class SessionConfigPairwiseTest {
         config.setProperty(malformedKey, value);
 
         // ASSERT: Key stored as-is in memory (may fail in file I/O)
-        assertTrue("Key with equals stored in memory", config.isPropertyExists(malformedKey));
+        assertTrue(config.isPropertyExists(malformedKey),"Key with equals stored in memory");
     }
 
     /**
@@ -506,8 +477,8 @@ public class SessionConfigPairwiseTest {
 
         // ASSERT: Currently accepts degenerate rectangle
         Rectangle retrieved = config.getRectangleProperty(rectKey);
-        assertEquals("Width is zero", 0, retrieved.width);
-        assertEquals("Height is zero", 0, retrieved.height);
+        assertEquals(0, retrieved.width,"Width is zero");
+        assertEquals(0, retrieved.height,"Height is zero");
     }
 
     // ==========================================================================
@@ -534,7 +505,7 @@ public class SessionConfigPairwiseTest {
         config.firePropertyChange(this, "test.property", null, "newValue");
 
         // ASSERT: Listener received notification
-        assertEquals("Listener should receive one event", 1, eventCount.get());
+        assertEquals(1, eventCount.get(),"Listener should receive one event");
     }
 
     /**
@@ -560,9 +531,9 @@ public class SessionConfigPairwiseTest {
         config.firePropertyChange(this, "prop", null, "value");
 
         // ASSERT: All listeners notified
-        assertEquals("Listener 1 should be notified", 1, listener1Count.get());
-        assertEquals("Listener 2 should be notified", 1, listener2Count.get());
-        assertEquals("Listener 3 should be notified", 1, listener3Count.get());
+        assertEquals(1, listener1Count.get(),"Listener 1 should be notified");
+        assertEquals(1, listener2Count.get(),"Listener 2 should be notified");
+        assertEquals(1, listener3Count.get(),"Listener 3 should be notified");
     }
 
     /**
@@ -582,7 +553,7 @@ public class SessionConfigPairwiseTest {
         config.firePropertyChange(this, "prop", null, "value");
 
         // ASSERT: No notification received
-        assertEquals("Removed listener should not receive event", 0, eventCount.get());
+        assertEquals(0, eventCount.get(),"Removed listener should not receive event");
     }
 
     /**
@@ -600,7 +571,7 @@ public class SessionConfigPairwiseTest {
         config.firePropertyChange(this, "prop", "sameValue", "sameValue");
 
         // ASSERT: No notification (optimization)
-        assertEquals("No notification when values identical", 0, eventCount.get());
+        assertEquals(0, eventCount.get(),"No notification when values identical");
     }
 
     /**
@@ -613,8 +584,8 @@ public class SessionConfigPairwiseTest {
         AtomicBoolean eventFired = new AtomicBoolean(false);
         SessionConfigListener listener = event -> {
             eventFired.set(true);
-            assertEquals("Old value should be 'old'", "old", event.getOldValue());
-            assertEquals("New value should be 'new'", "new", event.getNewValue());
+            assertEquals("old", event.getOldValue(),"Old value should be 'old'");
+            assertEquals("new", event.getNewValue(),"New value should be 'new'");
         };
         config.addSessionConfigListener(listener);
 
@@ -622,7 +593,7 @@ public class SessionConfigPairwiseTest {
         config.firePropertyChange(this, "prop", "old", "new");
 
         // ASSERT: Event fired with correct values
-        assertTrue("Event should be fired", eventFired.get());
+        assertTrue(eventFired.get(),"Event should be fired");
     }
 
     /**
@@ -640,7 +611,7 @@ public class SessionConfigPairwiseTest {
         config.firePropertyChange(this, "newProp", null, "value");
 
         // ASSERT: Event fired (null oldValue is treated as new property)
-        assertTrue("Event should fire with null old value", eventFired.get());
+        assertTrue(eventFired.get(),"Event should fire with null old value");
     }
 
     /**
@@ -660,9 +631,9 @@ public class SessionConfigPairwiseTest {
         config.setProperty("prop3", "modified3");
 
         // ASSERT: All modifications preserved
-        assertEquals("Prop1 modified", "modified1", config.getStringProperty("prop1"));
-        assertEquals("Prop2 modified", "modified2", config.getStringProperty("prop2"));
-        assertEquals("Prop3 modified", "modified3", config.getStringProperty("prop3"));
+        assertEquals("modified1", config.getStringProperty("prop1"),"Prop1 modified");
+        assertEquals("modified2", config.getStringProperty("prop2"),"Prop2 modified");
+        assertEquals("modified3", config.getStringProperty("prop3"),"Prop3 modified");
     }
 
     /**
@@ -674,13 +645,13 @@ public class SessionConfigPairwiseTest {
         // ARRANGE: Set property
         String key = "removeme";
         config.setProperty(key, "value");
-        assertTrue("Property should exist", config.isPropertyExists(key));
+        assertTrue(config.isPropertyExists(key),"Property should exist");
 
         // ACT: Remove property
         config.removeProperty(key);
 
         // ASSERT: Property no longer exists
-        assertFalse("Property should be removed", config.isPropertyExists(key));
+        assertFalse(config.isPropertyExists(key),"Property should be removed");
     }
 
     // ==========================================================================
@@ -701,7 +672,7 @@ public class SessionConfigPairwiseTest {
         int result = config.getIntegerProperty(intKey);
 
         // ASSERT: Max value preserved
-        assertEquals("Should preserve MAX_VALUE", Integer.MAX_VALUE, result);
+        assertEquals(Integer.MAX_VALUE, result,"Should preserve MAX_VALUE");
     }
 
     /**
@@ -718,7 +689,7 @@ public class SessionConfigPairwiseTest {
         int result = config.getIntegerProperty(intKey);
 
         // ASSERT: Negative value preserved
-        assertEquals("Should preserve negative value", -5250, result);
+        assertEquals(-5250, result,"Should preserve negative value");
     }
 
     /**
@@ -736,7 +707,7 @@ public class SessionConfigPairwiseTest {
         float result = config.getFloatProperty(floatKey);
 
         // ASSERT: Float parsed (precision lost to 32-bit float)
-        assertTrue("Should be approximately pi", result > 3.1f && result < 3.2f);
+        assertTrue(result > 3.1f && result < 3.2f,"Should be approximately pi");
     }
 
     /**
@@ -754,9 +725,9 @@ public class SessionConfigPairwiseTest {
         Color color = config.getColorProperty(colorKey);
 
         // ASSERT: Color created with correct RGB
-        assertNotNull("Color should be created", color);
+        assertNotNull(color,"Color should be created");
         int retrieved = color.getRGB() & 0xFFFFFF;
-        assertEquals("Red color should match", 0xFF0000, retrieved);
+        assertEquals(0xFF0000, retrieved,"Red color should match");
     }
 
     /**
@@ -774,10 +745,10 @@ public class SessionConfigPairwiseTest {
         Rectangle rect = config.getRectangleProperty(rectKey);
 
         // ASSERT: Values parsed correctly
-        assertEquals("X coordinate", 10, rect.x);
-        assertEquals("Y coordinate", 20, rect.y);
-        assertEquals("Width", 300, rect.width);
-        assertEquals("Height", 400, rect.height);
+        assertEquals(10, rect.x,"X coordinate");
+        assertEquals(20, rect.y,"Y coordinate");
+        assertEquals(300, rect.width,"Width");
+        assertEquals(400, rect.height,"Height");
     }
 
     /**
@@ -795,10 +766,10 @@ public class SessionConfigPairwiseTest {
         Rectangle rect = config.getRectangleProperty(rectKey);
 
         // ASSERT: Parsed values, defaults for missing
-        assertEquals("X should be 100", 100, rect.x);
-        assertEquals("Y should be 200", 200, rect.y);
-        assertEquals("Width defaults to 0", 0, rect.width);
-        assertEquals("Height defaults to 0", 0, rect.height);
+        assertEquals(100, rect.x,"X should be 100");
+        assertEquals(200, rect.y,"Y should be 200");
+        assertEquals(0, rect.width,"Width defaults to 0");
+        assertEquals(0, rect.height,"Height defaults to 0");
     }
 
     // ==========================================================================
@@ -818,7 +789,7 @@ public class SessionConfigPairwiseTest {
         boolean exists = config.isPropertyExists(neverSet);
 
         // ASSERT: Non-existent property returns false
-        assertFalse("Non-existent property should return false", exists);
+        assertFalse(exists,"Non-existent property should return false");
     }
 
     /**
@@ -834,7 +805,7 @@ public class SessionConfigPairwiseTest {
         String result = config.getStringProperty(missing);
 
         // ASSERT: Returns empty string (not null)
-        assertEquals("Should return empty string for missing property", "", result);
+        assertEquals("", result,"Should return empty string for missing property");
     }
 
     /**
@@ -850,7 +821,7 @@ public class SessionConfigPairwiseTest {
         int result = config.getIntegerProperty(missing);
 
         // ASSERT: Returns 0 (safe default)
-        assertEquals("Should return 0 for missing integer", 0, result);
+        assertEquals(0, result,"Should return 0 for missing integer");
     }
 
     /**
@@ -866,7 +837,7 @@ public class SessionConfigPairwiseTest {
         Color result = config.getColorProperty(missing);
 
         // ASSERT: Returns null
-        assertNull("Should return null for missing color", result);
+        assertNull(result,"Should return null for missing color");
     }
 
     /**
@@ -882,10 +853,10 @@ public class SessionConfigPairwiseTest {
         Rectangle result = config.getRectangleProperty(missing);
 
         // ASSERT: Returns empty rectangle (0,0,0,0)
-        assertEquals("X should be 0", 0, result.x);
-        assertEquals("Y should be 0", 0, result.y);
-        assertEquals("Width should be 0", 0, result.width);
-        assertEquals("Height should be 0", 0, result.height);
+        assertEquals(0, result.x,"X should be 0");
+        assertEquals(0, result.y,"Y should be 0");
+        assertEquals(0, result.width,"Width should be 0");
+        assertEquals(0, result.height,"Height should be 0");
     }
 
     /**
@@ -902,7 +873,7 @@ public class SessionConfigPairwiseTest {
         float result = config.getFloatProperty(floatKey, 99.9f);
 
         // ASSERT: Returns default when parse fails
-        assertEquals("Should return default on parse error", 99.9f, result, 0.01f);
+        assertEquals(99.9f, result, 0.01f,"Should return default on parse error");
     }
 
     /**
@@ -919,7 +890,7 @@ public class SessionConfigPairwiseTest {
         int result = config.getIntegerProperty(intKey);
 
         // ASSERT: Returns 0 on overflow
-        assertEquals("Should return 0 on overflow", 0, result);
+        assertEquals(0, result,"Should return 0 on overflow");
     }
 
     /**
@@ -936,8 +907,8 @@ public class SessionConfigPairwiseTest {
         Rectangle result = config.getRectangleProperty(rectKey);
 
         // ASSERT: Partial parsing (first value taken, rest default to 0)
-        assertEquals("X should be 100", 100, result.x);
-        assertEquals("Y should default to 0", 0, result.y);
+        assertEquals(100, result.x,"X should be 100");
+        assertEquals(0, result.y,"Y should default to 0");
     }
 
     /**
@@ -955,8 +926,8 @@ public class SessionConfigPairwiseTest {
         config.setProperty(key, "value3");
 
         // ASSERT: Last value wins
-        assertEquals("Last value should be stored", "value3",
-                config.getStringProperty(key));
+        assertEquals("value3",
+                config.getStringProperty(key),"Last value should be stored");
     }
 
     /**
@@ -976,9 +947,9 @@ public class SessionConfigPairwiseTest {
         config.setProperty(longKey.toString(), value);
 
         // ASSERT: Long key accepted
-        assertTrue("Long key should be stored", config.isPropertyExists(longKey.toString()));
-        assertEquals("Value should be retrievable", value,
-                config.getStringProperty(longKey.toString()));
+        assertTrue(config.isPropertyExists(longKey.toString()),"Long key should be stored");
+        assertEquals(value,
+                config.getStringProperty(longKey.toString()),"Value should be retrievable");
     }
 
     // ==========================================================================

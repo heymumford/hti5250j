@@ -1,101 +1,17 @@
-/**
- * Title: StructuredFieldPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise TDD tests for HTI5250j structured field parsing.
- *
- * The 5250 protocol supports GUI (Graphical User Interface) elements through structured
- * fields that define windows, menus, and selection fields. This test suite validates
- * parsing and rendering of these structures across all parameter combinations.
- *
- * STRUCTURED FIELD TYPES (5 types):
- * 1. Create Window (0xD9 0x51): Defines a rectangular window region with borders
- * 2. Define Selection Field (0xD9 0x50): Defines choice/menu selection area
- * 3. Remove GUI (0xD9 0x52): Removes previously defined GUI structures
- * 4. Window Border (Minor Structure 0x01): Specifies window decoration
- * 5. Button/Pushbutton (Minor Structure variant): Interactive button definitions
- *
- * PAIRWISE TEST DIMENSIONS (5 x 5 = 25 combinations):
- *
- * 1. SF Type (5 values):
- *    - CREATE_WINDOW: 0xD9 0x51 (define window region)
- *    - DEFINE_SELECTION: 0xD9 0x50 (define choice field)
- *    - REMOVE_GUI: 0xD9 0x52 (remove structures)
- *    - WINDOW_BORDER: Minor type 0x01 (border definition)
- *    - INVALID_SF: Non-standard structure
- *
- * 2. SF Length (5 values):
- *    - MINIMUM: Shortest valid SF (header + required params = ~6 bytes)
- *    - NORMAL: Standard SF with typical content (15-30 bytes)
- *    - LARGE: Extended content (50-100 bytes)
- *    - MAXIMUM: Max single SF per protocol (1024+ bytes)
- *    - MALFORMED: Length doesn't match content
- *
- * 3. Nesting Level (5 values):
- *    - NONE: No nested minor structures
- *    - SINGLE_LEVEL: One level of nesting (e.g., border within window)
- *    - TWO_LEVEL: Two levels (e.g., border + content within window)
- *    - DEEP_NESTING: Three or more levels (stress test)
- *    - CIRCULAR_REFS: References back to parent structure
- *
- * 4. Content Type (5 values):
- *    - EMPTY: No content bytes after header
- *    - DATA_CONTENT: Actual field data (characters, attributes)
- *    - REFERENCES: Field IDs, window IDs linking structures
- *    - MIXED: Combination of data and references
- *    - GARBAGE: Random/malformed content bytes
- *
- * 5. Error Handling (5 values):
- *    - STRICT: Parse fails on any malformation
- *    - LENIENT: Skip invalid sections, continue parsing
- *    - REPAIR: Attempt to fix/validate malformed data
- *    - IGNORE: Process despite errors
- *    - EXCEPTION: Throw exception on parse error
- *
- * ADVERSARIAL SCENARIOS (15+ tests):
- * - Malformed length fields (overflow, underflow)
- * - Missing required bytes (truncated SF)
- * - Invalid type codes
- * - Conflicting window dimensions (0x0, >80x24)
- * - Field references to non-existent structures
- * - Overlapping window regions
- * - Cursor restriction with invalid coordinates
- * - Border character encoding issues (EBCDIC->Unicode)
- * - Nested structures exceeding depth limits
- * - Field ID collisions
- *
- * POSITIVE TESTS (15+ tests):
- * - Valid window creation (various sizes)
- * - Valid selection field definition
- * - Valid window removal
- * - Border rendering with custom characters
- * - Nested window structures
- * - Field attribute preservation
- * - Position and dimension calculations
- * - Multi-window screen layouts
- * - Window stacking and layering
- * - Cursor restriction enforcement
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.ICodePage;
 import org.hti5250j.tools.logging.HTI5250jLogger;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
@@ -105,7 +21,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for WTDSFParser (Write-To-Display Structured Field Parser).
@@ -194,7 +110,7 @@ public class StructuredFieldPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         screen = new Screen5250TestDouble();
         screenFields = screen.getScreenFields();
@@ -310,17 +226,17 @@ public class StructuredFieldPairwiseTest {
     public void testParseMinimalCreateWindowStructure() throws Exception {
         // ARRANGE
         byte[] sf = createMinimalWindowSF(5, 20);
-        assertEquals("SF header should be 0xD9 0x51", (byte) 0xD9, sf[2]);
-        assertEquals("SF subtype should be CREATE_WINDOW", (byte) 0x51, sf[3]);
+        assertEquals((byte) 0xD9, sf[2],"SF header should be 0xD9 0x51");
+        assertEquals((byte) 0x51, sf[3],"SF subtype should be CREATE_WINDOW");
 
         // ACT: Parse the SF (simulate via byte structure validation)
         int rows = sf[7] & 0xFF;
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Window rows should be 5", 5, rows);
-        assertEquals("Window columns should be 20", 20, cols);
-        assertEquals("SF length field should be 9", 9, ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF));
+        assertEquals(5, rows,"Window rows should be 5");
+        assertEquals(20, cols,"Window columns should be 20");
+        assertEquals(9, ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF),"SF length field should be 9");
     }
 
     /**
@@ -341,11 +257,11 @@ public class StructuredFieldPairwiseTest {
         int minorType = sf[10] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 10", 10, rows);
-        assertEquals("Columns should be 40", 40, cols);
-        assertEquals("Minor structure type should be BORDER (0x01)", MINOR_BORDER, (byte) minorType);
-        assertTrue("Minor length should be positive", minorLen > 0);
-        assertTrue("Total SF should include minor structure", sfLength > 9);
+        assertEquals(10, rows,"Rows should be 10");
+        assertEquals(40, cols,"Columns should be 40");
+        assertEquals(MINOR_BORDER, (byte) minorType,"Minor structure type should be BORDER (0x01)");
+        assertTrue(minorLen > 0,"Minor length should be positive");
+        assertTrue(sfLength > 9,"Total SF should include minor structure");
     }
 
     /**
@@ -363,8 +279,8 @@ public class StructuredFieldPairwiseTest {
         int sfType = sf[3] & 0xFF;
 
         // ASSERT
-        assertEquals("SF class should be 0xD9", 0xD9, sfClass);
-        assertEquals("SF type should be REMOVE_GUI (0x52)", 0x52, sfType);
+        assertEquals(0xD9, sfClass,"SF class should be 0xD9");
+        assertEquals(0x52, sfType,"SF type should be REMOVE_GUI (0x52)");
     }
 
     /**
@@ -394,9 +310,9 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Cursor restrict flag should be set", 0x80, cursorRestrictFlag);
-        assertEquals("Rows should be 8", 8, rows);
-        assertEquals("Cols should be 16", 16, cols);
+        assertEquals(0x80, cursorRestrictFlag,"Cursor restrict flag should be set");
+        assertEquals(8, rows,"Rows should be 8");
+        assertEquals(16, cols,"Cols should be 16");
     }
 
     /**
@@ -417,12 +333,11 @@ public class StructuredFieldPairwiseTest {
         int cols2 = sf2[8] & 0xFF;
 
         // ASSERT
-        assertEquals("First window: rows should be 5", 5, rows1);
-        assertEquals("First window: cols should be 20", 20, cols1);
-        assertEquals("Second window: rows should be 10", 10, rows2);
-        assertEquals("Second window: cols should be 30", 30, cols2);
-        assertFalse("Windows should have different dimensions",
-                (rows1 * cols1) == (rows2 * cols2));
+        assertEquals(5, rows1,"First window: rows should be 5");
+        assertEquals(20, cols1,"First window: cols should be 20");
+        assertEquals(10, rows2,"Second window: rows should be 10");
+        assertEquals(30, cols2,"Second window: cols should be 30");
+        assertFalse((rows1 * cols1) == (rows2 * cols2),"Windows should have different dimensions");
     }
 
     /**
@@ -440,9 +355,9 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 24 (screen maximum)", 24, rows);
-        assertEquals("Cols should be 80 (screen maximum)", 80, cols);
-        assertEquals("Area should equal full screen", SCREEN_SIZE, rows * cols);
+        assertEquals(24, rows,"Rows should be 24 (screen maximum)");
+        assertEquals(80, cols,"Cols should be 80 (screen maximum)");
+        assertEquals(SCREEN_SIZE, rows * cols,"Area should equal full screen");
     }
 
     /**
@@ -460,8 +375,8 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 1 (minimum)", 1, rows);
-        assertEquals("Cols should be 1 (minimum)", 1, cols);
+        assertEquals(1, rows,"Rows should be 1 (minimum)");
+        assertEquals(1, cols,"Cols should be 1 (minimum)");
     }
 
     /**
@@ -479,8 +394,8 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 1", 1, rows);
-        assertEquals("Cols should be 80 (full width)", 80, cols);
+        assertEquals(1, rows,"Rows should be 1");
+        assertEquals(80, cols,"Cols should be 80 (full width)");
     }
 
     /**
@@ -498,8 +413,8 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 24 (full height)", 24, rows);
-        assertEquals("Cols should be 1", 1, cols);
+        assertEquals(24, rows,"Rows should be 24 (full height)");
+        assertEquals(1, cols,"Cols should be 1");
     }
 
     /**
@@ -519,9 +434,9 @@ public class StructuredFieldPairwiseTest {
         char ur = (char) (sf[16] & 0xFF);
 
         // ASSERT
-        assertEquals("Upper-left should be +", '+', ul);
-        assertEquals("Upper edge should be -", '-', upper);
-        assertEquals("Upper-right should be +", '+', ur);
+        assertEquals('+', ul,"Upper-left should be +");
+        assertEquals('-', upper,"Upper edge should be -");
+        assertEquals('+', ur,"Upper-right should be +");
     }
 
     /**
@@ -544,12 +459,12 @@ public class StructuredFieldPairwiseTest {
         int monoAttr = sf[12] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 12", 12, rows);
-        assertEquals("Cols should be 60", 60, cols);
-        assertEquals("Minor type should be BORDER", MINOR_BORDER, (byte) minorType);
-        assertEquals("GUI flag should be set", 0x80, guiFlag);
-        assertTrue("Total length should be > 9", sfLength > 9);
-        assertTrue("Mono attribute should be valid", monoAttr >= 0 && monoAttr <= 0xFF);
+        assertEquals(12, rows,"Rows should be 12");
+        assertEquals(60, cols,"Cols should be 60");
+        assertEquals(MINOR_BORDER, (byte) minorType,"Minor type should be BORDER");
+        assertEquals(0x80, guiFlag,"GUI flag should be set");
+        assertTrue(sfLength > 9,"Total length should be > 9");
+        assertTrue(monoAttr >= 0 && monoAttr <= 0xFF,"Mono attribute should be valid");
     }
 
     /**
@@ -570,7 +485,7 @@ public class StructuredFieldPairwiseTest {
         int length = ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF);
 
         // ASSERT
-        assertEquals("Length should be 18", 18, length);
+        assertEquals(18, length,"Length should be 18");
     }
 
     /**
@@ -587,7 +502,7 @@ public class StructuredFieldPairwiseTest {
         int guiFlag = sf[11] & 0x80;
 
         // ASSERT
-        assertEquals("GUI flag should be set to 0x80", 0x80, guiFlag);
+        assertEquals(0x80, guiFlag,"GUI flag should be set to 0x80");
     }
 
     // ========================================================================
@@ -614,10 +529,8 @@ public class StructuredFieldPairwiseTest {
         int declaredLength = ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF);
         int actualLength = sf.length - 2; // Excluding length field itself
 
-        assertFalse("Declared length should not match actual for truncated SF",
-                declaredLength == actualLength);
-        assertTrue("Should detect that data is incomplete",
-                actualLength < declaredLength);
+        assertFalse(declaredLength == actualLength,"Declared length should not match actual for truncated SF");
+        assertTrue(actualLength < declaredLength,"Should detect that data is incomplete");
     }
 
     /**
@@ -643,9 +556,9 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 0 (degenerate case)", 0, rows);
-        assertEquals("Cols should be 0 (degenerate case)", 0, cols);
-        assertTrue("Area should be zero", rows * cols == 0);
+        assertEquals(0, rows,"Rows should be 0 (degenerate case)");
+        assertEquals(0, cols,"Cols should be 0 (degenerate case)");
+        assertTrue(rows * cols == 0,"Area should be zero");
     }
 
     /**
@@ -671,10 +584,9 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows parsed as 100", 100, rows);
-        assertEquals("Cols parsed as 255", 255, cols);
-        assertTrue("Area should exceed screen size",
-                rows * cols > SCREEN_SIZE);
+        assertEquals(100, rows,"Rows parsed as 100");
+        assertEquals(255, cols,"Cols parsed as 255");
+        assertTrue(rows * cols > SCREEN_SIZE,"Area should exceed screen size");
     }
 
     /**
@@ -699,8 +611,8 @@ public class StructuredFieldPairwiseTest {
         int sfClass = sf[2] & 0xFF;
 
         // ASSERT
-        assertFalse("SF class should not be 0xD9", sfClass == 0xD9);
-        assertEquals("SF class should be 0xAA", 0xAA, sfClass);
+        assertFalse(sfClass == 0xD9,"SF class should not be 0xD9");
+        assertEquals(0xAA, sfClass,"SF class should be 0xAA");
     }
 
     /**
@@ -725,10 +637,10 @@ public class StructuredFieldPairwiseTest {
         int sfType = sf[3] & 0xFF;
 
         // ASSERT
-        assertFalse("SF type should not be 0x51", sfType == 0x51);
-        assertFalse("SF type should not be 0x50", sfType == 0x50);
-        assertFalse("SF type should not be 0x52", sfType == 0x52);
-        assertEquals("SF type should be 0x99", 0x99, sfType);
+        assertFalse(sfType == 0x51,"SF type should not be 0x51");
+        assertFalse(sfType == 0x50,"SF type should not be 0x50");
+        assertFalse(sfType == 0x52,"SF type should not be 0x52");
+        assertEquals(0x99, sfType,"SF type should be 0x99");
     }
 
     /**
@@ -749,9 +661,9 @@ public class StructuredFieldPairwiseTest {
         int length = ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF);
 
         // ASSERT
-        assertEquals("Rows should be 0xFF (255)", 255, rows);
-        assertEquals("Cols should be 0xFF (255)", 255, cols);
-        assertEquals("Length should be 0xFFFF (65535)", 0xFFFF, length);
+        assertEquals(255, rows,"Rows should be 0xFF (255)");
+        assertEquals(255, cols,"Cols should be 0xFF (255)");
+        assertEquals(0xFFFF, length,"Length should be 0xFFFF (65535)");
     }
 
     /**
@@ -770,9 +682,9 @@ public class StructuredFieldPairwiseTest {
         int length = ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF);
 
         // ASSERT
-        assertEquals("Rows should be 0", 0, rows);
-        assertEquals("Cols should be 0", 0, cols);
-        assertEquals("Length should be 0", 0, length);
+        assertEquals(0, rows,"Rows should be 0");
+        assertEquals(0, cols,"Cols should be 0");
+        assertEquals(0, length,"Length should be 0");
     }
 
     /**
@@ -797,9 +709,8 @@ public class StructuredFieldPairwiseTest {
         int length = ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF);
 
         // ASSERT
-        assertEquals("Length field should be 65535", 0xFFFF, length);
-        assertTrue("Declared length vastly exceeds actual buffer",
-                length > sf.length);
+        assertEquals(0xFFFF, length,"Length field should be 65535");
+        assertTrue(length > sf.length,"Declared length vastly exceeds actual buffer");
     }
 
     /**
@@ -825,8 +736,8 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 128 (unsigned)", 128, rows);
-        assertEquals("Cols should be 160 (unsigned)", 160, cols);
+        assertEquals(128, rows,"Rows should be 128 (unsigned)");
+        assertEquals(160, cols,"Cols should be 160 (unsigned)");
     }
 
     /**
@@ -854,7 +765,7 @@ public class StructuredFieldPairwiseTest {
         int minorLen = sf[9] & 0xFF;
 
         // ASSERT
-        assertEquals("Minor length should be parsed as 255", 255, minorLen);
+        assertEquals(255, minorLen,"Minor length should be parsed as 255");
     }
 
     /**
@@ -897,8 +808,8 @@ public class StructuredFieldPairwiseTest {
         int level2Minor = sf[secondMinorStart + 1] & 0xFF;
 
         // ASSERT
-        assertEquals("First nested minor type should be BORDER", MINOR_BORDER, (byte) level1Minor);
-        assertEquals("Second nested minor type should be 0x02", 0x02, level2Minor);
+        assertEquals(MINOR_BORDER, (byte) level1Minor,"First nested minor type should be BORDER");
+        assertEquals(0x02, level2Minor,"Second nested minor type should be 0x02");
     }
 
     /**
@@ -926,12 +837,11 @@ public class StructuredFieldPairwiseTest {
         int cols2 = sf2[8] & 0xFF;
 
         // ASSERT
-        assertEquals("First window: rows should be 5", 5, rows1);
-        assertEquals("First window: cols should be 10", 10, cols1);
-        assertEquals("Second window: rows should be 3", 3, rows2);
-        assertEquals("Second window: cols should be 8", 8, cols2);
-        assertFalse("Windows should have different dimensions",
-                (rows1 * cols1) == (rows2 * cols2));
+        assertEquals(5, rows1,"First window: rows should be 5");
+        assertEquals(10, cols1,"First window: cols should be 10");
+        assertEquals(3, rows2,"Second window: rows should be 3");
+        assertEquals(8, cols2,"Second window: cols should be 8");
+        assertFalse((rows1 * cols1) == (rows2 * cols2),"Windows should have different dimensions");
     }
 
     /**
@@ -960,7 +870,7 @@ public class StructuredFieldPairwiseTest {
         int fieldId = sf[9] & 0xFF;
 
         // ASSERT
-        assertEquals("Field ID should be 0x99", 0x99, fieldId);
+        assertEquals(0x99, fieldId,"Field ID should be 0x99");
     }
 
     /**
@@ -984,12 +894,11 @@ public class StructuredFieldPairwiseTest {
         int cols2 = sf2[8] & 0xFF;
 
         // ASSERT
-        assertEquals("First window: rows should be 5", 5, rows1);
-        assertEquals("First window: cols should be 10", 10, cols1);
-        assertEquals("Second window: rows should be 8", 8, rows2);
-        assertEquals("Second window: cols should be 15", 15, cols2);
-        assertFalse("Windows have different dimensions",
-                (rows1 * cols1) == (rows2 * cols2));
+        assertEquals(5, rows1,"First window: rows should be 5");
+        assertEquals(10, cols1,"First window: cols should be 10");
+        assertEquals(8, rows2,"Second window: rows should be 8");
+        assertEquals(15, cols2,"Second window: cols should be 15");
+        assertFalse((rows1 * cols1) == (rows2 * cols2),"Windows have different dimensions");
     }
 
     /**
@@ -1022,8 +931,8 @@ public class StructuredFieldPairwiseTest {
         borderChars[7] = (char) (sf[21] & 0xFF);
 
         // ASSERT
-        assertEquals("First border char should be NULL", (char) 0x00, borderChars[0]);
-        assertEquals("Fifth border char should be 0xFF", (char) 0xFF, borderChars[4]);
+        assertEquals((char) 0x00, borderChars[0],"First border char should be NULL");
+        assertEquals((char) 0xFF, borderChars[4],"Fifth border char should be 0xFF");
     }
 
     /**
@@ -1041,8 +950,8 @@ public class StructuredFieldPairwiseTest {
         int cols = sf[8] & 0xFF;
 
         // ASSERT
-        assertEquals("Rows should be 24", 24, rows);
-        assertEquals("Cols should be 80", 80, cols);
+        assertEquals(24, rows,"Rows should be 24");
+        assertEquals(80, cols,"Cols should be 80");
         // Parser doesn't validate positioning; that's screen's job
     }
 
@@ -1071,9 +980,8 @@ public class StructuredFieldPairwiseTest {
         int remainingSpace = sf.length - 10;
 
         // ASSERT
-        assertEquals("Minor length declared as 80", 80, minorLen);
-        assertTrue("Minor length exceeds available space",
-                minorLen > remainingSpace);
+        assertEquals(80, minorLen,"Minor length declared as 80");
+        assertTrue(minorLen > remainingSpace,"Minor length exceeds available space");
     }
 
     // ========================================================================
@@ -1099,10 +1007,9 @@ public class StructuredFieldPairwiseTest {
         int baseWindowSize = 9;
 
         // ASSERT
-        assertEquals("Rows should be 10", 10, rows);
-        assertEquals("Cols should be 40", 40, cols);
-        assertTrue("Total length should include base and minor",
-                totalLength >= baseWindowSize);
+        assertEquals(10, rows,"Rows should be 10");
+        assertEquals(40, cols,"Cols should be 40");
+        assertTrue(totalLength >= baseWindowSize,"Total length should include base and minor");
     }
 
     /**
@@ -1120,7 +1027,7 @@ public class StructuredFieldPairwiseTest {
         int actualLength = sf.length - 2; // Excluding length field
 
         // ASSERT
-        assertEquals("SF should have exact required length", declaredLength, actualLength);
+        assertEquals(declaredLength, actualLength,"SF should have exact required length");
     }
 
     /**
@@ -1139,9 +1046,8 @@ public class StructuredFieldPairwiseTest {
         int length = ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF);
 
         // ASSERT
-        assertEquals("Length should be 1", 1, length);
-        assertTrue("SF should have minimal structure",
-                length >= 1);
+        assertEquals(1, length,"Length should be 1");
+        assertTrue(length >= 1,"SF should have minimal structure");
     }
 
     /**
@@ -1161,6 +1067,6 @@ public class StructuredFieldPairwiseTest {
         int length = ((sf[0] & 0xFF) << 8) | (sf[1] & 0xFF);
 
         // ASSERT
-        assertEquals("Length should be 65535", 65535, length);
+        assertEquals(65535, length,"Length should be 65535");
     }
 }

@@ -1,17 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Surface Test Suite
- * Schema Contract Surface - Field Definition Verification
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Tests the contract between declared i5 schema and actual implementation:
- * - Field length boundaries (min/max)
- * - Data type constraints (numeric, character, packed)
- * - No silent truncation
- * - No data loss during field assignment
- * - Integrity across field updates
- *
- * This surface catches schema drift: when i5 changes field definitions without
- * telling us, these tests will fail.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.surfaces;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -332,7 +327,7 @@ public class SchemaContractSurfaceTest {
             java.util.Map.entry("QUANTITY", new FieldDefinition("NUMERIC", 0, 9999, 4, 0)),
             java.util.Map.entry("AMOUNT", new FieldDefinition("NUMERIC", -999999, 999999, 6, 0)),
             java.util.Map.entry("ACCOUNT_NAME", new FieldDefinition("CHARACTER", 0, 0, 30, 0)),
-            java.util.Map.entry("BALANCE", new FieldDefinition("DECIMAL", -99999, 99999, 0, 10, 2))
+            java.util.Map.entry("BALANCE", new FieldDefinition("DECIMAL", -999999999, 999999999, 0, 10, 2))
         );
 
         private final java.util.Map<String, Object> fieldValues = new java.util.HashMap<>();

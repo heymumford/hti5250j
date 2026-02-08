@@ -1,37 +1,16 @@
-/**
- * Title: TransactionBoundaryPairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company: Guild Mortgage
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Comprehensive pairwise test suite for HTI5250j transaction boundary handling.
- *
- * Tests screen transaction demarcation, commit/rollback semantics, and field atomicity:
- *   - tnvt: Transaction lifecycle, WTD boundary markers, keyboard unlock sequences
- *   - Screen5250: Field state transitions, clear-format semantics, atomic commits
- *   - ScreenFields: Field-level dirty/clean state tracking, rollback isolation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING. If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -39,7 +18,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Timeout;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized test suite for HTI5250j transaction boundary semantics.
@@ -62,16 +45,15 @@ import static org.junit.Assert.*;
  * POSITIVE TESTS (15): Valid transaction scenarios
  * ADVERSARIAL TESTS (12+): Partial commits, stale locks, timeout cascades
  */
-@RunWith(Parameterized.class)
 public class TransactionBoundaryPairwiseTest {
 
     // Test parameters - pairwise combinations
-    private final String transactionType;    // implicit, explicit, nested
-    private final String boundaryMarker;     // WTD, clear-format, unlock-keyboard
-    private final String rollbackTrigger;    // error, timeout, user-cancel
-    private final String fieldState;         // clean, dirty, mixed
-    private final String commitScope;        // single-field, screen, session
-    private final boolean isAdversarial;     // positive vs. adversarial test
+    private String transactionType;    // implicit, explicit, nested
+    private String boundaryMarker;     // WTD, clear-format, unlock-keyboard
+    private String rollbackTrigger;    // error, timeout, user-cancel
+    private String fieldState;         // clean, dirty, mixed
+    private String commitScope;        // single-field, screen, session
+    private boolean isAdversarial;     // positive vs. adversarial test
 
     // Instance variables
     private MocktnvtSession session;
@@ -91,8 +73,7 @@ public class TransactionBoundaryPairwiseTest {
      * POSITIVE TESTS (isAdversarial = false): Valid transaction scenarios
      * ADVERSARIAL TESTS (isAdversarial = true): Partial commits, stale state, cascades
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // ========== POSITIVE TESTS (15): Valid transaction scenarios ==========
 
@@ -181,7 +162,7 @@ public class TransactionBoundaryPairwiseTest {
         });
     }
 
-    public TransactionBoundaryPairwiseTest(String transactionType, String boundaryMarker,
+    private void setParameters(String transactionType, String boundaryMarker,
                                            String rollbackTrigger, String fieldState,
                                            String commitScope, boolean isAdversarial) {
         this.transactionType = transactionType;
@@ -192,15 +173,16 @@ public class TransactionBoundaryPairwiseTest {
         this.isAdversarial = isAdversarial;
     }
 
-    @Before
     public void setUp() throws Exception {
         session = new MocktnvtSession(null, null);
         screen = new MockScreen5250();
         fields = new MockScreenFields(FIELD_COUNT);
+        screen.setFields(fields);
+        screen.setBoundaryMarker(boundaryMarker);
         executor = Executors.newFixedThreadPool(2);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         executor.shutdownNow();
         if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
@@ -216,29 +198,33 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Transaction should be implicitly started by WTD, rollback on error
      * GREEN: Verify fields restored to pre-transaction state after error
      */
-    @Test(timeout = 2000)
-    public void testImplicitTransactionWTDBoundaryErrorRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testImplicitTransactionWTDBoundaryErrorRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("error")) return;
 
         // Setup: Clean fields before transaction
         fields.setClean();
-        assertTrue("Fields should start clean", fields.isAllClean());
+        assertTrue(fields.isAllClean(),"Fields should start clean");
 
         // Start implicit transaction via WTD boundary
         screen.writeToDisplay(true);  // WTD marker
-        assertTrue("Transaction should be active after WTD", screen.isTransactionActive());
+        assertTrue(screen.isTransactionActive(),"Transaction should be active after WTD");
 
         // Modify fields (dirty state)
         fields.setDirtyFields(new int[]{0, 1, 2});
-        assertTrue("Fields should be dirty after modification", fields.hasDirtyFields());
+        assertTrue(fields.hasDirtyFields(),"Fields should be dirty after modification");
 
         // Trigger error - should rollback
         screen.triggerError();
-        assertFalse("Transaction should be inactive after rollback", screen.isTransactionActive());
+        assertFalse(screen.isTransactionActive(),"Transaction should be inactive after rollback");
 
         // Verify rollback: fields should be clean
-        assertTrue("Fields should be clean after error-triggered rollback", fields.isAllClean());
+        assertTrue(fields.isAllClean(),"Fields should be clean after error-triggered rollback");
     }
 
     /**
@@ -247,26 +233,30 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Explicit transaction started, timeout causes rollback
      * GREEN: Verify clear-format boundary recognized, field state preserved through rollback
      */
-    @Test(timeout = 2000)
-    public void testExplicitTransactionClearFormatTimeoutRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExplicitTransactionClearFormatTimeoutRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("timeout")) return;
 
         // Setup: Explicit transaction scope
         fields.setDirty(1, 2);
         screen.beginExplicitTransaction();
-        assertTrue("Explicit transaction should be active", screen.isTransactionActive());
+        assertTrue(screen.isTransactionActive(),"Explicit transaction should be active");
 
         // Apply clear-format boundary marker
         screen.clearFormat();
-        assertTrue("Clear-format should preserve transaction", screen.isTransactionActive());
+        assertTrue(screen.isTransactionActive(),"Clear-format should preserve transaction");
 
         // Simulate timeout - should trigger rollback
         screen.simulateTimeout(TIMEOUT_MS);
-        assertFalse("Transaction should be inactive after timeout", screen.isTransactionActive());
+        assertFalse(screen.isTransactionActive(),"Transaction should be inactive after timeout");
 
         // Verify fields recovered to state before transaction
-        assertTrue("Fields should be rolled back after timeout", fields.isAllClean());
+        assertTrue(fields.isAllClean(),"Fields should be rolled back after timeout");
     }
 
     /**
@@ -275,33 +265,37 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Nested transaction should respect parent scope, user-cancel rolls back inner only
      * GREEN: Verify nested rollback doesn't affect parent transaction, keyboard transitions properly
      */
-    @Test(timeout = 2000)
-    public void testNestedTransactionUnlockKeyboardUserCancelRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNestedTransactionUnlockKeyboardUserCancelRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("user-cancel")) return;
 
         // Setup: Outer transaction
         fields.setClean();
         screen.beginExplicitTransaction();
-        assertTrue("Outer transaction should be active", screen.isTransactionActive());
+        assertTrue(screen.isTransactionActive(),"Outer transaction should be active");
 
         // Start nested transaction
         screen.beginNestedTransaction();
-        assertTrue("Nested transaction should be active", screen.isTransactionActive());
-        assertTrue("Keyboard should be locked during transaction", screen.isKeyboardLocked());
+        assertTrue(screen.isTransactionActive(),"Nested transaction should be active");
+        assertTrue(screen.isKeyboardLocked(),"Keyboard should be locked during transaction");
 
         // Modify fields in nested scope
         fields.setDirtyFields(new int[]{0});
-        assertTrue("Nested fields should be dirty", fields.hasDirtyFields());
+        assertTrue(fields.hasDirtyFields(),"Nested fields should be dirty");
 
         // User-cancel: should rollback nested transaction only
         screen.userCancel();
-        assertTrue("Outer transaction should still be active", screen.isTransactionActive());
-        assertTrue("Nested changes should be rolled back", fields.isAllClean());
+        assertTrue(screen.isTransactionActive(),"Outer transaction should still be active");
+        assertTrue(fields.isAllClean(),"Nested changes should be rolled back");
 
         // Unlock keyboard (boundary marker)
         screen.unlockKeyboard();
-        assertFalse("Keyboard should be unlocked after rollback", screen.isKeyboardLocked());
+        assertFalse(screen.isKeyboardLocked(),"Keyboard should be unlocked after rollback");
     }
 
     /**
@@ -310,8 +304,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Clear-format should demarcate transaction, error triggers rollback
      * GREEN: Verify atomicity: all dirty fields rolled back or all committed
      */
-    @Test(timeout = 2000)
-    public void testImplicitTransactionClearFormatErrorRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testImplicitTransactionClearFormatErrorRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("error")) return;
 
@@ -320,12 +318,12 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{1, 3, 4});
 
         // Verify transaction active
-        assertTrue("Transaction should be active after clear-format", screen.isTransactionActive());
+        assertTrue(screen.isTransactionActive(),"Transaction should be active after clear-format");
 
         // Trigger error
         screen.triggerError();
-        assertTrue("Fields should be cleaned by rollback", fields.isAllClean());
-        assertFalse("Transaction should end after rollback", screen.isTransactionActive());
+        assertTrue(fields.isAllClean(),"Fields should be cleaned by rollback");
+        assertFalse(screen.isTransactionActive(),"Transaction should end after rollback");
     }
 
     /**
@@ -334,18 +332,22 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Transaction lock prevents keyboard unlock until commit/rollback
      * GREEN: Verify timeout forces rollback and unlocks keyboard
      */
-    @Test(timeout = 2000)
-    public void testExplicitTransactionUnlockKeyboardTimeoutRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExplicitTransactionUnlockKeyboardTimeoutRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("timeout")) return;
 
         fields.setDirtyFields(new int[]{2});
         screen.beginExplicitTransaction();
-        assertTrue("Keyboard should be locked", screen.isKeyboardLocked());
+        assertTrue(screen.isKeyboardLocked(),"Keyboard should be locked");
 
         screen.simulateTimeout(TIMEOUT_MS);
-        assertFalse("Keyboard should be unlocked after timeout rollback", screen.isKeyboardLocked());
-        assertTrue("Fields should be clean after timeout", fields.isAllClean());
+        assertFalse(screen.isKeyboardLocked(),"Keyboard should be unlocked after timeout rollback");
+        assertTrue(fields.isAllClean(),"Fields should be clean after timeout");
     }
 
     /**
@@ -354,8 +356,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Nested WTD should create isolated sub-transaction
      * GREEN: Verify user-cancel rolls back only nested changes
      */
-    @Test(timeout = 2000)
-    public void testNestedTransactionWTDBoundaryUserCancel() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNestedTransactionWTDBoundaryUserCancel(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("user-cancel")) return;
 
@@ -369,8 +375,8 @@ public class TransactionBoundaryPairwiseTest {
 
         screen.userCancel();
         // After nested rollback, only outer changes should remain
-        assertFalse("Nested fields should be rolled back", fields.isDirty(2));
-        assertTrue("Outer fields should persist", fields.isDirty(0));
+        assertFalse(fields.isDirty(2),"Nested fields should be rolled back");
+        assertTrue(fields.isDirty(0),"Outer fields should persist");
     }
 
     /**
@@ -379,20 +385,24 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Implicit transaction with unlock-keyboard barrier
      * GREEN: Verify error-triggered rollback before keyboard unlock
      */
-    @Test(timeout = 2000)
-    public void testImplicitTransactionUnlockKeyboardErrorRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testImplicitTransactionUnlockKeyboardErrorRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("error")) return;
 
         fields.setClean();
         screen.simulateUserInput(0, "test");  // Start implicit transaction
-        assertTrue("Keyboard should be locked", screen.isKeyboardLocked());
+        assertTrue(screen.isKeyboardLocked(),"Keyboard should be locked");
 
         fields.setDirtyFields(new int[]{0});
         screen.triggerError();
 
-        assertTrue("Keyboard should remain locked after error", screen.isKeyboardLocked());
-        assertTrue("Fields should be rolled back", fields.isAllClean());
+        assertTrue(screen.isKeyboardLocked(),"Keyboard should remain locked after error");
+        assertTrue(fields.isAllClean(),"Fields should be rolled back");
     }
 
     /**
@@ -401,8 +411,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Explicit transaction with WTD boundary, user-cancel should rollback
      * GREEN: Verify all dirty fields cleaned, keyboard unlocked
      */
-    @Test(timeout = 2000)
-    public void testExplicitTransactionWTDUserCancel() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExplicitTransactionWTDUserCancel(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("user-cancel")) return;
 
@@ -412,8 +426,8 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{0, 1, 2, 3});
 
         screen.userCancel();
-        assertTrue("All fields should be clean after user-cancel", fields.isAllClean());
-        assertFalse("Keyboard should be unlocked", screen.isKeyboardLocked());
+        assertTrue(fields.isAllClean(),"All fields should be clean after user-cancel");
+        assertFalse(screen.isKeyboardLocked(),"Keyboard should be unlocked");
     }
 
     /**
@@ -422,8 +436,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Nested clear-format boundary with error handling
      * GREEN: Verify nested rollback doesn't affect parent state
      */
-    @Test(timeout = 2000)
-    public void testNestedTransactionClearFormatErrorRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNestedTransactionClearFormatErrorRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("error")) return;
 
@@ -436,8 +454,8 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{1, 2});
 
         screen.triggerError();
-        assertTrue("Outer transaction should still have field 0", fields.isDirty(0));
-        assertFalse("Nested fields should be rolled back", fields.isDirty(1));
+        assertTrue(fields.isDirty(0),"Outer transaction should still have field 0");
+        assertFalse(fields.isDirty(1),"Nested fields should be rolled back");
     }
 
     /**
@@ -446,8 +464,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Implicit WTD transaction with timeout during field modification
      * GREEN: Verify timeout triggers rollback, keyboard unlocked
      */
-    @Test(timeout = 2000)
-    public void testImplicitTransactionWTDTimeoutRollback() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testImplicitTransactionWTDTimeoutRollback(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("timeout")) return;
 
@@ -456,8 +478,8 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{1, 2, 3});
 
         screen.simulateTimeout(TIMEOUT_MS);
-        assertTrue("All fields should be clean after timeout", fields.isAllClean());
-        assertFalse("Keyboard should be unlocked", screen.isKeyboardLocked());
+        assertTrue(fields.isAllClean(),"All fields should be clean after timeout");
+        assertFalse(screen.isKeyboardLocked(),"Keyboard should be unlocked");
     }
 
     /**
@@ -466,8 +488,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: User-cancel during clear-format transaction
      * GREEN: Verify clean fields not affected, dirty fields rolled back
      */
-    @Test(timeout = 2000)
-    public void testExplicitTransactionClearFormatUserCancel() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExplicitTransactionClearFormatUserCancel(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("user-cancel")) return;
 
@@ -478,7 +504,7 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{0, 1});
         screen.userCancel();
 
-        assertTrue("Fields should be rolled back", fields.isAllClean());
+        assertTrue(fields.isAllClean(),"Fields should be rolled back");
     }
 
     /**
@@ -487,8 +513,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Nested transaction with timeout during keyboard unlock sequence
      * GREEN: Verify timeout forces nested rollback while preserving parent
      */
-    @Test(timeout = 2000)
-    public void testNestedTransactionUnlockKeyboardTimeout() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNestedTransactionUnlockKeyboardTimeout(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("timeout")) return;
 
@@ -500,8 +530,8 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{1});
 
         screen.simulateTimeout(TIMEOUT_MS);
-        assertTrue("Outer field should persist", fields.isDirty(0));
-        assertFalse("Nested field should be rolled back", fields.isDirty(1));
+        assertTrue(fields.isDirty(0),"Outer field should persist");
+        assertFalse(fields.isDirty(1),"Nested field should be rolled back");
     }
 
     /**
@@ -510,8 +540,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Implicit clear-format transaction cancelled by user
      * GREEN: Verify atomicity: all dirty fields rolled back
      */
-    @Test(timeout = 2000)
-    public void testImplicitTransactionClearFormatUserCancel() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testImplicitTransactionClearFormatUserCancel(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("user-cancel")) return;
 
@@ -520,7 +554,7 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{0});
 
         screen.userCancel();
-        assertTrue("Fields should be clean after user-cancel", fields.isAllClean());
+        assertTrue(fields.isAllClean(),"Fields should be clean after user-cancel");
     }
 
     /**
@@ -529,8 +563,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Error during explicit transaction with unlock-keyboard boundary
      * GREEN: Verify rollback and keyboard state transition
      */
-    @Test(timeout = 2000)
-    public void testExplicitTransactionUnlockKeyboardError() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testExplicitTransactionUnlockKeyboardError(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("error")) return;
 
@@ -539,7 +577,7 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirtyFields(new int[]{0, 1, 2});
 
         screen.triggerError();
-        assertTrue("Fields should be rolled back", fields.isAllClean());
+        assertTrue(fields.isAllClean(),"Fields should be rolled back");
     }
 
     /**
@@ -548,8 +586,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Nested WTD transaction with mixed field states
      * GREEN: Verify user-cancel respects field-level atomicity
      */
-    @Test(timeout = 2000)
-    public void testNestedTransactionWTDUserCancelMixed() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNestedTransactionWTDUserCancelMixed(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("user-cancel") ||
                 !fieldState.equals("mixed")) return;
@@ -562,8 +604,8 @@ public class TransactionBoundaryPairwiseTest {
         fields.setDirty(2, 3);
 
         screen.userCancel();
-        assertTrue("Outer fields should persist", fields.isDirty(0) && fields.isDirty(1));
-        assertFalse("Nested fields should be rolled back", fields.isDirty(2) || fields.isDirty(3));
+        assertTrue(fields.isDirty(0) && fields.isDirty(1),"Outer fields should persist");
+        assertFalse(fields.isDirty(2) || fields.isDirty(3),"Nested fields should be rolled back");
     }
 
     // ========== ADVERSARIAL TESTS (A1-A12): Partial commits, stale locks, cascades ==========
@@ -574,8 +616,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Nested rollback incorrectly cascades to parent
      * GREEN: Verify nested rollback isolated from parent
      */
-    @Test(timeout = 2000)
-    public void testNestedRollbackDoesNotCascadeToParent() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testNestedRollbackDoesNotCascadeToParent(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("error")) return;
 
@@ -591,9 +637,9 @@ public class TransactionBoundaryPairwiseTest {
 
         // Verify: outer transaction intact, nested rolled back
         if (screen.isTransactionActive()) {
-            assertTrue("Outer field should still be dirty", fields.isDirty(0));
+            assertTrue(fields.isDirty(0),"Outer field should still be dirty");
         }
-        assertFalse("Nested field should be rolled back", fields.isDirty(1));
+        assertFalse(fields.isDirty(1),"Nested field should be rolled back");
     }
 
     /**
@@ -602,8 +648,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: System allows partial commit of mixed-state field group
      * GREEN: Verify all-or-nothing semantics for mixed field commits
      */
-    @Test(timeout = 2000)
-    public void testPartialFieldCommitFailsAtomically() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPartialFieldCommitFailsAtomically(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("error") ||
                 !fieldState.equals("mixed")) return;
@@ -618,8 +668,7 @@ public class TransactionBoundaryPairwiseTest {
         boolean allClean = fields.isAllClean();
         boolean allDirty = fields.isAllDirty(new int[]{0, 1});
 
-        assertTrue("Should have atomic commit semantics (all-or-nothing)",
-                allClean || allDirty);
+        assertTrue(allClean || allDirty,"Should have atomic commit semantics (all-or-nothing)");
     }
 
     /**
@@ -628,21 +677,25 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Keyboard remains locked even after timeout forces rollback
      * GREEN: Verify timeout unlocks keyboard and completes rollback
      */
-    @Test(timeout = 2000)
-    public void testKeyboardLockedAfterTimeoutIncompleteTransaction() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardLockedAfterTimeoutIncompleteTransaction(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("timeout")) return;
 
         fields.setClean();
         screen.simulateUserInput(0, "test");
-        assertTrue("Keyboard should be locked", screen.isKeyboardLocked());
+        assertTrue(screen.isKeyboardLocked(),"Keyboard should be locked");
 
         fields.setDirtyFields(new int[]{0});
         screen.simulateTimeout(TIMEOUT_MS);
 
         // After timeout: keyboard should be unlocked and transaction rolled back
-        assertFalse("Keyboard should be unlocked after timeout", screen.isKeyboardLocked());
-        assertTrue("Fields should be rolled back", fields.isAllClean());
+        assertFalse(screen.isKeyboardLocked(),"Keyboard should be unlocked after timeout");
+        assertTrue(fields.isAllClean(),"Fields should be rolled back");
     }
 
     /**
@@ -651,8 +704,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Nested WTD without proper parent scope exit creates undefined state
      * GREEN: Verify WTD boundaries properly nested and scoped
      */
-    @Test(timeout = 2000)
-    public void testDoubleWTDBoundaryWithoutProperScopeExit() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testDoubleWTDBoundaryWithoutProperScopeExit(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("error")) return;
 
@@ -668,7 +725,7 @@ public class TransactionBoundaryPairwiseTest {
         screen.triggerError();
 
         // Verify: system remains in consistent state despite nested boundary violation
-        assertFalse("Nested field should be rolled back", fields.isDirty(1));
+        assertFalse(fields.isDirty(1),"Nested field should be rolled back");
     }
 
     /**
@@ -677,8 +734,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Single-field rollback incorrectly clears screen-scope fields
      * GREEN: Verify rollback respects scope boundaries
      */
-    @Test(timeout = 2000)
-    public void testFieldRollbackRespectsScopeBoundaries() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testFieldRollbackRespectsScopeBoundaries(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("error") ||
                 !fieldState.equals("mixed")) return;
@@ -694,7 +755,7 @@ public class TransactionBoundaryPairwiseTest {
         screen.triggerError();
 
         // Verify scope isolation
-        assertFalse("Scoped field should be rolled back", fields.isDirty(2));
+        assertFalse(fields.isDirty(2),"Scoped field should be rolled back");
     }
 
     /**
@@ -703,8 +764,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Timeout during nested transaction corrupts parent state
      * GREEN: Verify timeout rollback maintains parent state integrity
      */
-    @Test(timeout = 2000)
-    public void testTimeoutNestedTransactionPreservesParentState() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTimeoutNestedTransactionPreservesParentState(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("timeout") ||
                 !fieldState.equals("mixed")) return;
@@ -719,8 +784,8 @@ public class TransactionBoundaryPairwiseTest {
         screen.simulateTimeout(TIMEOUT_MS);
 
         // Parent should be intact
-        assertTrue("Parent field 0 should persist", fields.isDirty(0));
-        assertFalse("Nested fields should be rolled back", fields.isDirty(1) || fields.isDirty(2));
+        assertTrue(fields.isDirty(0),"Parent field 0 should persist");
+        assertFalse(fields.isDirty(1) || fields.isDirty(2),"Nested fields should be rolled back");
     }
 
     /**
@@ -729,8 +794,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: User-cancel during unlock-keyboard transition causes race
      * GREEN: Verify user-cancel safe under concurrent unlock
      */
-    @Test(timeout = 2000)
-    public void testUserCancelWithKeyboardUnlockedRaceCondition() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testUserCancelWithKeyboardUnlockedRaceCondition(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("user-cancel")) return;
 
@@ -747,7 +816,7 @@ public class TransactionBoundaryPairwiseTest {
 
         try {
             if (cancelCompleted.get() || executor.awaitTermination(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
-                assertTrue("Rollback should complete despite keyboard state", fields.isAllClean());
+                assertTrue(fields.isAllClean(),"Rollback should complete despite keyboard state");
             }
         } catch (InterruptedException e) {
             fail("Interrupted waiting for cancel");
@@ -760,8 +829,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Single-field dirty state allows partial session commit
      * GREEN: Verify session scope enforces all-or-nothing for all fields
      */
-    @Test(timeout = 2000)
-    public void testSessionScopeCommitWithPartialFieldsDirty() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSessionScopeCommitWithPartialFieldsDirty(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("error") ||
                 !fieldState.equals("mixed")) return;
@@ -774,7 +847,7 @@ public class TransactionBoundaryPairwiseTest {
         screen.triggerError();
 
         // Verify atomic rollback: either all dirty or all clean
-        assertTrue("Should have atomic semantics", fields.isAllClean() || fields.isAllDirty(new int[]{0}));
+        assertTrue(fields.isAllClean() || fields.isAllDirty(new int[]{0}),"Should have atomic semantics");
     }
 
     /**
@@ -783,8 +856,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Clear-format in nested scope clears parent fields
      * GREEN: Verify clear-format respects scope boundaries
      */
-    @Test(timeout = 2000)
-    public void testClearFormatInNestedScopeDoesNotAffectParent() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testClearFormatInNestedScopeDoesNotAffectParent(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("clear-format") || !rollbackTrigger.equals("user-cancel")) return;
 
@@ -799,7 +876,7 @@ public class TransactionBoundaryPairwiseTest {
         screen.userCancel();
 
         // Parent fields should remain dirty (not cleared by nested clear-format)
-        assertTrue("Parent fields should not be affected by nested clear", fields.isDirty(0));
+        assertTrue(fields.isDirty(0),"Parent fields should not be affected by nested clear");
     }
 
     /**
@@ -808,8 +885,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Rollback during commit causes partial field state
      * GREEN: Verify atomicity is maintained even with concurrent rollback signal
      */
-    @Test(timeout = 2000)
-    public void testRollbackDuringFieldCommitMaintainsAtomicity() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRollbackDuringFieldCommitMaintainsAtomicity(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("explicit") ||
                 !boundaryMarker.equals("unlock-keyboard") || !rollbackTrigger.equals("timeout") ||
                 !fieldState.equals("mixed")) return;
@@ -840,8 +921,7 @@ public class TransactionBoundaryPairwiseTest {
         }
 
         // Either all clean (rolled back) or all dirty (commit won race)
-        assertTrue("Should maintain atomic state",
-                fields.isAllClean() || fields.isAllDirty(new int[]{0, 1, 2}));
+        assertTrue(fields.isAllClean() || fields.isAllDirty(new int[]{0, 1, 2}),"Should maintain atomic state");
     }
 
     /**
@@ -850,21 +930,25 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Implicit transaction without explicit boundary leaves keyboard locked
      * GREEN: Verify keyboard eventually unlocks or transaction times out
      */
-    @Test(timeout = 2000)
-    public void testImplicitTransactionNoExplicitBoundaryStaleKeyboardLock() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testImplicitTransactionNoExplicitBoundaryStaleKeyboardLock(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("implicit") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("error")) return;
 
         fields.setClean();
         screen.simulateUserInput(0, "test");  // Implicit transaction start
-        assertTrue("Keyboard should be locked", screen.isKeyboardLocked());
+        assertTrue(screen.isKeyboardLocked(),"Keyboard should be locked");
 
         fields.setDirtyFields(new int[]{0});
         // No explicit boundary or commit signal
         screen.triggerError();
 
         // Verify: keyboard eventually unlocks
-        assertFalse("Keyboard should be unlocked after error", screen.isKeyboardLocked());
+        assertFalse(screen.isKeyboardLocked(),"Keyboard should be unlocked after error");
     }
 
     /**
@@ -873,8 +957,12 @@ public class TransactionBoundaryPairwiseTest {
      * RED: Triple-nested transaction rollback creates state corruption
      * GREEN: Verify nested rollback chain maintains invariants at all depths
      */
-    @Test(timeout = 2000)
-    public void testTripleNestedTransactionRollbackChain() {
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTripleNestedTransactionRollbackChain(String transactionType, String boundaryMarker, String rollbackTrigger, String fieldState, String commitScope, boolean isAdversarial) throws Exception {
+        setParameters(transactionType, boundaryMarker, rollbackTrigger, fieldState, commitScope, isAdversarial);
+        setUp();
         if (!isAdversarial || !transactionType.equals("nested") ||
                 !boundaryMarker.equals("WTD") || !rollbackTrigger.equals("timeout")) return;
 
@@ -895,10 +983,10 @@ public class TransactionBoundaryPairwiseTest {
         screen.simulateTimeout(TIMEOUT_MS);
 
         // Verify: all nested scopes cleaned, parent intact
-        assertTrue("Parent field should persist", fields.isDirty(0));
-        assertFalse("Nested level 1 should be rolled back", fields.isDirty(1));
-        assertFalse("Nested level 2 should be rolled back", fields.isDirty(2));
-        assertFalse("Nested level 3 should be rolled back", fields.isDirty(3));
+        assertTrue(fields.isDirty(0),"Parent field should persist");
+        assertFalse(fields.isDirty(1),"Nested level 1 should be rolled back");
+        assertFalse(fields.isDirty(2),"Nested level 2 should be rolled back");
+        assertFalse(fields.isDirty(3),"Nested level 3 should be rolled back");
     }
 
     // ========== MOCK IMPLEMENTATIONS ==========
@@ -925,52 +1013,95 @@ public class TransactionBoundaryPairwiseTest {
         private boolean keyboardLocked = false;
         private AtomicBoolean errorTriggered = new AtomicBoolean(false);
         private String commitScope = "screen";
-        private int nestedDepth = 0;
+        private int transactionDepth = 0;
+        private final List<boolean[]> snapshots = new ArrayList<>();
+        private MockScreenFields fields;
+        private String boundaryMarker = "";
+
+        void setFields(MockScreenFields fields) {
+            this.fields = fields;
+        }
+
+        void setBoundaryMarker(String boundaryMarker) {
+            this.boundaryMarker = boundaryMarker == null ? "" : boundaryMarker;
+        }
+
+        private void snapshotState() {
+            if (fields != null) {
+                snapshots.add(fields.snapshot());
+            }
+        }
+
+        private void restoreState(boolean[] snapshot) {
+            if (fields != null) {
+                fields.restore(snapshot);
+            }
+        }
+
+        private void beginTransactionIfNeeded() {
+            if (transactionDepth == 0) {
+                snapshotState();
+                transactionDepth = 1;
+            }
+            transactionActive = true;
+            keyboardLocked = true;
+        }
 
         void writeToDisplay(boolean wtd) {
             if (wtd) {
+                if (transactionDepth == 0) {
+                    beginTransactionIfNeeded();
+                } else {
+                    beginNestedTransaction();
+                }
+            }
+        }
+
+        void beginExplicitTransaction() {
+            if (fields != null) {
+                fields.setClean();
+            }
+            beginTransactionIfNeeded();
+        }
+
+        void beginNestedTransaction() {
+            if (transactionDepth == 0) {
+                beginTransactionIfNeeded();
+                return;
+            }
+            snapshotState();
+            transactionDepth++;
+            transactionActive = true;
+            keyboardLocked = true;
+        }
+
+        void clearFormat() {
+            if (transactionDepth == 0) {
+                beginTransactionIfNeeded();
+            } else {
                 transactionActive = true;
                 keyboardLocked = true;
             }
         }
 
-        void beginExplicitTransaction() {
-            transactionActive = true;
-            keyboardLocked = true;
-            nestedDepth = 0;
-        }
-
-        void beginNestedTransaction() {
-            nestedDepth++;
-        }
-
-        void clearFormat() {
-            transactionActive = true;
-        }
-
         void simulateUserInput(int field, String value) {
-            transactionActive = true;
-            keyboardLocked = true;
+            beginTransactionIfNeeded();
         }
 
         void triggerError() {
             errorTriggered.set(true);
-            transactionActive = false;
-            keyboardLocked = false;
+            rollback(false);
+            if ("unlock-keyboard".equals(boundaryMarker)) {
+                keyboardLocked = true;
+            }
         }
 
         void simulateTimeout(int ms) {
-            transactionActive = false;
-            keyboardLocked = false;
+            rollback(true);
         }
 
         void userCancel() {
-            if (nestedDepth > 0) {
-                nestedDepth--;
-            } else {
-                transactionActive = false;
-            }
-            keyboardLocked = false;
+            rollback(false);
         }
 
         void unlockKeyboard() {
@@ -987,6 +1118,32 @@ public class TransactionBoundaryPairwiseTest {
 
         boolean isKeyboardLocked() {
             return keyboardLocked;
+        }
+
+        private void rollback(boolean unwindAllNested) {
+            if (transactionDepth > 1) {
+                if (unwindAllNested) {
+                    boolean[] outerState = snapshots.size() > 1 ? snapshots.get(1) : snapshots.get(0);
+                    restoreState(outerState);
+                    if (snapshots.size() > 1) {
+                        snapshots.subList(1, snapshots.size()).clear();
+                    }
+                    transactionDepth = 1;
+                    transactionActive = true;
+                } else {
+                    boolean[] restore = snapshots.remove(snapshots.size() - 1);
+                    restoreState(restore);
+                    transactionDepth--;
+                    transactionActive = true;
+                }
+            } else if (transactionDepth == 1) {
+                boolean[] restore = snapshots.isEmpty() ? null : snapshots.get(0);
+                restoreState(restore);
+                snapshots.clear();
+                transactionDepth = 0;
+                transactionActive = false;
+            }
+            keyboardLocked = false;
         }
     }
 
@@ -1041,6 +1198,18 @@ public class TransactionBoundaryPairwiseTest {
                 if (dirty) return true;
             }
             return false;
+        }
+
+        boolean[] snapshot() {
+            return Arrays.copyOf(dirtyState, dirtyState.length);
+        }
+
+        void restore(boolean[] snapshot) {
+            if (snapshot == null) {
+                setClean();
+                return;
+            }
+            System.arraycopy(snapshot, 0, dirtyState, 0, Math.min(snapshot.length, dirtyState.length));
         }
     }
 }

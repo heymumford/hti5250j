@@ -1,33 +1,19 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Test Suite
  *
- * @author Test Suite
- * @version 0.5
- * <p>
- * Description: Comprehensive pairwise TDD test suite for GUI components
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.gui;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.swing.JTabbedPane;
 import java.util.concurrent.CountDownLatch;
@@ -36,7 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Test Suite for GUI component tab management (Gui5250Frame and SessionPanel)
@@ -56,13 +42,13 @@ public class GuiComponentPairwiseTest {
     private MockSessionPanel mockSessionPanel;
     private ExecutorService executor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         tabbedPane = new JTabbedPane();
         executor = Executors.newFixedThreadPool(4);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         tabbedPane = null;
         if (executor != null) {
@@ -79,17 +65,17 @@ public class GuiComponentPairwiseTest {
     @Test
     public void testAddTab_SingleTabToEmptyPane_ShouldSucceed() {
         // ARRANGE: Empty pane
-        assertEquals("Precondition: pane should be empty", 0, tabbedPane.getTabCount());
+        assertEquals(0, tabbedPane.getTabCount(),"Precondition: pane should be empty");
         mockSessionPanel = createMockSessionPanel("Tab 1");
 
         // ACT: Add single tab
         tabbedPane.addTab("Tab 1", mockSessionPanel);
 
         // ASSERT: Tab added successfully
-        assertEquals("Tab count should be 1", 1, tabbedPane.getTabCount());
-        assertEquals("Tab title should match", "Tab 1", tabbedPane.getTitleAt(0));
-        assertEquals("Component should be retrievable", mockSessionPanel, tabbedPane.getComponentAt(0));
-        assertTrue("Tab should be visible", tabbedPane.isEnabledAt(0));
+        assertEquals(1, tabbedPane.getTabCount(),"Tab count should be 1");
+        assertEquals("Tab 1", tabbedPane.getTitleAt(0),"Tab title should match");
+        assertEquals(mockSessionPanel, tabbedPane.getComponentAt(0),"Component should be retrievable");
+        assertTrue(tabbedPane.isEnabledAt(0),"Tab should be visible");
     }
 
     /**
@@ -107,11 +93,11 @@ public class GuiComponentPairwiseTest {
         tabbedPane.addTab("Tab 2", tab2);
 
         // ASSERT: Both tabs present in correct order
-        assertEquals("Should have 2 tabs", 2, tabbedPane.getTabCount());
-        assertEquals("First tab title correct", "Tab 1", tabbedPane.getTitleAt(0));
-        assertEquals("Second tab title correct", "Tab 2", tabbedPane.getTitleAt(1));
-        assertEquals("First component correct", tab1, tabbedPane.getComponentAt(0));
-        assertEquals("Second component correct", tab2, tabbedPane.getComponentAt(1));
+        assertEquals(2, tabbedPane.getTabCount(),"Should have 2 tabs");
+        assertEquals("Tab 1", tabbedPane.getTitleAt(0),"First tab title correct");
+        assertEquals("Tab 2", tabbedPane.getTitleAt(1),"Second tab title correct");
+        assertEquals(tab1, tabbedPane.getComponentAt(0),"First component correct");
+        assertEquals(tab2, tabbedPane.getComponentAt(1),"Second component correct");
     }
 
     /**
@@ -130,8 +116,8 @@ public class GuiComponentPairwiseTest {
         tabbedPane.setSelectedIndex(0);
 
         // ASSERT: Correct tab selected
-        assertEquals("Selected index should be 0", 0, tabbedPane.getSelectedIndex());
-        assertEquals("Selected component should be tab1", tab1, tabbedPane.getSelectedComponent());
+        assertEquals(0, tabbedPane.getSelectedIndex(),"Selected index should be 0");
+        assertEquals(tab1, tabbedPane.getSelectedComponent(),"Selected component should be tab1");
     }
 
     /**
@@ -151,8 +137,8 @@ public class GuiComponentPairwiseTest {
         tabbedPane.setSelectedIndex(5);
 
         // ASSERT: Middle tab selected
-        assertEquals("Selected index should be 5", 5, tabbedPane.getSelectedIndex());
-        assertEquals("Selected component should be tabs[5]", tabs[5], tabbedPane.getSelectedComponent());
+        assertEquals(5, tabbedPane.getSelectedIndex(),"Selected index should be 5");
+        assertEquals(tabs[5], tabbedPane.getSelectedComponent(),"Selected component should be tabs[5]");
     }
 
     /**
@@ -173,8 +159,8 @@ public class GuiComponentPairwiseTest {
         tabbedPane.setSelectedIndex(lastIndex);
 
         // ASSERT: Last tab selected
-        assertEquals("Selected index should be 9", 9, tabbedPane.getSelectedIndex());
-        assertEquals("Selected component should be last tab", tabs[9], tabbedPane.getSelectedComponent());
+        assertEquals(9, tabbedPane.getSelectedIndex(),"Selected index should be 9");
+        assertEquals(tabs[9], tabbedPane.getSelectedComponent(),"Selected component should be last tab");
     }
 
     /**
@@ -190,15 +176,14 @@ public class GuiComponentPairwiseTest {
             tabbedPane.addTab("Tab " + i, tabs[i]);
         }
         tabbedPane.setSelectedIndex(5);
-        assertEquals("Precondition: should have 10 tabs", 10, tabbedPane.getTabCount());
+        assertEquals(10, tabbedPane.getTabCount(),"Precondition: should have 10 tabs");
 
         // ACT: Remove middle tab
         tabbedPane.remove(5);
 
         // ASSERT: Tab removed, indices adjusted
-        assertEquals("Should have 9 tabs after removal", 9, tabbedPane.getTabCount());
-        assertEquals("Tab 5 should be gone, Tab 6 should now be at index 5",
-                "Tab 6", tabbedPane.getTitleAt(5));
+        assertEquals(9, tabbedPane.getTabCount(),"Should have 9 tabs after removal");
+        assertEquals("Tab 6", tabbedPane.getTitleAt(5),"Tab 5 should be gone, Tab 6 should now be at index 5");
     }
 
     /**
@@ -218,9 +203,9 @@ public class GuiComponentPairwiseTest {
         tabbedPane.remove(0);
 
         // ASSERT: First tab removed, second tab remains
-        assertEquals("Should have 1 tab remaining", 1, tabbedPane.getTabCount());
-        assertEquals("Remaining tab should be Tab 2", "Tab 2", tabbedPane.getTitleAt(0));
-        assertEquals("Remaining component should be tab2", tab2, tabbedPane.getComponentAt(0));
+        assertEquals(1, tabbedPane.getTabCount(),"Should have 1 tab remaining");
+        assertEquals("Tab 2", tabbedPane.getTitleAt(0),"Remaining tab should be Tab 2");
+        assertEquals(tab2, tabbedPane.getComponentAt(0),"Remaining component should be tab2");
     }
 
     /**
@@ -240,8 +225,8 @@ public class GuiComponentPairwiseTest {
         tabbedPane.remove(1);
 
         // ASSERT: Last tab removed, first remains selected
-        assertEquals("Should have 1 tab remaining", 1, tabbedPane.getTabCount());
-        assertEquals("Remaining tab should be Tab 1", "Tab 1", tabbedPane.getTitleAt(0));
+        assertEquals(1, tabbedPane.getTabCount(),"Should have 1 tab remaining");
+        assertEquals("Tab 1", tabbedPane.getTitleAt(0),"Remaining tab should be Tab 1");
     }
 
     // ========== ADVERSARIAL TESTS ==========
@@ -253,13 +238,13 @@ public class GuiComponentPairwiseTest {
     @Test
     public void testSelectTab_EmptyPane_ShouldHandleGracefully() {
         // ARRANGE: Empty pane
-        assertEquals("Precondition: pane should be empty", 0, tabbedPane.getTabCount());
+        assertEquals(0, tabbedPane.getTabCount(),"Precondition: pane should be empty");
 
         // ACT & ASSERT: Should handle gracefully (not crash with NPE)
         try {
             int currentIndex = tabbedPane.getSelectedIndex();
-            assertEquals("Selected index on empty pane should be -1", -1, currentIndex);
-            assertNull("Selected component on empty pane should be null", tabbedPane.getSelectedComponent());
+            assertEquals(-1, currentIndex,"Selected index on empty pane should be -1");
+            assertNull(tabbedPane.getSelectedComponent(),"Selected component on empty pane should be null");
         } catch (Exception e) {
             fail("Should not throw exception when selecting from empty pane: " + e.getMessage());
         }
@@ -281,12 +266,11 @@ public class GuiComponentPairwiseTest {
         try {
             tabbedPane.setSelectedIndex(99);
             // If no exception, verify the pane behaves consistently
-            assertTrue("Index should be in valid range",
-                    tabbedPane.getSelectedIndex() >= -1 &&
-                    tabbedPane.getSelectedIndex() < tabbedPane.getTabCount());
+            assertTrue(tabbedPane.getSelectedIndex() >= -1 &&
+                    tabbedPane.getSelectedIndex() < tabbedPane.getTabCount(),"Index should be in valid range");
         } catch (IndexOutOfBoundsException e) {
             // This is expected behavior
-            assertNotNull("Exception should be thrown for out-of-bounds index", e);
+            assertNotNull(e,"Exception should be thrown for out-of-bounds index");
         }
     }
 
@@ -297,7 +281,7 @@ public class GuiComponentPairwiseTest {
     @Test
     public void testRemoveTab_EmptyPane_ShouldHandleGracefully() {
         // ARRANGE: Empty pane
-        assertEquals("Precondition: pane should be empty", 0, tabbedPane.getTabCount());
+        assertEquals(0, tabbedPane.getTabCount(),"Precondition: pane should be empty");
 
         // ACT & ASSERT: Should handle gracefully
         try {
@@ -305,7 +289,7 @@ public class GuiComponentPairwiseTest {
             fail("Should throw exception when removing from empty pane");
         } catch (IndexOutOfBoundsException e) {
             // Expected behavior
-            assertNotNull("Should throw IndexOutOfBoundsException", e);
+            assertNotNull(e,"Should throw IndexOutOfBoundsException");
         }
     }
 
@@ -316,7 +300,7 @@ public class GuiComponentPairwiseTest {
     @Test
     public void testTabOperations_RapidAddRemove_ShouldMaintainConsistency() {
         // ARRANGE: Empty pane
-        assertEquals("Precondition: pane should be empty", 0, tabbedPane.getTabCount());
+        assertEquals(0, tabbedPane.getTabCount(),"Precondition: pane should be empty");
 
         // ACT: Rapidly add and remove tabs
         for (int i = 0; i < 100; i++) {
@@ -328,9 +312,9 @@ public class GuiComponentPairwiseTest {
         }
 
         // ASSERT: Pane should be empty and consistent
-        assertEquals("After 100 add-remove cycles, pane should be empty", 0, tabbedPane.getTabCount());
-        assertEquals("Selected index should be -1 for empty pane", -1, tabbedPane.getSelectedIndex());
-        assertNull("Selected component should be null", tabbedPane.getSelectedComponent());
+        assertEquals(0, tabbedPane.getTabCount(),"After 100 add-remove cycles, pane should be empty");
+        assertEquals(-1, tabbedPane.getSelectedIndex(),"Selected index should be -1 for empty pane");
+        assertNull(tabbedPane.getSelectedComponent(),"Selected component should be null");
     }
 
     /**
@@ -351,8 +335,8 @@ public class GuiComponentPairwiseTest {
         }
 
         // ASSERT: Final selection should be consistent (99 % 2 = 1, last iteration is i=99)
-        assertEquals("Final selected index should be 1", 1, tabbedPane.getSelectedIndex());
-        assertEquals("Selected component should be tab2", tab2, tabbedPane.getSelectedComponent());
+        assertEquals(1, tabbedPane.getSelectedIndex(),"Final selected index should be 1");
+        assertEquals(tab2, tabbedPane.getSelectedComponent(),"Selected component should be tab2");
     }
 
     /**
@@ -434,10 +418,9 @@ public class GuiComponentPairwiseTest {
         boolean completed = finishLatch.await(10, TimeUnit.SECONDS);
 
         // ASSERT: No exceptions thrown and operations completed
-        assertTrue("Concurrent operations should complete within timeout", completed);
-        assertNull("No exceptions should be thrown during concurrent access: " +
-                (thrownException.get() != null ? thrownException.get().getMessage() : ""),
-                thrownException.get());
+        assertTrue(completed,"Concurrent operations should complete within timeout");
+        assertNull(thrownException.get(),"No exceptions should be thrown during concurrent access: " +
+                (thrownException.get() != null ? thrownException.get().getMessage() : ""));
     }
 
     /**
@@ -457,14 +440,14 @@ public class GuiComponentPairwiseTest {
         tabbedPane.setSelectedIndex(0);
 
         // ASSERT: Visibility state preserved
-        assertFalse("Tab1 should be hidden", tab1.isVisible());
-        assertEquals("Should still be able to select hidden tab", 0, tabbedPane.getSelectedIndex());
+        assertFalse(tab1.isVisible(),"Tab1 should be hidden");
+        assertEquals(0, tabbedPane.getSelectedIndex(),"Should still be able to select hidden tab");
 
         // ACT: Make visible again
         tab1.setVisible(true);
 
         // ASSERT: Visibility state updated
-        assertTrue("Tab1 should be visible", tab1.isVisible());
+        assertTrue(tab1.isVisible(),"Tab1 should be visible");
     }
 
     /**
@@ -483,13 +466,13 @@ public class GuiComponentPairwiseTest {
         tab1.setDisposed(true);
 
         // ASSERT: Should still be accessible (disposed state doesn't remove from pane)
-        assertEquals("Should have 2 tabs even with disposed component", 2, tabbedPane.getTabCount());
-        assertEquals("Should still retrieve disposed component", tab1, tabbedPane.getComponentAt(0));
+        assertEquals(2, tabbedPane.getTabCount(),"Should have 2 tabs even with disposed component");
+        assertEquals(tab1, tabbedPane.getComponentAt(0),"Should still retrieve disposed component");
 
         // ACT: Try to interact with disposed component
         try {
             MockSessionPanel retrieved = (MockSessionPanel) tabbedPane.getComponentAt(0);
-            assertTrue("Disposed flag should be set", retrieved.isDisposed());
+            assertTrue(retrieved.isDisposed(),"Disposed flag should be set");
         } catch (NullPointerException e) {
             fail("Should not throw NPE when accessing disposed component: " + e.getMessage());
         }
@@ -512,7 +495,7 @@ public class GuiComponentPairwiseTest {
             tabbedPane.getComponentAt(99);
             fail("Should throw IndexOutOfBoundsException");
         } catch (IndexOutOfBoundsException e) {
-            assertNotNull("Exception should be thrown", e);
+            assertNotNull(e,"Exception should be thrown");
         }
     }
 
@@ -523,13 +506,13 @@ public class GuiComponentPairwiseTest {
     @Test
     public void testGetSelectedComponent_EmptyPane_ShouldReturnNull() {
         // ARRANGE: Empty pane
-        assertEquals("Precondition: pane should be empty", 0, tabbedPane.getTabCount());
+        assertEquals(0, tabbedPane.getTabCount(),"Precondition: pane should be empty");
 
         // ACT: Get selected component
         Object selected = tabbedPane.getSelectedComponent();
 
         // ASSERT: Should return null without NPE
-        assertNull("Selected component should be null for empty pane", selected);
+        assertNull(selected,"Selected component should be null for empty pane");
     }
 
     /**
@@ -539,33 +522,33 @@ public class GuiComponentPairwiseTest {
     @Test
     public void testTabCount_ComplexOperationSequence_ShouldRemainConsistent() {
         // ARRANGE: Empty pane
-        assertEquals("Precondition: pane should be empty", 0, tabbedPane.getTabCount());
+        assertEquals(0, tabbedPane.getTabCount(),"Precondition: pane should be empty");
 
         // ACT: Complex operation sequence
         MockSessionPanel tab1 = createMockSessionPanel("Tab 1");
         tabbedPane.addTab("Tab 1", tab1);
-        assertEquals("After first add", 1, tabbedPane.getTabCount());
+        assertEquals(1, tabbedPane.getTabCount(),"After first add");
 
         MockSessionPanel tab2 = createMockSessionPanel("Tab 2");
         tabbedPane.addTab("Tab 2", tab2);
-        assertEquals("After second add", 2, tabbedPane.getTabCount());
+        assertEquals(2, tabbedPane.getTabCount(),"After second add");
 
         tabbedPane.remove(0);
-        assertEquals("After remove", 1, tabbedPane.getTabCount());
+        assertEquals(1, tabbedPane.getTabCount(),"After remove");
 
         MockSessionPanel tab3 = createMockSessionPanel("Tab 3");
         tabbedPane.addTab("Tab 3", tab3);
-        assertEquals("After another add", 2, tabbedPane.getTabCount());
+        assertEquals(2, tabbedPane.getTabCount(),"After another add");
 
         tabbedPane.setSelectedIndex(0);
-        assertEquals("Selection shouldn't change count", 2, tabbedPane.getTabCount());
+        assertEquals(2, tabbedPane.getTabCount(),"Selection shouldn't change count");
 
         tabbedPane.remove(0);
-        assertEquals("After another remove", 1, tabbedPane.getTabCount());
+        assertEquals(1, tabbedPane.getTabCount(),"After another remove");
 
         // ASSERT: Final state
-        assertEquals("Final tab count should be 1", 1, tabbedPane.getTabCount());
-        assertEquals("Remaining tab should be Tab 3", "Tab 3", tabbedPane.getTitleAt(0));
+        assertEquals(1, tabbedPane.getTabCount(),"Final tab count should be 1");
+        assertEquals("Tab 3", tabbedPane.getTitleAt(0),"Remaining tab should be Tab 3");
     }
 
     /**
@@ -575,7 +558,7 @@ public class GuiComponentPairwiseTest {
     @Test
     public void testTabOperations_LargeScale_ShouldHandleHundredTabs() {
         // ARRANGE: Empty pane
-        assertEquals("Precondition: pane should be empty", 0, tabbedPane.getTabCount());
+        assertEquals(0, tabbedPane.getTabCount(),"Precondition: pane should be empty");
 
         // ACT: Add 100 tabs
         MockSessionPanel[] tabs = new MockSessionPanel[100];
@@ -585,17 +568,17 @@ public class GuiComponentPairwiseTest {
         }
 
         // ASSERT: All added
-        assertEquals("Should have 100 tabs", 100, tabbedPane.getTabCount());
+        assertEquals(100, tabbedPane.getTabCount(),"Should have 100 tabs");
 
         // ACT: Select various indices
         tabbedPane.setSelectedIndex(0);
-        assertEquals("First selection", 0, tabbedPane.getSelectedIndex());
+        assertEquals(0, tabbedPane.getSelectedIndex(),"First selection");
 
         tabbedPane.setSelectedIndex(50);
-        assertEquals("Middle selection", 50, tabbedPane.getSelectedIndex());
+        assertEquals(50, tabbedPane.getSelectedIndex(),"Middle selection");
 
         tabbedPane.setSelectedIndex(99);
-        assertEquals("Last selection", 99, tabbedPane.getSelectedIndex());
+        assertEquals(99, tabbedPane.getSelectedIndex(),"Last selection");
 
         // ACT: Remove first 10 tabs
         for (int i = 0; i < 10; i++) {
@@ -603,8 +586,8 @@ public class GuiComponentPairwiseTest {
         }
 
         // ASSERT: Correct count and indices adjusted
-        assertEquals("Should have 90 tabs after removing 10", 90, tabbedPane.getTabCount());
-        assertEquals("First tab should now be Tab 10", "Tab 10", tabbedPane.getTitleAt(0));
+        assertEquals(90, tabbedPane.getTabCount(),"Should have 90 tabs after removing 10");
+        assertEquals("Tab 10", tabbedPane.getTitleAt(0),"First tab should now be Tab 10");
     }
 
     // ========== HELPER METHODS ==========

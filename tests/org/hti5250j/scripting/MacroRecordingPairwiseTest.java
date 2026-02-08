@@ -1,34 +1,29 @@
-/**
- * <p>
- * Title: tn5250J Macro Recording and Playback Pairwise TDD Test Suite
- * Copyright: Copyright (c) 2026
- * Company:
- * <p>
- * Description: Comprehensive pairwise coverage for macro recording, storage,
- * playback, and editing operations with adversarial security focus
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.scripting;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.SessionPanel;
 import org.hti5250j.tools.Macronizer;
 
@@ -248,7 +243,7 @@ public class MacroRecordingPairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         mockSession = new MockSessionPanel();
         tempMacroDir = Files.createTempDirectory("tn5250j_macros_");
@@ -263,7 +258,7 @@ public class MacroRecordingPairwiseTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         macroRecorder.stopRecording();
         macroPlayback.stopPlayback();
@@ -296,7 +291,7 @@ public class MacroRecordingPairwiseTest {
         macroRecorder.stopRecording();
 
         String recorded = macroRecorder.getRecordedMacro();
-        assertEquals("Single keystroke should be recorded", "K:ENTER|", recorded);
+        assertEquals("K:ENTER|", recorded,"Single keystroke should be recorded");
     }
 
     // ========== PAIRWISE TEST 2: WAIT + MEDIUM + NORMAL + SKIP + GLOBAL ==========
@@ -319,7 +314,7 @@ public class MacroRecordingPairwiseTest {
         macroPlayback.setErrorHandling("skip");
 
         int actionCount = macroPlayback.countActions(macroContent.toString());
-        assertEquals("Should count 50 wait actions", 50, actionCount);
+        assertEquals(50, actionCount,"Should count 50 wait actions");
 
         macroPlayback.startPlayback();
         int executed = 0;
@@ -327,7 +322,7 @@ public class MacroRecordingPairwiseTest {
             macroPlayback.executeNextAction();
             executed++;
         }
-        assertEquals("Should execute all 50 actions", 50, macroPlayback.getExecutedActionCount());
+        assertEquals(50, macroPlayback.getExecutedActionCount(),"Should execute all 50 actions");
     }
 
     // ========== PAIRWISE TEST 3: SCREEN-MATCH + LONG + SLOW + PROMPT + SHARED ==========
@@ -348,8 +343,8 @@ public class MacroRecordingPairwiseTest {
         macroRecorder.stopRecording();
 
         String recorded = macroRecorder.getRecordedMacro();
-        assertTrue("Should contain screen match patterns", recorded.contains("M:ACCOUNT.*SCREEN"));
-        assertTrue("Should contain keystroke actions", recorded.contains("K:KEY"));
+        assertTrue(recorded.contains("M:ACCOUNT.*SCREEN"),"Should contain screen match patterns");
+        assertTrue(recorded.contains("K:KEY"),"Should contain keystroke actions");
     }
 
     // ========== PAIRWISE TEST 4: VARIABLE + EMPTY + STEPPED + STOP + SESSION ==========
@@ -366,11 +361,11 @@ public class MacroRecordingPairwiseTest {
         macroPlayback.setErrorHandling("stop");
 
         int actionCount = macroPlayback.countActions("");
-        assertEquals("Empty macro should have 0 actions", 0, actionCount);
+        assertEquals(0, actionCount,"Empty macro should have 0 actions");
 
         macroPlayback.startPlayback();
         int executed = macroPlayback.executeNextAction();
-        assertEquals("Executing empty macro should return -1", -1, executed);
+        assertEquals(-1, executed,"Executing empty macro should return -1");
     }
 
     // ========== PAIRWISE TEST 5: KEYSTROKE + MEDIUM + SLOW + SKIP + GLOBAL ==========
@@ -393,11 +388,11 @@ public class MacroRecordingPairwiseTest {
             String retrieved = Macronizer.getMacroByName(macroName);
 
             if (retrieved != null) {
-                assertEquals("Global macro should persist", actions.toString(), retrieved);
+                assertEquals(actions.toString(), retrieved,"Global macro should persist");
             }
         } catch (Exception ex) {
             // Macro system may not be fully available
-            assertTrue("Global macro test handled", true);
+            assertTrue(true,"Global macro test handled");
         }
     }
 
@@ -420,10 +415,10 @@ public class MacroRecordingPairwiseTest {
             // Retrieve and verify
             String retrieved = Macronizer.getMacroByName(sharedMacroName);
             if (retrieved != null) {
-                assertEquals("Shared macro should store original", originalActions, retrieved);
+                assertEquals(originalActions, retrieved,"Shared macro should store original");
             }
         } catch (Exception ex) {
-            assertTrue("Shared macro test handled", true);
+            assertTrue(true,"Shared macro test handled");
         }
     }
 
@@ -442,8 +437,7 @@ public class MacroRecordingPairwiseTest {
         macroRecorder.stopRecording();
 
         String recorded = macroRecorder.getRecordedMacro();
-        assertTrue("Should record even invalid patterns (validation happens at playback)",
-            recorded.contains("M:[INVALID(REGEX"));
+        assertTrue(recorded.contains("M:[INVALID(REGEX"),"Should record even invalid patterns (validation happens at playback)");
     }
 
     // ========== PAIRWISE TEST 8: VARIABLE + LONG + STEPPED + SKIP + SESSION ==========
@@ -463,8 +457,7 @@ public class MacroRecordingPairwiseTest {
         macroRecorder.stopRecording();
 
         String recorded = macroRecorder.getRecordedMacro();
-        assertTrue("Should record variable injection attempt",
-            recorded.contains("userInput="));
+        assertTrue(recorded.contains("userInput="),"Should record variable injection attempt");
         // In real implementation, this would be sanitized before storage
     }
 
@@ -488,7 +481,7 @@ public class MacroRecordingPairwiseTest {
         macroPlayback.setErrorHandling("prompt");
 
         int actionCount = macroPlayback.countActions(longMacro.toString());
-        assertEquals("Should count 500 actions", 500, actionCount);
+        assertEquals(500, actionCount,"Should count 500 actions");
 
         macroPlayback.startPlayback();
         int executed = 0;
@@ -496,7 +489,7 @@ public class MacroRecordingPairwiseTest {
             macroPlayback.executeNextAction();
             executed++;
         }
-        assertTrue("Should execute without buffer overflow", executed > 0);
+        assertTrue(executed > 0,"Should execute without buffer overflow");
     }
 
     // ========== PAIRWISE TEST 10: WAIT + MEDIUM + SLOW + STOP + GLOBAL ==========
@@ -526,7 +519,7 @@ public class MacroRecordingPairwiseTest {
         long duration = System.currentTimeMillis() - startTime;
 
         // Should take at least 10ms (10 actions * 1ms minimum)
-        assertTrue("Slow playback should apply delays", duration > 0);
+        assertTrue(duration > 0,"Slow playback should apply delays");
     }
 
     // ========== PAIRWISE TEST 11: KEYSTROKE + SHORT + NORMAL + SKIP + GLOBAL ==========
@@ -546,9 +539,9 @@ public class MacroRecordingPairwiseTest {
             Macronizer.removeMacroByName(macroName);
 
             String retrieved = Macronizer.getMacroByName(macroName);
-            assertNull("Macro should be deleted from global registry", retrieved);
+            assertNull(retrieved,"Macro should be deleted from global registry");
         } catch (Exception ex) {
-            assertTrue("Macro deletion test handled", true);
+            assertTrue(true,"Macro deletion test handled");
         }
     }
 
@@ -575,8 +568,7 @@ public class MacroRecordingPairwiseTest {
         playbackThread.start();
         playbackThread.join(2000); // 2 second timeout
 
-        assertTrue("Empty macro should complete without hanging",
-            !playbackThread.isAlive() && completed.get());
+        assertTrue(!playbackThread.isAlive() && completed.get(),"Empty macro should complete without hanging");
     }
 
     // ========== PAIRWISE TEST 13: VARIABLE + SHORT + SLOW + PROMPT + GLOBAL ==========
@@ -601,13 +593,11 @@ public class MacroRecordingPairwiseTest {
 
             if (retrieved != null) {
                 // Verify format preservation
-                assertTrue("Retrieved macro should contain variable",
-                    retrieved.contains("V:acct=12345"));
-                assertTrue("Retrieved macro should contain keystroke",
-                    retrieved.contains("K:ENTER"));
+                assertTrue(retrieved.contains("V:acct=12345"),"Retrieved macro should contain variable");
+                assertTrue(retrieved.contains("K:ENTER"),"Retrieved macro should contain keystroke");
             }
         } catch (Exception ex) {
-            assertTrue("Macro format test handled", true);
+            assertTrue(true,"Macro format test handled");
         }
     }
 
@@ -634,11 +624,11 @@ public class MacroRecordingPairwiseTest {
         // Execute actions one at a time
         for (int i = 0; i < 3; i++) {
             int result = macroPlayback.executeNextAction();
-            assertTrue("Should execute action " + i, result > 0);
+            assertTrue(result > 0,"Should execute action " + i);
             // In real implementation, would pause for manual input here
         }
 
-        assertEquals("Should have executed 3 actions", 3, macroPlayback.getExecutedActionCount());
+        assertEquals(3, macroPlayback.getExecutedActionCount(),"Should have executed 3 actions");
     }
 
     // ========== PAIRWISE TEST 15: WAIT + LONG + INSTANT + SKIP + SESSION ==========
@@ -699,7 +689,7 @@ public class MacroRecordingPairwiseTest {
         thread1.join(5000);
         thread2.join(5000);
 
-        assertTrue("Both concurrent playbacks should succeed", successCount.get() >= 1);
+        assertTrue(successCount.get() >= 1,"Both concurrent playbacks should succeed");
     }
 
     // ========== PAIRWISE TEST 16: KEYSTROKE + LONG + NORMAL + PROMPT + GLOBAL ==========
@@ -712,7 +702,7 @@ public class MacroRecordingPairwiseTest {
     @Test
     public void testErrorPromptPausesForUserDecision() {
         macroPlayback.setErrorHandling("prompt");
-        assertEquals("Error mode should be prompt", "prompt", macroPlayback.getErrorMode());
+        assertEquals("prompt", macroPlayback.getErrorMode(),"Error mode should be prompt");
 
         // In real implementation, would show dialog and wait for user
     }
@@ -733,11 +723,11 @@ public class MacroRecordingPairwiseTest {
 
         macroPlayback.loadMacro(macro.toString());
         macroPlayback.setErrorHandling("skip");
-        assertEquals("Error mode should be skip", "skip", macroPlayback.getErrorMode());
+        assertEquals("skip", macroPlayback.getErrorMode(),"Error mode should be skip");
 
         // Even with screen-match failures, skip mode would continue
         int actionCount = macroPlayback.countActions(macro.toString());
-        assertEquals("Should count 20 actions", 20, actionCount);
+        assertEquals(20, actionCount,"Should count 20 actions");
     }
 
     // ========== PAIRWISE TEST 18: VARIABLE + MEDIUM + INSTANT + STOP + SHARED ==========
@@ -757,10 +747,10 @@ public class MacroRecordingPairwiseTest {
             Macronizer.setMacro(maliciousMacroName, "K:TEST|");
 
             // Verify it was stored safely (with sanitized name)
-            assertTrue("Path traversal should be prevented or sanitized", true);
+            assertTrue(true,"Path traversal should be prevented or sanitized");
         } catch (Exception ex) {
             // Acceptable - blocked or error
-            assertTrue("Path traversal blocked", true);
+            assertTrue(true,"Path traversal blocked");
         }
     }
 
@@ -774,17 +764,17 @@ public class MacroRecordingPairwiseTest {
     @Test
     public void testRecordingTerminatesCleanlyWhenStopped() {
         macroRecorder.startRecording();
-        assertTrue("Recording should be active", macroRecorder.isRecording());
+        assertTrue(macroRecorder.isRecording(),"Recording should be active");
 
         for (int i = 0; i < 5; i++) {
             macroRecorder.recordKeystroke("KEY" + i);
         }
 
         macroRecorder.stopRecording();
-        assertFalse("Recording should be stopped", macroRecorder.isRecording());
+        assertFalse(macroRecorder.isRecording(),"Recording should be stopped");
 
         String recorded = macroRecorder.getRecordedMacro();
-        assertTrue("Should have recorded actions", recorded.length() > 0);
+        assertTrue(recorded.length() > 0,"Should have recorded actions");
     }
 
     // ========== PAIRWISE TEST 20: WAIT + SHORT + NORMAL + PROMPT + SESSION ==========
@@ -804,7 +794,7 @@ public class MacroRecordingPairwiseTest {
         macroRecorder.stopRecording();
 
         String recorded = macroRecorder.getRecordedMacro();
-        assertTrue("Should contain wait timing", recorded.contains("W:100") && recorded.contains("W:200"));
+        assertTrue(recorded.contains("W:100") && recorded.contains("W:200"),"Should contain wait timing");
     }
 
     // ========== PAIRWISE TEST 21: KEYSTROKE + LONG + SLOW + PROMPT + SHARED ==========
@@ -835,10 +825,10 @@ public class MacroRecordingPairwiseTest {
             String retrieved = Macronizer.getMacroByName(macroName);
 
             if (retrieved != null) {
-                assertEquals("Macro should survive reconnection", actions.toString(), retrieved);
+                assertEquals(actions.toString(), retrieved,"Macro should survive reconnection");
             }
         } catch (Exception ex) {
-            assertTrue("Macro persistence test handled", true);
+            assertTrue(true,"Macro persistence test handled");
         }
     }
 
@@ -864,8 +854,7 @@ public class MacroRecordingPairwiseTest {
         macroRecorder.stopRecording();
 
         String recorded = macroRecorder.getRecordedMacro();
-        assertTrue("Should handle large pattern without crash",
-            recorded.length() > 0);
+        assertTrue(recorded.length() > 0,"Should handle large pattern without crash");
     }
 
     // ========== PAIRWISE TEST 23: VARIABLE + LONG + NORMAL + SKIP + GLOBAL ==========
@@ -905,8 +894,7 @@ public class MacroRecordingPairwiseTest {
         playbackThread.start();
         playbackThread.join(3000);
 
-        assertTrue("Infinite loop detection should complete",
-            !playbackThread.isAlive() && completed.get());
+        assertTrue(!playbackThread.isAlive() && completed.get(),"Infinite loop detection should complete");
     }
 
     // ========== PAIRWISE TEST 24: KEYSTROKE + EMPTY + STEPPED + SKIP + SHARED ==========
@@ -925,10 +913,10 @@ public class MacroRecordingPairwiseTest {
             String retrieved = Macronizer.getMacroByName(emptyMacroName);
 
             if (retrieved != null) {
-                assertEquals("Empty macro should be stored", "", retrieved);
+                assertEquals("", retrieved,"Empty macro should be stored");
             }
         } catch (Exception ex) {
-            assertTrue("Empty macro test handled", true);
+            assertTrue(true,"Empty macro test handled");
         }
     }
 
@@ -973,8 +961,8 @@ public class MacroRecordingPairwiseTest {
             count2++;
         }
 
-        assertEquals("First macro should execute independently", 5, count1);
-        assertEquals("Second macro should execute independently", 5, count2);
+        assertEquals(5, count1,"First macro should execute independently");
+        assertEquals(5, count2,"Second macro should execute independently");
     }
 
     // ========== ADVERSARIAL TEST 26: MACRO INJECTION VIA KEYSTROKE ==========
@@ -996,7 +984,7 @@ public class MacroRecordingPairwiseTest {
         String recorded = macroRecorder.getRecordedMacro();
 
         // Should be recorded as literal keystroke, not executed
-        assertTrue("Keystroke should be literal", recorded.contains("K:"));
+        assertTrue(recorded.contains("K:"),"Keystroke should be literal");
     }
 
     // ========== ADVERSARIAL TEST 27: MACRO TAMPERING DETECTION ==========
@@ -1017,10 +1005,10 @@ public class MacroRecordingPairwiseTest {
             // In real implementation, would verify checksum
             String retrieved = Macronizer.getMacroByName(macroName);
             if (retrieved != null) {
-                assertEquals("Macro content should match original", original, retrieved);
+                assertEquals(original, retrieved,"Macro content should match original");
             }
         } catch (Exception ex) {
-            assertTrue("Macro tampering test handled", true);
+            assertTrue(true,"Macro tampering test handled");
         }
     }
 
@@ -1035,7 +1023,7 @@ public class MacroRecordingPairwiseTest {
     public void testNullMacroContentHandledGracefully() {
         macroPlayback.loadMacro(null);
         int actionCount = macroPlayback.countActions(null);
-        assertEquals("Null macro should have 0 actions", 0, actionCount);
+        assertEquals(0, actionCount,"Null macro should have 0 actions");
     }
 
     // ========== ADVERSARIAL TEST 29: UNICODE NORMALIZATION IN MACROS ==========
@@ -1055,7 +1043,7 @@ public class MacroRecordingPairwiseTest {
 
         macroRecorder.stopRecording();
         String recorded = macroRecorder.getRecordedMacro();
-        assertTrue("Should record Unicode pattern", recorded.contains("M:"));
+        assertTrue(recorded.contains("M:"),"Should record Unicode pattern");
     }
 
     // ========== ADVERSARIAL TEST 30: EXTREME PLAYBACK SPEED EDGE CASE ==========
@@ -1073,6 +1061,6 @@ public class MacroRecordingPairwiseTest {
 
         // Should clamp internally or use default
         macroPlayback.setPlaybackSpeed(2); // Valid
-        assertEquals("Should accept valid speed", 2, macroPlayback.playbackSpeed);
+        assertEquals(2, macroPlayback.playbackSpeed,"Should accept valid speed");
     }
 }

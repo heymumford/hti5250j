@@ -1,29 +1,16 @@
-package org.hti5250j.tools;
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * @author Kenneth J. Pouncey
- * @version 0.1
- * <p>
- * Description:
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
+
+package org.hti5250j.tools;
 
 import java.awt.Container;
 import java.awt.Component;
@@ -57,14 +44,14 @@ public class AlignLayout extends ENHGridLayout {
         super(VARIABLE, cols, hgap, vgap);
     }
 
-    private int get(Hashtable table, Component comp, int def) {
-        Object v = (table != null) ? table.get("" + comp.hashCode()) : null;
-        return (v != null) ? ((Integer) v).intValue() : def;
+    private int get(Hashtable table, Component component, int defaultValue) {
+        Object value = (table != null) ? table.get("" + component.hashCode()) : null;
+        return (value != null) ? ((Integer) value).intValue() : defaultValue;
     }
 
-    private boolean get(Hashtable table, Component comp, boolean def) {
-        Object v = (table != null) ? table.get("" + comp.hashCode()) : null;
-        return (v != null) ? ((Boolean) v).booleanValue() : def;
+    private boolean get(Hashtable table, Component component, boolean defaultValue) {
+        Object value = (table != null) ? table.get("" + component.hashCode()) : null;
+        return (value != null) ? ((Boolean) value).booleanValue() : defaultValue;
     }
 
     /**
@@ -82,7 +69,7 @@ public class AlignLayout extends ENHGridLayout {
      */
     public void setLabelVerticalAlignment(Component child, int align) {
         if (alignment == null) alignment = new Hashtable(5);
-        alignment.put("" + child.hashCode(), new Integer(align));
+        alignment.put("" + child.hashCode(), Integer.valueOf(align));
     }
 
     /** Gets the component's RezizeWidth value.
@@ -95,9 +82,9 @@ public class AlignLayout extends ENHGridLayout {
     /** Sets whether the control should be resized horizontally to its parent's
      * right edge if it is in the last column (default: false).
      */
-    public void setResizeWidth(Component child, boolean v) {
+    public void setResizeWidth(Component child, boolean shouldResize) {
         if (resize_width == null) resize_width = new Hashtable(5);
-        resize_width.put("" + child.hashCode(), new Boolean(v));
+        resize_width.put("" + child.hashCode(), Boolean.valueOf(shouldResize));
     }
 
     /** Gets the component's RezizeHeight value.
@@ -111,9 +98,9 @@ public class AlignLayout extends ENHGridLayout {
      * largest component in its row (default: false). This value is ignored for
      * labels (the components in odd columns).
      */
-    public void setResizeHeight(Component child, boolean v) {
+    public void setResizeHeight(Component child, boolean shouldResize) {
         if (resize_height == null) resize_height = new Hashtable(5);
-        resize_height.put("" + child.hashCode(), new Boolean(v));
+        resize_height.put("" + child.hashCode(), Boolean.valueOf(shouldResize));
     }
 
     protected boolean isLabel(int col) {
@@ -123,37 +110,37 @@ public class AlignLayout extends ENHGridLayout {
     /**
      * Positions the component.
      * @param pos the component's index in its parents child list
-     * @param row,col component's position
+     * @param row col component's position
      */
-    protected void setBounds(int pos, int row, int col, Component comp,
+    protected void setBounds(int pos, int row, int col, Component component,
                              int x, int y, int col_width, int row_height) {
 
         int comp_w = col_width, comp_h = row_height;
 
-        if (isLabel(col) || !getResizeHeight(comp)) {
-            comp_h = comp.getPreferredSize().height;
+        if (isLabel(col) || !getResizeHeight(component)) {
+            comp_h = component.getPreferredSize().height;
         }
 
         /* Resize a control to its parent's right edge if its resizeWidth value
          * is true, and it is in the last column
          */
         if (!isLabel(col)) {
-            if (col < col_widths.length - 1) {
-            } else if (getResizeWidth(comp)) {
-                Container parent = comp.getParent();
+            if (col < colWidths.length - 1) {
+            } else if (getResizeWidth(component)) {
+                Container parent = component.getParent();
                 comp_w = parent.getSize().width - parent.getInsets().right - x;
             } else {
-                comp_w = comp.getPreferredSize().width;
+                comp_w = component.getPreferredSize().width;
             }
 
-            comp.setBounds(x, y, comp_w, comp_h);
+            component.setBounds(x, y, comp_w, comp_h);
 
             return;
         }
 
         int control_h = row_height;
-        if (pos < comp.getParent().getComponentCount() - 1) {
-            Component control = comp.getParent().getComponents()[pos + 1];
+        if (pos < component.getParent().getComponentCount() - 1) {
+            Component control = component.getParent().getComponents()[pos + 1];
             if (control != null && !getResizeHeight(control)) {
                 control_h = control.getPreferredSize().height;
             }
@@ -161,12 +148,12 @@ public class AlignLayout extends ENHGridLayout {
 
         // Adjust label vertical position relative to paired control component
         // MIDDLE: centered between control bounds; BOTTOM: aligned to bottom
-        y += switch (getLabelVerticalAlignment(comp)) {
+        y += switch (getLabelVerticalAlignment(component)) {
             case MIDDLE -> (control_h - comp_h) / 2;  // Center label vertically
             case BOTTOM -> control_h - comp_h;        // Bottom-align label
             default -> 0;                              // TOP (default): no adjustment
         };
-        comp.setBounds(x, y, comp_w, comp_h);
+        component.setBounds(x, y, comp_w, comp_h);
     }
 
 }

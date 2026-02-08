@@ -1,55 +1,23 @@
-/**
- * Title: DoubleBytePairwiseTest.java
- * Copyright: Copyright (c) 2025
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: TDD pairwise tests for HTI5250j DBCS (Double-Byte Character Set) support.
- *
- * This test suite focuses on DBCS/CJK character handling in terminal automation:
- * - DBCS character storage and retrieval in screen planes
- * - EBCDIC CJK encoding/decoding (Japanese, Chinese, Korean)
- * - Unicode surrogate pair handling for characters beyond BMP
- * - Mixed SBCS/DBCS content in fields and screen regions
- * - Half-width vs. full-width character display dimensions
- * - Single-cell vs. double-cell cursor positioning
- * - Boundary conditions between character encodings
- * - Adversarial encoding injection and replacement attacks
- *
- * Test dimensions (pairwise combination):
- * 1. Character set: [SBCS-only (ASCII), DBCS-only (CJK), mixed (SBCS+DBCS)]
- * 2. Encoding: [EBCDIC CJK (IBM-930/939), Unicode surrogate, ASCII fallback]
- * 3. Field type: [input, output, both]
- * 4. Display width: [half-width (1 cell), full-width (2 cells)]
- * 5. Cursor handling: [single-cell, double-cell]
- *
- * POSITIVE TESTS (13): Valid DBCS operations and expected behaviors
- * ADVERSARIAL TESTS (12): Encoding injection, boundary errors, misalignment
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise TDD test suite for HTI5250j DBCS character support.
@@ -153,7 +121,7 @@ public class DoubleBytePairwiseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         screen5250 = new Screen5250TestDouble();
         screenPlanes = screen5250.getPlanes();
@@ -209,9 +177,9 @@ public class DoubleBytePairwiseTest {
         ScreenField field = createDBCSField(0, 10, FIELD_TYPE_INPUT, WIDTH_HALF, CURSOR_SINGLE_CELL);
         field.setString("ABCDE");
 
-        assertFalse("SBCS field should not be numeric", field.isNumeric());
-        assertEquals("SBCS field should preserve ASCII input length", 10, field.getText().length());
-        assertTrue("Field should contain ASCII", field.getText().startsWith("ABCDE"));
+        assertFalse(field.isNumeric(),"SBCS field should not be numeric");
+        assertEquals(10, field.getText().length(),"SBCS field should preserve ASCII input length");
+        assertTrue(field.getText().startsWith("ABCDE"),"Field should contain ASCII");
     }
 
     /**
@@ -225,8 +193,8 @@ public class DoubleBytePairwiseTest {
         String japaneseText = "\u3042\u3044\u3046\u3048\u304A";
         field.setString(japaneseText);
 
-        assertFalse("DBCS field should not be numeric", field.isNumeric());
-        assertEquals("DBCS Hiragana field should have correct length", 5, field.getText().length());
+        assertFalse(field.isNumeric(),"DBCS field should not be numeric");
+        assertEquals(5, field.getText().length(),"DBCS Hiragana field should have correct length");
     }
 
     /**
@@ -240,7 +208,7 @@ public class DoubleBytePairwiseTest {
         String chineseText = "\u4E00\u4E8C\u4E09";
         field.setString(chineseText);
 
-        assertEquals("DBCS Chinese field should preserve CJK characters", 3, field.getText().length());
+        assertEquals(3, field.getText().length(),"DBCS Chinese field should preserve CJK characters");
     }
 
     /**
@@ -254,7 +222,7 @@ public class DoubleBytePairwiseTest {
         String koreanText = "\uAC00\uB098\uB2E4\uB77C";
         field.setString(koreanText);
 
-        assertEquals("DBCS Korean field should preserve Hangul", 4, field.getText().length());
+        assertEquals(4, field.getText().length(),"DBCS Korean field should preserve Hangul");
     }
 
     /**
@@ -268,8 +236,8 @@ public class DoubleBytePairwiseTest {
         String mixedText = "ABC\u3042\u3044\u3046";
         field.setString(mixedText);
 
-        assertTrue("Mixed field should accept ASCII", field.getText().contains("ABC"));
-        assertEquals("Mixed field should preserve combined length", 8, field.getText().length());
+        assertTrue(field.getText().contains("ABC"),"Mixed field should accept ASCII");
+        assertEquals(8, field.getText().length(),"Mixed field should preserve combined length");
     }
 
     /**
@@ -283,7 +251,7 @@ public class DoubleBytePairwiseTest {
         field.setString(singleCJK);
 
         // Field pads to full length (10 chars)
-        assertEquals("Single DBCS character padded to field length", 10, field.getText().length());
+        assertEquals(10, field.getText().length(),"Single DBCS character padded to field length");
         // Display width would be 2 cells for DBCS, 1 cell per ASCII pad (verified by cursor logic)
     }
 
@@ -299,7 +267,7 @@ public class DoubleBytePairwiseTest {
         field.setString(halfKatakana);
 
         // Field pads to full length (5 chars)
-        assertEquals("Half-width Katakana characters padded to field length", 5, field.getText().length());
+        assertEquals(5, field.getText().length(),"Half-width Katakana characters padded to field length");
     }
 
     /**
@@ -313,7 +281,7 @@ public class DoubleBytePairwiseTest {
         String emoji = new String(new char[]{SURROGATE_HIGH, SURROGATE_LOW});
         field.setString(emoji);
 
-        assertEquals("Surrogate pair stored correctly", 2, field.getText().length());
+        assertEquals(2, field.getText().length(),"Surrogate pair stored correctly");
     }
 
     /**
@@ -326,8 +294,8 @@ public class DoubleBytePairwiseTest {
         String japaneseText = "\u3042\u3044\u3046\u3048\u304A\u304B";
         field.setString(japaneseText);
 
-        assertEquals("Output field stores DBCS content", 6, field.getText().length());
-        assertFalse("Output field should not be numeric", field.isNumeric());
+        assertEquals(6, field.getText().length(),"Output field stores DBCS content");
+        assertFalse(field.isNumeric(),"Output field should not be numeric");
     }
 
     /**
@@ -340,7 +308,7 @@ public class DoubleBytePairwiseTest {
         String koreanText = "\uAC00\uB098\uB2E4\uB77C\uB978";
         field.setString(koreanText);
 
-        assertEquals("Input field stores DBCS content", 5, field.getText().length());
+        assertEquals(5, field.getText().length(),"Input field stores DBCS content");
     }
 
     /**
@@ -355,7 +323,7 @@ public class DoubleBytePairwiseTest {
 
         // In double-cell mode, cursor advances 2 positions per DBCS character
         // Field pads to full length (10 chars)
-        assertEquals("DBCS characters padded to field length", 10, field.getText().length());
+        assertEquals(10, field.getText().length(),"DBCS characters padded to field length");
     }
 
     /**
@@ -367,7 +335,7 @@ public class DoubleBytePairwiseTest {
         ScreenField field = createDBCSField(0, 5, FIELD_TYPE_INPUT, WIDTH_HALF, CURSOR_SINGLE_CELL);
         field.setString("ABCDE");
 
-        assertEquals("SBCS characters stored", 5, field.getText().length());
+        assertEquals(5, field.getText().length(),"SBCS characters stored");
     }
 
     /**
@@ -379,7 +347,7 @@ public class DoubleBytePairwiseTest {
         ScreenField field = createDBCSField(800, 10, FIELD_TYPE_OUTPUT, WIDTH_FULL, CURSOR_DOUBLE_CELL);
         field.setString("");
 
-        assertEquals("Empty DBCS field maintains length", 10, field.getText().length());
+        assertEquals(10, field.getText().length(),"Empty DBCS field maintains length");
     }
 
     // ========================================================================
@@ -399,8 +367,8 @@ public class DoubleBytePairwiseTest {
         field.setString(malformedText);
 
         // Field should store content; validation occurs at rendering layer
-        assertNotNull("Field stores orphaned surrogate", field.getText());
-        assertEquals("Malformed surrogate stored", 5, field.getText().length());
+        assertNotNull(field.getText(),"Field stores orphaned surrogate");
+        assertEquals(5, field.getText().length(),"Malformed surrogate stored");
     }
 
     /**
@@ -415,8 +383,8 @@ public class DoubleBytePairwiseTest {
         String malformedText = "A" + String.valueOf(SURROGATE_LOW);
         field.setString(malformedText);
 
-        assertNotNull("Field stores orphaned low surrogate", field.getText());
-        assertEquals("Malformed low surrogate stored", 5, field.getText().length());
+        assertNotNull(field.getText(),"Field stores orphaned low surrogate");
+        assertEquals(5, field.getText().length(),"Malformed low surrogate stored");
     }
 
     /**
@@ -431,7 +399,7 @@ public class DoubleBytePairwiseTest {
         String japaneseText = "\u3042\u3044\u3046";
         field.setString(japaneseText);
 
-        assertEquals("DBCS characters at boundary", 3, field.getText().length());
+        assertEquals(3, field.getText().length(),"DBCS characters at boundary");
     }
 
     /**
@@ -448,7 +416,7 @@ public class DoubleBytePairwiseTest {
         field.setString(ebcdicMismatch);
 
         // Field stores content; encoding layer should handle mismatch
-        assertNotNull("Field stores encoding mismatch", field.getText());
+        assertNotNull(field.getText(),"Field stores encoding mismatch");
     }
 
     /**
@@ -463,7 +431,7 @@ public class DoubleBytePairwiseTest {
         String japaneseText = "\u3042\u3044\u3046\u3048\u304A";
         field.setString(japaneseText);
 
-        assertEquals("DBCS overflow truncated to field length", 3, field.getText().length());
+        assertEquals(3, field.getText().length(),"DBCS overflow truncated to field length");
     }
 
     /**
@@ -479,8 +447,8 @@ public class DoubleBytePairwiseTest {
         field.setString(textWithNull);
 
         // Field should store content including null
-        assertNotNull("Field stores null character", field.getText());
-        assertEquals("Null character stored in field", 5, field.getText().length());
+        assertNotNull(field.getText(),"Field stores null character");
+        assertEquals(5, field.getText().length(),"Null character stored in field");
     }
 
     /**
@@ -496,7 +464,7 @@ public class DoubleBytePairwiseTest {
         field.setString(bomText);
 
         // Field stores BOM; rendering layer determines handling
-        assertNotNull("Field stores BOM", field.getText());
+        assertNotNull(field.getText(),"Field stores BOM");
     }
 
     /**
@@ -511,8 +479,8 @@ public class DoubleBytePairwiseTest {
         String replacementText = "\uFFFD\u3042";
         field.setString(replacementText);
 
-        assertNotNull("Field stores replacement character", field.getText());
-        assertEquals("Replacement char preserved", 4, field.getText().length());
+        assertNotNull(field.getText(),"Field stores replacement character");
+        assertEquals(4, field.getText().length(),"Replacement char preserved");
     }
 
     /**
@@ -528,7 +496,7 @@ public class DoubleBytePairwiseTest {
         field.setString(mixedWidth);
 
         // Field stores characters; width calculation at rendering layer
-        assertEquals("Mixed width characters stored", 6, field.getText().length());
+        assertEquals(6, field.getText().length(),"Mixed width characters stored");
     }
 
     /**
@@ -543,7 +511,7 @@ public class DoubleBytePairwiseTest {
         String controlText = "\u001B[2J\u3042";  // ESC[2J (clear screen) + あ
         field.setString(controlText);
 
-        assertNotNull("Field stores control characters", field.getText());
+        assertNotNull(field.getText(),"Field stores control characters");
         // Control char handling at rendering layer
     }
 
@@ -559,7 +527,7 @@ public class DoubleBytePairwiseTest {
         String combinedText = "\u3042\u0301\u3044";  // あ + combining acute + い
         field.setString(combinedText);
 
-        assertNotNull("Field stores combining marks", field.getText());
+        assertNotNull(field.getText(),"Field stores combining marks");
         // Width/display logic handles combining marks separately
     }
 
@@ -577,7 +545,7 @@ public class DoubleBytePairwiseTest {
 
         // In double-cell mode, valid cursor positions: 0, 2, 4, 6... (not 1, 3, 5...)
         // Field pads to full length (4 chars)
-        assertEquals("DBCS characters padded to field length", 4, field.getText().length());
+        assertEquals(4, field.getText().length(),"DBCS characters padded to field length");
     }
 
     // ========================================================================
@@ -597,7 +565,7 @@ public class DoubleBytePairwiseTest {
 
         // Backspace logic should delete entire DBCS character (2 cells), not 1
         // Field pads to full length (6 chars)
-        assertEquals("DBCS characters padded to field length", 6, field.getText().length());
+        assertEquals(6, field.getText().length(),"DBCS characters padded to field length");
     }
 
     /**
@@ -615,7 +583,7 @@ public class DoubleBytePairwiseTest {
         field1.setString(japaneseText1);
         field2.setString(japaneseText2);
 
-        assertTrue("Identical DBCS fields should equal", field1.getText().equals(field2.getText()));
+        assertTrue(field1.getText().equals(field2.getText()),"Identical DBCS fields should equal");
     }
 
     /**
@@ -630,7 +598,7 @@ public class DoubleBytePairwiseTest {
         String emoji = new String(new char[]{'\uD83D', '\uDE00'});
         field.setString(emoji);
 
-        assertEquals("Surrogate pair stored", 2, field.getText().length());
+        assertEquals(2, field.getText().length(),"Surrogate pair stored");
     }
 
     /**
@@ -645,7 +613,7 @@ public class DoubleBytePairwiseTest {
         String shiftText = "\u0020\u3042\u3044";  // space + Japanese
         field.setString(shiftText);
 
-        assertNotNull("Field stores field shift byte", field.getText());
+        assertNotNull(field.getText(),"Field stores field shift byte");
     }
 
     /**
@@ -657,7 +625,7 @@ public class DoubleBytePairwiseTest {
         ScreenField field = createDBCSField(320, 4, FIELD_TYPE_INPUT, WIDTH_FULL, CURSOR_DOUBLE_CELL);
         field.setString("    ");  // Four spaces
 
-        assertEquals("Whitespace stored in DBCS field", 4, field.getText().length());
+        assertEquals(4, field.getText().length(),"Whitespace stored in DBCS field");
     }
 
     /**
@@ -674,7 +642,7 @@ public class DoubleBytePairwiseTest {
         field.setString(japaneseText);
 
         // Field pads to full length (4 chars)
-        assertEquals("DBCS characters at boundary padded", 4, field.getText().length());
+        assertEquals(4, field.getText().length(),"DBCS characters at boundary padded");
     }
 
     /**
@@ -691,7 +659,7 @@ public class DoubleBytePairwiseTest {
         }
         field.setString(sb.toString());
 
-        assertEquals("Large DBCS field stored", 40, field.getText().length());
+        assertEquals(40, field.getText().length(),"Large DBCS field stored");
     }
 
     /**
@@ -705,7 +673,7 @@ public class DoubleBytePairwiseTest {
         String aftText = new String(new char[]{(char) 0x08, '\u3042', (char) 0x0D, '\u3044'});
         field.setString(aftText);
 
-        assertNotNull("Field stores AFT control codes", field.getText());
+        assertNotNull(field.getText(),"Field stores AFT control codes");
     }
 
     /**
@@ -722,8 +690,8 @@ public class DoubleBytePairwiseTest {
         dbcsField.setString(japaneseText);
         numField.setString("12345");
 
-        assertEquals("DBCS field content isolated", 5, dbcsField.getText().length());
-        assertEquals("Numeric field independent", 5, numField.getText().length());
+        assertEquals(5, dbcsField.getText().length(),"DBCS field content isolated");
+        assertEquals(5, numField.getText().length(),"Numeric field independent");
     }
 
     /**
@@ -738,7 +706,7 @@ public class DoubleBytePairwiseTest {
 
         // Simulate refresh: content should remain unchanged
         String originalText = field.getText();
-        assertNotNull("Text persists after refresh", originalText);
-        assertEquals("DBCS field text unchanged", 5, originalText.length());
+        assertNotNull(originalText,"Text persists after refresh");
+        assertEquals(5, originalText.length(),"DBCS field text unchanged");
     }
 }

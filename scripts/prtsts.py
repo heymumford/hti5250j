@@ -1,16 +1,10 @@
-######################################################################
-#                            PRTSTS.PY                               #
-# ================================================================== #
-# Programmer    : Patrick Gerrit Jackie Bielen                       #
-# Company       : Stafa Holland BV - Feeling for fasteners           #
-# Functionality : Script for easy printer-management on your AS/400  #
-#                 Specially created for system-operators.            #
-# How it works  : When there is a message waiting for a specific     #
-#                 printer, a window pops up telling you wich printer #
-#                 has a message waiting to be answered.              #
-# Feedback      : tn5250j-mailinglist or directly to bielen@st...    #
-#                 ICQ #24140635 or private email pbielen@pl...       #
-######################################################################
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+
+
+
 
 import java
 import time

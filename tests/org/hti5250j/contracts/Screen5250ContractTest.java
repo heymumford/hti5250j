@@ -1,15 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Contract Test Suite
- * Screen5250 - 5250 Terminal Screen Model Contract
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Establishes behavioral contracts for Screen5250:
- * - Cursor bounds validation (0 ≤ pos < numRows * numCols)
- * - Cursor position tracking accuracy
- * - Row/column calculation consistency
- * - Dirty region calculation correctness
- * - OIA (Operator Information Area) state management
- * - Screen dimension consistency
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.contracts;
 
 import org.junit.jupiter.api.BeforeEach;

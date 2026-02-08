@@ -1,28 +1,14 @@
 /*
- * Title: GlobalConfigure.java
- * Copyright:   Copyright (c) 2001, 2002, 2003
- * Company:
- * @author  Kenneth J. Pouncey
- * @version 0.1
+ * SPDX-FileCopyrightText: Copyright (c) 2001, 2002, 2003
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Kenneth J. Pouncey
  *
- * Description:
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
- *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import org.hti5250j.interfaces.ConfigureFactory;
@@ -107,16 +93,16 @@ public class GlobalConfigure extends ConfigureFactory {
      */
     private void verifiySettingsFolder() {
         final String settingsfolder = System.getProperty("user.home") + File.separator + TN5250J_FOLDER;
-        final File f = new File(settingsfolder);
-        if (!f.exists()) {
+        final File settingsDir = new File(settingsfolder);
+        if (!settingsDir.exists()) {
             try {
                 if (log.isInfoEnabled()) {
                     log.info("Settings folder '" + settingsfolder + "' doesn't exist. Will created now.");
                 }
-                f.mkdir();
-            } catch (Exception e) {
+                settingsDir.mkdir();
+            } catch (Exception exception) {
                 if (log.isWarnEnabled()) {
-                    log.warn("Couldn't create settings folder '" + settingsfolder + "'", e);
+                    log.warn("Couldn't create settings folder '" + settingsfolder + "'", exception);
                 }
             }
         }
@@ -169,8 +155,6 @@ public class GlobalConfigure extends ConfigureFactory {
      */
     private void loadSettings() {
 
-        FileInputStream in = null;
-        FileInputStream again = null;
         settings = new Properties();
 
         // here we will check for a system property is provided first.
@@ -184,12 +168,14 @@ public class GlobalConfigure extends ConfigureFactory {
                     System.getProperty("user.home") + File.separator +
                             TN5250J_FOLDER + File.separator);
             try {
-                in = new FileInputStream(settingsFile);
-                settings.load(in);
+                try (InputStream in = openSettingsInputStream(settingsFile)) {
+                    settings.load(in);
+                }
             } catch (FileNotFoundException fnfe) {
                 try {
-                    again = new FileInputStream(settingsDirectory() + settingsFile);
-                    settings.load(again);
+                    try (InputStream again = openSettingsInputStream(settingsDirectory() + settingsFile)) {
+                        settings.load(again);
+                    }
                 } catch (FileNotFoundException fnfea) {
                     log.info(" Information Message: "
                             + fnfea.getMessage() + ".  The file " + settingsFile
@@ -270,24 +256,24 @@ public class GlobalConfigure extends ConfigureFactory {
                 File.separator + TN5250J_FOLDER + File.separator + sesFile;
         File rmvFile = new File(sesFile);
         try {
-            FileReader r = new FileReader(srcFile);
-            BufferedReader b = new BufferedReader(r);
+            FileReader reader = new FileReader(srcFile);
+            BufferedReader bufferedReader = new BufferedReader(reader);
 
-            FileWriter w = new FileWriter(dest);
-            PrintWriter p = new PrintWriter(w);
-            String regel = b.readLine();
-            while (regel != null) {
-                p.println(regel);
-                regel = b.readLine();
+            FileWriter writer = new FileWriter(dest);
+            PrintWriter printWriter = new PrintWriter(writer);
+            String line = bufferedReader.readLine();
+            while (line != null) {
+                printWriter.println(line);
+                line = bufferedReader.readLine();
             }
-            b.close();
-            p.close();
+            bufferedReader.close();
+            printWriter.close();
             rmvFile.delete();
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException fileNotFoundException) {
             log.warn(srcFile + " not found !");
-        } catch (IOException e) {
+        } catch (IOException ioException) {
             log.warn("Global io-error !");
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException arrayIndexException) {
         }
     }
 
@@ -298,8 +284,9 @@ public class GlobalConfigure extends ConfigureFactory {
     public void saveSettings() {
 
         try {
-            FileOutputStream out = new FileOutputStream(settingsDirectory() + settingsFile);
-            settings.store(out, "----------------- tn5250j Global Settings --------------");
+            try (OutputStream out = openSettingsOutputStream(settingsDirectory() + settingsFile)) {
+                settings.store(out, "----------------- tn5250j Global Settings --------------");
+            }
         } catch (FileNotFoundException fnfe) {
         } catch (IOException ioe) {
         }
@@ -342,12 +329,10 @@ public class GlobalConfigure extends ConfigureFactory {
 
         if (registry.containsKey(regKey)) {
             try {
-                FileOutputStream out = new FileOutputStream(
-                        settingsDirectory() + fileName);
-                Properties props = (Properties) registry.get(regKey);
-                props.store(out, header);
-                out.flush();
-                out.close();
+                try (OutputStream out = openSettingsOutputStream(settingsDirectory() + fileName)) {
+                    Properties props = (Properties) registry.get(regKey);
+                    props.store(out, header);
+                }
             } catch (FileNotFoundException fnfe) {
                 log.warn("File not found : writing file "
                         + fileName + ".  Description of error is "
@@ -364,6 +349,14 @@ public class GlobalConfigure extends ConfigureFactory {
 
         }
 
+    }
+
+    protected InputStream openSettingsInputStream(String path) throws FileNotFoundException {
+        return new FileInputStream(path);
+    }
+
+    protected OutputStream openSettingsOutputStream(String path) throws FileNotFoundException {
+        return new FileOutputStream(path);
     }
 
     /**

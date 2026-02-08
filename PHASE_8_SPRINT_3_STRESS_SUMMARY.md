@@ -1,28 +1,25 @@
-# Phase 8 Sprint 3: Stress Testing & Performance Validation - Summary
+# Phase 8 Sprint 3: Stress Testing and Performance Validation - Summary
 
-**Status:** ✅ **COMPLETE - Stress Framework Ready**
-
-**Date Completed:** 2026-02-07
-
-**Test Count:** 6 stress scenarios (adds to previous 22 scenario tests)
-
-**Commits:** Pending (will update after git operations)
-
----
+| Field | Value |
+| --- | --- |
+| Status | Complete - stress framework ready |
+| Date completed | 2026-02-07 |
+| Test count | 6 stress scenarios (in addition to 22 scenario tests) |
+| Commits | Pending (update after git operations) |
 
 ## Executive Summary
 
-Phase 8 Sprint 3 adds comprehensive stress testing to the scenario test framework. While Sprint 1 validated correctness of individual workflows and Sprint 2 (when available) will test against real i5, **Sprint 3 validates that the verifiers scale correctly under extreme concurrent load**.
+Phase 8 Sprint 3 adds stress testing to the scenario test framework. It validates that verifiers scale under heavy concurrent load, focusing on latency, throughput, memory, idempotency, and failure recovery.
 
-**Key outcomes:**
-- ✅ 1000+ concurrent sessions (using Java 21+ virtual threads)
-- ✅ Latency requirements verified (p50 < 100ms, p99 < 500ms)
-- ✅ Throughput validation (1000+ ops/sec baseline)
-- ✅ Memory stability under load (<100MB for 1000 sessions)
-- ✅ Idempotency verification under retries
-- ✅ Error cascade recovery
+Key outcomes:
+- 1000+ concurrent sessions (Java 21+ virtual threads)
+- Latency requirements verified (p50 < 100ms, p99 < 500ms)
+- Throughput validation (1000+ ops/sec baseline)
+- Memory stability under load (<100MB for 1000 sessions)
+- Idempotency verification under retries
+- Error cascade recovery
 
-**Strategic value:** Stress testing reveals correctness bugs invisible in unit tests. Even passing unit tests fail under production load due to resource contention, synchronization issues, and timing-dependent race conditions.
+Strategic value: Stress testing reveals correctness bugs that unit tests miss due to resource contention, synchronization issues, and timing-dependent race conditions.
 
 ---
 
@@ -170,11 +167,11 @@ This simulates:
 
 | Bug Type | Unit Test | Load Test |
 |----------|-----------|-----------|
-| Race condition in counter | Passes ✓ | Fails (1000 increments) ✗ |
-| Unbounded queue growth | Passes ✓ | Memory explodes ✗ |
-| Lock contention | Passes ✓ | Throughput collapses ✗ |
-| Memory leak under churn | Passes ✓ | Heap fills 5 seconds ✗ |
-| Timeout too short | Passes ✓ | Cascading failures under load ✗ |
+| Race condition in counter | Passes ✓ | Fails (1000 increments)  |
+| Unbounded queue growth | Passes ✓ | Memory explodes  |
+| Lock contention | Passes ✓ | Throughput collapses  |
+| Memory leak under churn | Passes ✓ | Heap fills 5 seconds  |
+| Timeout too short | Passes ✓ | Cascading failures under load  |
 
 ### Real Production Load
 
@@ -325,34 +322,9 @@ This ensures:
 
 ---
 
-## Architecture Alignment
+## Domain Context
 
-### Complete Test Stack
-
-```
-           Performance SLA Validation
-           (Phase 8 Sprint 3)
-                   ▲
-                   │
-           Stress Testing (6 tests)
-           ├── 1000 concurrent sessions
-           ├── Latency percentiles
-           ├── Throughput validation
-           ├── Memory stability
-           ├── Error cascade recovery
-           └── Idempotency under retry
-                   │
-         ┌─────────┴─────────┐
-         │                   │
-Domain 4 Scenarios (22 tests)   ← Business workflows
-Domain 3 Surface (100+ tests)   ← Critical boundaries
-Domain 2 Contracts (continuous) ← Real i5 monitoring
-Domain 1 Unit Tests (53 tests)  ← Fast feedback
-         │
-    Foundation: Correct logic
-```
-
----
+Stress testing is defined as a Domain 4 capability in the canonical test architecture. See `TEST_ARCHITECTURE.md` for domain definitions, cadence, and evidence expectations.
 
 ## Verification Checklist
 
@@ -373,31 +345,31 @@ Domain 1 Unit Tests (53 tests)  ← Fast feedback
 When you run stress tests, look for:
 
 **Success indicators:**
-- ✅ `successCount == sessionCount` (all sessions complete)
-- ✅ `p50Latency < 100ms` and `p99Latency < 500ms`
-- ✅ `throughput > 5000 ops/sec`
-- ✅ `peakMemory < 100MB`
-- ✅ `moneyProcessed == (sessionCount × operationsPerSession × 100)`
+- `successCount == sessionCount` (all sessions complete)
+- `p50Latency < 100ms` and `p99Latency < 500ms`
+- `throughput > 5000 ops/sec`
+- `peakMemory < 100MB`
+- `moneyProcessed == (sessionCount × operationsPerSession × 100)`
 
 **Warning signs:**
-- ⚠️ `maxLatency > 2000ms` (occasional slow operations)
-- ⚠️ `throughput < 5000 ops/sec` (degraded performance)
-- ⚠️ `peakMemory > 200MB` (memory efficiency issue)
+- `maxLatency > 2000ms` (occasional slow operations)
+- `throughput < 5000 ops/sec` (degraded performance)
+- `peakMemory > 200MB` (memory efficiency issue)
 
 **Critical failures:**
-- ❌ `successCount < sessionCount` (sessions lost)
-- ❌ `moneyProcessed != expected` (data corruption)
-- ❌ `p99Latency > 1000ms` (SLA violation)
+- `successCount < sessionCount` (sessions lost)
+- `moneyProcessed != expected` (data corruption)
+- `p99Latency > 1000ms` (SLA violation)
 
 ---
 
 ## Summary
 
 Phase 8 Sprint 3 **validates that verifiers scale correctly under production load**:
-- ✅ 1000 concurrent sessions with 10,000+ operations
-- ✅ Production-scale latency, throughput, memory requirements
-- ✅ Error resilience and recovery verification
-- ✅ Idempotency under retry and failure
+- 1000 concurrent sessions with 10,000+ operations
+- Production-scale latency, throughput, memory requirements
+- Error resilience and recovery verification
+- Idempotency under retry and failure
 
 This completes the test architecture foundation. Real i5 integration (Phase 8 Sprint 2) will validate that actual system performance meets these requirements.
 

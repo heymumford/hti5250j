@@ -1,3 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 package org.hti5250j;
 
 import java.net.*;
@@ -18,7 +28,7 @@ public class BootStrapper extends Thread {
         super("BootStrapper");
         try {
             serverSocket = new ServerSocket(3036);
-        } catch (IOException e) {
+        } catch (IOException ioException) {
             System.err.println("Could not listen on port: 3036.");
         }
 
@@ -71,8 +81,8 @@ public class BootStrapper extends Thread {
 
         try {
             socket = serverSocket.accept();
-        } catch (IOException ioe) {
-            System.out.println(this.getName() + ": " + ioe.getMessage());
+        } catch (IOException ioException) {
+            System.out.println(this.getName() + ": " + ioException.getMessage());
         }
 
     }
@@ -85,20 +95,20 @@ public class BootStrapper extends Thread {
 
         try {
 
-            BufferedReader in = new BufferedReader(
+            BufferedReader inputReader = new BufferedReader(
                     new InputStreamReader(
                             socket.getInputStream()));
 
-            bootEvent = new BootEvent(this, in.readLine());
+            bootEvent = new BootEvent(this, inputReader.readLine());
 
             System.out.println(bootEvent.getNewSessionOptions());
             fireBootEvent();
 
-            in.close();
+            inputReader.close();
             socket.close();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         }
 
     }

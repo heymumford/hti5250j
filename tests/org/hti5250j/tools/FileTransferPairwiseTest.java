@@ -1,36 +1,17 @@
-/**
- * FileTransferPairwiseTest.java - Pairwise TDD Tests for File Transfer (FTP/IFS)
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * This test suite uses pairwise testing to systematically discover bugs in file
- * transfer operations across FTP5250Prot and XTFRFile by combining multiple test
- * dimensions:
- *
- * Dimensions tested:
- * - Transfer direction: [upload, download]
- * - File sizes: [0 bytes, 1 KB, 1 MB, 100 MB]
- * - Transfer modes: [ASCII, binary, EBCDIC]
- * - Path types: [IFS, library/file, stream-file, non-existent]
- * - Error conditions: [file-not-found, permission-denied, disk-full, timeout, corrupt]
- *
- * Test strategy: Combine pairs of dimensions to create adversarial scenarios that
- * expose input validation gaps, encoding issues, state handling bugs, and resource
- * management problems.
- *
- * Writing style: RED phase tests with minimal passing implementation expectations.
- * Tests focus on demonstrating correct behavior (what should happen) with failure
- * cases that prove understanding of the system boundaries.
- *
- * Critical scenarios for automation:
- * - Large file handling (data exchange common in enterprise 5250)
- * - Mode selection (ASCII vs binary affects record encoding)
- * - Path parsing (IFS paths vs legacy library/member notation)
- * - Error recovery (timeout, disconnection, partial transfers)
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.tools;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.ICodePage;
 import org.hti5250j.event.FTPStatusEvent;
 import org.hti5250j.event.FTPStatusListener;
@@ -43,7 +24,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Pairwise Tests for File Transfer Operations (FTP5250Prot)
@@ -74,7 +55,7 @@ public class FileTransferPairwiseTest {
     private MockStatusListener statusListener;
     private MockOutputFilter mockFilter;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         tempDir = Files.createTempDirectory("tn5250j-transfer-test").toFile();
         sourceDir = new File(tempDir, "source");
@@ -88,7 +69,7 @@ public class FileTransferPairwiseTest {
         statusListener = new MockStatusListener();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (ftpProtocol != null) {
             ftpProtocol.disconnect();
@@ -132,18 +113,18 @@ public class FileTransferPairwiseTest {
         // ARRANGE: Create empty source file in IFS-like path
         File emptySource = new File(sourceDir, "empty.bin");
         emptySource.createNewFile();
-        assertTrue("Source file should exist", emptySource.exists());
-        assertEquals("File should be empty", 0, emptySource.length());
+        assertTrue(emptySource.exists(),"Source file should exist");
+        assertEquals(0, emptySource.length(),"File should be empty");
 
         // ACT: Simulate download operation
         byte[] data = new byte[0];
         File targetFile = new File(targetDir, "empty_downloaded.bin");
 
         // ASSERT: Target file should be created with same size
-        assertFalse("Target should not exist initially", targetFile.exists());
+        assertFalse(targetFile.exists(),"Target should not exist initially");
         Files.write(targetFile.toPath(), data);
-        assertTrue("Target file should be created", targetFile.exists());
-        assertEquals("Target file should be empty", 0, targetFile.length());
+        assertTrue(targetFile.exists(),"Target file should be created");
+        assertEquals(0, targetFile.length(),"Target file should be empty");
     }
 
     /**
@@ -161,20 +142,19 @@ public class FileTransferPairwiseTest {
         }
         Files.write(source.toPath(), content.toString().getBytes("UTF-8"));
         long sourceSize = source.length();
-        assertTrue("Source file should be ~2KB or more", sourceSize > 500);
+        assertTrue(sourceSize > 500,"Source file should be ~2KB or more");
 
         // ACT: Transfer file locally
         File target = new File(targetDir, "data_ascii.txt");
         Files.copy(source.toPath(), target.toPath());
 
         // ASSERT: File transferred with content preserved
-        assertTrue("Target file should exist", target.exists());
+        assertTrue(target.exists(),"Target file should exist");
         String targetContent = Files.lines(target.toPath())
                 .reduce("", (a, b) -> a + b + "\n");
-        assertFalse("Target content should not be empty", targetContent.isEmpty());
-        assertEquals("Content should match",
-                Files.lines(source.toPath()).count(),
-                Files.lines(target.toPath()).count());
+        assertFalse(targetContent.isEmpty(),"Target content should not be empty");
+        assertEquals(Files.lines(source.toPath()).count(),
+                Files.lines(target.toPath()).count(),"Content should match");
     }
 
     /**
@@ -196,22 +176,20 @@ public class FileTransferPairwiseTest {
                 fos.write(pattern);
             }
         }
-        assertEquals("Source should be ~1MB", 1024 * 1024, source.length());
+        assertEquals(1024 * 1024, source.length(),"Source should be ~1MB");
 
         // ACT: Transfer file
         File target = new File(targetDir, "QTEMP.LIBFILE");
         Files.copy(source.toPath(), target.toPath());
 
         // ASSERT: File transferred exactly
-        assertTrue("Target should exist", target.exists());
-        assertEquals("Target size should match source exactly",
-                source.length(), target.length());
+        assertTrue(target.exists(),"Target should exist");
+        assertEquals(source.length(), target.length(),"Target size should match source exactly");
 
         // Verify binary content checksum
         byte[] sourceBytes = Files.readAllBytes(source.toPath());
         byte[] targetBytes = Files.readAllBytes(target.toPath());
-        assertEquals("Binary content should match",
-                Arrays.hashCode(sourceBytes), Arrays.hashCode(targetBytes));
+        assertEquals(Arrays.hashCode(sourceBytes), Arrays.hashCode(targetBytes),"Binary content should match");
     }
 
     /**
@@ -232,9 +210,9 @@ public class FileTransferPairwiseTest {
         Files.copy(streamPath.toPath(), targetFile.toPath());
 
         // ASSERT: Stream-file transferred with content intact
-        assertTrue("Target should exist", targetFile.exists());
+        assertTrue(targetFile.exists(),"Target should exist");
         String targetContent = Files.lines(targetFile.toPath()).findFirst().orElse("");
-        assertEquals("Stream-file content should match", streamContent, targetContent);
+        assertEquals(streamContent, targetContent,"Stream-file content should match");
     }
 
     /**
@@ -254,9 +232,9 @@ public class FileTransferPairwiseTest {
         Files.copy(source.toPath(), target.toPath());
 
         // ASSERT: File transferred with EBCDIC mode indicator
-        assertTrue("Target should exist", target.exists());
-        assertEquals("File size should match", source.length(), target.length());
-        assertTrue("Should be marked as EBCDIC transfer", target.getName().contains("EBCDIC"));
+        assertTrue(target.exists(),"Target should exist");
+        assertEquals(source.length(), target.length(),"File size should match");
+        assertTrue(target.getName().contains("EBCDIC"),"Should be marked as EBCDIC transfer");
     }
 
     /**
@@ -280,10 +258,10 @@ public class FileTransferPairwiseTest {
         Files.copy(file3.toPath(), new File(targetDir, "file3.txt").toPath());
 
         // ASSERT: All files transferred
-        assertEquals("Should have 3 files in target", 3, targetDir.listFiles().length);
-        assertTrue("file1 should exist", new File(targetDir, "file1.txt").exists());
-        assertTrue("file2 should exist", new File(targetDir, "file2.txt").exists());
-        assertTrue("file3 should exist", new File(targetDir, "file3.txt").exists());
+        assertEquals(3, targetDir.listFiles().length,"Should have 3 files in target");
+        assertTrue(new File(targetDir, "file1.txt").exists(),"file1 should exist");
+        assertTrue(new File(targetDir, "file2.txt").exists(),"file2 should exist");
+        assertTrue(new File(targetDir, "file3.txt").exists(),"file3 should exist");
     }
 
     /**
@@ -302,8 +280,8 @@ public class FileTransferPairwiseTest {
         Files.copy(source.toPath(), target.toPath());
 
         // ASSERT: File transferred with name preserved
-        assertTrue("Target should exist", target.exists());
-        assertEquals("Filename should be preserved", "data_20250204_v1.txt", target.getName());
+        assertTrue(target.exists(),"Target should exist");
+        assertEquals("data_20250204_v1.txt", target.getName(),"Filename should be preserved");
     }
 
     /**
@@ -331,10 +309,8 @@ public class FileTransferPairwiseTest {
         Files.copy(source.toPath(), target.toPath());
 
         // ASSERT: File size should be exact multiple of record length
-        assertEquals("File size should be recordLength * recordCount",
-                recordLength * recordCount, target.length());
-        assertEquals("Target size should equal source size",
-                source.length(), target.length());
+        assertEquals(recordLength * recordCount, target.length(),"File size should be recordLength * recordCount");
+        assertEquals(source.length(), target.length(),"Target size should equal source size");
     }
 
     /**
@@ -353,8 +329,7 @@ public class FileTransferPairwiseTest {
         Files.copy(source.toPath(), target.toPath());
 
         // ASSERT: Status listener should have been notified
-        assertTrue("Listener should have received events",
-                statusListener.getEventCount() >= 0);
+        assertTrue(statusListener.getEventCount() >= 0,"Listener should have received events");
     }
 
     /**
@@ -369,7 +344,7 @@ public class FileTransferPairwiseTest {
         RandomAccessFile raf = new RandomAccessFile(source, "rw");
         raf.setLength(100 * 1024 * 1024);  // 100MB sparse file
         raf.close();
-        assertEquals("Source should be 100MB", 100 * 1024 * 1024, source.length());
+        assertEquals(100 * 1024 * 1024, source.length(),"Source should be 100MB");
 
         // ACT: Transfer large file using sparse copy
         File target = new File(targetDir, "large.bin");
@@ -378,9 +353,8 @@ public class FileTransferPairwiseTest {
         targetRaf.close();
 
         // ASSERT: Large file transferred with size preserved
-        assertTrue("Target should exist", target.exists());
-        assertEquals("Target should match source size",
-                source.length(), target.length());
+        assertTrue(target.exists(),"Target should exist");
+        assertEquals(source.length(), target.length(),"Target should match source size");
     }
 
     // ==========================================================================
@@ -396,15 +370,14 @@ public class FileTransferPairwiseTest {
     public void testDownloadNonExistentFileReturnsError() throws IOException {
         // ARRANGE: Specify non-existent remote file
         File nonExistent = new File(sourceDir, "does_not_exist.txt");
-        assertFalse("File should not exist", nonExistent.exists());
+        assertFalse(nonExistent.exists(),"File should not exist");
 
         // ACT: Attempt to download non-existent file
-        assertFalse("Download should fail", nonExistent.exists());
+        assertFalse(nonExistent.exists(),"Download should fail");
 
         // ASSERT: Error handled gracefully
-        assertTrue("Source file should still not exist", !nonExistent.exists());
-        assertTrue("Error status should be set",
-                statusListener.hasErrorOccurred() || !nonExistent.exists());
+        assertTrue(!nonExistent.exists(),"Source file should still not exist");
+        assertTrue(statusListener.hasErrorOccurred() || !nonExistent.exists(),"Error status should be set");
     }
 
     /**
@@ -436,9 +409,8 @@ public class FileTransferPairwiseTest {
             }
 
             // ASSERT: File not created in read-only directory or exception thrown
-            assertTrue("IOException should be thrown or file not created",
-                    exceptionThrown || !target.exists());
-            assertFalse("File should not be created in read-only dir", target.exists());
+            assertTrue(exceptionThrown || !target.exists(),"IOException should be thrown or file not created");
+            assertFalse(target.exists(),"File should not be created in read-only dir");
         } finally {
             // Restore permissions for cleanup
             Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxr-xr-x");
@@ -471,10 +443,8 @@ public class FileTransferPairwiseTest {
             }
 
             // ASSERT: Cannot read from source
-            assertTrue("IOException should be thrown when reading without permission",
-                    exceptionThrown);
-            assertFalse("Should not be able to read file without permission",
-                    source.canRead());
+            assertTrue(exceptionThrown,"IOException should be thrown when reading without permission");
+            assertFalse(source.canRead(),"Should not be able to read file without permission");
         } finally {
             // Restore permissions for cleanup
             source.setReadable(true);
@@ -501,8 +471,8 @@ public class FileTransferPairwiseTest {
         Files.copy(source.toPath(), target.toPath());
 
         // ASSERT: File transferred despite invalid bytes
-        assertTrue("Target should exist even with invalid data", target.exists());
-        assertEquals("Target size should match source", source.length(), target.length());
+        assertTrue(target.exists(),"Target should exist even with invalid data");
+        assertEquals(source.length(), target.length(),"Target size should match source");
     }
 
     /**
@@ -520,7 +490,7 @@ public class FileTransferPairwiseTest {
 
         // ACT & ASSERT: Would need mock filesystem to simulate true disk full
         // This test documents the expected behavior
-        assertTrue("Source file should be large", source.length() > 10 * 1024 * 1024);
+        assertTrue(source.length() > 10 * 1024 * 1024,"Source file should be large");
     }
 
     /**
@@ -537,8 +507,8 @@ public class FileTransferPairwiseTest {
         Path testPath = Paths.get(tempDir.toString(), invalidPath);
 
         // ASSERT: Path parsing should handle gracefully
-        assertNotNull("Path object should be created", testPath);
-        assertFalse("Invalid path file should not exist", Files.exists(testPath));
+        assertNotNull(testPath,"Path object should be created");
+        assertFalse(Files.exists(testPath),"Invalid path file should not exist");
     }
 
     /**
@@ -563,7 +533,7 @@ public class FileTransferPairwiseTest {
                         StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 // Expected on systems with strict file locking
-                assertTrue("IOException expected for locked file", true);
+                assertTrue(true,"IOException expected for locked file");
             }
 
             // ASSERT: Either transfer succeeded (if system allows) or failed gracefully
@@ -586,9 +556,9 @@ public class FileTransferPairwiseTest {
 
         // ACT & ASSERT: Different separators should be configurable
         for (char sep : separators) {
-            assertNotNull("Separator should be valid", Character.toString(sep));
+            assertNotNull(Character.toString(sep),"Separator should be valid");
         }
-        assertTrue("Decimal separators should be testable", true);
+        assertTrue(true,"Decimal separators should be testable");
     }
 
     /**
@@ -601,15 +571,15 @@ public class FileTransferPairwiseTest {
         // ARRANGE: Empty source directory
         File emptySource = new File(tempDir, "empty_source");
         emptySource.mkdirs();
-        assertEquals("Source dir should be empty", 0, emptySource.listFiles().length);
+        assertEquals(0, emptySource.listFiles().length,"Source dir should be empty");
 
         // ACT: Attempt to transfer from empty directory
         File[] files = emptySource.listFiles();
-        assertEquals("Should get empty array", 0, files.length);
+        assertEquals(0, files.length,"Should get empty array");
 
         // ASSERT: Handled gracefully
-        assertNotNull("Should return empty array not null", files);
-        assertEquals("Empty transfer should not fail", 0, files.length);
+        assertNotNull(files,"Should return empty array not null");
+        assertEquals(0, files.length,"Empty transfer should not fail");
     }
 
     /**
@@ -625,12 +595,12 @@ public class FileTransferPairwiseTest {
         new Random().nextBytes(data);
         Files.write(source.toPath(), data);
 
-        assertTrue("Source file created", source.exists());
-        assertEquals("Source file should be 1MB", 1024 * 1024, source.length());
+        assertTrue(source.exists(),"Source file created");
+        assertEquals(1024 * 1024, source.length(),"Source file should be 1MB");
 
         // NOTE: Full timeout testing requires actual FTP protocol mock
         // This test documents the expected behavior: timeout detection and abort
-        assertTrue("Large file should be transferable in principle", true);
+        assertTrue(true,"Large file should be transferable in principle");
     }
 
     /**
@@ -650,10 +620,10 @@ public class FileTransferPairwiseTest {
         Path normalized = malPath.normalize();
         Path resolved = Paths.get(tempDir.toString()).resolve(maliciousPath).normalize();
 
-        // ASSERT: Normalized path should either be contained or not exist
-        // Path traversal may succeed technically but file shouldn't exist
-        assertFalse("Malicious path file should not actually exist in filesystem",
-                Files.exists(malPath));
+        // ASSERT: Normalized path should escape the base directory
+        Path base = Paths.get(tempDir.toString()).normalize();
+        assertFalse(resolved.startsWith(base),
+            "Normalized traversal path should escape the base directory");
     }
 
     /**
@@ -680,11 +650,11 @@ public class FileTransferPairwiseTest {
             Files.copy(source.toPath(), target.toPath());
         } catch (Exception e) {
             // May fail on systems with strict filename length limits
-            assertTrue("Exception expected for very long names", true);
+            assertTrue(true,"Exception expected for very long names");
         }
 
         // ASSERT: Either succeeded with truncation or failed gracefully
-        assertTrue("Should handle long names gracefully", true);
+        assertTrue(true,"Should handle long names gracefully");
     }
 
     // ==========================================================================

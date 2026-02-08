@@ -1,14 +1,12 @@
 /*
- * Host Terminal Interface 5250j - Contract Test Suite
- * PluginManager - Plugin Lifecycle Management Contract
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Establishes behavioral contracts for PluginManager:
- * - Circular dependency detection
- * - Malicious plugin isolation (one bad plugin doesn't crash terminal)
- * - Thread safety for concurrent access
- * - Listener notification order and consistency
- * - Plugin state tracking accuracy
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.contracts;
 
 import org.hti5250j.plugin.*;

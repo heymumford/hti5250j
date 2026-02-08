@@ -1,38 +1,24 @@
-/**
- * Title: InputInhibitPairwiseTest.java
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD tests for input inhibit state handling in HTI5250j
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.hti5250j.event.ScreenOIAListener;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Vector;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Pairwise parameterized tests for input inhibit handling and keyboard lock states.
@@ -47,15 +33,14 @@ import static org.junit.Assert.*;
  * Critical discovery area: Keyboard lock state consistency, deadlock prevention,
  * inhibit state transitions, queued input handling under lock, listener notifications.
  */
-@RunWith(Parameterized.class)
 public class InputInhibitPairwiseTest {
 
     // Test parameters
-    private final String inhibitCause;
-    private final String unlockTrigger;
-    private final String queuedInput;
-    private final String oiaIndicator;
-    private final String duration;
+    private String inhibitCause;
+    private String unlockTrigger;
+    private String queuedInput;
+    private String oiaIndicator;
+    private String duration;
 
     // Inhibit cause constants
     private static final String INHIBIT_SYSTEM_WAIT = "SYSTEM_WAIT";
@@ -99,8 +84,7 @@ public class InputInhibitPairwiseTest {
      *
      * Pairwise minimum: 25+ combinations covering critical interaction pairs
      */
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
+        public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 // Row 1: System-wait + host-command + no queue + numeric + instant
                 { INHIBIT_SYSTEM_WAIT, UNLOCK_HOST_COMMAND, QUEUE_NONE, INDICATOR_NUMERIC, DURATION_INSTANT },
@@ -186,7 +170,7 @@ public class InputInhibitPairwiseTest {
         });
     }
 
-    public InputInhibitPairwiseTest(String inhibitCause, String unlockTrigger,
+    private void setParameters(String inhibitCause, String unlockTrigger,
                                     String queuedInput, String oiaIndicator, String duration) {
         this.inhibitCause = inhibitCause;
         this.unlockTrigger = unlockTrigger;
@@ -195,8 +179,7 @@ public class InputInhibitPairwiseTest {
         this.duration = duration;
     }
 
-    @Before
-    public void setUp() {
+        public void setUp() {
         screen5250 = new Screen5250TestDouble();
         oia = new ScreenOIA(screen5250);
         oiaListener = new TestOIAListener();
@@ -211,12 +194,14 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify keyboard starts in unlocked state
      */
-    @Test
-    public void testKeyboardUnlockedAtInitialization() {
-        assertFalse(
-            "Keyboard should start unlocked in new OIA instance",
-            oia.isKeyBoardLocked()
-        );
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardUnlockedAtInitialization(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should start unlocked in new OIA instance");
     }
 
     /**
@@ -224,13 +209,15 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify input starts in not-inhibited state
      */
-    @Test
-    public void testInputNotInhibitedAtInitialization() {
-        assertEquals(
-            "Input should start in NOTINHIBITED state",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInputNotInhibitedAtInitialization(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should start in NOTINHIBITED state");
     }
 
     /**
@@ -238,8 +225,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify system-wait inhibition can be set and keyboard locks
      */
-    @Test
-    public void testSystemWaitInhibitionLocksKeyboard() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSystemWaitInhibitionLocksKeyboard(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!inhibitCause.equals(INHIBIT_SYSTEM_WAIT)) {
             return;
         }
@@ -248,17 +238,15 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0x01);
 
         // GREEN: Verify inhibited
-        assertEquals(
-            "Input should be inhibited with SYSTEM_WAIT",
-            ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should be inhibited with SYSTEM_WAIT");
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified of input inhibit change",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "Listener should be notified of input inhibit change");
     }
 
     /**
@@ -266,8 +254,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify prog-check inhibition sets state and preserves code
      */
-    @Test
-    public void testProgCheckInhibitionWithCodePreservation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testProgCheckInhibitionWithCodePreservation(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!inhibitCause.equals(INHIBIT_PROG_CHECK)) {
             return;
         }
@@ -278,11 +269,10 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_PROGCHECK, progCheckCode);
 
         // GREEN: Verify inhibited
-        assertEquals(
-            "Input should be inhibited with PROGCHECK",
-            ScreenOIA.INPUTINHIBITED_PROGCHECK,
+        assertEquals(ScreenOIA.INPUTINHIBITED_PROGCHECK,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should be inhibited with PROGCHECK");
     }
 
     /**
@@ -290,8 +280,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify comm-check inhibition preserves communication code
      */
-    @Test
-    public void testCommCheckInhibitionWithCodeStorage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testCommCheckInhibitionWithCodeStorage(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!inhibitCause.equals(INHIBIT_COMM_CHECK)) {
             return;
         }
@@ -302,17 +295,15 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_COMMCHECK, commCheckCode);
 
         // GREEN: Verify inhibited and code preserved
-        assertEquals(
-            "Input should be inhibited with COMMCHECK",
-            ScreenOIA.INPUTINHIBITED_COMMCHECK,
+        assertEquals(ScreenOIA.INPUTINHIBITED_COMMCHECK,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should be inhibited with COMMCHECK");
 
-        assertEquals(
-            "Comm check code should be preserved",
-            commCheckCode,
+        assertEquals(commCheckCode,
             oia.getCommCheckCode()
-        );
+        ,
+            "Comm check code should be preserved");
     }
 
     /**
@@ -320,8 +311,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify machine-check inhibition stores diagnostic code
      */
-    @Test
-    public void testMachineCheckInhibitionWithCodePreservation() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMachineCheckInhibitionWithCodePreservation(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!inhibitCause.equals(INHIBIT_MACHINE_CHECK)) {
             return;
         }
@@ -332,17 +326,15 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_MACHINECHECK, machineCheckCode);
 
         // GREEN: Verify inhibited and code preserved
-        assertEquals(
-            "Input should be inhibited with MACHINECHECK",
-            ScreenOIA.INPUTINHIBITED_MACHINECHECK,
+        assertEquals(ScreenOIA.INPUTINHIBITED_MACHINECHECK,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should be inhibited with MACHINECHECK");
 
-        assertEquals(
-            "Machine check code should be preserved",
-            machineCheckCode,
+        assertEquals(machineCheckCode,
             oia.getMachineCheckCode()
-        );
+        ,
+            "Machine check code should be preserved");
     }
 
     /**
@@ -350,8 +342,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify unlock via host command clears inhibition
      */
-    @Test
-    public void testHostCommandUnlockFromInhibition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testHostCommandUnlockFromInhibition(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!unlockTrigger.equals(UNLOCK_HOST_COMMAND)) {
             return;
         }
@@ -359,7 +354,7 @@ public class InputInhibitPairwiseTest {
         // Set inhibited
         int inhibitState = mapInhibitCause(inhibitCause);
         oia.setInputInhibited(inhibitState, 0x01);
-        assertEquals("Setup: Should be inhibited", inhibitState, oia.getInputInhibited());
+        assertEquals(inhibitState, oia.getInputInhibited(),"Setup: Should be inhibited");
 
         // Clear listener for this phase
         oiaListener.clear();
@@ -368,16 +363,14 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
 
         // GREEN: Verify not inhibited
-        assertEquals(
-            "Input should be not inhibited after host command",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should be not inhibited after host command");
 
-        assertTrue(
-            "Listener should be notified of unlock",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "Listener should be notified of unlock");
     }
 
     /**
@@ -385,8 +378,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify keyboard unlock with buffered input triggers send
      */
-    @Test
-    public void testKeyboardUnlockProcessesBufferedInput() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardUnlockProcessesBufferedInput(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!queuedInput.equals(QUEUE_PENDING)) {
             return;
         }
@@ -394,8 +390,8 @@ public class InputInhibitPairwiseTest {
         // Lock keyboard and buffer input
         oia.setKeyBoardLocked(true);
         oia.setKeysBuffered(true);
-        assertTrue("Setup: Should be locked", oia.isKeyBoardLocked());
-        assertTrue("Setup: Should have buffered input", oia.isKeysBuffered());
+        assertTrue(oia.isKeyBoardLocked(),"Setup: Should be locked");
+        assertTrue(oia.isKeysBuffered(),"Setup: Should have buffered input");
 
         // Clear listener
         oiaListener.clear();
@@ -404,16 +400,14 @@ public class InputInhibitPairwiseTest {
         oia.setKeyBoardLocked(false);
 
         // GREEN: Verify unlocked
-        assertFalse(
-            "Keyboard should be unlocked",
-            oia.isKeyBoardLocked()
-        );
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should be unlocked");
 
         // Verify listener notified
-        assertTrue(
-            "Listener should be notified of unlock",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Listener should be notified of unlock");
     }
 
     /**
@@ -421,8 +415,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify inhibit message can be stored with status
      */
-    @Test
-    public void testInhibitedTextMessageStorage() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInhibitedTextMessageStorage(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!oiaIndicator.equals(INDICATOR_TEXT)) {
             return;
         }
@@ -433,11 +430,10 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, 0x01, testMessage);
 
         // GREEN: Verify message retrieved
-        assertEquals(
-            "Inhibited text should be stored and retrieved",
-            testMessage,
+        assertEquals(testMessage,
             oia.getInhibitedText()
-        );
+        ,
+            "Inhibited text should be stored and retrieved");
     }
 
     /**
@@ -445,8 +441,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify message light can be set independently of inhibition
      */
-    @Test
-    public void testMessageLightOnWithInhibition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightOnWithInhibition(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!oiaIndicator.equals(INDICATOR_NUMERIC) && !oiaIndicator.equals(INDICATOR_ICON)) {
             return;
         }
@@ -459,17 +458,15 @@ public class InputInhibitPairwiseTest {
         oia.setMessageLightOn();
 
         // GREEN: Verify message light on
-        assertTrue(
-            "Message light should be on",
-            oia.isMessageWait()
-        );
+        assertTrue(oia.isMessageWait()
+        ,
+            "Message light should be on");
 
         // Verify inhibition unchanged
-        assertEquals(
-            "Inhibition should remain unchanged",
-            ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
+        assertEquals(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibition should remain unchanged");
     }
 
     // ========== ADVERSARIAL TESTS: Deadlock, Race Conditions, State Corruption ==========
@@ -479,8 +476,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify rapid inhibit-unlock transitions don't corrupt state
      */
-    @Test
-    public void testRapidInhibitUnlockCycleStability() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testRapidInhibitUnlockCycleStability(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!duration.equals(DURATION_INSTANT)) {
             return;
         }
@@ -489,22 +489,21 @@ public class InputInhibitPairwiseTest {
 
         // Inhibit
         oia.setInputInhibited(inhibitState, 0x01);
-        assertEquals("Phase 1: Should be inhibited", inhibitState, oia.getInputInhibited());
+        assertEquals(inhibitState, oia.getInputInhibited(),"Phase 1: Should be inhibited");
 
         // Unlock immediately
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
-        assertEquals("Phase 2: Should be not inhibited", ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
-            oia.getInputInhibited());
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+            oia.getInputInhibited(),"Phase 2: Should be not inhibited");
 
         // Inhibit again
         oia.setInputInhibited(inhibitState, 0x02);
-        assertEquals("Phase 3: Should be inhibited again", inhibitState, oia.getInputInhibited());
+        assertEquals(inhibitState, oia.getInputInhibited(),"Phase 3: Should be inhibited again");
 
         // GREEN: Final state should be consistent
-        assertTrue(
-            "Final inhibit state should be consistent with last transition",
-            oia.getInputInhibited() == inhibitState
-        );
+        assertTrue(oia.getInputInhibited() == inhibitState
+        ,
+            "Final inhibit state should be consistent with last transition");
     }
 
     /**
@@ -512,8 +511,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify overflow queue doesn't cause state corruption
      */
-    @Test
-    public void testInhibitionWithQueuedInputOverflow() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInhibitionWithQueuedInputOverflow(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!queuedInput.equals(QUEUE_OVERFLOW)) {
             return;
         }
@@ -527,16 +529,14 @@ public class InputInhibitPairwiseTest {
         oia.setKeysBuffered(true);
 
         // GREEN: Verify inhibited state preserved despite queued input
-        assertEquals(
-            "Inhibit state should be preserved with queued overflow",
-            inhibitState,
+        assertEquals(inhibitState,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibit state should be preserved with queued overflow");
 
-        assertTrue(
-            "Keyboard should remain locked while inhibited",
-            oia.isKeyBoardLocked()
-        );
+        assertTrue(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should remain locked while inhibited");
     }
 
     /**
@@ -544,8 +544,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify user-initiated reset doesn't create inconsistency
      */
-    @Test
-    public void testMachineCheckWithUserResetUnlock() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMachineCheckWithUserResetUnlock(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!inhibitCause.equals(INHIBIT_MACHINE_CHECK) || !unlockTrigger.equals(UNLOCK_USER_RESET)) {
             return;
         }
@@ -557,19 +560,17 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
 
         // GREEN: Verify clean state after reset
-        assertEquals(
-            "Input should be cleared after user reset",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should be cleared after user reset");
 
         // Verify keyboard can be unlocked
         oia.setKeyBoardLocked(true);
         oia.setKeyBoardLocked(false);
-        assertFalse(
-            "Keyboard should unlock cleanly after reset",
-            oia.isKeyBoardLocked()
-        );
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should unlock cleanly after reset");
     }
 
     /**
@@ -577,8 +578,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify indefinite inhibition state is stable
      */
-    @Test
-    public void testIndefiniteInhibitionStability() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testIndefiniteInhibitionStability(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!duration.equals(DURATION_INDEFINITE)) {
             return;
         }
@@ -591,18 +595,15 @@ public class InputInhibitPairwiseTest {
         // GREEN: Verify state remains stable (no implicit timeout)
         int count = 0;
         for (int i = 0; i < 10; i++) {
-            assertEquals(
-                String.format("Inhibit state should remain stable on query %d", i),
-                inhibitState,
-                oia.getInputInhibited()
-            );
+            assertEquals(inhibitState,oia.getInputInhibited()
+            ,
+                String.format("Inhibit state should remain stable on query %d", i));
             count++;
         }
 
-        assertTrue(
-            "Indefinite inhibition should not change state",
-            count == 10 && oia.getInputInhibited() == inhibitState
-        );
+        assertTrue(count == 10 && oia.getInputInhibited() == inhibitState
+        ,
+            "Indefinite inhibition should not change state");
     }
 
     /**
@@ -610,8 +611,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify state machine handles multiple inhibit cause changes
      */
-    @Test
-    public void testMultipleInhibitCauseTransitions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultipleInhibitCauseTransitions(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         // Cycle through multiple inhibit causes
         int[] causes = {
             ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
@@ -622,19 +626,16 @@ public class InputInhibitPairwiseTest {
 
         for (int i = 0; i < causes.length; i++) {
             oia.setInputInhibited(causes[i], 0x10 + i);
-            assertEquals(
-                String.format("Cause transition %d should succeed", i),
-                causes[i],
-                oia.getInputInhibited()
-            );
+            assertEquals(causes[i],oia.getInputInhibited()
+            ,
+                String.format("Cause transition %d should succeed", i));
         }
 
         // GREEN: Final state should match last transition
-        assertEquals(
-            "Final inhibit cause should be MACHINECHECK",
-            ScreenOIA.INPUTINHIBITED_MACHINECHECK,
+        assertEquals(ScreenOIA.INPUTINHIBITED_MACHINECHECK,
             oia.getInputInhibited()
-        );
+        ,
+            "Final inhibit cause should be MACHINECHECK");
     }
 
     /**
@@ -642,15 +643,18 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify double-locking while inhibited doesn't corrupt state
      */
-    @Test
-    public void testKeyboardLockIdempotencyDuringInhibition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeyboardLockIdempotencyDuringInhibition(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         // Set inhibition
         int inhibitState = mapInhibitCause(inhibitCause);
         oia.setInputInhibited(inhibitState, 0x01);
 
         // Lock keyboard
         oia.setKeyBoardLocked(true);
-        assertTrue("Setup: Should be locked", oia.isKeyBoardLocked());
+        assertTrue(oia.isKeyBoardLocked(),"Setup: Should be locked");
 
         oiaListener.clear();
 
@@ -658,23 +662,20 @@ public class InputInhibitPairwiseTest {
         oia.setKeyBoardLocked(true);
 
         // GREEN: Should still be locked
-        assertTrue(
-            "Keyboard should remain locked after double-lock",
-            oia.isKeyBoardLocked()
-        );
+        assertTrue(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should remain locked after double-lock");
 
         // Verify no spurious notification
-        assertFalse(
-            "Listener should NOT be notified on idempotent lock",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
-        );
+        assertFalse(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED)
+        ,
+            "Listener should NOT be notified on idempotent lock");
 
         // Inhibition should be unchanged
-        assertEquals(
-            "Inhibition state should not change",
-            inhibitState,
+        assertEquals(inhibitState,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibition state should not change");
     }
 
     /**
@@ -682,8 +683,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify pending input doesn't get lost during unlock
      */
-    @Test
-    public void testPendingInputPreservationDuringUnlock() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testPendingInputPreservationDuringUnlock(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!queuedInput.equals(QUEUE_PENDING)) {
             return;
         }
@@ -696,23 +700,21 @@ public class InputInhibitPairwiseTest {
 
         // Remember buffered state
         boolean wasBuffered = oia.isKeysBuffered();
-        assertTrue("Setup: Should have buffered input", wasBuffered);
+        assertTrue(wasBuffered,"Setup: Should have buffered input");
 
         // Unlock
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
         oia.setKeyBoardLocked(false);
 
         // GREEN: Verify pending input was handled
-        assertEquals(
-            "Input should no longer be inhibited after unlock",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should no longer be inhibited after unlock");
 
-        assertFalse(
-            "Keyboard should be unlocked",
-            oia.isKeyBoardLocked()
-        );
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should be unlocked");
     }
 
     /**
@@ -720,8 +722,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify OIA indicator changes don't destabilize inhibit state
      */
-    @Test
-    public void testOIAIndicatorTransitionsDuringInhibition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testOIAIndicatorTransitionsDuringInhibition(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         // Set inhibition
         int inhibitState = mapInhibitCause(inhibitCause);
         oia.setInputInhibited(inhibitState, 0x01, "PROCESSING...");
@@ -732,17 +737,15 @@ public class InputInhibitPairwiseTest {
         oia.setKeysBuffered(true);
 
         // GREEN: Inhibit state should remain unchanged
-        assertEquals(
-            "Inhibit state should be unchanged despite indicator transitions",
-            inhibitState,
+        assertEquals(inhibitState,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibit state should be unchanged despite indicator transitions");
 
-        assertEquals(
-            "Inhibit message should be preserved",
-            "PROCESSING...",
+        assertEquals("PROCESSING...",
             oia.getInhibitedText()
-        );
+        ,
+            "Inhibit message should be preserved");
     }
 
     /**
@@ -750,8 +753,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify overflow input doesn't hang indefinite inhibit
      */
-    @Test
-    public void testOverflowQueueWithIndefiniteInhibition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testOverflowQueueWithIndefiniteInhibition(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!queuedInput.equals(QUEUE_OVERFLOW) || !duration.equals(DURATION_INDEFINITE)) {
             return;
         }
@@ -765,25 +771,22 @@ public class InputInhibitPairwiseTest {
         oia.setKeysBuffered(true);
 
         // GREEN: State should remain stable (verify no deadlock)
-        assertEquals(
-            "Inhibit state should be stable under overflow pressure",
-            inhibitState,
+        assertEquals(inhibitState,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibit state should be stable under overflow pressure");
 
-        assertTrue(
-            "Keyboard should remain locked",
-            oia.isKeyBoardLocked()
-        );
+        assertTrue(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should remain locked");
 
         // Verify unlock is still possible
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
         oia.setKeyBoardLocked(false);
 
-        assertFalse(
-            "Should be able to unlock from overflow state",
-            oia.isKeyBoardLocked()
-        );
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Should be able to unlock from overflow state");
     }
 
     /**
@@ -791,8 +794,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify diagnostic codes survive multiple transitions
      */
-    @Test
-    public void testInhibitCodePreservationAcrossTransitions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInhibitCodePreservationAcrossTransitions(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         int originalCode = 0xAA;
 
         // Set comm-check with code
@@ -807,17 +813,15 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_COMMCHECK, originalCode);
 
         // GREEN: Verify codes preserved (not overwritten)
-        assertEquals(
-            "Comm-check code should be preserved after transitions",
-            originalCode,
+        assertEquals(originalCode,
             oia.getCommCheckCode()
-        );
+        ,
+            "Comm-check code should be preserved after transitions");
 
-        assertEquals(
-            "Machine-check code should remain from previous set",
-            0xBB,
+        assertEquals(0xBB,
             oia.getMachineCheckCode()
-        );
+        ,
+            "Machine-check code should remain from previous set");
     }
 
     /**
@@ -825,8 +829,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify all listeners are notified even with rapid changes
      */
-    @Test
-    public void testListenerNotificationDuringRapidTransitions() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testListenerNotificationDuringRapidTransitions(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         TestOIAListener listener2 = new TestOIAListener();
         TestOIAListener listener3 = new TestOIAListener();
 
@@ -839,20 +846,17 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, 0);
 
         // GREEN: All listeners should have been notified
-        assertTrue(
-            "All listeners should be notified of inhibit change 1",
-            oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(oiaListener.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "All listeners should be notified of inhibit change 1");
 
-        assertTrue(
-            "Listener2 should be notified",
-            listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(listener2.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "Listener2 should be notified");
 
-        assertTrue(
-            "Listener3 should be notified",
-            listener3.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
-        );
+        assertTrue(listener3.wasNotifiedOfChange(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED)
+        ,
+            "Listener3 should be notified");
     }
 
     /**
@@ -860,8 +864,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify message light changes don't affect keyboard lock state
      */
-    @Test
-    public void testMessageLightIndependenceFromKeyboardLock() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMessageLightIndependenceFromKeyboardLock(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         oia.setKeyBoardLocked(true);
         boolean originalLocked = oia.isKeyBoardLocked();
 
@@ -870,11 +877,10 @@ public class InputInhibitPairwiseTest {
         oia.setMessageLightOff();
 
         // GREEN: Keyboard lock state should be unchanged
-        assertEquals(
-            "Keyboard lock state should not change with message light toggles",
-            originalLocked,
+        assertEquals(originalLocked,
             oia.isKeyBoardLocked()
-        );
+        ,
+            "Keyboard lock state should not change with message light toggles");
     }
 
     /**
@@ -882,8 +888,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify timed inhibition maintains state across queries
      */
-    @Test
-    public void testTimedDurationInhibitionStability() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testTimedDurationInhibitionStability(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!duration.equals(DURATION_TIMED)) {
             return;
         }
@@ -895,11 +904,9 @@ public class InputInhibitPairwiseTest {
 
         // Multiple queries should return same state
         for (int i = 0; i < 5; i++) {
-            assertEquals(
-                String.format("Inhibit state should be stable on query %d", i),
-                inhibitState,
-                oia.getInputInhibited()
-            );
+            assertEquals(inhibitState,oia.getInputInhibited()
+            ,
+                String.format("Inhibit state should be stable on query %d", i));
         }
     }
 
@@ -908,36 +915,36 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify keys buffered state can be set independently
      */
-    @Test
-    public void testKeysBufferedTransitionsWithInhibition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testKeysBufferedTransitionsWithInhibition(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         int inhibitState = mapInhibitCause(inhibitCause);
         oia.setInputInhibited(inhibitState, 0x01);
 
         // Initially false
-        assertFalse("Setup: Keys should not be buffered initially", oia.isKeysBuffered());
+        assertFalse(oia.isKeysBuffered(),"Setup: Keys should not be buffered initially");
 
         // Set buffered
         oia.setKeysBuffered(true);
 
-        assertTrue(
-            "Keys buffered should be true after setKeysBuffered(true)",
-            oia.isKeysBuffered()
-        );
+        assertTrue(oia.isKeysBuffered()
+        ,
+            "Keys buffered should be true after setKeysBuffered(true)");
 
         // Inhibition should be unchanged
-        assertEquals(
-            "Inhibit state should remain unchanged",
-            inhibitState,
+        assertEquals(inhibitState,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibit state should remain unchanged");
 
         // Clear buffered
         oia.setKeysBuffered(false);
 
-        assertFalse(
-            "Keys buffered should be false after setKeysBuffered(false)",
-            oia.isKeysBuffered()
-        );
+        assertFalse(oia.isKeysBuffered()
+        ,
+            "Keys buffered should be false after setKeysBuffered(false)");
     }
 
     /**
@@ -945,31 +952,32 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify insert mode can toggle independently of inhibition
      */
-    @Test
-    public void testInsertModeToggleWithInhibition() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testInsertModeToggleWithInhibition(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         int inhibitState = mapInhibitCause(inhibitCause);
         oia.setInputInhibited(inhibitState, 0x01);
 
         // Toggle insert mode
         oia.setInsertMode(true);
-        assertTrue("Insert mode should be on", oia.isInsertMode());
+        assertTrue(oia.isInsertMode(),"Insert mode should be on");
 
         // Inhibition should be unchanged
-        assertEquals(
-            "Inhibit state should remain unchanged after insert mode on",
-            inhibitState,
+        assertEquals(inhibitState,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibit state should remain unchanged after insert mode on");
 
         // Toggle off
         oia.setInsertMode(false);
-        assertFalse("Insert mode should be off", oia.isInsertMode());
+        assertFalse(oia.isInsertMode(),"Insert mode should be off");
 
-        assertEquals(
-            "Inhibit state should remain unchanged after insert mode off",
-            inhibitState,
+        assertEquals(inhibitState,
             oia.getInputInhibited()
-        );
+        ,
+            "Inhibit state should remain unchanged after insert mode off");
     }
 
     /**
@@ -977,8 +985,11 @@ public class InputInhibitPairwiseTest {
      *
      * Adversarial test: Verify system can drain queued input after unlock
      */
-    @Test
-    public void testQueueDrainabilityAfterUnlock() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testQueueDrainabilityAfterUnlock(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         if (!queuedInput.equals(QUEUE_OVERFLOW) || !unlockTrigger.equals(UNLOCK_HOST_COMMAND)) {
             return;
         }
@@ -994,16 +1005,14 @@ public class InputInhibitPairwiseTest {
         oia.setKeyBoardLocked(false);
 
         // GREEN: Verify system is in clean state for draining
-        assertEquals(
-            "Input should be clear for draining",
-            ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
+        assertEquals(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
             oia.getInputInhibited()
-        );
+        ,
+            "Input should be clear for draining");
 
-        assertFalse(
-            "Keyboard should be unlocked for input processing",
-            oia.isKeyBoardLocked()
-        );
+        assertFalse(oia.isKeyBoardLocked()
+        ,
+            "Keyboard should be unlocked for input processing");
     }
 
     /**
@@ -1011,8 +1020,11 @@ public class InputInhibitPairwiseTest {
      *
      * Positive test: Verify owner field maintains identity through inhibit changes
      */
-    @Test
-    public void testOwnerFieldPreservationDuringInhibit() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testOwnerFieldPreservationDuringInhibit(String inhibitCause, String unlockTrigger, String queuedInput, String oiaIndicator, String duration) throws Exception {
+        setParameters(inhibitCause, unlockTrigger, queuedInput, oiaIndicator, duration);
+        setUp();
         int testOwner = 99;
         oia.setOwner(testOwner);
 
@@ -1021,11 +1033,10 @@ public class InputInhibitPairwiseTest {
         oia.setInputInhibited(inhibitState, 0x01);
 
         // GREEN: Owner should be preserved
-        assertEquals(
-            "Owner field should be preserved during inhibit transitions",
-            testOwner,
+        assertEquals(testOwner,
             oia.getOwner()
-        );
+        ,
+            "Owner field should be preserved during inhibit transitions");
     }
 
     // ========== HELPER METHODS ==========

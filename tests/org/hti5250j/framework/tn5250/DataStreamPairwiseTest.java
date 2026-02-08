@@ -1,28 +1,19 @@
-/**
- * Title: tn5250J
- * Copyright: Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Description: Pairwise TDD test suite for TN5250 data stream protocol layer
- *
- * This test suite covers high-risk areas identified in the bug hunt:
- * - DataStreamProducer stream parsing and validation
- * - Stream5250 buffer boundary conditions
- * - WTD (Write-to-Display) opcode handling
- * - Message fragmentation and reassembly
- * - Protocol fuzzing and adversarial inputs
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pairwise parameter testing for TN5250 data stream protocol layer.
@@ -60,7 +51,7 @@ public class DataStreamPairwiseTest {
     private Stream5250 stream;
     private byte[] testBuffer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stream = new Stream5250();
     }
@@ -89,12 +80,12 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Verify correct parsing
-        assertEquals("Stream size should be 10", 10, stream.streamSize);
-        assertEquals("Opcode should be WTD (0x42)", VALID_OPCODE_WTD & 0xFF, stream.opCode & 0xFF);
+        assertEquals(10, stream.streamSize,"Stream size should be 10");
+        assertEquals(VALID_OPCODE_WTD & 0xFF, stream.opCode & 0xFF,"Opcode should be WTD (0x42)");
         // dataStart = 6 + buffer[6] = 6 + 3 = 9 per Stream5250 formula
-        assertEquals("Data should start at position 9", 9, stream.dataStart);
-        assertTrue("Position should be valid", stream.pos >= 0);
-        assertTrue("Position should be within bounds", stream.pos <= testBuffer.length);
+        assertEquals(9, stream.dataStart,"Data should start at position 9");
+        assertTrue(stream.pos >= 0,"Position should be valid");
+        assertTrue(stream.pos <= testBuffer.length,"Position should be within bounds");
     }
 
     /**
@@ -123,11 +114,11 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Verify data parsing
-        assertEquals("Stream size should be 255", 255, stream.streamSize);
+        assertEquals(255, stream.streamSize,"Stream size should be 255");
         // hasNext() returns pos < streamSize
-        assertTrue("Should have data to process", stream.hasNext());
+        assertTrue(stream.hasNext(),"Should have data to process");
         // dataStart = 6 + buffer[6] = 6 + 3 = 9
-        assertEquals("Data start should be position 9", 9, stream.dataStart);
+        assertEquals(9, stream.dataStart,"Data start should be position 9");
     }
 
     /**
@@ -152,8 +143,8 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Verify control opcode extraction
-        assertEquals("Opcode should be 0x03", 0x03, stream.opCode);
-        assertTrue("Position should be initialized", stream.pos >= 0);
+        assertEquals(0x03, stream.opCode,"Opcode should be 0x03");
+        assertTrue(stream.pos >= 0,"Position should be initialized");
     }
 
     /**
@@ -182,10 +173,10 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert
-        assertEquals("Opcode should parse correctly", VALID_OPCODE_WTD & 0xFF, stream.opCode & 0xFF);
+        assertEquals(VALID_OPCODE_WTD & 0xFF, stream.opCode & 0xFF,"Opcode should parse correctly");
         // streamSize = 11, pos = 9, so pos < streamSize is true
-        assertTrue("Should still be able to read remaining bytes", stream.hasNext());
-        assertEquals("Position should be set to dataStart", 9, stream.pos);
+        assertTrue(stream.hasNext(),"Should still be able to read remaining bytes");
+        assertEquals(9, stream.pos,"Position should be set to dataStart");
     }
 
     /**
@@ -212,8 +203,8 @@ public class DataStreamPairwiseTest {
         byte firstByte = stream.getNextByte();
 
         // Assert: Position should advance
-        assertEquals("Position should increment by 1", startPos + 1, stream.pos);
-        assertNotNull("Should return a byte", firstByte);
+        assertEquals(startPos + 1, stream.pos,"Position should increment by 1");
+        assertNotNull(firstByte,"Should return a byte");
     }
 
     // ========== BOUNDARY TESTS: Message length extremes ==========
@@ -240,8 +231,8 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Verify 16-bit encoding
-        assertEquals("Stream size should be 256", 256, stream.streamSize);
-        assertEquals("Length bytes should be 0x0100", 256, stream.streamSize);
+        assertEquals(256, stream.streamSize,"Stream size should be 256");
+        assertEquals(256, stream.streamSize,"Length bytes should be 0x0100");
     }
 
     /**
@@ -270,7 +261,7 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Verify max value parsing
-        assertEquals("Stream size should be 65535", 65535, stream.streamSize);
+        assertEquals(65535, stream.streamSize,"Stream size should be 65535");
     }
 
     /**
@@ -299,8 +290,8 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert
-        assertEquals("Stream size should be 1", 1, stream.streamSize);
-        assertTrue("Buffer should exist", stream.buffer != null);
+        assertEquals(1, stream.streamSize,"Stream size should be 1");
+        assertTrue(stream.buffer != null,"Buffer should exist");
     }
 
     // ========== ADVERSARIAL TESTS: Malformed packets, truncation, invalid opcodes ==========
@@ -327,7 +318,7 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Should capture opcode without crashing
-        assertEquals("Opcode should be captured", INVALID_OPCODE_RESERVED & 0xFF, stream.opCode & 0xFF);
+        assertEquals(INVALID_OPCODE_RESERVED & 0xFF, stream.opCode & 0xFF,"Opcode should be captured");
     }
 
     /**
@@ -352,7 +343,7 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert
-        assertEquals("Opcode 0x00 should be stored", 0, stream.opCode);
+        assertEquals(0, stream.opCode,"Opcode 0x00 should be stored");
     }
 
     /**
@@ -377,7 +368,7 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert
-        assertEquals("Opcode 0xFF should be stored", 0xFF, stream.opCode & 0xFF);
+        assertEquals(0xFF, stream.opCode & 0xFF,"Opcode 0xFF should be stored");
     }
 
     /**
@@ -393,18 +384,20 @@ public class DataStreamPairwiseTest {
      * RED: Should detect buffer underflow on initialization
      * GREEN: Throw exception when accessing out-of-bounds header
      */
-    @Test(expected = ArrayIndexOutOfBoundsException.class)
+    @Test
     public void testTruncatedMessageMissingHeader() {
-        // Arrange: Buffer too small for header
-        testBuffer = new byte[5];  // Only 5 bytes, need at least 11
-        testBuffer[0] = 0x00;
-        testBuffer[1] = 0x0A;
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+            // Arrange: Buffer too small for header
+            testBuffer = new byte[5];  // Only 5 bytes, need at least 11
+            testBuffer[0] = 0x00;
+            testBuffer[1] = 0x0A;
 
-        // Act: Initialize should throw when accessing position 9 or 6
-        stream.initialize(testBuffer);
+            // Act: Initialize should throw when accessing position 9 or 6
+            stream.initialize(testBuffer);
 
-        // Assert: Should never reach here
-        fail("Expected ArrayIndexOutOfBoundsException for truncated header");
+            // Assert: Should never reach here
+            fail("Expected ArrayIndexOutOfBoundsException for truncated header");
+        });
     }
 
     /**
@@ -433,8 +426,8 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Should store claimed length
-        assertEquals("Should store claimed length", 1000, stream.streamSize);
-        assertTrue("Actual buffer is smaller", testBuffer.length < stream.streamSize);
+        assertEquals(1000, stream.streamSize,"Should store claimed length");
+        assertTrue(testBuffer.length < stream.streamSize,"Actual buffer is smaller");
     }
 
     /**
@@ -450,7 +443,7 @@ public class DataStreamPairwiseTest {
      * RED: getByteOffset(-1) at pos=0 should throw exception
      * GREEN: Validate resulting index is non-negative
      */
-    @Test(expected = Exception.class)
+    @Test
     public void testBufferUnderflowViaOffset() throws Exception {
         // Arrange: Create valid stream and position at start
         testBuffer = createValidStream(20, VALID_OPCODE_WTD, true);
@@ -458,10 +451,8 @@ public class DataStreamPairwiseTest {
         stream.pos = 0;
 
         // Act: Attempt negative offset from start
-        byte result = stream.getByteOffset(-1);
-
-        // Assert: Should throw exception, never reach here
-        fail("Expected Exception for negative offset, got byte: " + result);
+        assertThrows(Exception.class, () -> stream.getByteOffset(-1),
+                "Expected Exception for negative offset");
     }
 
     /**
@@ -477,17 +468,19 @@ public class DataStreamPairwiseTest {
      * RED: Should detect null buffer on read
      * GREEN: Throw IllegalStateException
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testNullBufferOnRead() {
-        // Arrange: Create stream with null buffer
-        stream.buffer = null;
-        stream.pos = 0;
+        assertThrows(Exception.class, () -> {
+            // Arrange: Create stream with null buffer
+            stream.buffer = null;
+            stream.pos = 0;
 
-        // Act: Attempt to read from null buffer
-        byte result = stream.getNextByte();
+            // Act: Attempt to read from null buffer
+            byte result = stream.getNextByte();
 
-        // Assert: Should throw, never reach here
-        fail("Expected IllegalStateException for null buffer, got byte: " + result);
+            // Assert: Should throw, never reach here
+            fail("Expected IllegalStateException for null buffer, got byte: " + result);
+        });
     }
 
     // ========== FRAGMENTATION TESTS: Partial messages, reassembly ==========
@@ -518,8 +511,8 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Should store claimed length but buffer is short
-        assertEquals("Claimed length", 100, stream.streamSize);
-        assertTrue("Actual buffer < claimed", testBuffer.length < stream.streamSize);
+        assertEquals(100, stream.streamSize,"Claimed length");
+        assertTrue(testBuffer.length < stream.streamSize,"Actual buffer < claimed");
     }
 
     /**
@@ -557,7 +550,7 @@ public class DataStreamPairwiseTest {
         int firstSize = stream.streamSize;
 
         // Assert: First message parsed
-        assertEquals("First message size", 20, firstSize);
+        assertEquals(20, firstSize,"First message size");
     }
 
     /**
@@ -593,7 +586,7 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert
-        assertTrue("First message has valid opcode", stream.opCode >= 0);
+        assertTrue(stream.opCode >= 0,"First message has valid opcode");
     }
 
     // ========== PROTOCOL FUZZING TESTS: Invalid opcodes, corrupt headers, injection ==========
@@ -622,7 +615,7 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Should still extract byte at position 9
-        assertEquals("Should extract opcode from position 9", 0x42, testBuffer[OPCODE_OFFSET] & 0xFF);
+        assertEquals(0x42, testBuffer[OPCODE_OFFSET] & 0xFF,"Should extract opcode from position 9");
     }
 
     /**
@@ -653,8 +646,8 @@ public class DataStreamPairwiseTest {
         stream.initialize(testBuffer);
 
         // Assert: Should parse without treating markers as special
-        assertEquals("Should read claimed size", 100, stream.streamSize);
-        assertTrue("Should have bytes to read", stream.pos < testBuffer.length);
+        assertEquals(100, stream.streamSize,"Should read claimed size");
+        assertTrue(stream.pos < testBuffer.length,"Should have bytes to read");
     }
 
     // ========== HELPER METHODS ==========

@@ -1,35 +1,21 @@
-/**
- * Title: tn5250J
- * Copyright:   Copyright (c) 2001
- * Company:
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2001
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-FileContributor: Test Suite
  *
- * @author Test Suite
- * @version 0.5
- * <p>
- * Description: Comprehensive pairwise TDD test suite for clipboard and copy/paste operations
- * <p>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307 USA
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j.framework.tn5250;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * TDD Pairwise Test Suite for Screen5250 clipboard and copy/paste operations.
@@ -77,13 +63,13 @@ public class ClipboardPairwiseTest {
     private static final int SCREEN_WIDTH = 80;
     private static final int SCREEN_HEIGHT = 24;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockScreen = new MockScreen5250();
         testRect = new Rect(0, 0, 0, 0);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         mockScreen = null;
         testRect = null;
@@ -105,9 +91,9 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertEquals("Should copy single character", 1, copied.length());
-        assertEquals("Character should match screen data", "H", copied);
+        assertNotNull(copied,"Copied text should not be null");
+        assertEquals(1, copied.length(),"Should copy single character");
+        assertEquals("H", copied,"Character should match screen data");
     }
 
     /**
@@ -124,8 +110,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertEquals("Should copy word", "Hello", copied.trim());
+        assertNotNull(copied,"Copied text should not be null");
+        assertEquals("Hello", copied.trim(),"Should copy word");
     }
 
     /**
@@ -142,8 +128,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should contain at least part of text", copied.contains("Hello"));
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.contains("Hello"),"Should contain at least part of text");
     }
 
     /**
@@ -160,8 +146,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should contain mixed content", copied.length() > 0);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 0,"Should contain mixed content");
     }
 
     /**
@@ -178,10 +164,9 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
+        assertNotNull(copied,"Copied text should not be null");
         // May return empty or spaces, both valid
-        assertTrue("Should be empty or whitespace only",
-                copied.isEmpty() || copied.trim().isEmpty());
+        assertTrue(copied.isEmpty() || copied.trim().isEmpty(),"Should be empty or whitespace only");
     }
 
     /**
@@ -198,8 +183,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyTextField(fieldPosition);
 
         // ASSERT
-        assertNotNull("Copied field text should not be null", copied);
-        assertEquals("Field value should match", FIELD_DATA, copied.trim());
+        assertNotNull(copied,"Copied field text should not be null");
+        assertEquals(FIELD_DATA, copied.trim(),"Field value should match");
     }
 
     /**
@@ -216,8 +201,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should contain line content", copied.length() > 0);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 0,"Should contain line content");
     }
 
     // ========== POSITIVE PATH TESTS: Paste Operations ==========
@@ -237,8 +222,8 @@ public class ClipboardPairwiseTest {
 
         // ASSERT
         String screenContent = mockScreen.getScreenText();
-        assertNotNull("Screen content should not be null", screenContent);
-        assertTrue("Should contain pasted text", screenContent.contains("TestInput"));
+        assertNotNull(screenContent,"Screen content should not be null");
+        assertTrue(screenContent.contains("TestInput"),"Should contain pasted text");
     }
 
     /**
@@ -256,8 +241,8 @@ public class ClipboardPairwiseTest {
 
         // ASSERT
         String screenContent = mockScreen.getScreenText();
-        assertNotNull("Screen content should not be null", screenContent);
-        assertTrue("Should contain first line", screenContent.contains("Line1"));
+        assertNotNull(screenContent,"Screen content should not be null");
+        assertTrue(screenContent.contains("Line1"),"Should contain first line");
     }
 
     /**
@@ -275,9 +260,9 @@ public class ClipboardPairwiseTest {
 
         // ASSERT
         String screenContent = mockScreen.getScreenText();
-        assertNotNull("Screen content should not be null", screenContent);
+        assertNotNull(screenContent,"Screen content should not be null");
         // Verify at least some content was pasted
-        assertTrue("Should contain pasted content", screenContent.length() > 0);
+        assertTrue(screenContent.length() > 0,"Should contain pasted content");
     }
 
     /**
@@ -295,9 +280,9 @@ public class ClipboardPairwiseTest {
 
         // ASSERT
         String screenContent = mockScreen.getScreenText();
-        assertNotNull("Screen content should not be null", screenContent);
+        assertNotNull(screenContent,"Screen content should not be null");
         // Verify paste completed without exception
-        assertTrue("Paste should complete successfully", screenContent.length() >= 0);
+        assertTrue(screenContent.length() >= 0,"Paste should complete successfully");
     }
 
     /**
@@ -316,10 +301,10 @@ public class ClipboardPairwiseTest {
 
         // ASSERT
         String afterPaste = mockScreen.getScreenText();
-        assertNotNull("Screen content should not be null after paste", afterPaste);
+        assertNotNull(afterPaste,"Screen content should not be null after paste");
         // Length should not increase significantly after pasting empty string
         int afterLength = afterPaste.length();
-        assertTrue("Should not add significant content", Math.abs(afterLength - initialLength) < 10);
+        assertTrue(Math.abs(afterLength - initialLength) < 10,"Should not add significant content");
     }
 
     // ========== POSITIVE PATH TESTS: Buffer Size Variations ==========
@@ -339,8 +324,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should copy content", copied.length() > 0);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 0,"Should copy content");
     }
 
     /**
@@ -362,8 +347,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should copy substantial content", copied.length() > 100);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 100,"Should copy substantial content");
     }
 
     /**
@@ -381,8 +366,8 @@ public class ClipboardPairwiseTest {
 
         // ASSERT
         String screenContent = mockScreen.getScreenText();
-        assertNotNull("Screen content should not be null", screenContent);
-        assertTrue("Should paste small buffer", screenContent.length() >= smallText.length());
+        assertNotNull(screenContent,"Screen content should not be null");
+        assertTrue(screenContent.length() >= smallText.length(),"Should paste small buffer");
     }
 
     /**
@@ -404,8 +389,8 @@ public class ClipboardPairwiseTest {
 
         // ASSERT
         String screenContent = mockScreen.getScreenText();
-        assertNotNull("Screen content should not be null", screenContent);
-        assertTrue("Should paste medium content", screenContent.length() > 20);
+        assertNotNull(screenContent,"Screen content should not be null");
+        assertTrue(screenContent.length() > 20,"Should paste medium content");
     }
 
     // ========== BOUNDARY TESTS: Rectangle Bounds ==========
@@ -424,8 +409,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should copy from origin", copied.length() > 0);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 0,"Should copy from origin");
     }
 
     /**
@@ -446,8 +431,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should copy multiple rows", copied.length() > 0);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 0,"Should copy multiple rows");
     }
 
     /**
@@ -464,8 +449,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should copy at least one character", copied.length() > 0);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 0,"Should copy at least one character");
     }
 
     // ========== ADVERSARIAL TESTS: Malformed Data ==========
@@ -483,8 +468,7 @@ public class ClipboardPairwiseTest {
         try {
             String copied = mockScreen.copyText(null);
             // If it doesn't throw, should return null or empty
-            assertTrue("Should handle null gracefully",
-                    copied == null || copied.isEmpty());
+            assertTrue(copied == null || copied.isEmpty(),"Should handle null gracefully");
         } catch (NullPointerException e) {
             fail("Should not throw NullPointerException for null rectangle: " + e.getMessage());
         }
@@ -504,10 +488,10 @@ public class ClipboardPairwiseTest {
         try {
             String copied = mockScreen.copyText(testRect);
             // Should handle gracefully
-            assertNotNull("Should return something", copied);
+            assertNotNull(copied,"Should return something");
         } catch (IndexOutOfBoundsException | IllegalArgumentException e) {
             // Acceptable to throw for invalid bounds
-            assertTrue("Exception should be for invalid bounds", true);
+            assertTrue(true,"Exception should be for invalid bounds");
         }
     }
 
@@ -525,10 +509,10 @@ public class ClipboardPairwiseTest {
         try {
             String copied = mockScreen.copyText(testRect);
             // Should return empty or handle gracefully
-            assertNotNull("Should return something", copied);
+            assertNotNull(copied,"Should return something");
         } catch (IndexOutOfBoundsException e) {
             // Acceptable to throw for out of bounds
-            assertTrue("Exception should be for bounds check", true);
+            assertTrue(true,"Exception should be for bounds check");
         }
     }
 
@@ -546,7 +530,7 @@ public class ClipboardPairwiseTest {
             mockScreen.pasteText(null, false);
             // If it doesn't throw, screen should be unchanged
             String screenContent = mockScreen.getScreenText();
-            assertNotNull("Screen should still have content", screenContent);
+            assertNotNull(screenContent,"Screen should still have content");
         } catch (NullPointerException e) {
             fail("Should not throw NullPointerException for null paste content: " + e.getMessage());
         }
@@ -571,7 +555,7 @@ public class ClipboardPairwiseTest {
             mockScreen.pasteText(maxText, false);
             // Should succeed or gracefully handle
             String screenContent = mockScreen.getScreenText();
-            assertNotNull("Screen should have content", screenContent);
+            assertNotNull(screenContent,"Screen should have content");
         } catch (OutOfMemoryError e) {
             fail("Should not throw OutOfMemoryError: " + e.getMessage());
         }
@@ -591,7 +575,7 @@ public class ClipboardPairwiseTest {
         try {
             mockScreen.pasteText(controlText, false);
             String screenContent = mockScreen.getScreenText();
-            assertNotNull("Screen should have content after control chars", screenContent);
+            assertNotNull(screenContent,"Screen should have content after control chars");
         } catch (Exception e) {
             fail("Should handle control characters gracefully: " + e.getMessage());
         }
@@ -617,9 +601,8 @@ public class ClipboardPairwiseTest {
 
         // ASSERT: Content should be recoverable
         String afterRoundtrip = mockScreen.getScreenText();
-        assertNotNull("Content after roundtrip should not be null", afterRoundtrip);
-        assertTrue("Content should be present after roundtrip",
-                afterRoundtrip.length() > 0);
+        assertNotNull(afterRoundtrip,"Content after roundtrip should not be null");
+        assertTrue(afterRoundtrip.length() > 0,"Content should be present after roundtrip");
     }
 
     /**
@@ -639,10 +622,10 @@ public class ClipboardPairwiseTest {
             mockScreen.pasteText(textToPaste, false);
             // May succeed by skipping protected area
             String screenContent = mockScreen.getScreenText();
-            assertNotNull("Screen should have content", screenContent);
+            assertNotNull(screenContent,"Screen should have content");
         } catch (IllegalStateException e) {
             // Acceptable to reject paste to protected field
-            assertTrue("Exception should indicate protected field", true);
+            assertTrue(true,"Exception should indicate protected field");
         }
     }
 
@@ -660,10 +643,10 @@ public class ClipboardPairwiseTest {
         try {
             mockScreen.pasteText(textToPaste, false);
             String screenContent = mockScreen.getScreenText();
-            assertNotNull("Screen should have content", screenContent);
+            assertNotNull(screenContent,"Screen should have content");
         } catch (IndexOutOfBoundsException e) {
             // Acceptable to throw for off-screen paste
-            assertTrue("Exception for off-screen position is acceptable", true);
+            assertTrue(true,"Exception for off-screen position is acceptable");
         }
     }
 
@@ -697,9 +680,9 @@ public class ClipboardPairwiseTest {
         pasteThread.join(5000);
 
         // ASSERT: Both operations should complete without exception
-        assertNotNull("Copy should return result", copiedResult.get());
+        assertNotNull(copiedResult.get(),"Copy should return result");
         String finalContent = mockScreen.getScreenText();
-        assertNotNull("Screen should have final content", finalContent);
+        assertNotNull(finalContent,"Screen should have final content");
     }
 
     /**
@@ -721,8 +704,8 @@ public class ClipboardPairwiseTest {
         String copied = mockScreen.copyText(testRect);
 
         // ASSERT: Should contain the data
-        assertNotNull("Copied text should not be null", copied);
-        assertTrue("Should contain data portion", copied.length() > 0);
+        assertNotNull(copied,"Copied text should not be null");
+        assertTrue(copied.length() > 0,"Should contain data portion");
     }
 
     // ========== HELPER MOCKS ==========

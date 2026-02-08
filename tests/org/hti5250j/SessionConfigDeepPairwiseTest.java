@@ -1,29 +1,12 @@
-/**
- * SessionConfigDeepPairwiseTest.java
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
- * Advanced N-wise pairwise test suite for SessionConfig with sophisticated coverage
- * of interaction effects between configuration dimensions. This suite extends basic
- * pairwise testing with adversarial scenarios, cascading conflicts, and deep state
- * transitions.
- *
- * Pairwise Dimensions (5-way testing):
- * 1. Property type:   connection (host/port), display (font/color), keyboard, audio
- * 2. Value type:      string, integer, boolean, enum, composite (Rectangle)
- * 3. Source:          default (built-in), file (loaded), programmatic, override
- * 4. Validation:      none, range (min/max), format (regex), required (must-exist)
- * 5. Persistence:     transient (memory-only), session (current), permanent (saved)
- *
- * Test Categories:
- * - POSITIVE: Valid configurations, legitimate scenarios
- * - ADVERSARIAL: Invalid combinations, boundary violations, conflicting settings
- * - CASCADING: Multi-step conflicts (A+B ok, B+C ok, but A+B+C fails)
- * - STATE_MACHINE: Configuration lifecycle transitions
- * - LISTENER_PROTOCOL: Multi-listener coordination and event ordering
- * - OVERRIDE_SEMANTICS: Precedence rules (programmatic > file > default)
- * - PERSISTENCE_SEMANTICS: Save/load/reload cycles with state consistency
- *
- * Coverage: 25+ tests covering all interaction pairs with adversarial scenarios
+ * SPDX-License-Identifier: GPL-2.0-or-later
  */
+
+
+
+
 package org.hti5250j;
 
 import org.junit.*;
@@ -42,7 +25,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 
 /**
  * Deep Pairwise TDD Test Suite - SessionConfig Configuration Operations
@@ -60,14 +45,14 @@ public class SessionConfigDeepPairwiseTest {
     private List<SessionConfigListener> testListeners;
     private List<SessionConfigEvent> capturedEvents;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         config = new SessionConfigTestDouble();
         testListeners = new ArrayList<>();
         capturedEvents = new ArrayList<>();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         config = null;
         testListeners.clear();
@@ -92,8 +77,8 @@ public class SessionConfigDeepPairwiseTest {
         config.setProperty(hostKey, fileSourceHost);
 
         // ASSERT: Property persists from file source
-        assertTrue("Property should exist", config.isPropertyExists(hostKey));
-        assertEquals("Host should match file source", fileSourceHost, config.getStringProperty(hostKey));
+        assertTrue(config.isPropertyExists(hostKey),"Property should exist");
+        assertEquals(fileSourceHost, config.getStringProperty(hostKey),"Host should match file source");
     }
 
     /**
@@ -110,7 +95,7 @@ public class SessionConfigDeepPairwiseTest {
             String key = "fontsize." + size;
             config.setProperty(key, String.valueOf(size));
             float retrieved = config.getFloatProperty(key);
-            assertEquals("Font size " + size + " should be accepted", size, retrieved, 0.01f);
+            assertEquals(size, retrieved, 0.01f,"Font size " + size + " should be accepted");
         }
     }
 
@@ -129,8 +114,7 @@ public class SessionConfigDeepPairwiseTest {
             config.setProperty(mappingKey, mapping);
 
             // ASSERT: Each mapping retrievable
-            assertEquals("Mapping " + mapping + " should be stored",
-                    mapping, config.getStringProperty(mappingKey));
+            assertEquals(mapping, config.getStringProperty(mappingKey),"Mapping " + mapping + " should be stored");
         }
     }
 
@@ -156,9 +140,9 @@ public class SessionConfigDeepPairwiseTest {
             config.setProperty(colorKey, String.valueOf(rgb));
             Color color = config.getColorProperty(colorKey);
 
-            assertNotNull("Color should be created for RGB " + rgb, color);
+            assertNotNull(color,"Color should be created for RGB " + rgb);
             int retrievedRGB = color.getRGB() & 0xFFFFFF;
-            assertEquals("RGB value should match", rgb, retrievedRGB);
+            assertEquals(rgb, retrievedRGB,"RGB value should match");
         }
     }
 
@@ -181,10 +165,10 @@ public class SessionConfigDeepPairwiseTest {
             config.setRectangleProperty(rectKey, rect);
             Rectangle retrieved = config.getRectangleProperty(rectKey);
 
-            assertEquals("X should match", rect.x, retrieved.x);
-            assertEquals("Y should match", rect.y, retrieved.y);
-            assertEquals("Width should match", rect.width, retrieved.width);
-            assertEquals("Height should match", rect.height, retrieved.height);
+            assertEquals(rect.x, retrieved.x,"X should match");
+            assertEquals(rect.y, retrieved.y,"Y should match");
+            assertEquals(rect.width, retrieved.width,"Width should match");
+            assertEquals(rect.height, retrieved.height,"Height should match");
         }
     }
 
@@ -202,14 +186,14 @@ public class SessionConfigDeepPairwiseTest {
         boolean isEnabled = "Yes".equals(config.getStringProperty(keypadKey));
 
         // ASSERT: Boolean correctly stored and retrieved
-        assertTrue("Keypad should be enabled", isEnabled);
+        assertTrue(isEnabled,"Keypad should be enabled");
 
         // ACT: Set disabled
         config.setProperty(keypadKey, "No");
         boolean isDisabled = "No".equals(config.getStringProperty(keypadKey));
 
         // ASSERT: Boolean flip works
-        assertTrue("Keypad should be disabled (No value set)", isDisabled);
+        assertTrue(isDisabled,"Keypad should be disabled (No value set)");
     }
 
     // ==========================================================================
@@ -228,17 +212,17 @@ public class SessionConfigDeepPairwiseTest {
         // Invalid scenario 1: Port above 65535
         config.setProperty(portKey, "99999");
         int highPort = config.getIntegerProperty(portKey);
-        assertEquals("High port currently accepted (no validation)", 99999, highPort);
+        assertEquals(99999, highPort,"High port currently accepted (no validation)");
 
         // Invalid scenario 2: Port = 0
         config.setProperty(portKey, "0");
         int zeroPort = config.getIntegerProperty(portKey);
-        assertEquals("Zero port currently accepted (no validation)", 0, zeroPort);
+        assertEquals(0, zeroPort,"Zero port currently accepted (no validation)");
 
         // Invalid scenario 3: Non-numeric
         config.setProperty(portKey, "telnet");
         int invalidPort = config.getIntegerProperty(portKey);
-        assertEquals("Non-numeric defaults to 0", 0, invalidPort);
+        assertEquals(0, invalidPort,"Non-numeric defaults to 0");
     }
 
     /**
@@ -253,19 +237,19 @@ public class SessionConfigDeepPairwiseTest {
         // Scenario 1: Negative RGB
         config.setProperty(colorKey, "-16777216");  // Below 0
         Color negColor = config.getColorProperty(colorKey);
-        assertNotNull("Negative color still creates Color object", negColor);
+        assertNotNull(negColor,"Negative color still creates Color object");
 
         // Scenario 2: RGB above 0xFFFFFF
         config.setProperty(colorKey, "16777216");   // Just above max
         Color overColor = config.getColorProperty(colorKey);
-        assertNotNull("Over-range RGB still creates Color object", overColor);
+        assertNotNull(overColor,"Over-range RGB still creates Color object");
 
         // Scenario 3: Non-numeric (parses as 0 = black)
         config.setProperty(colorKey, "not-a-color");
         Color badColor = config.getColorProperty(colorKey);
-        assertNotNull("Non-numeric color creates Color object (defaults to 0)", badColor);
+        assertNotNull(badColor,"Non-numeric color creates Color object (defaults to 0)");
         // getIntegerProperty returns 0 for non-numeric, so creates black color
-        assertEquals("Non-numeric defaults to 0", 0, badColor.getRGB() & 0xFFFFFF);
+        assertEquals(0, badColor.getRGB() & 0xFFFFFF,"Non-numeric defaults to 0");
     }
 
     /**
@@ -281,22 +265,22 @@ public class SessionConfigDeepPairwiseTest {
         Rectangle zeroRect = new Rectangle(0, 0, 0, 0);
         config.setRectangleProperty(rectKey, zeroRect);
         Rectangle z = config.getRectangleProperty(rectKey);
-        assertEquals("Zero width accepted", 0, z.width);
-        assertEquals("Zero height accepted", 0, z.height);
+        assertEquals(0, z.width,"Zero width accepted");
+        assertEquals(0, z.height,"Zero height accepted");
 
         // Scenario 2: Negative dimensions
         Rectangle negRect = new Rectangle(100, 100, -500, -300);
         config.setRectangleProperty(rectKey, negRect);
         Rectangle n = config.getRectangleProperty(rectKey);
-        assertEquals("Negative width accepted", -500, n.width);
-        assertEquals("Negative height accepted", -300, n.height);
+        assertEquals(-500, n.width,"Negative width accepted");
+        assertEquals(-300, n.height,"Negative height accepted");
 
         // Scenario 3: Overflow in coordinates
         Rectangle bigRect = new Rectangle(Integer.MAX_VALUE, Integer.MAX_VALUE,
                 Integer.MAX_VALUE, Integer.MAX_VALUE);
         config.setRectangleProperty(rectKey, bigRect);
         Rectangle b = config.getRectangleProperty(rectKey);
-        assertEquals("Large coordinates accepted", Integer.MAX_VALUE, b.x);
+        assertEquals(Integer.MAX_VALUE, b.x,"Large coordinates accepted");
     }
 
     /**
@@ -311,18 +295,18 @@ public class SessionConfigDeepPairwiseTest {
         // Scenario 1: Invalid float syntax
         config.setProperty(fontKey, "12.34.56");  // Multiple dots
         float badFormat = config.getFloatProperty(fontKey, 14.0f);
-        assertEquals("Invalid float format returns default", 14.0f, badFormat, 0.01f);
+        assertEquals(14.0f, badFormat, 0.01f,"Invalid float format returns default");
 
         // Scenario 2: Scientific notation (may or may not parse)
         config.setProperty(fontKey, "1.2E2");
         float scientific = config.getFloatProperty(fontKey);
-        assertTrue("Scientific notation parses or returns 0", scientific >= 0);
+        assertTrue(scientific >= 0,"Scientific notation parses or returns 0");
 
         // Scenario 3: Leading/trailing whitespace
         config.setProperty(fontKey, "  12.5  ");
         float whitespace = config.getFloatProperty(fontKey);
         // Behavior depends on Float.parseFloat() tolerance
-        assertTrue("Whitespace handling varies", whitespace >= 0 || whitespace == 0);
+        assertTrue(whitespace >= 0 || whitespace == 0,"Whitespace handling varies");
     }
 
     // ==========================================================================
@@ -341,18 +325,17 @@ public class SessionConfigDeepPairwiseTest {
 
         // Scenario 1: Set host only
         config.setProperty(hostKey, "server.local");
-        assertTrue("Host set", config.isPropertyExists(hostKey));
-        assertFalse("Port not set initially", config.isPropertyExists(portKey));
+        assertTrue(config.isPropertyExists(hostKey),"Host set");
+        assertFalse(config.isPropertyExists(portKey),"Port not set initially");
 
         // Scenario 2: Set port, but host still exists
         config.setProperty(portKey, "5250");
-        assertTrue("Both host and port now set",
-                config.isPropertyExists(hostKey) && config.isPropertyExists(portKey));
+        assertTrue(config.isPropertyExists(hostKey) && config.isPropertyExists(portKey),"Both host and port now set");
 
         // Scenario 3: Remove host - port should remain (no cascade)
         config.removeProperty(hostKey);
-        assertFalse("Host removed", config.isPropertyExists(hostKey));
-        assertTrue("Port still exists (no cascade removal)", config.isPropertyExists(portKey));
+        assertFalse(config.isPropertyExists(hostKey),"Host removed");
+        assertTrue(config.isPropertyExists(portKey),"Port still exists (no cascade removal)");
     }
 
     /**
@@ -374,8 +357,7 @@ public class SessionConfigDeepPairwiseTest {
 
         // ASSERT: All theme colors present
         for (Map.Entry<String, String> entry : darkTheme.entrySet()) {
-            assertTrue("Color " + entry.getKey() + " set",
-                    config.isPropertyExists(entry.getKey()));
+            assertTrue(config.isPropertyExists(entry.getKey()),"Color " + entry.getKey() + " set");
         }
 
         // ACT: Switch to light theme (overwrites colors)
@@ -390,8 +372,7 @@ public class SessionConfigDeepPairwiseTest {
 
         // ASSERT: Light theme colors applied (dark theme overwritten)
         String bgColor = config.getStringProperty("colorBg");
-        assertEquals("Background switched to light theme",
-                String.valueOf(0xFFFFFF), bgColor);
+        assertEquals(String.valueOf(0xFFFFFF), bgColor,"Background switched to light theme");
     }
 
     /**
@@ -411,8 +392,8 @@ public class SessionConfigDeepPairwiseTest {
 
         // ASSERT: Conflict scenario created (large window + tiny font = unreadable)
         Rectangle retrieved = config.getRectangleProperty(rectKey);
-        assertEquals("Large window persists", 4096, retrieved.width);
-        assertEquals("Tiny font persists", 2.0f, tinyFont, 0.01f);
+        assertEquals(4096, retrieved.width,"Large window persists");
+        assertEquals(2.0f, tinyFont, 0.01f,"Tiny font persists");
         // System should detect and handle this conflict
     }
 
@@ -435,7 +416,7 @@ public class SessionConfigDeepPairwiseTest {
 
         // ASSERT: Property changed
         String newValue = config.getStringProperty("testprop");
-        assertFalse("Property should be modified", originalValue.equals(newValue));
+        assertFalse(originalValue.equals(newValue),"Property should be modified");
     }
 
     /**
@@ -458,9 +439,9 @@ public class SessionConfigDeepPairwiseTest {
         }
 
         // ASSERT: Last values set persist
-        assertEquals("A should have last value", "1.9", config.getStringProperty("a"));
-        assertEquals("B should have last value", "2.9", config.getStringProperty("b"));
-        assertEquals("C should have last value", "3.9", config.getStringProperty("c"));
+        assertEquals("1.9", config.getStringProperty("a"),"A should have last value");
+        assertEquals("2.9", config.getStringProperty("b"),"B should have last value");
+        assertEquals("3.9", config.getStringProperty("c"),"C should have last value");
     }
 
     /**
@@ -488,7 +469,7 @@ public class SessionConfigDeepPairwiseTest {
         }
 
         // ASSERT: Reloaded matches original
-        assertEquals("Reloaded configuration should match", original, reloaded);
+        assertEquals(original, reloaded,"Reloaded configuration should match");
     }
 
     // ==========================================================================
@@ -515,10 +496,10 @@ public class SessionConfigDeepPairwiseTest {
         config.firePropertyChange(this, "test.key", null, "test.value");
 
         // ASSERT: Listener received event
-        assertEquals("Should receive exactly one event", 1, eventCount.get());
-        assertNotNull("Event should be captured", lastEvent.get());
-        assertEquals("Property name should match", "test.key", lastEvent.get().getPropertyName());
-        assertEquals("New value should match", "test.value", lastEvent.get().getNewValue());
+        assertEquals(1, eventCount.get(),"Should receive exactly one event");
+        assertNotNull(lastEvent.get(),"Event should be captured");
+        assertEquals("test.key", lastEvent.get().getPropertyName(),"Property name should match");
+        assertEquals("test.value", lastEvent.get().getNewValue(),"New value should match");
     }
 
     /**
@@ -542,7 +523,7 @@ public class SessionConfigDeepPairwiseTest {
 
         // ASSERT: All listeners notified
         for (int i = 0; i < listenerCount; i++) {
-            assertEquals("Listener " + i + " should receive event", 1, counts.get(i).get());
+            assertEquals(1, counts.get(i).get(),"Listener " + i + " should receive event");
         }
     }
 
@@ -565,9 +546,9 @@ public class SessionConfigDeepPairwiseTest {
         }
 
         // ASSERT: Events received in order
-        assertEquals("Should receive all events", 4, eventSequence.size());
+        assertEquals(4, eventSequence.size(),"Should receive all events");
         for (int i = 0; i < values.length; i++) {
-            assertEquals("Event " + i + " should be in order", values[i], eventSequence.get(i));
+            assertEquals(values[i], eventSequence.get(i),"Event " + i + " should be in order");
         }
     }
 
@@ -584,14 +565,14 @@ public class SessionConfigDeepPairwiseTest {
 
         // ACT: Fire event (should be received)
         config.firePropertyChange(this, "prop1", null, "value1");
-        assertEquals("First event should be received", 1, eventCount.get());
+        assertEquals(1, eventCount.get(),"First event should be received");
 
         // ACT: Remove listener
         config.removeSessionConfigListener(listener);
 
         // ACT: Fire another event (should NOT be received)
         config.firePropertyChange(this, "prop2", null, "value2");
-        assertEquals("Count should remain 1 after removal", 1, eventCount.get());
+        assertEquals(1, eventCount.get(),"Count should remain 1 after removal");
     }
 
     /**
@@ -612,11 +593,11 @@ public class SessionConfigDeepPairwiseTest {
 
         // ACT: Fire change with null old value
         config.firePropertyChange(this, "prop1", null, "value");
-        assertTrue("Should handle null old value", receivedNullOld.get());
+        assertTrue(receivedNullOld.get(),"Should handle null old value");
 
         // ACT: Fire change with null new value (edge case)
         config.firePropertyChange(this, "prop2", "value", null);
-        assertTrue("Should handle null new value", receivedNullNew.get());
+        assertTrue(receivedNullNew.get(),"Should handle null new value");
     }
 
     // ==========================================================================
@@ -632,15 +613,15 @@ public class SessionConfigDeepPairwiseTest {
         // ARRANGE: "Load" property from file source
         String hostKey = "connection.host";
         config.setProperty(hostKey, "filehost.local");
-        assertEquals("Initial value from file", "filehost.local",
-                config.getStringProperty(hostKey));
+        assertEquals("filehost.local",
+                config.getStringProperty(hostKey),"Initial value from file");
 
         // ACT: Override with programmatic source
         config.setProperty(hostKey, "programhost.local");
 
         // ASSERT: Programmatic override takes precedence
-        assertEquals("Programmatic should override file", "programhost.local",
-                config.getStringProperty(hostKey));
+        assertEquals("programhost.local",
+                config.getStringProperty(hostKey),"Programmatic should override file");
     }
 
     /**
@@ -653,14 +634,14 @@ public class SessionConfigDeepPairwiseTest {
         String fontKey = "keypadFontSize";
         float defaultValue = 12.0f;
         float retrieved = config.getFloatProperty(fontKey, defaultValue);
-        assertEquals("Should use default when not set", defaultValue, retrieved, 0.01f);
+        assertEquals(defaultValue, retrieved, 0.01f,"Should use default when not set");
 
         // ACT: Load from "file" source
         config.setProperty(fontKey, "14.5");
 
         // ASSERT: File value overrides default
         float fileValue = config.getFloatProperty(fontKey, defaultValue);
-        assertEquals("File should override default", 14.5f, fileValue, 0.01f);
+        assertEquals(14.5f, fileValue, 0.01f,"File should override default");
     }
 
     /**
@@ -674,25 +655,25 @@ public class SessionConfigDeepPairwiseTest {
 
         // Default (implicit)
         int defaultPort = config.getIntegerProperty(portKey);  // 0
-        assertEquals("Initial default", 0, defaultPort);
+        assertEquals(0, defaultPort,"Initial default");
 
         // File source
         config.setProperty(portKey, "5250");
         int filePort = config.getIntegerProperty(portKey);
-        assertEquals("After file load", 5250, filePort);
+        assertEquals(5250, filePort,"After file load");
 
         // Programmatic override 1
         config.setProperty(portKey, "5251");
         int override1 = config.getIntegerProperty(portKey);
-        assertEquals("After first override", 5251, override1);
+        assertEquals(5251, override1,"After first override");
 
         // Programmatic override 2
         config.setProperty(portKey, "5252");
         int override2 = config.getIntegerProperty(portKey);
-        assertEquals("After second override", 5252, override2);
+        assertEquals(5252, override2,"After second override");
 
         // Last value wins
-        assertEquals("Final value is last override", 5252, config.getIntegerProperty(portKey));
+        assertEquals(5252, config.getIntegerProperty(portKey),"Final value is last override");
     }
 
     // ==========================================================================
@@ -713,7 +694,7 @@ public class SessionConfigDeepPairwiseTest {
         SessionConfigTestDouble newConfig = new SessionConfigTestDouble();
 
         // ASSERT: Transient property not in new config
-        assertFalse("Transient property should not persist", newConfig.isPropertyExists(cacheKey));
+        assertFalse(newConfig.isPropertyExists(cacheKey),"Transient property should not persist");
     }
 
     /**
@@ -730,8 +711,8 @@ public class SessionConfigDeepPairwiseTest {
         float fontSize = config.getFloatProperty(sessionKey);
 
         // ASSERT: Property available throughout session
-        assertEquals("Session property available", 14.0f, fontSize, 0.01f);
-        assertTrue("Property exists in session", config.isPropertyExists(sessionKey));
+        assertEquals(14.0f, fontSize, 0.01f,"Session property available");
+        assertTrue(config.isPropertyExists(sessionKey),"Property exists in session");
     }
 
     /**
@@ -752,9 +733,9 @@ public class SessionConfigDeepPairwiseTest {
         newSession.setProperty("saved.font", config.getStringProperty("saved.font"));
 
         // ASSERT: Permanent properties restored in new session
-        assertEquals("Host persisted", "localhost", newSession.getStringProperty("saved.host"));
-        assertEquals("Port persisted", 5250, newSession.getIntegerProperty("saved.port"));
-        assertEquals("Font persisted", 12.0f, newSession.getFloatProperty("saved.font"), 0.01f);
+        assertEquals("localhost", newSession.getStringProperty("saved.host"),"Host persisted");
+        assertEquals(5250, newSession.getIntegerProperty("saved.port"),"Port persisted");
+        assertEquals(12.0f, newSession.getFloatProperty("saved.font"), 0.01f,"Font persisted");
     }
 
     // ==========================================================================
@@ -777,8 +758,7 @@ public class SessionConfigDeepPairwiseTest {
         for (int i = 0; i < propertyCount; i += 100) {
             String value = config.getStringProperty("prop." + i);
             // ASSERT: Spot-check retrieval
-            assertEquals("Property " + i + " should be retrievable",
-                    "value." + i, value);
+            assertEquals("value." + i, value,"Property " + i + " should be retrievable");
         }
     }
 
@@ -813,7 +793,7 @@ public class SessionConfigDeepPairwiseTest {
         config.firePropertyChange(this, "test", null, "value");
 
         // ASSERT: Only remaining listeners (including counter) receive event
-        assertEquals("Remaining listeners should receive event", 1, finalCount.get());
+        assertEquals(1, finalCount.get(),"Remaining listeners should receive event");
     }
 
     /**
@@ -830,11 +810,11 @@ public class SessionConfigDeepPairwiseTest {
         config.setProperty("Font", "helvetica");  // Case sensitive
 
         // ACT & ASSERT: Each property independently accessible
-        assertEquals("font exact", "arial", config.getStringProperty("font"));
-        assertEquals("fonts exact", "times", config.getStringProperty("fonts"));
-        assertEquals("fontsize exact", "12", config.getStringProperty("fontsize"));
-        assertEquals("font.size exact", "12.0", config.getStringProperty("font.size"));
-        assertEquals("Font case sensitive", "helvetica", config.getStringProperty("Font"));
+        assertEquals("arial", config.getStringProperty("font"),"font exact");
+        assertEquals("times", config.getStringProperty("fonts"),"fonts exact");
+        assertEquals("12", config.getStringProperty("fontsize"),"fontsize exact");
+        assertEquals("12.0", config.getStringProperty("font.size"),"font.size exact");
+        assertEquals("helvetica", config.getStringProperty("Font"),"Font case sensitive");
     }
 
     /**
@@ -855,8 +835,7 @@ public class SessionConfigDeepPairwiseTest {
         // ACT & ASSERT: All special keys accepted
         for (String key : specialKeys) {
             config.setProperty(key, "value");
-            assertEquals("Key " + key + " should be stored",
-                    "value", config.getStringProperty(key));
+            assertEquals("value", config.getStringProperty(key),"Key " + key + " should be stored");
         }
     }
 
