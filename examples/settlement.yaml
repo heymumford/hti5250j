@@ -1,0 +1,35 @@
+name: Settlement Batch Processing
+description: Nightly settlement batch processing with error recovery
+environment: prod
+
+steps:
+  - action: LOGIN
+    host: i5.batch.com
+    user: batchuser
+    password: batchpass
+    name: Connect to batch processing system
+
+  - action: NAVIGATE
+    screen: settlement_main
+    timeout: 10000
+
+  - action: WAIT
+    timeout: 1000
+
+  - action: FILL
+    fields:
+      batch_date: ${data.batch_date}
+      batch_count: ${data.count}
+
+  - action: SUBMIT
+    key: ENTER
+
+  - action: WAIT
+    timeout: 5000
+
+  - action: ASSERT
+    screen: settlement_summary
+    text: "Settlement batch accepted"
+
+  - action: CAPTURE
+    name: settlement_batch_result
