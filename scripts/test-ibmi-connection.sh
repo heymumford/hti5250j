@@ -1,19 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Comprehensive IBM i connection diagnostic and test
-# Usage: source ~/.env && ./scripts/test-ibmi-connection.sh
+# Usage: set -a && source .env && set +a && ./scripts/test-ibmi-connection.sh
 
-set -e
+set -euo pipefail
 
 # Load environment
-if [ -f ~/.env ]; then
+if [ -f .env ]; then
     set -a
-    source ~/.env
+    source .env
     set +a
 fi
 
-HOST="${IBM_I_HOST:-10.1.154.41}"
+HOST="${IBM_I_HOST:-}"
 PORT="${IBM_I_PORT:-992}"
-USER="${IBM_I_USER:-MUMFEIS1}"
+USER="${IBM_I_USER:-}"
+if [[ -z "$HOST" ]]; then
+    echo "error: IBM_I_HOST must be set" >&2
+    exit 2
+fi
 
 # Colors
 RED='\033[0;31m'
@@ -116,8 +120,8 @@ echo ""
 echo -e "${YELLOW}[TEST 5] Configuration${NC}"
 echo "  IBM_I_HOST: $HOST"
 echo "  IBM_I_PORT: $PORT"
-echo "  IBM_I_USER: $USER"
-echo "  IBM_I_DATABASE: ${IBM_I_DATABASE:-PWRUATCA}"
+echo "  IBM_I_USER: ${USER:-[NOT SET]}"
+echo "  IBM_I_DATABASE: ${IBM_I_DATABASE:-[NOT SET]}"
 [ -z "$IBM_I_PASSWORD" ] && echo "  IBM_I_PASSWORD: [NOT SET]" || echo "  IBM_I_PASSWORD: [SET]"
 echo "  IBM_I_SSL: ${IBM_I_SSL:-true}"
 
@@ -168,13 +172,13 @@ else
     echo ""
     echo "When you have network access:"
     echo "  1. Run this script again:"
-    echo "     source ~/.env && ./scripts/test-ibmi-connection.sh"
+    echo "     set -a && source .env && set +a && ./scripts/test-ibmi-connection.sh"
     echo ""
     echo "  2. Install SSL certificate if needed:"
     echo "     sudo ./scripts/install-ibmi-cert.sh $HOST $PORT"
     echo ""
     echo "  3. Run integration tests:"
-    echo "     set -a && source ~/.env && set +a"
+    echo "     set -a && source .env && set +a"
     echo "     ./gradlew test --tests IBMiUATIntegrationTest"
 fi
 

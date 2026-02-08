@@ -61,7 +61,7 @@ public final class IBMiConnectionFactory {
      * Create IBMiConnectionFactory from environment variables.
      *
      * Expected variables:
-     * - IBM_I_HOST: hostname or IP (e.g., "10.1.154.41" or "PWRUATCA-ZPA")
+     * - IBM_I_HOST: hostname or IP (e.g., "ibmi.example.com")
      * - IBM_I_PORT: port (e.g., 992 for IMPLICIT SSL)
      * - IBM_I_SSL: "true" or "false" (determines SSL type)
      * - IBM_I_CONNECTION_TIMEOUT: milliseconds (default 10000)

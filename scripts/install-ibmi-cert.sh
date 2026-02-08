@@ -1,12 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Install IBM i SSL certificate into Java truststore
 # Usage: ./scripts/install-ibmi-cert.sh [host] [port]
-# Example: ./scripts/install-ibmi-cert.sh 10.1.154.41 992
+# Example: ./scripts/install-ibmi-cert.sh ibmi.example.com 992
 
-set -e
+set -euo pipefail
 
-HOST="${1:-10.1.154.41}"
-PORT="${2:-992}"
+HOST="${1:-${IBM_I_HOST:-}}"
+PORT="${2:-${IBM_I_PORT:-992}}"
+if [[ -z "$HOST" ]]; then
+    echo "error: host is required (arg1 or IBM_I_HOST)" >&2
+    exit 2
+fi
+
 CERT_FILE="/tmp/ibmi-${HOST}-${PORT}.pem"
 CERT_ALIAS="ibmi-uat-$(date +%s)"
 

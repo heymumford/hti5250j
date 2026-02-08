@@ -6,7 +6,6 @@ group = 'org.hti5250j'
 version = findProperty('version') ?: '0.8.0-headless.0.rtr'
 
 def runtimeLibs = fileTree(dir: 'lib/runtime', include: ['*.jar', '*.zip'])
-def devLibs = fileTree(dir: 'lib/development', include: ['*.jar', '*.zip'])
 
 java {
     toolchain {
@@ -20,10 +19,8 @@ repositories {
 
 dependencies {
     implementation runtimeLibs
-    implementation devLibs
 
     testImplementation runtimeLibs
-    testImplementation devLibs
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'

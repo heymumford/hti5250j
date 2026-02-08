@@ -9,7 +9,6 @@
 
 package org.hti5250j;
 
-import org.junit.*;
 import org.hti5250j.event.SessionConfigEvent;
 import org.hti5250j.event.SessionConfigListener;
 
@@ -26,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 

@@ -66,7 +66,7 @@ public class SessionConfigPairwiseTest {
     public void testSetConnectionHostPropertyString() {
         // ARRANGE: Session config initialized
         String hostKey = "connection.host";
-        String hostValue = "192.168.1.100";
+        String hostValue = "192.0.2.100";
 
         // ACT: Set property programmatically
         config.setProperty(hostKey, hostValue);

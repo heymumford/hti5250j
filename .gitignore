@@ -28,6 +28,9 @@ build.*.properties
 certs/
 certificates/
 
+# Local/vendor dependencies (use Gradle)
+lib/development/
+
 # IDE
 .vscode/
 *.swp

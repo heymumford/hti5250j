@@ -63,7 +63,7 @@ public class ConnectionTimeoutPairwiseTest {
     private ExecutorService executorService;
     private static final int TIMEOUT_SECONDS = 10;
     private static final String VALID_HOST = "127.0.0.1";
-    private static final String SLOW_HOST = "10.255.255.1"; // Non-routable, simulates slow/hung connection
+    private static final String SLOW_HOST = "192.0.2.1"; // TEST-NET-1, safe unreachable example
     private static final int VALID_PORT = 23;
 
     // Timeout durations (milliseconds)
@@ -827,7 +827,7 @@ public class ConnectionTimeoutPairwiseTest {
                 }
 
                 // Simulate slow host timeout
-                if (host.equals("10.255.255.1")) {
+                if (host.equals(SLOW_HOST)) {
                     try {
                         long startTime = System.currentTimeMillis();
                         while (System.currentTimeMillis() - startTime < connectTimeout) {

@@ -70,7 +70,7 @@ public class SessionLifecyclePairwiseTest {
 
         // Custom configuration
         customProps = new Properties();
-        customProps.setProperty("Session.host", "192.168.1.1");
+        customProps.setProperty("Session.host", "192.0.2.1");
         customProps.setProperty("Session.port", "1234");
         customProps.setProperty("Session.ssl", "true");
         customConfig = new SessionConfig("TestCustom.props", "CustomSession");

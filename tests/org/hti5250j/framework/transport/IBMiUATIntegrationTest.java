@@ -23,7 +23,8 @@ import static org.assertj.core.api.Assertions.*;
  * Integration tests that connect to real IBM i UAT environment.
  *
  * These tests require:
- * - Network access to IBM_I_HOST (10.1.154.41)
+ * - IBM_I_ENABLE_UAT_TESTS=true (explicit opt-in; prevents accidental runs)
+ * - Network access to IBM_I_HOST (internal IBM i host)
  * - Port 992 open (IMPLICIT SSL)
  * - .env file with IBM_I_* variables
  *
@@ -37,6 +38,7 @@ import static org.assertj.core.api.Assertions.*;
  * Or with Maven profile for integration tests
  */
 @DisplayName("IBM i UAT Integration Tests")
+@EnabledIfEnvironmentVariable(named = "IBM_I_ENABLE_UAT_TESTS", matches = "(?i)true|1|yes")
 @EnabledIfEnvironmentVariable(named = "IBM_I_HOST", matches = ".+")
 public class IBMiUATIntegrationTest {
 
