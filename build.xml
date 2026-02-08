@@ -172,19 +172,19 @@
         </javac>
     </target>
 
-    <target name="run-tests" depends="compile, compile-tests">
-        <junit printsummary="yes" haltonfailure="yes">
-            <formatter type="brief" usefile="false"/>
+    <target name="run-tests" depends="compile, compile-tests" description="Run all tests using JUnit 5 Platform">
+        <java classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true">
+            <arg value="--classpath"/>
+            <arg value="${build.classes.dir}"/>
+            <arg value="--scan-classpath"/>
+            <arg value="--details=tree"/>
             <classpath>
                 <path refid="tests-classpath"/>
             </classpath>
-            <batchtest fork="no" todir="${build.dir}">
-                <fileset dir="${tests.dir}">
-                    <include name="**/*Test*.java"/>
-                    <exclude name="**/AllTests.java"/>
-                </fileset>
-            </batchtest>
-        </junit>
+        </java>
+    </target>
+
+    <target name="test" depends="run-tests" description="Run all tests (alias for run-tests)">
     </target>
 
     <!-- =================================================================== -->
