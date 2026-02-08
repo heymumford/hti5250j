@@ -1,18 +1,44 @@
-# TN5250J
-A 5250 terminal emulator for the IBM i (AS/400) written in Java.
+# TN5250J Headless Edition
 
-Documentation is available at: [tn5250j.github.io](https://tn5250j.github.io/)
+Headless-first fork of TN5250J, a 5250 terminal emulator for IBM i (AS/400). This fork prioritizes headless execution, deterministic session management, test automation, and protocol extensions.
 
-[![Build Status](https://travis-ci.org/tn5250j/tn5250j.svg?branch=travis)](https://travis-ci.org/tn5250j/tn5250j)
+Note: This is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250j). See [FORK.md](./FORK.md) for attribution and differences.
 
-## History
+## Quick Start
 
-This project was created because there was no terminal emulator for Linux with features like continued edit fields, gui windows, cursor progression fields, etc.
+```bash
+git clone https://github.com/heymumford/tn5250j-headless.git
+cd tn5250j-headless
+./gradlew clean test
+```
 
-It was then open sourced to give something back to all those hackers and code churners that work so hard to provide the Linux and Open Source communities with quality work and software.
+## Features
 
-The original developer wanted it to work on different operating systems, thus Java giving the “J” at the end.
+- Headless execution (no GUI dependency)
+- Session pooling and lifecycle validation
+- Pairwise protocol tests (25+ suites)
+- Plugin architecture for protocol handlers
+- Diagnostics and structured logging
+- TN5250E and attribute-plane operations
 
-## Hosting
+Upstream feature list: [tn5250j.github.io](https://tn5250j.github.io/)
 
-The project was previous hosted at [sourceforge.net](https://sourceforge.net/projects/tn5250j/). But since 2016 has been migrated to GitHub.
+## Documentation
+
+- [REQUIREMENTS.md](./REQUIREMENTS.md) — canonical feature set and requirements
+- [TEST_ARCHITECTURE.md](./TEST_ARCHITECTURE.md) — four-domain test model and cadence
+- [ENGINEERING_PRINCIPLES.md](./ENGINEERING_PRINCIPLES.md) — engineering philosophy and design tenets
+- [FORK.md](./FORK.md) — fork declaration and attribution
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — contribution guidelines
+
+## License
+
+GPL-2.0-or-later (GPL v2 or later). See [LICENSE](./LICENSE).
+
+## Attribution
+
+Original TN5250J community; headless extensions by Eric C. Mumford (@heymumford).
+
+## Upstream History
+
+TN5250J was created to provide a Linux 5250 emulator with advanced features such as edit-field continuation, GUI windows, and cursor progression. It was open-sourced for cross-platform use and community adoption. The project originated on SourceForge and migrated to GitHub in 2016.

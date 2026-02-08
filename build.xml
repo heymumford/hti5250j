@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
 
-<project name="tn5250j" default="info" basedir=".">
+  SPDX-License-Identifier: GPL-2.0-or-later
+-->
+
+
+
+
+
+
+<project name="hti5250j" default="info" basedir=".">
 
     <!-- import user preferences first -->
     <property file="${basedir}/build.${user.name}.properties"/>
@@ -18,8 +28,8 @@
     <property name="runtime.lib.dir" value="${basedir}/lib/runtime"/>
     <property name="development.lib.dir" value="${basedir}/lib/development"/>
 
-    <property name="compile.source" value="1.8"/>
-    <property name="compile.target" value="1.8"/>
+    <property name="compile.source" value="21"/>
+    <property name="compile.target" value="21"/>
 
     <property name="jarname" value="${name}.jar"/>
     <property name="dist.base.name" value="${name}-${version}"/>
@@ -377,11 +387,11 @@
         <jarbundler dir="${dist.dir}"
                     name="${Name}"
                     shortname="${Name}"
-                    mainclass="org.tn5250j.My5250"
+                    mainclass="org.hti5250j.My5250"
                     icon="${resource.dir}/tn5250j-icon.icns"
                     version="${version}"
                     copyright="${Name} ${version}, (c) ${year}"
-                    bundleid="org.tn5250j"
+                    bundleid="org.hti5250j"
                     jvmversion="1.8+"
                     vmoptions="-Xmx256m"
                     smalltabs="true"

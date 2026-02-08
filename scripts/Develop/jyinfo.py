@@ -1,8 +1,15 @@
-######################################################################
-#   jyinfo.py : Only runs when jython 2-1 is installed completely.   #
-#               Does not run from within tn5250j at the moment.      #
-#               If possible it will be enhanced to run from tn5250j. #
-######################################################################
+# SPDX-FileCopyrightText: by Paul M. Magwene, 2003  (mailto:pmagwene@sas.upenn.edu)
+# SPDX-FileCopyrightText: provided that the above copyright notice appear in all copies and that
+# SPDX-FileCopyrightText: both that copyright notice and this permission notice appear in
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+# SPDX-FileContributor: PAUL M. MAGWENE DISCLAIMS ALL WARRANTIES WITH REGARD TO
+# SPDX-FileContributor: BE LIABLE FOR ANY SPECIAL,
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+
+
+
 
 """GUI for browsing events, properties, and methods of Java classes as
     seen from Jython.

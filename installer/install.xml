@@ -1,10 +1,13 @@
+<!-- SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com> -->
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+
 <izpack:installation version="5.0"
                      xmlns:izpack="http://izpack.org/schema/installation"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:schemaLocation="http://izpack.org/schema/installation http://izpack.org/schema/5.0/izpack-installation-5.0.xsd">
     <info>
         <appname>tn5250j</appname>
-        <appversion>0.8.0-beta2</appversion>
+        <appversion>0.8.0-headless.0.rtr</appversion>
         <authors>
             <author email="kjp1@users.sourceforge.net" name="Kenneth J. Pouncey"/>
 			<author email="master_jaf@users.sourceforge.net" name="Martin Kirst"/>

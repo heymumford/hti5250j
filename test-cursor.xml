@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+
+  SPDX-License-Identifier: GPL-2.0-or-later
+-->
+
+
+
+
+
 <project name="tn5250j-cursor-test" basedir=".">
     <target name="run-cursor-test">
         <junit printsummary="yes" haltonfailure="no">
@@ -8,7 +18,7 @@
                     <include name="*.jar"/>
                 </fileset>
             </classpath>
-            <test name="org.tn5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
+            <test name="org.hti5250j.framework.tn5250.CursorMovementDeepPairwiseTest"/>
         </junit>
     </target>
 </project>

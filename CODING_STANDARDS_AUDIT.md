@@ -1,0 +1,1013 @@
+# Coding Standards Audit
+
+Total Java files scanned: 370
+
+## Long Methods (>50 lines)
+- `src/org/hti5250j/Session5250.java`
+  - lines 190-256 (67 lines)
+- `src/org/hti5250j/SessionPanel.java`
+  - lines 219-277 (59 lines)
+- `src/org/hti5250j/SessionPopup.java`
+  - lines 49-529 (481 lines)
+- `src/org/hti5250j/ExternalProgramConfig.java`
+  - lines 111-208 (98 lines)
+- `src/org/hti5250j/My5250.java`
+  - lines 154-218 (65 lines)
+  - lines 220-309 (90 lines)
+  - lines 502-616 (115 lines)
+  - lines 665-717 (53 lines)
+- `src/org/hti5250j/GuiGraphicBuffer.java`
+  - lines 126-2081 (1956 lines)
+- `src/org/hti5250j/PrinterThread.java`
+  - lines 57-260 (204 lines)
+- `src/org/hti5250j/tools/As400Util.java`
+  - lines 24-77 (54 lines)
+- `src/org/hti5250j/tools/Macronizer.java`
+  - lines 174-234 (61 lines)
+- `src/org/hti5250j/tools/XTFRFile.java`
+  - lines 266-338 (73 lines)
+  - lines 526-872 (347 lines)
+  - lines 880-936 (57 lines)
+  - lines 949-1001 (53 lines)
+  - lines 1083-1149 (67 lines)
+  - lines 1151-1207 (57 lines)
+- `src/org/hti5250j/tools/FTP5250Prot.java`
+  - lines 500-637 (138 lines)
+  - lines 664-744 (81 lines)
+  - lines 815-915 (101 lines)
+  - lines 985-1035 (51 lines)
+- `src/org/hti5250j/tools/LoadMacroMenu.java`
+  - lines 44-116 (73 lines)
+- `src/org/hti5250j/scripting/InterpreterDriver.java`
+  - lines 37-102 (66 lines)
+- `src/org/hti5250j/connectdialog/MultiSelectListComponent.java`
+  - lines 103-173 (71 lines)
+- `src/org/hti5250j/connectdialog/ConnectDialog.java`
+  - lines 258-358 (101 lines)
+  - lines 360-458 (99 lines)
+  - lines 460-633 (174 lines)
+  - lines 635-712 (78 lines)
+  - lines 714-811 (98 lines)
+  - lines 890-976 (87 lines)
+- `src/org/hti5250j/connectdialog/Configure.java`
+  - lines 75-465 (391 lines)
+  - lines 582-645 (64 lines)
+- `src/org/hti5250j/framework/Tn5250jController.java`
+  - lines 283-356 (74 lines)
+- `src/org/hti5250j/sessionsettings/SessionSettings.java`
+  - lines 179-241 (63 lines)
+- `src/org/hti5250j/sessionsettings/ColorAttributesPanel.java`
+  - lines 92-177 (86 lines)
+  - lines 189-429 (241 lines)
+- `src/org/hti5250j/sessionsettings/PrinterAttributesPanel.java`
+  - lines 181-264 (84 lines)
+- `src/org/hti5250j/sessionsettings/DisplayAttributesPanel.java`
+  - lines 131-196 (66 lines)
+- `src/org/hti5250j/sessionsettings/CursorAttributesPanel.java`
+  - lines 192-278 (87 lines)
+- `src/org/hti5250j/mailtools/SendEMailDialog.java`
+  - lines 86-244 (159 lines)
+  - lines 252-323 (72 lines)
+  - lines 429-614 (186 lines)
+- `src/org/hti5250j/spoolfile/SpoolExportWizard.java`
+  - lines 233-287 (55 lines)
+  - lines 658-799 (142 lines)
+  - lines 804-885 (82 lines)
+  - lines 906-1042 (137 lines)
+- `src/org/hti5250j/spoolfile/SpoolExporter.java`
+  - lines 251-321 (71 lines)
+  - lines 507-614 (108 lines)
+- `src/org/hti5250j/gui/WizardPage.java`
+  - lines 68-162 (95 lines)
+- `src/org/hti5250j/gui/ButtonTabComponent.java`
+  - lines 62-304 (243 lines)
+- `src/org/hti5250j/gui/Wizard.java`
+  - lines 92-154 (63 lines)
+  - lines 163-228 (66 lines)
+- `src/org/hti5250j/keyboard/DefaultKeyboardHandler.java`
+  - lines 52-113 (62 lines)
+  - lines 173-229 (57 lines)
+- `src/org/hti5250j/keyboard/KeyMapper.java`
+  - lines 39-140 (102 lines)
+  - lines 151-207 (57 lines)
+- `src/org/hti5250j/sql/AS400Xtfr.java`
+  - lines 76-126 (51 lines)
+  - lines 345-484 (140 lines)
+- `src/org/hti5250j/keyboard/configure/KeyConfigure.java`
+  - lines 229-308 (80 lines)
+  - lines 399-471 (73 lines)
+  - lines 559-619 (61 lines)
+  - lines 712-773 (62 lines)
+- `src/org/hti5250j/keyboard/configure/KeyGetter.java`
+  - lines 40-141 (102 lines)
+- `src/org/hti5250j/framework/tn5250/ScreenField.java`
+  - lines 95-574 (480 lines)
+- `src/org/hti5250j/framework/tn5250/Screen5250.java`
+  - lines 222-302 (81 lines)
+  - lines 322-3411 (3090 lines)
+- `src/org/hti5250j/framework/tn5250/tnvt.java`
+  - lines 213-319 (107 lines)
+  - lines 321-372 (52 lines)
+  - lines 695-760 (66 lines)
+  - lines 917-2555 (1639 lines)
+- `src/org/hti5250j/framework/tn5250/WTDSFParser.java`
+  - lines 131-493 (363 lines)
+  - lines 701-920 (220 lines)
+- `src/org/hti5250j/framework/tn5250/DataStreamProducer.java`
+  - lines 48-105 (58 lines)
+- `src/org/hti5250j/framework/tn5250/KeyStrokenizer.java`
+  - lines 54-134 (81 lines)
+- `src/org/hti5250j/framework/tn5250/ScreenPlanes.java`
+  - lines 54-143 (90 lines)
+  - lines 273-436 (164 lines)
+  - lines 795-1143 (349 lines)
+- `src/org/hti5250j/framework/tn5250/DataStreamDumper.java`
+  - lines 73-128 (56 lines)
+- `src/org/hti5250j/framework/tn5250/ScreenFields.java`
+  - lines 414-514 (101 lines)
+  - lines 516-593 (78 lines)
+  - lines 595-700 (106 lines)
+- `src/org/hti5250j/framework/transport/SocketConnector.java`
+  - lines 52-106 (55 lines)
+- `src/org/hti5250j/framework/transport/SSL/SSLImplementation.java`
+  - lines 71-152 (82 lines)
+  - lines 202-269 (68 lines)
+- `src/org/hti5250j/tools/filters/FileFieldDef.java`
+  - lines 43-160 (118 lines)
+- `src/org/hti5250j/tools/filters/OpenOfficeOutputFilter.java`
+  - lines 113-321 (209 lines)
+- `src/org/hti5250j/tools/filters/DelimitedOutputFilter.java`
+  - lines 107-200 (94 lines)
+- `src/org/hti5250j/tools/system/OperatingSystem.java`
+  - lines 109-190 (82 lines)
+- `tests/org/hti5250j/scripting/MacroRecordingPairwiseTest.java`
+  - lines 643-693 (51 lines)
+- `tests/org/hti5250j/benchmarks/SessionPoolingBenchmark.java`
+  - lines 54-104 (51 lines)
+- `tests/org/hti5250j/swing/ui/BasicScreenUI.java`
+  - lines 363-449 (87 lines)
+  - lines 456-1024 (569 lines)
+- `tests/org/hti5250j/swing/ui/BasicTerminalUI.java`
+  - lines 214-294 (81 lines)
+- `tests/org/hti5250j/framework/tn5250/WindowPopupPairwiseTest.java`
+  - lines 89-176 (88 lines)
+- `tests/org/hti5250j/framework/tn5250/OIAPairwiseTest.java`
+  - lines 78-162 (85 lines)
+- `tests/org/hti5250j/framework/tn5250/AidKeyResponsePairwiseTest.java`
+  - lines 130-188 (59 lines)
+- `tests/org/hti5250j/framework/tn5250/TransactionBoundaryPairwiseTest.java`
+  - lines 76-163 (88 lines)
+- `tests/org/hti5250j/framework/tn5250/AttributePairwiseTest.java`
+  - lines 98-168 (71 lines)
+- `tests/org/hti5250j/framework/tn5250/InputInhibitPairwiseTest.java`
+  - lines 87-171 (85 lines)
+- `tests/org/hti5250j/framework/tn5250/DataStreamProducerPairwiseTest.java`
+  - lines 127-177 (51 lines)
+  - lines 833-886 (54 lines)
+- `tests/org/hti5250j/framework/tn5250/AttributePlanePairwiseTest.java`
+  - lines 100-156 (57 lines)
+- `tests/org/hti5250j/framework/tn5250/ScreenPlanesTest.java`
+  - lines 279-331 (53 lines)
+- `tests/org/hti5250j/framework/tn5250/ErrorRecoveryPairwiseTest.java`
+  - lines 76-148 (73 lines)
+- `tests/org/hti5250j/framework/tn5250/ScreenFormatChangePairwiseTest.java`
+  - lines 55-125 (71 lines)
+- `tests/org/hti5250j/framework/tn5250/SBACommandPairwiseTest.java`
+  - lines 68-123 (56 lines)
+- `tests/org/hti5250j/framework/tn5250/Screen5250ReadPairwiseTest.java`
+  - lines 75-141 (67 lines)
+  - lines 165-220 (56 lines)
+- `tests/org/hti5250j/framework/tn5250/MessageLinePairwiseTest.java`
+  - lines 96-177 (82 lines)
+- `tests/org/hti5250j/framework/tn5250/TN5250EProtocolPairwiseTest.java`
+  - lines 867-949 (83 lines)
+
+## Single-letter Variables (excluding i/j/x/y in for-loops)
+- `src/org/hti5250j/tools/XTFRFile.java`
+  - line 266: `public void actionPerformed(ActionEvent e) {`
+  - line 487: `} catch (Exception e) {`
+  - line 633: `public void actionPerformed(ActionEvent e) {`
+  - line 723: `public void actionPerformed(ActionEvent e) {`
+  - line 1083: `public void itemStateChanged(ItemEvent e) {`
+  - ... 1 more
+- `src/org/hti5250j/tools/GUIGraphicsUtils.java`
+  - line 52: `public static void draw3DLeft(Graphics g, int which,`
+  - line 149: `public static void draw3DMiddle(Graphics g, int which,`
+  - line 223: `public static void draw3DRight(Graphics g, int which,`
+  - line 322: `public static void draw3DOne(Graphics g, int which,`
+  - line 448: `public static void drawScrollBar(Graphics g, int which, int direction,`
+  - ... 23 more
+- `src/org/hti5250j/tools/FTP5250Prot.java`
+  - line 82: `public void setOutputFilter(OutputFilterInterface o) {`
+  - line 313: `FileFieldDef f;`
+  - line 326: `FileFieldDef f;`
+  - line 339: `FileFieldDef f;`
+  - line 618: `int l = 0;`
+  - ... 5 more
+- `src/org/hti5250j/tools/LangTool.java`
+  - line 33: `public static void init(Locale l) {`
+- `src/org/hti5250j/tools/SendScreenImageToFile.java`
+  - line 78: `} catch (Exception e) {`
+- `src/org/hti5250j/tools/DESSHA1.java`
+  - line 36: `} catch (java.security.NoSuchAlgorithmException e) {`
+- `src/org/hti5250j/tools/LoadMacroMenu.java`
+  - line 67: `public void actionPerformed(ActionEvent e) {`
+  - line 76: `public void mouseReleased(MouseEvent e) {`
+  - line 82: `public void mousePressed(MouseEvent e) {`
+  - line 88: `public void mouseClicked(MouseEvent e) {`
+  - line 118: `private static void doOptionsPopup(MouseEvent e, SessionPanel session) {`
+  - ... 2 more
+- `src/org/hti5250j/tools/SendScreenToFile.java`
+  - line 56: `int c = screen.getColumns();`
+  - line 57: `int l = screen.getRows() * c;`
+- `src/org/hti5250j/tools/FormattedDocument.java`
+  - line 21: `public FormattedDocument(Format f) {`
+  - line 30: `public void insertString(int offs, String str, AttributeSet a)`
+  - line 41: `} catch (ParseException e) {`
+  - line 59: `} catch (ParseException e) {`
+- `src/org/hti5250j/scripting/ExecuteScriptAction.java`
+  - line 34: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/connectdialog/MultiSelectListComponent.java`
+  - line 114: `public void mouseClicked(MouseEvent e) {`
+  - line 127: `public void mouseClicked(MouseEvent e) {`
+  - line 412: `ListSelectionEvent e = null;`
+  - line 641: `int w = dimButtons.width + 2 * getListPreferredWidth();`
+  - line 642: `int h = Math.max(dimButtons.height, Math.max(dimSource.height, dimSelection.height));`
+  - ... 7 more
+- `src/org/hti5250j/connectdialog/CustomizedExternalProgram.java`
+  - line 44: `public int compareTo(CustomizedExternalProgram o) {`
+  - line 49: `public boolean equals(Object o) {`
+- `src/org/hti5250j/connectdialog/CustomizedTableModel.java`
+  - line 92: `CustomizedExternalProgram c = externalPrograms.get(row);`
+  - line 114: `public Class<?> getColumnClass(int c) {`
+- `src/org/hti5250j/connectdialog/ConnectDialog.java`
+  - line 229: `public void windowOpened(WindowEvent e) {`
+  - line 242: `public void stateChanged(ChangeEvent e) {`
+  - line 244: `JTabbedPane p = (JTabbedPane) e.getSource();`
+  - line 275: `public void actionPerformed(ActionEvent e) {`
+  - line 310: `public void valueChanged(ListSelectionEvent e) {`
+  - ... 25 more
+- `src/org/hti5250j/connectdialog/Configure.java`
+  - line 94: `public void itemStateChanged(ItemEvent e) {`
+  - line 294: `public void itemStateChanged(ItemEvent e) {`
+  - line 425: `public void actionPerformed(ActionEvent e) {`
+  - line 436: `public void actionPerformed(ActionEvent e) {`
+  - line 447: `public void actionPerformed(ActionEvent e) {`
+  - ... 4 more
+- `src/org/hti5250j/connectdialog/SessionsTableModel.java`
+  - line 43: `Enumeration<Object> e = properties.keys();`
+  - line 150: `public Class<?> getColumnClass(int c) {`
+- `src/org/hti5250j/framework/Tn5250jController.java`
+  - line 108: `} catch (MalformedURLException e) {`
+  - line 148: `} catch (IOException e) {`
+  - line 169: `} catch (InterruptedException e) {`
+  - line 185: `public void handleEvent(Tn5250jEvent e) {`
+  - line 260: `Enumeration<Object> e = sesprops.keys();`
+  - ... 1 more
+- `src/org/hti5250j/plugin/PluginVersion.java`
+  - line 44: `public int compareTo(PluginVersion o) {`
+  - line 56: `public boolean equals(Object o) {`
+  - line 58: `PluginVersion v = (PluginVersion) o;`
+- `src/org/hti5250j/sessionsettings/SessionSettings.java`
+  - line 56: `} catch (Exception e) {`
+  - line 95: `public void valueChanged(TreeSelectionEvent e) {`
+  - line 160: `String p = (String) props.get(prop);`
+  - line 211: `public void propertyChange(PropertyChangeEvent e) {`
+- `src/org/hti5250j/sessionsettings/ColorAttributesPanel.java`
+  - line 53: `public void actionPerformed(ActionEvent e) {`
+  - line 92: `public void actionPerformed(ActionEvent e) {`
+  - line 442: `} catch (Exception e) {`
+  - line 448: `Schema s = null;`
+- `src/org/hti5250j/sessionsettings/PrinterAttributesPanel.java`
+  - line 114: `public void actionPerformed(ActionEvent e) {`
+  - line 122: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/sessionsettings/SignoffAttributesPanel.java`
+  - line 56: `public void itemStateChanged(ItemEvent e) {`
+  - line 124: `private void doItemStateChanged(ItemEvent e) {`
+- `src/org/hti5250j/sessionsettings/KeypadAttributesPanel.java`
+  - line 103: `public void actionPerformed(ActionEvent e) {`
+  - line 130: `public void actionPerformed(ActionEvent e) {`
+  - line 136: `public void actionPerformed(ActionEvent e) {`
+  - line 148: `public void actionPerformed(ActionEvent e) {`
+  - line 154: `public void actionPerformed(ActionEvent e) {`
+  - ... 2 more
+- `src/org/hti5250j/sessionsettings/AttributesPanel.java`
+  - line 54: `} catch (Exception e) {`
+  - line 75: `String p = changes.getStringProperty(prop);`
+  - line 88: `Color c = new Color(changes.getIntegerProperty(prop));`
+  - line 98: `Color c = new Color(changes.getIntegerProperty(prop));`
+  - line 108: `String b = changes.getStringProperty(prop).toLowerCase();`
+- `src/org/hti5250j/encoding/JavaCodePageFactory.java`
+  - line 81: `} catch (Exception e) {`
+- `src/org/hti5250j/encoding/BuiltInCodePageFactory.java`
+  - line 109: `} catch (Exception e) {`
+- `src/org/hti5250j/encoding/ToolboxCodePageFactory.java`
+  - line 64: `} catch (Exception e) {`
+  - line 83: `} catch (Exception e) {`
+  - line 115: `} catch (Throwable t) {`
+  - line 130: `} catch (Throwable t) {`
+- `src/org/hti5250j/mailtools/SMTPConfig.java`
+  - line 92: `public void actionPerformed(ActionEvent e) {`
+  - line 100: `public void actionPerformed(ActionEvent e) {`
+  - line 252: `private void optDone_actionPerformed(ActionEvent e) {`
+  - line 275: `void optCancel_actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/mailtools/SendEMailDialog.java`
+  - line 157: `int c = screen.getColumns();`
+  - line 158: `int l = screen.getRows() * c;`
+  - line 202: `File f =`
+  - line 221: `File f = new File(attachmentName.getText());`
+  - line 460: `public void actionPerformed(ActionEvent e) {`
+  - ... 5 more
+- `src/org/hti5250j/spoolfile/SpoolExportWizard.java`
+  - line 160: `} catch (Exception e) {`
+  - line 314: `public void actionPerformed(ActionEvent e) {`
+  - line 408: `//            public void itemStateChanged(ItemEvent e) {`
+  - line 431: `public void actionPerformed(ActionEvent e) {`
+  - line 446: `public void actionPerformed(ActionEvent e) {`
+  - ... 20 more
+- `src/org/hti5250j/spoolfile/ExportFileFilter.java`
+  - line 128: `public boolean accept(File f) {`
+  - line 147: `public String getExtension(File f) {`
+  - line 239: `public void setExtensionListInDescription(boolean b) {`
+  - line 263: `public String setExtension(File f) {`
+  - line 268: `public String setExtension(String f) {`
+  - ... 3 more
+- `src/org/hti5250j/spoolfile/SpoolNameTabPanel.java`
+  - line 49: `public void itemStateChanged(ItemEvent e) {`
+  - line 85: `void select_itemStateChanged(ItemEvent e) {`
+- `src/org/hti5250j/spoolfile/SpoolFilterPane.java`
+  - line 29: `} catch (Exception e) {`
+- `src/org/hti5250j/spoolfile/UserDataTabPanel.java`
+  - line 48: `public void itemStateChanged(ItemEvent e) {`
+  - line 83: `void select_itemStateChanged(ItemEvent e) {`
+- `src/org/hti5250j/spoolfile/SpoolExporter.java`
+  - line 69: `} catch (Exception e) {`
+  - line 100: `public void mouseClicked(MouseEvent e) {`
+  - line 135: `public void valueChanged(ListSelectionEvent e) {`
+  - line 212: `public void actionPerformed(ActionEvent e) {`
+  - line 220: `public void actionPerformed(ActionEvent e) {`
+  - ... 20 more
+- `src/org/hti5250j/spoolfile/OutputQueueTabPanel.java`
+  - line 48: `public void itemStateChanged(ItemEvent e) {`
+  - line 88: `void select_itemStateChanged(ItemEvent e) {`
+- `src/org/hti5250j/spoolfile/JobTabPanel.java`
+  - line 46: `public void itemStateChanged(ItemEvent e) {`
+  - line 87: `void select_itemStateChanged(ItemEvent e) {`
+- `src/org/hti5250j/spoolfile/UserTabPanel.java`
+  - line 49: `public void itemStateChanged(ItemEvent e) {`
+  - line 84: `void select_itemStateChanged(ItemEvent e) {`
+- `src/org/hti5250j/gui/WizardPage.java`
+  - line 105: `public void actionPerformed(ActionEvent e) {`
+  - line 118: `public void actionPerformed(ActionEvent e) {`
+  - line 131: `public void actionPerformed(ActionEvent e) {`
+  - line 143: `public void actionPerformed(ActionEvent e) {`
+  - line 156: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/gui/SortArrowIcon.java`
+  - line 53: `public void paintIcon(Component c, Graphics g, int x, int y) {`
+  - line 58: `int w = width;`
+  - line 59: `int h = height;`
+  - line 60: `int m = w / 2;`
+- `src/org/hti5250j/gui/HTI5250jSplashScreen.java`
+  - line 38: `protected Frame f = null;`
+  - line 83: `} catch (Exception e) {`
+  - line 91: `Dimension s = new Dimension(image.getWidth(this) + 2,`
+  - line 139: `public void update(Graphics g) {`
+  - line 143: `public synchronized void paint(Graphics g) {`
+- `src/org/hti5250j/gui/SystemRequestDialog.java`
+  - line 71: `public void windowOpened(WindowEvent e) {`
+- `src/org/hti5250j/gui/AppleApplicationTools.java`
+  - line 36: `} catch (Exception e) {`
+  - line 37: `log.debug("Skipping to set application dock icon for Mac OS X, because didn't found 'com.apple.eawt.Application' class.", e);`
+  - line 47: `} catch (ClassNotFoundException e) {`
+- `src/org/hti5250j/gui/ButtonTabComponent.java`
+  - line 182: `public void mouseClicked(MouseEvent e) {`
+  - line 190: `public void mousePressed(MouseEvent e) {`
+  - line 198: `public void mouseReleased(MouseEvent e) {`
+  - line 206: `public void mouseEntered(MouseEvent e) {`
+  - line 214: `public void mouseExited(MouseEvent e) {`
+  - ... 4 more
+- `src/org/hti5250j/gui/Wizard.java`
+  - line 123: `Enumeration<WizardListener> e = listeners.elements();`
+  - line 194: `Enumeration<WizardListener> e;`
+  - line 250: `Enumeration<WizardListener> e = listeners.elements();`
+  - line 280: `Enumeration<WizardListener> e = listeners.elements();`
+  - line 310: `Enumeration<WizardListener> e = listeners.elements();`
+  - ... 8 more
+- `src/org/hti5250j/gui/HTI5250jFileFilter.java`
+  - line 103: `public boolean accept(File f) {`
+  - line 122: `public String getExtension(File f) {`
+  - line 214: `public void setExtensionListInDescription(boolean b) {`
+  - line 238: `public String setExtension(File f) {`
+  - line 243: `public String setExtension(String f) {`
+  - ... 1 more
+- `src/org/hti5250j/gui/ToggleDocument.java`
+  - line 25: `public void insertString(int offs, String str, AttributeSet a)`
+- `src/org/hti5250j/event/WizardListener.java`
+  - line 27: `public void nextBegin(WizardEvent e);`
+  - line 32: `public void nextComplete(WizardEvent e);`
+  - line 39: `public void previousBegin(WizardEvent e);`
+  - line 44: `public void previousComplete(WizardEvent e);`
+  - line 49: `public void finished(WizardEvent e);`
+  - ... 2 more
+- `src/org/hti5250j/event/BootEvent.java`
+  - line 24: `public BootEvent(Object obj, String s) {`
+  - line 33: `public void setMessage(String s) {`
+  - line 42: `public void setNewSessionOptions(String s) {`
+- `src/org/hti5250j/event/SessionChangeEvent.java`
+  - line 24: `public SessionChangeEvent(Object obj, String s) {`
+  - line 33: `public void setMessage(String s) {`
+  - line 42: `public void setState(int s) {`
+- `src/org/hti5250j/event/WizardEvent.java`
+  - line 53: `public void setAllowChange(boolean v) {`
+  - line 67: `public void setNewPage(Component p) {`
+- `src/org/hti5250j/event/EmulatorActionEvent.java`
+  - line 28: `public EmulatorActionEvent(Object obj, String s) {`
+  - line 37: `public void setMessage(String s) {`
+  - line 46: `public void setAction(int s) {`
+- `src/org/hti5250j/event/FTPStatusEvent.java`
+  - line 23: `public FTPStatusEvent(Object obj, String s) {`
+  - line 29: `public FTPStatusEvent(Object obj, String s, int messageType) {`
+  - line 39: `public void setMessage(String s) {`
+- `src/org/hti5250j/keyboard/KeyboardHandler.java`
+  - line 134: `protected boolean emulatorAction(KeyStroke ks, KeyEvent e) {`
+- `src/org/hti5250j/keyboard/DefaultKeyboardHandler.java`
+  - line 52: `protected void displayInfo(KeyEvent e, String s) {`
+  - line 55: `char c = e.getKeyChar();`
+  - line 173: `private void processVTKeyPressed(KeyEvent e) {`
+  - line 231: `private void processVTKeyTyped(KeyEvent e) {`
+  - line 262: `private void processVTKeyReleased(KeyEvent e) {`
+  - ... 1 more
+- `src/org/hti5250j/keyboard/KeyMapper.java`
+  - line 226: `Collection<String> v = mappedKeys.values();`
+  - line 227: `Set<KeyStroker> o = mappedKeys.keySet();`
+  - line 228: `Iterator<KeyStroker> k = o.iterator();`
+  - line 286: `Collection<String> v = mappedKeys.values();`
+  - line 287: `Set<KeyStroker> o = mappedKeys.keySet();`
+  - ... 19 more
+- `src/org/hti5250j/interfaces/GUIViewInterface.java`
+  - line 34: `public GUIViewInterface(My5250 m) {`
+- `src/org/hti5250j/sql/AS400Xtfr.java`
+  - line 65: `public void setOutputFilter(OutputFilterInterface o) {`
+  - line 108: `} catch (Exception e) {`
+  - line 260: `FileFieldDef f;`
+  - line 273: `FileFieldDef f;`
+  - line 286: `FileFieldDef f;`
+  - ... 4 more
+- `src/org/hti5250j/sql/SqlWizard.java`
+  - line 55: `} catch (Exception e) {`
+  - line 90: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/configure/KeyConfigure.java`
+  - line 211: `public void actionPerformed(ActionEvent e) {`
+  - line 321: `Object o = lm.getElementAt(index);`
+  - line 325: `} else if (o instanceof Macro m) {`
+  - line 332: `String k = parseSpecialCharacter((String) lm.getElementAt(index));`
+  - line 441: `char c = codePage.ebcdic2uni(x);`
+  - ... 12 more
+- `src/org/hti5250j/keyboard/configure/KeyGetterInterface.java`
+  - line 27: `*    abstract private void processVTKeyPressed(KeyEvent e);`
+  - line 28: `*    abstract private void processVTKeyTyped(KeyEvent e);`
+  - line 29: `*    abstract private void processVTKeyReleased(KeyEvent e);`
+  - line 49: `public void keyTyped(KeyEvent e) {`
+  - line 59: `public void keyReleased(KeyEvent e) {`
+  - ... 3 more
+- `src/org/hti5250j/keyboard/configure/KeyGetter.java`
+  - line 40: `private void displayInfo(KeyEvent e) {`
+  - line 59: `char c = e.getKeyChar();`
+  - line 143: `void processVTKeyPressed(KeyEvent e) {`
+  - line 183: `void processVTKeyTyped(KeyEvent e) {`
+  - line 201: `void processVTKeyReleased(KeyEvent e) {`
+- `src/org/hti5250j/keyboard/actions/EmulatorAction.java`
+  - line 65: `abstract public void actionPerformed(ActionEvent e);`
+- `src/org/hti5250j/keyboard/actions/JumpNextAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/RunScriptAction.java`
+  - line 39: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/DispMsgsAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/QuickEmailAction.java`
+  - line 38: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/CopyAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/NewSessionAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/PrintAction.java`
+  - line 38: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/SpoolWorkAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/EmailAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/ToggleConnectionAction.java`
+  - line 39: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/HotspotsAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/AttributesAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/JumpPrevAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/CloseAction.java`
+  - line 40: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/OpenSameAction.java`
+  - line 36: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/TransferAction.java`
+  - line 39: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/DebugAction.java`
+  - line 38: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/GuiAction.java`
+  - line 38: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/keyboard/actions/RulerAction.java`
+  - line 37: `public void actionPerformed(ActionEvent e) {`
+- `src/org/hti5250j/encoding/builtin/CCSID930.java`
+  - line 38: `} catch (UnsupportedEncodingException e) {`
+- `src/org/hti5250j/framework/tn5250/ScreenField.java`
+  - line 16: `protected ScreenField(Screen5250 s) {`
+  - line 239: `public void setFieldChar(char c) {`
+  - line 250: `public void setFieldChar(int lastPos, char c) {`
+  - line 565: `Screen5250 s;`
+- `src/org/hti5250j/framework/tn5250/Screen5250.java`
+  - line 191: `int m = area.x();`
+  - line 193: `int t = 0;`
+  - line 201: `char c = planes.getChar(getPos(m - 1, i - 1));`
+  - line 242: `char c = 0;`
+  - line 346: `int m = area.x();`
+  - ... 23 more
+- `src/org/hti5250j/framework/tn5250/tnvt.java`
+  - line 213: `public final boolean connect(String s, int port) {`
+  - line 787: `char c = planes.getChar(str);`
+  - line 812: `Runtime r = Runtime.getRuntime();`
+  - line 813: `Process p = r.exec(cmd);`
+  - line 818: `} catch (Throwable t) {`
+  - ... 15 more
+- `src/org/hti5250j/framework/tn5250/WTDSFParser.java`
+  - line 117: `Window w = guiStructs.get(x);`
+  - line 146: `int s = segment[pos++] & 0xff;`
+  - line 424: `int d = 0;`
+  - line 489: `//      catch (Exception e) {};`
+  - line 520: `int c = screen52.getCol(lastPos);`
+  - ... 3 more
+- `src/org/hti5250j/framework/tn5250/KeyStrokenizer.java`
+  - line 56: `String s = "";`
+  - line 61: `char c = keyStrokes.charAt(index);`
+- `src/org/hti5250j/framework/tn5250/ScreenPlanes.java`
+  - line 176: `int r = scr.getPos(errorLineNum - 1, 0);`
+  - line 195: `int r = scr.getPos(errorLineNum - 1, 0);`
+  - line 214: `protected void setScreenCharAndAttr(int pos, char c, int attr, boolean isAttr) {`
+  - line 247: `protected final void setChar(int pos, char c) {`
+  - line 275: `char c = 0;`
+  - ... 4 more
+- `src/org/hti5250j/framework/tn5250/DataStreamDumper.java`
+  - line 83: `StringBuilder h = new StringBuilder();`
+  - line 124: `} catch (IOException e) {`
+  - line 137: `} catch (FileNotFoundException e) {`
+  - line 139: `} catch (IOException e) {`
+- `src/org/hti5250j/framework/tn5250/ScreenFields.java`
+  - line 35: `public ScreenFields(Screen5250 s) {`
+  - line 400: `int f = 0;`
+  - line 473: `int f = 0;`
+  - line 558: `int f = 0;`
+  - line 599: `char c;`
+- `src/org/hti5250j/framework/transport/SocketConnector.java`
+  - line 70: `} catch (Exception e) {`
+  - line 84: `} catch (Exception e) {`
+  - line 93: `} catch (Exception e) {`
+- `src/org/hti5250j/framework/common/Sessions.java`
+  - line 39: `public void actionPerformed(ActionEvent e) {`
+  - line 105: `Session5250 s = null;`
+  - line 124: `Session5250 s = null;`
+- `src/org/hti5250j/framework/transport/SSL/SSLImplementation.java`
+  - line 166: `} catch (Exception e) {`
+  - line 261: `} catch (Exception e) {`
+- `src/org/hti5250j/tools/filters/HTMLOutputFilter.java`
+  - line 33: `FileFieldDef f;`
+  - line 107: `FileFieldDef f;`
+- `src/org/hti5250j/tools/filters/XTFRFileFilter.java`
+  - line 54: `private Object o;`
+  - line 133: `public boolean accept(File f) {`
+  - line 152: `public String getExtension(File f) {`
+  - line 244: `public void setExtensionListInDescription(boolean b) {`
+  - line 268: `public String setExtension(File f) {`
+  - ... 4 more
+- `src/org/hti5250j/tools/filters/FileFieldDef.java`
+  - line 153: `int o = sb.length();`
+- `src/org/hti5250j/tools/filters/FixedWidthOutputFilter.java`
+  - line 34: `FileFieldDef f;`
+  - line 67: `private String getFixedLength(byte[] cByte, FileFieldDef f) {`
+  - line 145: `//      FileFieldDef f;`
+- `src/org/hti5250j/tools/filters/OpenOfficeOutputFilter.java`
+  - line 60: `} catch (Exception e) {`
+  - line 70: `FileFieldDef f;`
+  - line 75: `int c = 0;`
+  - line 113: `private String tr2xml(String s) {`
+  - line 377: `FileFieldDef f;`
+  - ... 3 more
+- `src/org/hti5250j/tools/filters/DelimitedOutputFilter.java`
+  - line 38: `FileFieldDef f;`
+  - line 71: `FileFieldDef f;`
+- `src/org/hti5250j/tools/filters/KSpreadOutputFilter.java`
+  - line 40: `FileFieldDef f;`
+  - line 74: `private String tr2xml(String s) {`
+  - line 136: `FileFieldDef f;`
+- `src/org/hti5250j/tools/filters/ExcelOutputFilter.java`
+  - line 32: `} catch (Exception e) {`
+  - line 47: `FileFieldDef f;`
+  - line 124: `double d = Double.parseDouble(string);`
+  - line 181: `public void writeLong(long l) throws IOException {`
+  - line 201: `public void writeShort(int s) throws IOException {`
+  - ... 3 more
+- `src/org/hti5250j/tools/encoder/PNGEncoder.java`
+  - line 33: `} catch (InterruptedException e) {`
+  - line 261: `long c;`
+  - line 262: `int n;`
+  - line 263: `int k;`
+  - line 288: `long c = crc;`
+- `src/org/hti5250j/tools/system/OperatingSystem.java`
+  - line 76: `* Returns if we're running Unix (this includes MacOS X).`
+  - line 123: `} catch (MalformedURLException e) {`
+  - line 160: `Process p = Runtime.getRuntime().exec(cmd);`
+  - line 168: `Process p = Runtime.getRuntime().exec(cmd);`
+  - line 233: `Process p = Runtime.getRuntime().exec(command);`
+- `tests/components/ButtonTabComponent.java`
+  - line 121: `public void actionPerformed(ActionEvent e) {`
+  - line 152: `public void actionPerformed(ActionEvent e) {`
+  - line 164: `protected void paintComponent(Graphics g) {`
+  - line 184: `public void mouseEntered(MouseEvent e) {`
+  - line 192: `public void mouseExited(MouseEvent e) {`
+- `tests/components/TabComponentsDemo.java`
+  - line 106: `//         public void componentRemoved(ContainerEvent e) {`
+  - line 107: `//            Object s = e.getSource();`
+  - line 108: `//            Object c = e.getContainer();`
+  - line 109: `//            Object p = e.getComponent();`
+  - line 114: `//            Object o = ((JTabbedPane)e.getSource()).getSelectedComponent();`
+  - ... 4 more
+- `tests/org/hti5250j/SessionBean.java`
+  - line 401: `Timer t = new Timer(visibilityInterval, new DoVisible());`
+  - line 464: `Graphics g = comp.getGraphics();`
+- `tests/org/hti5250j/ConfigurationPairwiseTest.java`
+  - line 249: `} catch (FileNotFoundException e) {`
+  - line 268: `} catch (NullPointerException e) {`
+  - line 309: `} catch (NullPointerException e) {`
+  - line 412: `} catch (IOException e) {`
+  - line 436: `} catch (FileNotFoundException e) {`
+  - ... 1 more
+- `tests/org/hti5250j/ResourceExhaustionPairwiseTest.java`
+  - line 86: `} catch (InterruptedException e) {`
+  - line 125: `} catch (Exception e) {`
+  - line 290: `File f = new File(tempDir, "test-file-" + i + ".dat");`
+  - line 340: `} catch (OutOfMemoryError e) {`
+  - line 399: `File f = new File(tempDir, "fd-test-" + i + ".dat");`
+  - ... 11 more
+- `tests/org/hti5250j/TelnetNegotiationPairwiseTest.java`
+  - line 93: `} catch (IOException e) {`
+  - line 839: `} catch (IOException e) {`
+- `tests/org/hti5250j/SessionLifecyclePairwiseTest.java`
+  - line 348: `} catch (InterruptedException e) {`
+  - line 591: `} catch (InterruptedException e) {`
+  - line 607: `} catch (InterruptedException e) {`
+  - line 668: `} catch (InterruptedException e) {`
+- `tests/org/hti5250j/SessionConfigDeepPairwiseTest.java`
+  - line 267: `Rectangle z = config.getRectangleProperty(rectKey);`
+  - line 274: `Rectangle n = config.getRectangleProperty(rectKey);`
+  - line 282: `Rectangle b = config.getRectangleProperty(rectKey);`
+  - line 879: `} catch (Exception e) {`
+  - line 900: `} catch (NumberFormatException e) {`
+  - ... 1 more
+- `tests/org/hti5250j/SessionConfigPairwiseTest.java`
+  - line 1009: `} catch (NumberFormatException e) {`
+  - line 1029: `} catch (NumberFormatException e) {`
+- `tests/org/hti5250j/tools/FileTransferPairwiseTest.java`
+  - line 90: `} catch (IOException e) {`
+  - line 97: `} catch (Exception e) {`
+  - line 407: `} catch (IOException e) {`
+  - line 441: `} catch (IOException e) {`
+  - line 534: `} catch (IOException e) {`
+  - ... 1 more
+- `tests/org/hti5250j/scripting/ScriptingPairwiseTest.java`
+  - line 100: `} catch (IOException e) {`
+- `tests/org/hti5250j/scripting/MacroRecordingPairwiseTest.java`
+  - line 225: `} catch (InterruptedException e) {`
+  - line 273: `} catch (IOException e) {`
+- `tests/org/hti5250j/security/SecurityVulnerabilityTest.java`
+  - line 78: `} catch (NoSuchFieldException e) {`
+  - line 80: `} catch (IllegalAccessException e) {`
+  - line 115: `} catch (NoSuchFieldException e) {`
+- `tests/org/hti5250j/security/SSLSecurityPairwiseTest.java`
+  - line 82: `} catch (Exception e) {`
+  - line 103: `} catch (Exception e) {`
+  - line 125: `} catch (Exception e) {`
+  - line 152: `} catch (Exception e) {`
+  - line 174: `} catch (NullPointerException e) {`
+  - ... 20 more
+- `tests/org/hti5250j/security/SecurityHardeningPairwiseTest.java`
+  - line 800: `File f = new File(path);`
+  - line 808: `} catch (Exception e) {`
+  - line 814: `} catch (Exception e) {`
+- `tests/org/hti5250j/contracts/SessionInterfaceContractTest.java`
+  - line 123: `} catch (NullPointerException e) {`
+- `tests/org/hti5250j/contracts/DataStreamProducerContractTest.java`
+  - line 104: `} catch (Exception e) {`
+  - line 147: `} catch (RuntimeException e) {`
+  - line 183: `int b = input.read();`
+  - line 189: `} catch (Exception e) {`
+- `tests/org/hti5250j/contracts/PluginManagerContractTest.java`
+  - line 81: `} catch (PluginException e) {`
+  - line 98: `} catch (NullPointerException e) {`
+- `tests/org/hti5250j/swing/JTerminal.java`
+  - line 62: `//  protected void processComponentKeyEvent(KeyEvent e)`
+  - line 66: `//      char c = e.getKeyChar();`
+- `tests/org/hti5250j/printing/HostPrintPassthroughPairwiseTest.java`
+  - line 109: `} catch (PrintBufferException e) {`
+  - line 120: `} catch (PrintBufferException e) {`
+  - line 179: `} catch (IOException e) {`
+  - line 274: `} catch (PrintQueueException e) {`
+  - line 287: `} catch (PrintDeviceException e) {`
+  - ... 1 more
+- `tests/org/hti5250j/plugin/PluginExtensionPairwiseTest.java`
+  - line 39: `} catch (Exception e) {`
+  - line 192: `} catch (PluginException e) {`
+  - line 207: `} catch (PluginException e) {`
+  - line 269: `} catch (PluginException e) {`
+  - line 290: `} catch (PluginException e) {`
+  - ... 11 more
+- `tests/org/hti5250j/simulation/HostAppSimulationPairwiseTest.java`
+  - line 122: `} catch (InterruptedException e) {`
+  - line 142: `} catch (InterruptedException e) {`
+  - line 479: `} catch (TimeoutException e) {`
+  - line 577: `} catch (TimeoutException e) {`
+  - line 598: `} catch (TimeoutException e) {`
+  - ... 2 more
+- `tests/org/hti5250j/encoding/EBCDICPairwiseTest.java`
+  - line 314: `} catch (ArrayIndexOutOfBoundsException e) {`
+- `tests/org/hti5250j/encoding/CharsetConversionPairwiseTest.java`
+  - line 385: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 390: `} catch (Exception e) {`
+- `tests/org/hti5250j/encoding/Ccsid930Test.java`
+  - line 28: `char c;`
+- `tests/org/hti5250j/spoolfile/SpoolFilePairwiseTest.java`
+  - line 144: `} catch (IOException e) {`
+- `tests/org/hti5250j/spoolfile/PrintSpoolDeepPairwiseTest.java`
+  - line 272: `} catch (IOException e) {`
+  - line 289: `} catch (IOException e) {`
+- `tests/org/hti5250j/benchmarks/SessionPoolingBenchmark.java`
+  - line 73: `} catch (Exception e) {`
+- `tests/org/hti5250j/gui/FontRenderingPairwiseTest.java`
+  - line 587: `} catch (Exception e) {`
+- `tests/org/hti5250j/gui/GuiComponentPairwiseTest.java`
+  - line 248: `} catch (Exception e) {`
+  - line 271: `} catch (IndexOutOfBoundsException e) {`
+  - line 290: `} catch (IndexOutOfBoundsException e) {`
+  - line 362: `} catch (Exception e) {`
+  - line 379: `} catch (Exception e) {`
+  - ... 4 more
+- `tests/org/hti5250j/gui/ColorThemePairwiseTest.java`
+  - line 541: `} catch (Exception e) {`
+  - line 582: `} catch (Exception e) {`
+  - line 617: `double r = color.getRed() / 255.0;`
+  - line 618: `double g = color.getGreen() / 255.0;`
+  - line 619: `double b = color.getBlue() / 255.0;`
+  - ... 7 more
+- `tests/org/hti5250j/scenarios/ErrorRecoveryScenarioTest.java`
+  - line 293: `} catch (InterruptedException e) {`
+  - line 305: `} catch (Exception e) {`
+  - line 320: `} catch (Exception e) {`
+- `tests/org/hti5250j/scenarios/StressScenarioTest.java`
+  - line 328: `} catch (Exception e) {`
+  - line 387: `} catch (Exception e) {`
+  - line 442: `} catch (Exception e) {`
+  - line 469: `} catch (InterruptedException e) {`
+- `tests/org/hti5250j/headless/HeadlessSessionPairwiseTest.java`
+  - line 372: `} catch (InterruptedException e) {`
+  - line 453: `Screen5250 s = screen;`
+  - line 457: `} catch (Exception e) {`
+  - line 553: `} catch (NullPointerException e) {`
+- `tests/org/hti5250j/surfaces/ConcurrencySurfaceTest.java`
+  - line 189: `} catch (Exception e) {`
+  - line 231: `} catch (InterruptedException e) {`
+  - line 246: `} catch (InterruptedException e) {`
+  - line 342: `} catch (Exception e) {`
+  - line 386: `} catch (InterruptedException e) {`
+- `tests/org/hti5250j/surfaces/SchemaContractSurfaceTest.java`
+  - line 296: `} catch (Exception e) {`
+  - line 368: `} catch (NumberFormatException e) {`
+  - line 443: `} catch (NumberFormatException e) {`
+- `tests/org/hti5250j/accessibility/AccessibilityCompliancePairwiseTest.java`
+  - line 538: `} catch (FocusTrapException e) {`
+- `tests/org/hti5250j/event/EventDispatchingPairwiseTest.java`
+  - line 239: `} catch (RuntimeException e) {`
+  - line 673: `} catch (InterruptedException e) {`
+  - line 713: `} catch (RuntimeException e) {`
+  - line 724: `} catch (RuntimeException e) {`
+  - line 734: `} catch (InterruptedException e) {`
+  - ... 5 more
+- `tests/org/hti5250j/event/EventListenerPairwiseTest.java`
+  - line 327: `} catch (RuntimeException e) {`
+  - line 409: `} catch (NullPointerException e) {`
+  - line 735: `} catch (InterruptedException e) {`
+- `tests/org/hti5250j/logging/LoggingDiagnosticsPairwiseTest.java`
+  - line 219: `} catch (Exception e) {`
+  - line 438: `} catch (Exception e) {`
+  - line 534: `} catch (Exception e) {`
+  - line 555: `Pattern p = Pattern.compile(pattern);`
+  - line 608: `} catch (Exception e) {`
+  - ... 8 more
+- `tests/org/hti5250j/keyboard/KeyboardRemappingPairwiseTest.java`
+  - line 288: `} catch (KeyRemappingConflictException e) {`
+  - line 306: `} catch (IllegalArgumentException e) {`
+  - line 323: `} catch (NullPointerException e) {`
+  - line 429: `} catch (IllegalArgumentException e) {`
+- `tests/org/hti5250j/clipboard/ClipboardIntegrationPairwiseTest.java`
+  - line 403: `} catch (NullPointerException e) {`
+  - line 423: `} catch (Exception e) {`
+  - line 525: `} catch (OutOfMemoryError e) {`
+  - line 548: `} catch (Exception e) {`
+  - line 559: `} catch (Exception e) {`
+- `tests/org/hti5250j/session/SessionPoolingPairwiseTest.java`
+  - line 105: `} catch (InterruptedException e) {`
+  - line 272: `} catch (Exception e) {`
+  - line 313: `} catch (TimeoutException e) {`
+  - line 349: `} catch (IllegalStateException e) {`
+  - line 433: `} catch (Exception e) {`
+  - ... 10 more
+- `tests/org/hti5250j/swing/ui/BasicOIA.java`
+  - line 94: `public void paintComponent(Graphics g) {`
+  - line 104: `private void paintRuler(Graphics g, Rectangle clip) {`
+  - line 109: `private void paintLocation(Graphics g, Rectangle clip) {`
+  - line 113: `Screen5250 s = oia.getSource();`
+  - line 122: `private void paintInhibited(Graphics g, Rectangle clip) {`
+  - ... 1 more
+- `tests/org/hti5250j/swing/ui/BasicSubUI.java`
+  - line 28: `public abstract void paintComponent(Graphics g);`
+  - line 43: `public void getBounds(Rectangle r) {`
+  - line 72: `public void paint(Graphics g) {`
+- `tests/org/hti5250j/swing/ui/BasicScreenUI.java`
+  - line 189: `//    Rectangle     r   = modelToView(pos);`
+  - line 226: `public final Rectangle modelToView(iOhioPosition pos, Rectangle r) {`
+  - line 235: `public void paintComponent(Graphics g) {`
+  - line 241: `protected void paintGrid(Graphics g) {`
+  - line 247: `protected void paintCursor(Graphics g) {`
+  - ... 15 more
+- `tests/org/hti5250j/swing/ui/BasicTerminalUI.java`
+  - line 52: `public static void paintSubComponent(Graphics g, BasicSubUI component) {`
+  - line 65: `public static ComponentUI createUI(JComponent c) {`
+  - line 74: `public void paint(Graphics g, JComponent c) {`
+  - line 84: `public void installUI(JComponent c) {`
+  - line 103: `public void uninstallUI(JComponent c) {`
+  - ... 17 more
+- `tests/org/hti5250j/framework/tn5250/WindowPopupPairwiseTest.java`
+  - line 875: `} catch (InterruptedException e) {`
+- `tests/org/hti5250j/framework/tn5250/DoubleBytePairwiseTest.java`
+  - line 265: `// Half-width Katakana: ｱｲｳ (A I U)`
+- `tests/org/hti5250j/framework/tn5250/SOHParsingPairwiseTest.java`
+  - line 625: `} catch (NullPointerException e) {`
+- `tests/org/hti5250j/framework/tn5250/AidKeyResponsePairwiseTest.java`
+  - line 927: `} catch (Exception e) {`
+- `tests/org/hti5250j/framework/tn5250/TransactionBoundaryPairwiseTest.java`
+  - line 821: `} catch (InterruptedException e) {`
+  - line 908: `} catch (InterruptedException e) {`
+  - line 919: `} catch (InterruptedException e) {`
+  - line 998: `MocktnvtSession(Object a, Object b) {`
+- `tests/org/hti5250j/framework/tn5250/AttributePlaneOpsPairwiseTest.java`
+  - line 519: `} catch (ArrayIndexOutOfBoundsException e) {`
+- `tests/org/hti5250j/framework/tn5250/AttributePairwiseTest.java`
+  - line 277: `} catch (Exception e) {`
+  - line 307: `} catch (Exception e) {`
+  - line 336: `} catch (Exception e) {`
+  - line 400: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 424: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - ... 11 more
+- `tests/org/hti5250j/framework/tn5250/Stream5250PairwiseTest.java`
+  - line 237: `} catch (IllegalStateException e) {`
+  - line 582: `} catch (Exception e) {`
+- `tests/org/hti5250j/framework/tn5250/Screen5250SendKeysPairwiseTest.java`
+  - line 338: `} catch (NullPointerException e) {`
+  - line 360: `} catch (Exception e) {`
+- `tests/org/hti5250j/framework/tn5250/ConcurrencyPairwiseTest.java`
+  - line 98: `} catch (InterruptedException e) {`
+  - line 111: `} catch (InterruptedException e) {`
+  - line 126: `} catch (InterruptedException e) {`
+  - line 164: `} catch (InterruptedException e) {`
+  - line 180: `} catch (InterruptedException e) {`
+  - ... 42 more
+- `tests/org/hti5250j/framework/tn5250/DataStreamProducerPairwiseTest.java`
+  - line 495: `} catch (NullPointerException e) {`
+  - line 528: `} catch (Exception e) {`
+  - line 740: `} catch (NullPointerException e) {`
+  - line 955: `} catch (NullPointerException e) {`
+  - line 987: `} catch (NullPointerException e) {`
+- `tests/org/hti5250j/framework/tn5250/ScreenFieldsNavigationTest.java`
+  - line 288: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 559: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - line 574: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - line 592: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - line 603: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - ... 1 more
+- `tests/org/hti5250j/framework/tn5250/AttributePlanePairwiseTest.java`
+  - line 446: `} catch (Exception e) {`
+  - line 899: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - line 1027: `} catch (Exception e) {`
+- `tests/org/hti5250j/framework/tn5250/FunctionKeyPairwiseTest.java`
+  - line 437: `} catch (NullPointerException e) {`
+  - line 452: `} catch (Exception e) {`
+  - line 472: `} catch (Exception e) {`
+  - line 487: `} catch (Exception e) {`
+  - line 505: `} catch (Exception e) {`
+  - ... 1 more
+- `tests/org/hti5250j/framework/tn5250/InsertCharModePairwiseTest.java`
+  - line 143: `private void setCharAt(int pos, char c) {`
+  - line 323: `char c = getCharAt(i);`
+  - line 524: `} catch (Exception e) {`
+  - line 639: `} catch (Exception e) {`
+- `tests/org/hti5250j/framework/tn5250/ClipboardPairwiseTest.java`
+  - line 472: `} catch (NullPointerException e) {`
+  - line 492: `} catch (IndexOutOfBoundsException | IllegalArgumentException e) {`
+  - line 513: `} catch (IndexOutOfBoundsException e) {`
+  - line 534: `} catch (NullPointerException e) {`
+  - line 559: `} catch (OutOfMemoryError e) {`
+  - ... 5 more
+- `tests/org/hti5250j/framework/tn5250/ErrorRecoveryPairwiseTest.java`
+  - line 203: `} catch (IOException e) {`
+  - line 234: `} catch (IOException e) {`
+  - line 264: `} catch (IOException e) {`
+  - line 291: `} catch (IOException e) {`
+  - line 365: `} catch (IOException e) {`
+  - ... 12 more
+- `tests/org/hti5250j/framework/tn5250/Screen5250CursorPairwiseTest.java`
+  - line 275: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 330: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 406: `} catch (ArrayIndexOutOfBoundsException e) {`
+- `tests/org/hti5250j/framework/tn5250/GraphicCharSetPairwiseTest.java`
+  - line 139: `private void setCharAt(int pos, char c) {`
+  - line 198: `private boolean isGraphicChar(char c) {`
+  - line 434: `} catch (Exception e) {`
+  - line 593: `char c = getCharAt(i);`
+- `tests/org/hti5250j/framework/tn5250/Stream5250Test.java`
+  - line 274: `} catch (IllegalStateException e) {`
+- `tests/org/hti5250j/framework/tn5250/CursorMovementDeepPairwiseTest.java`
+  - line 97: `public void setCurrentField(MockScreenField f) {`
+  - line 163: `MockScreenField f = mockFields.getField(i);`
+  - line 454: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 487: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 505: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - ... 1 more
+- `tests/org/hti5250j/framework/tn5250/Screen5250WaitPairwiseTest.java`
+  - line 158: `} catch (InterruptedException e) {`
+  - line 182: `} catch (InterruptedException e) {`
+  - line 206: `} catch (InterruptedException e) {`
+  - line 228: `} catch (InterruptedException e) {`
+  - line 258: `} catch (InterruptedException e) {`
+  - ... 8 more
+- `tests/org/hti5250j/framework/tn5250/StructuredFieldPairwiseTest.java`
+  - line 98: `public byte uni2ebcdic(char c) {`
+- `tests/org/hti5250j/framework/tn5250/ScreenFormatChangePairwiseTest.java`
+  - line 535: `} catch (Exception e) {`
+  - line 885: `} catch (Exception e) {`
+- `tests/org/hti5250j/framework/tn5250/ScreenFieldsTest.java`
+  - line 107: `} catch (NullPointerException e) {`
+  - line 131: `} catch (NullPointerException e) {`
+  - line 151: `} catch (NullPointerException e) {`
+  - line 171: `} catch (NullPointerException e) {`
+- `tests/org/hti5250j/framework/tn5250/Screen5250ReadPairwiseTest.java`
+  - line 208: `char c = (char) ('0' + (i % 10));`
+  - line 447: `} catch (Exception e) {`
+  - line 469: `} catch (Exception e) {`
+  - line 492: `} catch (Exception e) {`
+  - line 515: `} catch (Exception e) {`
+  - ... 7 more
+- `tests/org/hti5250j/framework/tn5250/ThreadSafetyTest.java`
+  - line 94: `int b = bin.read();`
+  - line 96: `} catch (IOException e) {`
+  - line 101: `} catch (Exception e) {`
+  - line 116: `} catch (IOException e) {`
+  - line 121: `} catch (Exception e) {`
+  - ... 16 more
+- `tests/org/hti5250j/framework/tn5250/ScreenRestorePairwiseTest.java`
+  - line 390: `} catch (Exception e) {`
+  - line 566: `} catch (NullPointerException e) {`
+  - line 568: `} catch (Exception e) {`
+  - line 595: `} catch (Exception e) {`
+- `tests/org/hti5250j/framework/tn5250/ScreenBufferPairwiseTest.java`
+  - line 701: `char c = screenPlanes.getChar(0);`
+  - line 704: `} catch (Exception e) {`
+  - line 776: `} catch (Exception e) {`
+  - line 825: `} catch (ArrayIndexOutOfBoundsException e) {`
+- `tests/org/hti5250j/framework/tn5250/ConnectionLifecyclePairwiseTest.java`
+  - line 228: `} catch (InterruptedException e) {`
+  - line 388: `} catch (Exception e) {`
+  - line 421: `} catch (Exception e) {`
+  - line 519: `} catch (Exception e) {`
+  - line 560: `} catch (Exception e) {`
+  - ... 4 more
+- `tests/org/hti5250j/framework/tn5250/ScreenPlanesPairwiseTest.java`
+  - line 203: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - line 267: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - line 298: `} catch (NoSuchFieldException | IllegalAccessException e) {`
+  - line 334: `} catch (ArrayIndexOutOfBoundsException e) {`
+  - line 338: `} catch (Exception e) {`
+  - ... 3 more
+- `tests/org/hti5250j/framework/tn5250/ConnectionTimeoutPairwiseTest.java`
+  - line 389: `} catch (InterruptedException e) {`
+  - line 579: `} catch (Exception e) {`
+  - line 592: `} catch (Exception e) {`
+  - line 742: `} catch (InterruptedException e) {`
+  - line 856: `} catch (InterruptedException e) {`
+  - ... 2 more
+- `tests/org/hti5250j/framework/tn5250/TN5250EProtocolPairwiseTest.java`
+  - line 930: `byte b = packet[OFFSET_DEVICE_NAME + i];`

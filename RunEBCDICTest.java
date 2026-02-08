@@ -1,6 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+
+
+
+
 import java.lang.reflect.*;
 import java.util.Collection;
-import org.tn5250j.encoding.EBCDICPairwiseTest;
+import org.hti5250j.encoding.EBCDICPairwiseTest;
 
 public class RunEBCDICTest {
     public static void main(String[] args) throws Exception {
@@ -29,8 +39,8 @@ public class RunEBCDICTest {
                         method.invoke(test);
                         passedTests++;
                         System.out.println("  PASS: " + method.getName());
-                    } catch (InvocationTargetException e) {
-                        Throwable cause = e.getCause();
+                    } catch (InvocationTargetException invocationException) {
+                        Throwable cause = invocationException.getCause();
                         System.out.println("  FAIL: " + method.getName());
                         System.out.println("    Error: " + cause.getMessage());
                     }

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!-- SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com> -->
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+
 
 <izpack:shortcuts version="5.0"
                   xmlns:izpack="http://izpack.org/schema/shortcuts"

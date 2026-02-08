@@ -2,6 +2,10 @@
 /bin
 /build
 /out
+.gradle/
+.gradle-home/
+*.class
+*.log
 build.*.properties
 *.iml
 .idea
@@ -9,3 +13,27 @@ build.*.properties
 .project
 .pydevproject
 .DS_Store
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.pfx
+*.jks
+*.p12
+*.keystore
+certs/
+certificates/
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

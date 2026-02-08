@@ -1,8 +1,12 @@
-# testtillbottom.py will page down the wrkactjob screen area until Bottom
-# it will also print out the text for Subsystem/job to the screen on each page down
+# SPDX-FileCopyrightText: TN5250J Community
+# SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+# SPDX-FileContributor: Kenneth J. Pouncey
 #
-# August 22, 2002 version 0.1
-# Author Kenneth J. Pouncey
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+
+
+
 import java
 import time
 
