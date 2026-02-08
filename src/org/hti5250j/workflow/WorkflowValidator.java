@@ -4,16 +4,17 @@
 
 package org.hti5250j.workflow;
 
+import org.hti5250j.workflow.validators.*;
+
 /**
  * Validates workflow specifications before execution.
  *
- * Checks:
- * - Workflow has non-blank name
- * - Workflow has at least one step
- * - Each step has a valid action
- * - Action-specific constraints (delegated to action validators)
+ * Delegates to:
+ * - StepValidator for timeout bounds
+ * - ActionValidators for action-specific constraints
  */
 public class WorkflowValidator {
+    private final StepValidator stepValidator = new StepValidator();
 
     /**
      * Validates workflow structure and all steps.
@@ -42,24 +43,54 @@ public class WorkflowValidator {
 
         // Validate each step
         for (int i = 0; i < workflow.getSteps().size(); i++) {
-            validateStep(workflow.getSteps().get(i), i, result);
+            ValidationResult stepResult = validateStep(workflow.getSteps().get(i), i);
+            result.merge(stepResult);
         }
 
         return result;
     }
 
     /**
-     * Validates individual step.
+     * Validates individual step using step and action validators.
      */
-    private void validateStep(StepDef step, int stepIndex, ValidationResult result) {
+    private ValidationResult validateStep(StepDef step, int stepIndex) {
+        ValidationResult result = new ValidationResult();
+
         if (step == null) {
             result.addError(stepIndex, "step", "Step is null", "Provide valid step definition");
-            return;
+            return result;
         }
 
         if (step.getAction() == null) {
             result.addError(stepIndex, "action", "Step action is required",
                 "Add 'action:' field (LOGIN, NAVIGATE, FILL, etc)");
+            return result;
         }
+
+        // Validate timeout bounds
+        result.merge(stepValidator.validate(step, stepIndex));
+
+        // Validate action-specific constraints
+        ActionValidator actionValidator = getActionValidator(step.getAction());
+        if (actionValidator != null) {
+            result.merge(actionValidator.validate(step, stepIndex));
+        }
+
+        return result;
+    }
+
+    /**
+     * Get the appropriate action validator for the given action type.
+     */
+    private ActionValidator getActionValidator(ActionType action) {
+        return switch (action) {
+            case LOGIN -> new LoginActionValidator();
+            case NAVIGATE -> new NavigateActionValidator();
+            case FILL -> new FillActionValidator();
+            case SUBMIT -> new SubmitActionValidator();
+            case ASSERT -> new AssertActionValidator();
+            case WAIT -> new WaitActionValidator();
+            case CAPTURE -> new CaptureActionValidator();
+        };
     }
 }
