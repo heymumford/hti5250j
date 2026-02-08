@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.*;
  * Or with Maven profile for integration tests
  */
 @DisplayName("IBM i UAT Integration Tests")
+@EnabledIfEnvironmentVariable(named = "IBM_I_HOST", matches = ".+")
 public class IBMiUATIntegrationTest {
 
     private IBMiConnectionFactory factory;
