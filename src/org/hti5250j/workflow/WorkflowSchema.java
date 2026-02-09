@@ -7,6 +7,7 @@ public class WorkflowSchema {
     private String description;
     private String environment;
     private List<StepDef> steps;
+    private WorkflowTolerance tolerances;
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -19,4 +20,7 @@ public class WorkflowSchema {
 
     public List<StepDef> getSteps() { return steps; }
     public void setSteps(List<StepDef> steps) { this.steps = steps; }
+
+    public WorkflowTolerance getTolerances() { return tolerances; }
+    public void setTolerances(WorkflowTolerance tolerances) { this.tolerances = tolerances; }
 }
