@@ -1,12 +1,17 @@
 package org.hti5250j.workflow;
 
+import org.hti5250j.Session5250;
+import org.hti5250j.SessionConfig;
+import org.hti5250j.interfaces.SessionInterface;
 import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.BufferedReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class WorkflowCLI {
 
@@ -181,8 +186,7 @@ public class WorkflowCLI {
 
             // Handle run action
             if ("run".equals(parsed.action())) {
-                // TODO: Execute workflow with session
-                System.out.println("Ready to execute (session integration pending)");
+                executeWorkflow(workflow, parsed.dataFile(), parsed.environment());
             }
 
         } catch (Exception e) {
@@ -190,5 +194,64 @@ public class WorkflowCLI {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    /**
+     * Execute workflow with session integration.
+     */
+    private static void executeWorkflow(WorkflowSchema workflow, String dataFileArg, String environment) throws Exception {
+        // Load dataset (if provided)
+        Map<String, String> dataRow = new HashMap<>();
+        if (dataFileArg != null) {
+            DatasetLoader loader = new DatasetLoader();
+            Map<String, Map<String, String>> csvData = loader.loadCSV(new File(dataFileArg));
+            if (!csvData.isEmpty()) {
+                // Get first row from CSV
+                dataRow = csvData.values().iterator().next();
+            }
+        }
+
+        // Extract LOGIN step to get host/user/password
+        StepDef loginStep = workflow.getSteps().stream()
+            .filter(s -> s.getAction() == ActionType.LOGIN)
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Workflow requires LOGIN step"));
+
+        // Create session from LOGIN step properties
+        SessionInterface session = createSession(loginStep);
+
+        // Setup artifact collection
+        String workflowNamePath = workflow.getName().replaceAll("\\s+", "_");
+        File artifactDir = new File("artifacts/" + workflowNamePath);
+        artifactDir.mkdirs();
+        ArtifactCollector collector = new ArtifactCollector(artifactDir);
+
+        // Execute workflow
+        DatasetLoader loader = new DatasetLoader();
+        WorkflowRunner runner = new WorkflowRunner(session, loader, collector);
+
+        try {
+            runner.executeWorkflow(workflow, dataRow);
+            System.out.println("✓ Workflow executed successfully");
+            System.out.println("Artifacts saved to: " + artifactDir.getAbsolutePath());
+        } catch (Exception e) {
+            System.err.println("✗ Workflow failed: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Create Session5250 from LOGIN step properties.
+     */
+    private static SessionInterface createSession(StepDef loginStep) throws Exception {
+        Properties props = new Properties();
+        props.setProperty("SESSION_HOST", loginStep.getHost());
+        props.setProperty("SESSION_USER", loginStep.getUser());
+        props.setProperty("SESSION_PASSWORD", loginStep.getPassword());
+
+        // Use default SessionConfig with dummy paths
+        SessionConfig config = new SessionConfig("dummy", "dummy");
+
+        return new Session5250(props, "workflow-session", "WorkflowSession", config);
     }
 }

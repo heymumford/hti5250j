@@ -13,6 +13,7 @@ public class StepDef {
     private Map<String, String> fields;
     private Integer timeout;
     private String name;
+    private String keys;
 
     public ActionType getAction() { return action; }
     public void setAction(ActionType action) { this.action = action; }
@@ -50,4 +51,7 @@ public class StepDef {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getKeys() { return keys; }
+    public void setKeys(String keys) { this.keys = keys; }
 }
