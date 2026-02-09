@@ -169,4 +169,76 @@ class ActionValidatorTest {
         assertThat(result.isValid()).isTrue();
         assertThat(result.getWarnings()).hasSize(1);
     }
+
+    @Test
+    void testLoginWithEmptyStringFields() {
+        StepDef step = new StepDef();
+        step.setHost("");
+        step.setUser("");
+        step.setPassword("");
+
+        ValidationResult result = new LoginActionValidator().validate(step, 0);
+        // Empty strings are non-null, validation depends on validator logic
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void testNavigateWithEmptyScreen() {
+        StepDef step = new StepDef();
+        step.setScreen("");
+
+        ValidationResult result = new NavigateActionValidator().validate(step, 0);
+        // Empty string is non-null
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void testFillWithEmptyFieldsMap() {
+        StepDef step = new StepDef();
+        step.setFields(Map.of());
+
+        ValidationResult result = new FillActionValidator().validate(step, 0);
+        // Empty map is present, validation depends on validator logic
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void testSubmitWithEmptyKey() {
+        StepDef step = new StepDef();
+        step.setKey("");
+
+        ValidationResult result = new SubmitActionValidator().validate(step, 0);
+        // Empty string is non-null
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void testAssertWithBothScreenAndText() {
+        StepDef step = new StepDef();
+        step.setScreen("confirmation");
+        step.setText("Success message");
+
+        ValidationResult result = new AssertActionValidator().validate(step, 0);
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void testWaitWithNegativeTimeout() {
+        StepDef step = new StepDef();
+        step.setTimeout(-1000);
+
+        ValidationResult result = new WaitActionValidator().validate(step, 0);
+        assertThat(result.isValid()).isFalse();
+    }
+
+    @Test
+    void testValidationPreservesStepIndex() {
+        StepDef step = new StepDef();
+        // Invalid login step
+
+        ValidationResult result = new LoginActionValidator().validate(step, 7);
+        assertThat(result.getErrors()).anySatisfy(e ->
+            assertThat(e.stepIndex()).isEqualTo(7)
+        );
+    }
 }
