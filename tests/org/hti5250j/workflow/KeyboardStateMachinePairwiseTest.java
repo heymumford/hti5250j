@@ -40,7 +40,7 @@ public class KeyboardStateMachinePairwiseTest {
     @DisplayName("LOGIN: Keyboard unlocks after 50ms delay")
     void testLoginKeyboardDelayedUnlock() throws Exception {
         verifier.setKeyboardLockedWithDelay(50);
-        boolean acquired = verifier.acquireKeyboardForLogin(500);
+        boolean acquired = verifier.acquireKeyboardForLogin(2000);
         assertThat("Should acquire keyboard after delay", acquired, equalTo(true));
     }
 

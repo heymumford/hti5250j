@@ -263,24 +263,35 @@ public class ConcurrentWorkflowVerifier {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + timeoutMs;
 
-        while (keyboardLocked && System.currentTimeMillis() < endTime) {
+        while (true) {
+            synchronized (keyboardLock) {
+                if (!keyboardLocked) {
+                    keyboardLocked = true;
+                    long waitTime = System.currentTimeMillis() - startTime;
+                    if (waitTime > metrics.maxKeyboardLockWaitTime.get()) {
+                        metrics.maxKeyboardLockWaitTime.set(waitTime);
+                    }
+                    return;
+                }
+            }
+
+            long remaining = endTime - System.currentTimeMillis();
+            if (remaining <= 0) {
+                throw new TimeoutException("Keyboard lock timeout after " + timeoutMs + "ms");
+            }
+
             try {
-                Thread.sleep(10);
+                Thread.sleep(Math.min(10, remaining));  // Sleep outside critical section
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
-
-        long waitTime = System.currentTimeMillis() - startTime;
-        if (waitTime > metrics.maxKeyboardLockWaitTime.get()) {
-            metrics.maxKeyboardLockWaitTime.set(waitTime);
-        }
-
-        keyboardLocked = true;
     }
 
     private void releaseKeyboard() {
-        keyboardLocked = false;
+        synchronized (keyboardLock) {
+            keyboardLocked = false;
+        }
     }
 
     public long getMemoryUsedMB() {

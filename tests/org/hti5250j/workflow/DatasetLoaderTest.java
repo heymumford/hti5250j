@@ -56,4 +56,31 @@ class DatasetLoaderTest {
         // Unmapped parameters remain unchanged
         assertThat(result).isEqualTo("Account: ACC-999, User: ${data.user}");
     }
+
+    @Test
+    void testReplaceParametersHandlesNullValueInMap() {
+        DatasetLoader loader = new DatasetLoader();
+        // Create a mutable map that allows null values (Map.of doesn't)
+        Map<String, String> data = new java.util.HashMap<>();
+        data.put("account", "ACC-999");
+        data.put("optional", null);
+
+        String template = "Account: ${data.account}, Optional: ${data.optional}";
+
+        // Should not crash on null value, should replace with "null" string
+        String result = loader.replaceParameters(template, data);
+
+        assertThat(result).isEqualTo("Account: ACC-999, Optional: null");
+    }
+
+    @Test
+    void testReplaceParametersHandlesEmptyStringInMap() {
+        DatasetLoader loader = new DatasetLoader();
+        Map<String, String> data = Map.of("field1", "value1", "field2", "");
+
+        String template = "Field1: ${data.field1}, Field2: [${data.field2}]";
+        String result = loader.replaceParameters(template, data);
+
+        assertThat(result).isEqualTo("Field1: value1, Field2: []");
+    }
 }

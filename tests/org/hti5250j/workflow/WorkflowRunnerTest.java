@@ -20,6 +20,7 @@ class WorkflowRunnerTest {
      */
     static class MockSessionAdapter implements SessionInterface, ScreenProvider {
         private final Screen5250 screen;
+        private boolean connected = false;
 
         MockSessionAdapter(Screen5250 screen) {
             this.screen = screen;
@@ -37,7 +38,7 @@ class WorkflowRunnerTest {
 
         @Override
         public boolean isConnected() {
-            return true;
+            return connected;
         }
 
         @Override
@@ -51,10 +52,14 @@ class WorkflowRunnerTest {
         }
 
         @Override
-        public void connect() {}
+        public void connect() {
+            connected = true;
+        }
 
         @Override
-        public void disconnect() {}
+        public void disconnect() {
+            connected = false;
+        }
 
         @Override
         public void addSessionListener(SessionListener listener) {}
@@ -83,7 +88,8 @@ class WorkflowRunnerTest {
         when(mockOIA.isKeyBoardLocked()).thenReturn(false);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
 
-        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        MockSessionAdapter sessionAdapter = new MockSessionAdapter(mockScreen);
+        SessionInterface mockSession = spy(sessionAdapter);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
 
@@ -127,7 +133,13 @@ class WorkflowRunnerTest {
     @Test
     void testExecuteStepDispatchesToCorrectHandler(@TempDir File tempDir) throws Exception {
         Screen5250 mockScreen = mock(Screen5250.class);
-        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        ScreenOIA mockOIA = mock(ScreenOIA.class);
+        when(mockOIA.isKeyBoardLocked()).thenReturn(false);
+        when(mockScreen.getOIA()).thenReturn(mockOIA);
+        when(mockScreen.getScreenAsChars()).thenReturn("Welcome to menu_screen".toCharArray());
+
+        MockSessionAdapter sessionAdapter = new MockSessionAdapter(mockScreen);
+        SessionInterface mockSession = spy(sessionAdapter);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
 

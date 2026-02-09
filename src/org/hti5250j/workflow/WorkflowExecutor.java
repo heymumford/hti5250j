@@ -62,6 +62,41 @@ public class WorkflowExecutor {
     }
 
     /**
+     * Execute batch workflows with parallel processing using virtual threads.
+     * Processes all CSV rows concurrently.
+     *
+     * @param workflow the workflow to execute
+     * @param dataFileArg path to CSV data file
+     * @param environment environment name (dev/test/prod)
+     * @return batch metrics with aggregated results
+     * @throws Exception if batch execution fails
+     */
+    public static BatchMetrics executeBatch(
+            WorkflowSchema workflow,
+            String dataFileArg,
+            String environment) throws Exception {
+
+        if (workflow == null) {
+            throw new IllegalArgumentException("Workflow cannot be null");
+        }
+
+        if (dataFileArg == null) {
+            throw new IllegalArgumentException("Data file required for batch execution");
+        }
+
+        // Load all rows from CSV file
+        DatasetLoader loader = new DatasetLoader();
+        Map<String, Map<String, String>> allRows = loader.loadCSV(new File(dataFileArg));
+
+        if (allRows.isEmpty()) {
+            throw new IllegalArgumentException("CSV file contains no data rows");
+        }
+
+        // Execute all workflows in parallel using virtual threads
+        return BatchExecutor.executeAll(workflow, allRows, environment);
+    }
+
+    /**
      * Load dataset from CSV file.
      *
      * @param dataFileArg path to CSV file (optional, can be null)
