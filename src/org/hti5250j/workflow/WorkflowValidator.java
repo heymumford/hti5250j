@@ -57,7 +57,6 @@ public class WorkflowValidator {
 
     /**
      * Validates individual step using step and action validators.
-     * Also verifies that StepDef can be converted to typed Action (early validation).
      */
     private ValidationResult validateStep(StepDef step, int stepIndex) {
         ValidationResult result = new ValidationResult();
@@ -75,15 +74,6 @@ public class WorkflowValidator {
 
         // Validate timeout bounds
         result.merge(stepValidator.validate(step, stepIndex));
-
-        // Verify StepDef can convert to typed Action (catches schema mismatches early)
-        try {
-            ActionFactory.from(step);
-        } catch (IllegalArgumentException e) {
-            result.addError(stepIndex, "action", "Step cannot be converted to action: " + e.getMessage(),
-                "Verify all required fields for " + step.getAction() + " action are present");
-            return result; // Stop validation if conversion fails
-        }
 
         // Validate action-specific constraints
         ActionValidator actionValidator = getActionValidator(step.getAction());
