@@ -67,6 +67,158 @@ String screen = session.getScreenText();
 session.disconnect();
 ```
 
+## Workflow Execution (Phase 11)
+
+HTI5250J supports YAML-based workflow automation for terminal operations. Workflows combine workflow validation with six execution handlers (LOGIN, NAVIGATE, FILL, SUBMIT, ASSERT, CAPTURE) for complete end-to-end automation.
+
+### Execution Handlers
+
+Six handlers execute terminal operations in sequence:
+
+| Handler | Purpose | Example |
+|---------|---------|---------|
+| **LOGIN** | Connect to IBM i + authenticate | Host connection, keyboard unlock wait |
+| **NAVIGATE** | Keystroke-based screen transitions | Send menu selection (e.g., "WRKSYSVAL<ENTER>") |
+| **FILL** | Form field population with CSV parameters | Enter data using Tab-based navigation |
+| **SUBMIT** | AID key submission + await screen refresh | Send ENTER, wait for lock→unlock cycle |
+| **ASSERT** | Content verification with exceptions | Verify expected text on screen |
+| **CAPTURE** | Headless screenshots (text dumps, 80-column) | Save screen state for artifacts |
+
+### Example: Payment Processing Workflow
+
+```bash
+# Validate workflow before running
+i5250 validate examples/payment.yaml --data examples/payment_data.csv
+
+# Execute workflow against IBM i
+i5250 run examples/payment.yaml --data examples/payment_data.csv
+```
+
+**Workflow (payment.yaml):**
+```yaml
+name: Payment Processing Workflow
+steps:
+  - action: LOGIN
+    host: "ibmi.example.com"
+    user: "testuser"
+    password: "${env.IBMI_PASSWORD}"
+    timeout: 30000
+  - action: NAVIGATE
+    keystroke: "CALL PGM(PMTENT)<ENTER>"
+    screen: "Payment Entry"
+    timeout: 5000
+  - action: FILL
+    fields:
+      account: "${data.account_id}"
+      amount: "${data.amount}"
+    timeout: 5000
+  - action: SUBMIT
+    key: "ENTER"
+    timeout: 5000
+  - action: ASSERT
+    text: "Transaction accepted"
+    timeout: 5000
+  - action: CAPTURE
+    name: "confirmation"
+```
+
+**Data (payment_data.csv):**
+```
+account_id,amount,description
+ACC001,150.00,Invoice-2026-001
+ACC002,275.50,Invoice-2026-002
+```
+
+### Keyboard State Machine
+
+Handlers implement a polling-based state machine:
+
+```
+LOGIN
+  → Wait for keyboard unlock (OIA polling, 30s timeout, 100ms intervals)
+
+NAVIGATE
+  → Send keystroke
+  → Poll screen until changed
+  → Verify target screen content
+
+FILL
+  → For each field: HOME + type value + TAB
+  → Wait for keyboard availability
+
+SUBMIT
+  → Send AID key (e.g., ENTER)
+  → Wait for keyboard lock→unlock cycle (screen refresh)
+
+ASSERT
+  → Get screen text
+  → Verify contains expected text (throw exception + dump if missing)
+
+CAPTURE
+  → Format screen dump (80-column text)
+  → Write to artifacts/screenshots/
+```
+
+### Artifacts
+
+Successful execution produces:
+
+```
+artifacts/
+├── ledger.txt (execution timeline)
+│   └─ Timestamped log of each step
+└── screenshots/
+    ├── step_0_login.txt
+    ├── step_1_navigate.txt
+    └── step_5_capture.txt
+```
+
+**Example ledger.txt:**
+```
+2026-02-08 14:30:15.123 [LOGIN] Connecting to ibmi.example.com:23
+2026-02-08 14:30:15.456 [LOGIN] Keyboard unlocked, ready for input
+2026-02-08 14:30:15.478 [NAVIGATE] Sending: CALL PGM(PMTENT)<ENTER>
+2026-02-08 14:30:16.234 [NAVIGATE] Screen verified: Payment Entry
+2026-02-08 14:30:16.245 [FILL] HOME + Account + Tab
+2026-02-08 14:30:16.456 [SUBMIT] Sending: [ENTER]
+2026-02-08 14:30:17.123 [SUBMIT] Keyboard lock→unlock detected, screen refreshed
+2026-02-08 14:30:17.145 [ASSERT] Verified: "Transaction accepted"
+2026-02-08 14:30:17.234 [CAPTURE] Screenshot saved: step_5_capture.txt
+```
+
+### Error Handling
+
+If a step fails, execution stops with error context:
+
+```
+✗ Step 2: NAVIGATE - Failed to reach target screen
+  Current screen: MAIN MENU
+  Expected: PAYMENT ENTRY
+  Timeout: 10000ms
+
+Artifacts for debugging:
+  - screenshots/step_2_failure.txt (includes full screen dump)
+  - ledger.txt (all completed steps)
+```
+
+Exceptions provide debugging context:
+- `NavigationException`: Could not navigate to target screen
+- `AssertionException`: Content verification failed (includes screen dump)
+- `TimeoutException`: Keyboard or screen operation timed out
+
+### Parameter Substitution
+
+YAML workflows support parameter binding from CSV:
+
+```yaml
+- action: FILL
+  fields:
+    account: "${data.account_id}"      # ← Replaced with CSV value
+    amount: "${data.amount}"           # ← Replaced with CSV value
+```
+
+At runtime, `${data.account_id}` is replaced with the actual column value from payment_data.csv.
+
 ## Features
 
 ### Core Capabilities
@@ -212,9 +364,9 @@ session.connect();
 
 ## Documentation
 
-- [REQUIREMENTS.md](./REQUIREMENTS.md) — Feature requirements and acceptance criteria
-- [TEST_ARCHITECTURE.md](./TEST_ARCHITECTURE.md) — Test model, tiers, and cadence
-- [ENGINEERING_PRINCIPLES.md](./ENGINEERING_PRINCIPLES.md) — Design philosophy and tenets
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — C1-C4 system models, containers, components, workflow pipeline
+- [TESTING.md](./TESTING.md) — Four-domain test framework (Unit, Continuous Contracts, Surface, Scenario)
+- [CODING_STANDARDS.md](./CODING_STANDARDS.md) — Development conventions, Java 21 features, Phase 11 patterns
 - [FORK.md](./FORK.md) — Fork differences and migration guide
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — Contributing guidelines
 
