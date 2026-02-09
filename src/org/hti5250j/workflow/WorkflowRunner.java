@@ -41,21 +41,24 @@ public class WorkflowRunner {
 
     /**
      * Execute single step based on action type.
-     * Performs parameter substitution before executing handler.
+     * Converts StepDef to typed Action via ActionFactory, then dispatches
+     * to handler via exhaustive pattern matching (compiler enforces completeness).
      */
-    public void executeStep(StepDef step, Map<String, String> dataRow) throws Exception {
-        switch (step.getAction()) {
-            case LOGIN -> handleLogin(step);
-            case NAVIGATE -> handleNavigate(step, dataRow);
-            case FILL -> handleFill(step, dataRow);
-            case SUBMIT -> handleSubmit(step, dataRow);
-            case ASSERT -> handleAssert(step, dataRow);
-            case WAIT -> handleWait(step, dataRow);
-            case CAPTURE -> handleCapture(step, dataRow);
+    public void executeStep(StepDef stepDef, Map<String, String> dataRow) throws Exception {
+        Action action = ActionFactory.from(stepDef);
+
+        switch (action) {
+            case LoginAction login -> handleLogin(login);
+            case NavigateAction nav -> handleNavigate(nav, dataRow);
+            case FillAction fill -> handleFill(fill, dataRow);
+            case SubmitAction submit -> handleSubmit(submit, dataRow);
+            case AssertAction assert_ -> handleAssert(assert_, dataRow);
+            case WaitAction wait -> handleWait(wait, dataRow);
+            case CaptureAction capture -> handleCapture(capture, dataRow);
         }
     }
 
-    private void handleLogin(StepDef step) throws Exception {
+    private void handleLogin(LoginAction login) throws Exception {
         if (!session.isConnected()) {
             session.connect();
         }
@@ -63,21 +66,14 @@ public class WorkflowRunner {
         Screen5250 screen = getScreen();
         waitForKeyboardUnlock(screen, DEFAULT_KEYBOARD_UNLOCK_TIMEOUT);
 
-        artifactCollector.appendLedger("LOGIN", "Connected to " + step.getHost());
+        artifactCollector.appendLedger("LOGIN", "Connected to " + login.host());
     }
 
-    private void handleNavigate(StepDef step, Map<String, String> dataRow) throws Exception {
+    private void handleNavigate(NavigateAction nav, Map<String, String> dataRow) throws Exception {
         Screen5250 screen = getScreen();
-        String targetScreenName = datasetLoader.replaceParameters(step.getScreen(), dataRow);
+        String targetScreenName = datasetLoader.replaceParameters(nav.screen(), dataRow);
 
-        if (step.getKeys() == null) {
-            throw new UnsupportedOperationException(
-                "NAVIGATE requires 'keys' parameter for keystroke sequence. " +
-                "Automatic menu navigation not yet implemented."
-            );
-        }
-
-        screen.sendKeys(step.getKeys());
+        screen.sendKeys(nav.keys());
         waitForKeyboardUnlock(screen, DEFAULT_KEYBOARD_LOCK_CYCLE_TIMEOUT);
 
         if (!screenContainsText(screen, targetScreenName)) {
@@ -88,13 +84,13 @@ public class WorkflowRunner {
         artifactCollector.appendLedger("NAVIGATE", "Navigated to " + targetScreenName);
     }
 
-    private void handleFill(StepDef step, Map<String, String> dataRow) throws Exception {
+    private void handleFill(FillAction fill, Map<String, String> dataRow) throws Exception {
         Screen5250 screen = getScreen();
 
         screen.sendKeys("[home]");
         waitForKeyboardUnlock(screen, 1000);
 
-        for (Map.Entry<String, String> field : step.getFields().entrySet()) {
+        for (Map.Entry<String, String> field : fill.fields().entrySet()) {
             String fieldValue = datasetLoader.replaceParameters(field.getValue(), dataRow);
             fieldValue = fieldValue.trim();
 
@@ -104,13 +100,13 @@ public class WorkflowRunner {
             waitForKeyboardUnlock(screen, FIELD_FILL_TIMEOUT);
         }
 
-        artifactCollector.appendLedger("FILL", "Fields populated: " + step.getFields().size());
+        artifactCollector.appendLedger("FILL", "Fields populated: " + fill.fields().size());
     }
 
-    private void handleSubmit(StepDef step, Map<String, String> dataRow) throws Exception {
+    private void handleSubmit(SubmitAction submit, Map<String, String> dataRow) throws Exception {
         Screen5250 screen = getScreen();
 
-        String keyName = step.getKey().toLowerCase();
+        String keyName = submit.key().toLowerCase();
         String mnemonic = mapKeyToMnemonic(keyName);
 
         screen.sendKeys(mnemonic);
@@ -119,17 +115,17 @@ public class WorkflowRunner {
         artifactCollector.appendLedger("SUBMIT", "Submitted with " + keyName);
     }
 
-    private void handleAssert(StepDef step, Map<String, String> dataRow) throws Exception {
+    private void handleAssert(AssertAction assert_, Map<String, String> dataRow) throws Exception {
         Screen5250 screen = getScreen();
 
         String expectedText = null;
-        if (step.getText() != null) {
-            expectedText = datasetLoader.replaceParameters(step.getText(), dataRow);
+        if (assert_.text() != null && !assert_.text().isEmpty()) {
+            expectedText = datasetLoader.replaceParameters(assert_.text(), dataRow);
         }
 
         String expectedScreen = null;
-        if (step.getScreen() != null) {
-            expectedScreen = datasetLoader.replaceParameters(step.getScreen(), dataRow);
+        if (assert_.screen() != null && !assert_.screen().isEmpty()) {
+            expectedScreen = datasetLoader.replaceParameters(assert_.screen(), dataRow);
         }
 
         String screenContent = getScreenContent(screen);
@@ -141,8 +137,6 @@ public class WorkflowRunner {
             passed = screenContent.contains(expectedText);
         } else if (expectedScreen != null) {
             passed = screenContent.contains(expectedScreen);
-        } else {
-            throw new IllegalArgumentException("ASSERT requires 'text' or 'screen' parameter");
         }
 
         if (!passed) {
@@ -153,16 +147,16 @@ public class WorkflowRunner {
         artifactCollector.appendLedger("ASSERT", "Assertion passed");
     }
 
-    private void handleWait(StepDef step, Map<String, String> dataRow) throws Exception {
-        int timeout = step.getTimeout() != null ? step.getTimeout() : 5000;
+    private void handleWait(WaitAction wait, Map<String, String> dataRow) throws Exception {
+        int timeout = wait.timeout();
         Thread.sleep(timeout);
         artifactCollector.appendLedger("WAIT", "Waited " + timeout + "ms");
     }
 
-    private void handleCapture(StepDef step, Map<String, String> dataRow) throws Exception {
+    private void handleCapture(CaptureAction capture, Map<String, String> dataRow) throws Exception {
         Screen5250 screen = getScreen();
 
-        String screenName = step.getName() != null ? step.getName() : "screenshot";
+        String screenName = capture.name() != null ? capture.name() : "screenshot";
         screenName = datasetLoader.replaceParameters(screenName, dataRow);
 
         String screenContent = getScreenContent(screen);
