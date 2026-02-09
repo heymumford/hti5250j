@@ -58,8 +58,10 @@ public record BatchMetrics(
         }
         Collections.sort(latencies);
 
-        long p50 = latencies.isEmpty() ? 0 : latencies.get((latencies.size() * 50) / 100);
-        long p99 = latencies.isEmpty() ? 0 : latencies.get((latencies.size() * 99) / 100);
+        // Use nearest-rank method: index = ceil(percentile * size) - 1
+        // P50 on [10,20,30,40,50]: index = ceil(0.5*5) - 1 = 2 → 30 (correct middle)
+        long p50 = latencies.isEmpty() ? 0 : latencies.get((int)Math.ceil(latencies.size() * 0.50) - 1);
+        long p99 = latencies.isEmpty() ? 0 : latencies.get((int)Math.ceil(latencies.size() * 0.99) - 1);
 
         // Calculate throughput (workflows per second)
         long durationNanos = endNanos - startNanos;
