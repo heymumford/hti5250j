@@ -39,14 +39,23 @@ public class StepOrderValidator {
         // Check for SUBMIT without preceding data actions
         for (int i = 0; i < steps.size(); i++) {
             StepDef step = steps.get(i);
-            if (step.getAction() == ActionType.SUBMIT && i > 0) {
-                StepDef prevStep = steps.get(i - 1);
-                if (prevStep.getAction() != ActionType.FILL && prevStep.getAction() != ActionType.NAVIGATE) {
+            if (step.getAction() == ActionType.SUBMIT) {
+                // SUBMIT at step 0 has no preceding action
+                if (i == 0) {
                     result.addWarning(
                         i,
                         "action",
-                        "SUBMIT should typically follow FILL or NAVIGATE action"
+                        "SUBMIT at step 0 should typically be preceded by FILL or NAVIGATE action"
                     );
+                } else {
+                    StepDef prevStep = steps.get(i - 1);
+                    if (prevStep.getAction() != ActionType.FILL && prevStep.getAction() != ActionType.NAVIGATE) {
+                        result.addWarning(
+                            i,
+                            "action",
+                            "SUBMIT should typically follow FILL or NAVIGATE action"
+                        );
+                    }
                 }
             }
         }
