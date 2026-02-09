@@ -97,6 +97,14 @@ public class TerminalAdapter {
     }
 
     /**
+     * Print batch mode activated message.
+     */
+    public static void printBatchMode(int rowCount) {
+        System.out.println("Batch mode: " + rowCount + " workflows");
+        System.out.println("Executing in parallel using virtual threads...");
+    }
+
+    /**
      * Print error with stack trace (for debugging).
      */
     public static void printError(String message, Exception e) {

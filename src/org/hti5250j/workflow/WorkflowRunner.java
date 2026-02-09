@@ -27,6 +27,12 @@ public class WorkflowRunner {
         this.session = session;
         this.datasetLoader = datasetLoader;
         this.artifactCollector = artifactCollector;
+
+        // Development-mode validation: warn if running on platform thread
+        if (!Thread.currentThread().isVirtual()) {
+            System.err.println("WARNING: WorkflowRunner on platform thread. " +
+                             "Expected virtual thread for efficient blocking I/O.");
+        }
     }
 
     /**

@@ -2,6 +2,7 @@ package org.hti5250j.workflow;
 
 import java.io.File;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Command-line interface for HTI5250j workflow execution and validation.
@@ -35,7 +36,27 @@ public class WorkflowCLI {
 
             // Handle run action
             if ("run".equals(parsed.action())) {
-                WorkflowExecutor.execute(workflow, parsed.dataFile(), parsed.environment());
+                if (parsed.dataFile() != null) {
+                    DatasetLoader loader = new DatasetLoader();
+                    Map<String, Map<String, String>> allRows = loader.loadCSV(new File(parsed.dataFile()));
+
+                    if (allRows.size() > 1) {
+                        // Batch mode: multiple rows, execute in parallel with virtual threads
+                        TerminalAdapter.printBatchMode(allRows.size());
+                        BatchMetrics metrics = WorkflowExecutor.executeBatch(workflow, parsed.dataFile(), parsed.environment());
+                        metrics.print();
+
+                        if (metrics.failureCount() > 0) {
+                            System.exit(1);
+                        }
+                    } else {
+                        // Single-row mode: existing sequential execution
+                        WorkflowExecutor.execute(workflow, parsed.dataFile(), parsed.environment());
+                    }
+                } else {
+                    // No data file: existing execution
+                    WorkflowExecutor.execute(workflow, null, parsed.environment());
+                }
             }
 
         } catch (Exception e) {
