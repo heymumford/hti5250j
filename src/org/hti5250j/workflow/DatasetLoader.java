@@ -40,13 +40,20 @@ public class DatasetLoader {
     /**
      * Replace ${data.fieldName} placeholders with values from data map.
      * Unmapped placeholders remain unchanged.
+     * Null values in the map are replaced with "null" string.
      */
     public String replaceParameters(String template, Map<String, String> data) {
         String result = template;
 
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String placeholder = "${data." + entry.getKey() + "}";
-            result = result.replace(placeholder, entry.getValue());
+            String value = entry.getValue();
+            // Handle null values safely - replace with "null" string
+            if (value == null) {
+                result = result.replace(placeholder, "null");
+            } else {
+                result = result.replace(placeholder, value);
+            }
         }
 
         return result;
