@@ -17,13 +17,14 @@ public class TerminalAdapter {
      */
     public static void printHelp() {
         System.out.println("""
-            Usage: i5250 run|validate <workflow.yaml> [options]
+            Usage: i5250 run|validate|simulate <workflow.yaml> [options]
 
-            Run or validate HTI5250j workflow from YAML file.
+            Run, validate, or simulate HTI5250j workflow from YAML file.
 
             Actions:
               run                Run the workflow against i5
               validate           Validate workflow structure without running
+              simulate           Dry-run without i5 connection (approval gate)
 
             Options:
               --data <file>     CSV data file for parameter binding
@@ -33,6 +34,7 @@ public class TerminalAdapter {
             Examples:
               i5250 validate login.yaml
               i5250 validate payment.yaml --data transactions.csv
+              i5250 simulate payment.yaml --data transactions.csv
               i5250 run login.yaml
               i5250 run payment.yaml --data transactions.csv
               i5250 run settlement.yaml --data batch.csv --env prod
@@ -110,5 +112,22 @@ public class TerminalAdapter {
     public static void printError(String message, Exception e) {
         System.err.println("Error: " + message);
         e.printStackTrace();
+    }
+
+    /**
+     * Print simulation started message with tolerance settings.
+     */
+    public static void printSimulationStarted(WorkflowTolerance tolerance) {
+        System.out.println("Starting workflow simulation (dry-run, no i5 connection)...");
+        System.out.printf("  Max duration: %dms%n", tolerance.maxDurationMs());
+        System.out.printf("  Field precision: %.2f%n", tolerance.fieldPrecision());
+    }
+
+    /**
+     * Print dataset loaded message.
+     */
+    public static void printDatasetLoaded(int rowCount) {
+        System.out.println("Loaded dataset: " + rowCount + " rows");
+        System.out.println("Running simulations for each row...");
     }
 }
