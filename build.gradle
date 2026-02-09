@@ -1,9 +1,13 @@
+// SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 plugins {
     id 'java'
 }
 
 group = 'org.hti5250j'
-version = findProperty('version') ?: '0.8.0-headless.0.rtr'
+version = findProperty('version') ?: '0.8.1'
 
 def runtimeLibs = fileTree(dir: 'lib/runtime', include: ['*.jar', '*.zip'])
 def devLibs = fileTree(dir: 'lib/development', include: ['*.jar', '*.zip'])
