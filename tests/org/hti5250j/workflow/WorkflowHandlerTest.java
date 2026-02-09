@@ -273,7 +273,8 @@ class WorkflowHandlerTest {
     }
 
     /**
-     * Test handleNavigate() requires keys parameter.
+     * Test that NAVIGATE action requires keys parameter.
+     * ValidationException thrown at ActionFactory level (early validation).
      */
     @Test
     void testHandleNavigateRequiresKeysParameter(@TempDir File tempDir) throws Exception {
@@ -286,13 +287,14 @@ class WorkflowHandlerTest {
         StepDef step = new StepDef();
         step.setAction(ActionType.NAVIGATE);
         step.setScreen("menu");
-        // No keys set
+        // No keys set - validation now happens at ActionFactory level
 
         WorkflowRunner runner = new WorkflowRunner(mockSession, loader, collector);
 
+        // ValidationAction record constructor validates non-null, non-empty keys
         assertThatThrownBy(() -> runner.executeStep(step, Map.of()))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .hasMessageContaining("'keys' parameter");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("keys");
     }
 
     /**
