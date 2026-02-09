@@ -2,7 +2,6 @@ package org.hti5250j.workflow;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
