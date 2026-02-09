@@ -69,7 +69,7 @@ class ActionRecordsTest {
     void testFillActionImmutable() {
         Map<String, String> fields = new HashMap<>();
         fields.put("Field1", "Value1");
-        FillAction action = new FillAction(fields);
+        FillAction action = new FillAction(fields, null);
 
         assertNotNull(action.fields());
         assertTrue(action.fields().containsKey("Field1"));
@@ -78,8 +78,15 @@ class ActionRecordsTest {
     @Test
     @DisplayName("FillAction should reject null fields")
     void testFillActionNullFields() {
-        assertThrows(NullPointerException.class,
-            () -> new FillAction(null));
+        assertThrows(IllegalArgumentException.class,
+            () -> new FillAction(null, null));
+    }
+
+    @Test
+    @DisplayName("FillAction should reject empty fields")
+    void testFillActionEmptyFields() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new FillAction(new HashMap<>(), null));
     }
 
     @Test
@@ -103,7 +110,7 @@ class ActionRecordsTest {
         AssertAction action = new AssertAction("ExpectedText", null);
 
         assertEquals("ExpectedText", action.text());
-        assertNull(action.screenName());
+        assertNull(action.screen());
     }
 
     @Test
@@ -111,7 +118,7 @@ class ActionRecordsTest {
     void testWaitActionImmutable() {
         WaitAction action = new WaitAction(5000);
 
-        assertEquals(5000, action.timeoutMs());
+        assertEquals(5000, action.timeout());
     }
 
     @Test
@@ -164,7 +171,8 @@ class ActionRecordsTest {
     @DisplayName("FillAction should work as part of sealed Action interface")
     void testFillActionAsAction() {
         Map<String, String> fields = new HashMap<>();
-        Action action = new FillAction(fields);
+        fields.put("key", "value");
+        Action action = new FillAction(fields, null);
 
         assertNotNull(action);
         assertTrue(action instanceof FillAction);
