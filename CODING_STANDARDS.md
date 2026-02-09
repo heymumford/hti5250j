@@ -280,6 +280,65 @@ return switch (action) {
 
 ---
 
+### Sealed Classes (Java 17+): Type-Safe Hierarchies
+
+**Problem:** When you have a fixed set of implementations, how do you guarantee all cases are handled?
+
+**Before (Untyped dispatch, vulnerable to missing handlers):**
+```java
+// Enum-based dispatch (handlers can be forgotten)
+switch (stepDef.getAction()) {
+  case LOGIN -> handleLogin(stepDef);
+  case NAVIGATE -> handleNavigate(stepDef);
+  // If we add ActionType.RETRY, compiler won't warn us about missing handler
+}
+
+// Generic handler receives all fields, only needs a few
+private void handleLogin(StepDef step) {
+  // step has 11 fields (host, user, password, screen, key, text, fields, timeout, name, keys, action)
+  // handleLogin only needs 3: host, user, password
+  // Other fields are confusing noise
+}
+```
+
+**After (Sealed interface enforces exhaustiveness):**
+```java
+// Sealed interface with 7 permitted implementations
+sealed interface Action permits LoginAction, NavigateAction, FillAction, ... { }
+
+final record LoginAction(String host, String user, String password) implements Action { }
+final record NavigateAction(String screen, String keys) implements Action { }
+// ... etc (7 total)
+
+// TypeFactory converts StepDef → Action
+Action action = ActionFactory.from(stepDef);
+
+// Exhaustive switch (compiler ERROR if handler missing)
+switch (action) {
+  case LoginAction login -> handleLogin(login);
+  case NavigateAction nav -> handleNavigate(nav);
+  // Add ActionType.RETRY? Compiler: ERROR - switch not exhaustive
+  // Prevent silent production failures
+}
+
+// Handler receives exact type (3 fields, not 11)
+private void handleLogin(LoginAction login) {
+  // login.host(), login.user(), login.password()
+  // No confusion, no null checks needed
+  session.connect();
+}
+```
+
+**Key Benefits:**
+1. **Compile-time safety** — Missing handler is a compilation error, not a runtime failure
+2. **Type clarity** — Handler receives exact action type (LoginAction), not generic StepDef
+3. **Constructor validation** — Record constructors enforce non-null constraints
+4. **Pattern matching** — Field extraction is automatic, no casting
+
+**Applied:** Phase 12D (Workflow execution: 7 action types, ActionFactory converter)
+
+---
+
 ### Virtual Threads (Java 21, Project Loom)
 
 **Use Case:** I/O-bound operations without OS thread limits
