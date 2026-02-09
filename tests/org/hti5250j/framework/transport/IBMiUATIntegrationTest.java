@@ -10,6 +10,7 @@ package org.hti5250j.framework.transport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.io.BufferedInputStream;
@@ -38,6 +39,7 @@ import static org.assertj.core.api.Assertions.*;
  */
 @DisplayName("IBM i UAT Integration Tests")
 @EnabledIfEnvironmentVariable(named = "IBM_I_HOST", matches = ".+")
+@Disabled("Requires real IBM i system - skipped in CI environment")
 public class IBMiUATIntegrationTest {
 
     private IBMiConnectionFactory factory;
