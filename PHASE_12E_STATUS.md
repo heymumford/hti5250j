@@ -1,9 +1,9 @@
 # Phase 12E: Metrics & Tolerances - Status Report
 
 **Date:** 2026-02-09
-**Status:** 🟢 IN PROGRESS (Phase 2/6 Complete)
-**Effort Completed:** 6 hours / 16 hours (38%)
-**Next Phase:** Phase 3 - WorkflowSimulator (4 hours)
+**Status:** 🟢 IN PROGRESS (Phase 3/6 Complete)
+**Effort Completed:** 9 hours / 16 hours (54%)
+**Next Phase:** Phase 4 - Integration & CLI (2 hours)
 
 ---
 
@@ -67,44 +67,63 @@
 - ✅ Exception type detection works correctly
 - ✅ Linear penalty formula validated at 3 points
 
+### Phase 3: WorkflowSimulator ✅ COMPLETE
+
+**Files Created:**
+1. `src/org/hti5250j/workflow/WorkflowSimulation.java` (102 LOC)
+   - Public record: WorkflowSimulation(steps, predictedOutcome, predictedFields, warnings)
+   - Nested record: SimulatedStep(stepIndex, stepName, prediction, warning)
+   - Methods: predictSuccess(), hasWarnings(), summary()
+
+2. `src/org/hti5250j/workflow/WorkflowSimulator.java` (170 LOC)
+   - Offline dry-run executor without real i5 connection
+   - Duration estimation: LOGIN = 2000ms, other steps = 500ms
+   - Timeout prediction when cumulative duration exceeds tolerance
+   - Warning generation for field truncation (>255 chars) and precision loss
+   - Validation error detection (missing ASSERT fields)
+   - Happy path execution support
+
+3. `tests/org/hti5250j/workflow/WorkflowSimulatorTest.java` (336 LOC, 8 tests)
+   - D5-SIM-001 to 008: Integration tests covering all scenarios
+   - Happy path, timeout, validation, truncation, precision, multiple warnings
+   - Offline execution verification (<100ms completion)
+   - Field matching verification
+   - All tests passing ✅
+
+**Verification:**
+- ✅ 8 tests passing (100%)
+- ✅ Zero regressions (Phase 1-2 tests still pass)
+- ✅ Code compiles cleanly (0 errors)
+- ✅ BUILD SUCCESSFUL
+- ✅ Committed to feature/phase-13-virtual-threads
+
 ---
 
 ## What's Next
 
-### Phase 2: EvalScorer Framework (4 hours) ⏳
+### Phase 4: Integration & CLI (2 hours) ⏳
 
-**Design:** Three scorer implementations evaluate workflow reliability
+**Design:** Connect simulator to CLI and add reporting
 
 **Components:**
-1. **EvalScorer Interface** (30 min)
-   - `evaluate(WorkflowResult, WorkflowTolerance): double` → 0.0-1.0 confidence score
-   - `scorerName(): String`
+1. **BatchMetrics Record** (30 min)
+   - Aggregated metrics: P50/P99 latency, throughput, success rate
+   - Format performance summary for console output
 
-2. **CorrectnessScorer** (1 hour)
-   - Verifies: Did workflow produce correct outputs?
-   - Checks: Field values match expected, no silent truncation
-   - Returns: Confidence 0.0-1.0
+2. **CLI Integration** (1 hour)
+   - Add `simulate` action to WorkflowCLI (alongside `run`)
+   - Load dataset and invoke simulator
+   - Display metrics and approval gate recommendation
+   - Usage: `i5250 simulate <workflow.yaml> [--data <data.csv>]`
 
-3. **IdempotencyScorer** (1 hour)
-   - Verifies: Can we run it twice and get the same result?
-   - Checks: No non-deterministic output, retries match original
-   - Returns: Confidence 0.0-1.0
-
-4. **LatencyScorer** (1 hour)
-   - Verifies: Did it complete within tolerance?
-   - Checks: Duration < maxDurationMs, linear penalty as approaches limit
-   - Returns: Confidence 0.0-1.0
-
-5. **Tests** (30 min)
-   - EvalScorerTest.java: 12 tests total (4 per scorer)
-   - Edge case handling: NaN, Infinity, boundary conditions
+3. **Tests** (30 min)
+   - Integration tests for CLI with simulator
+   - Metrics calculation verification
 
 **Files to Create:**
-- src/org/hti5250j/workflow/EvalScorer.java (15 LOC)
-- src/org/hti5250j/workflow/CorrectnessScorer.java (45 LOC)
-- src/org/hti5250j/workflow/IdempotencyScorer.java (40 LOC)
-- src/org/hti5250j/workflow/LatencyScorer.java (35 LOC)
-- tests/org/hti5250j/workflow/EvalScorerTest.java (140 LOC, 12 tests)
+- src/org/hti5250j/workflow/BatchMetrics.java (95 LOC)
+- Integration into WorkflowCLI.java (+25 LOC)
+- tests/org/hti5250j/workflow/SimulatorCLIIntegrationTest.java (80 LOC)
 
 ---
 
@@ -113,9 +132,9 @@
 ```
 Week 1 (Feb 9-15):
   ✅ Phase 1: WorkflowTolerance (Feb 9) — DONE
-  ⏳ Phase 2: EvalScorer (Feb 10-11) — Start immediately
-  ⏳ Phase 3: WorkflowSimulator (Feb 11-12) — Parallel with Phase 2
-  ⏳ Phase 4: Integration & CLI (Feb 13) — After Phases 2-3
+  ✅ Phase 2: EvalScorer (Feb 10-11) — DONE
+  ✅ Phase 3: WorkflowSimulator (Feb 11-12) — DONE
+  ⏳ Phase 4: Integration & CLI (Feb 13) — IN PROGRESS
   ⏳ Phase 5: Verification (Feb 14) — Test suite + baselines
   ⏳ Phase 6: Documentation & Commit (Feb 15) — Final polish
 ```
@@ -125,20 +144,20 @@ Week 1 (Feb 9-15):
 ## Success Criteria (Phase 12E Complete)
 
 - [x] Phase 1: WorkflowTolerance - DONE
-- [ ] Phase 2: EvalScorer - IN PROGRESS
-- [ ] Phase 3: WorkflowSimulator - TODO
+- [x] Phase 2: EvalScorer - DONE
+- [x] Phase 3: WorkflowSimulator - DONE
 - [ ] Phase 4: Integration & CLI - TODO
 - [ ] Phase 5: Verification - TODO
 - [ ] Phase 6: Documentation - TODO
 
 **Final Success Criteria:**
-- [ ] All 26 tests pass (6 + 12 + 8)
-- [ ] Zero regressions (Phase 13 tests still pass)
-- [ ] CLI `simulate` command works offline
-- [ ] BatchMetrics reports eval scores
-- [ ] README updated with tolerance usage
-- [ ] Committed to main with detailed message
-- [ ] Fowler compliance: 95% across all 5 principles
+- [x] All 30 tests pass (10 + 12 + 8)
+- [x] Zero regressions (Phase 1-3 tests all pass)
+- [ ] CLI `simulate` command works offline (Phase 4)
+- [ ] BatchMetrics reports eval scores (Phase 4)
+- [ ] README updated with tolerance usage (Phase 6)
+- [ ] Committed to main with detailed message (Phase 6)
+- [ ] Fowler compliance: 95% across all 5 principles (Phase 5-6)
 
 ---
 
@@ -148,9 +167,9 @@ Week 1 (Feb 9-15):
 
 Phase 12E implements this by:
 1. ✅ WorkflowTolerance - Declares bounds (maxDuration, precision, retries)
-2. ⏳ EvalScorer - Measures against bounds (next)
-3. ⏳ WorkflowSimulator - Predicts outcome within bounds (next)
-4. ⏳ Reporting - Shows if bounds exceeded (next)
+2. ✅ EvalScorer - Measures against bounds (confidence scoring 0.0-1.0)
+3. ✅ WorkflowSimulator - Predicts outcome within bounds (timeout/error prediction)
+4. ⏳ Reporting - Shows if bounds exceeded (Phase 4-6)
 
 ---
 
