@@ -17,6 +17,9 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
 
 import javax.swing.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -355,8 +358,35 @@ public class GlobalConfigure extends ConfigureFactory {
         return new FileInputStream(path);
     }
 
-    protected OutputStream openSettingsOutputStream(String path) throws FileNotFoundException {
+    protected OutputStream openSettingsOutputStream(String path) throws FileNotFoundException, SecurityException {
+        // Validate path to prevent directory traversal attacks (CWE-22)
+        validateSettingsPath(path);
         return new FileOutputStream(path);
+    }
+
+    /**
+     * Validate that the given path is safe for file operations.
+     * Ensures path does not contain ".." or escape the intended directory.
+     *
+     * @param path the path to validate
+     * @throws SecurityException if path is invalid or escapes directory bounds
+     */
+    protected void validateSettingsPath(String path) throws SecurityException {
+        if (path == null || path.isEmpty()) {
+            throw new SecurityException("Path cannot be null or empty");
+        }
+
+        try {
+            Path settingsPath = Paths.get(settingsDirectory()).normalize().toAbsolutePath();
+            Path filePath = Paths.get(path).normalize().toAbsolutePath();
+
+            // Verify path stays within settings directory
+            if (!filePath.startsWith(settingsPath) && !filePath.equals(settingsPath)) {
+                throw new SecurityException("Path escapes settings directory: " + path);
+            }
+        } catch (Exception e) {
+            throw new SecurityException("Invalid path: " + path, e);
+        }
     }
 
     /**
@@ -476,8 +506,16 @@ public class GlobalConfigure extends ConfigureFactory {
             headers.put(regKey, header);
 
             try {
-                in = new FileInputStream(settingsDirectory()
-                        + fileName);
+                // Construct path safely - use Path.resolve() instead of string concatenation
+                Path settingsPath = Paths.get(settingsDirectory()).normalize().toAbsolutePath();
+                Path filePath = settingsPath.resolve(fileName).normalize();
+
+                // Verify path stays within settings directory (prevent directory traversal)
+                if (!filePath.startsWith(settingsPath)) {
+                    throw new SecurityException("Path traversal attempt detected: " + fileName);
+                }
+
+                in = new FileInputStream(filePath.toFile());
                 props.load(in);
 
             } catch (FileNotFoundException fnfe) {

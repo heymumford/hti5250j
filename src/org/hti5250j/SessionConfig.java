@@ -23,6 +23,8 @@ import java.awt.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -171,7 +173,16 @@ public class SessionConfig {
             loadDefaults();
         } else {
             try {
-                FileInputStream in = new FileInputStream(settingsDirectory() + getConfigurationResource());
+                // Construct path safely - use Path.resolve() to prevent directory traversal (CWE-22)
+                Path settingsPath = Paths.get(settingsDirectory()).normalize().toAbsolutePath();
+                Path configPath = settingsPath.resolve(getConfigurationResource()).normalize();
+
+                // Verify path stays within settings directory
+                if (!configPath.startsWith(settingsPath)) {
+                    throw new SecurityException("Path traversal attempt detected in config resource");
+                }
+
+                FileInputStream in = new FileInputStream(configPath.toFile());
                 sesProps.load(in);
                 if (sesProps.size() == 0)
                     loadDefaults();
@@ -227,6 +238,13 @@ public class SessionConfig {
 
     protected Properties loadPropertiesFromResource(String resourceName) throws IOException {
         Properties properties = new Properties();
+
+        // Validate resourceName to prevent directory traversal (CWE-22)
+        if (resourceName == null || resourceName.isEmpty() ||
+            resourceName.contains("..") || resourceName.contains("/") || resourceName.contains("\\")) {
+            throw new SecurityException("Invalid resource name: " + resourceName);
+        }
+
         URL url = getClass().getClassLoader().getResource(resourceName);
         if (url != null) {
             try (InputStream stream = openResourceStream(url)) {
