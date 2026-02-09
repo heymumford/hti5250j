@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class WorkflowRunner {
     private final SessionInterface session;
@@ -174,11 +176,10 @@ public class WorkflowRunner {
     // Helper methods
 
     private Screen5250 getScreen() throws IllegalStateException {
-        if (!(session instanceof Session5250)) {
-            throw new IllegalStateException("Session must be Session5250 instance");
+        if (!(session instanceof ScreenProvider)) {
+            throw new IllegalStateException("Session must implement ScreenProvider interface");
         }
-        Session5250 session5250 = (Session5250) session;
-        return session5250.getScreen();
+        return ((ScreenProvider) session).getScreen();
     }
 
     private String getScreenContent(Screen5250 screen) {
@@ -205,8 +206,7 @@ public class WorkflowRunner {
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
         String filename = screenName + "_" + timestamp + ".txt";
 
-        File artifactDir = new File("artifacts");
-        artifactDir.mkdirs();
+        File artifactDir = artifactCollector.getArtifactDir();
         File captureFile = new File(artifactDir, filename);
 
         try (FileWriter writer = new FileWriter(captureFile)) {

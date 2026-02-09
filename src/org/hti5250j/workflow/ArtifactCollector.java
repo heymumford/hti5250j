@@ -18,6 +18,15 @@ public class ArtifactCollector {
     }
 
     /**
+     * Get the artifact directory for this collector.
+     *
+     * @return artifact directory File
+     */
+    public File getArtifactDir() {
+        return artifactDir;
+    }
+
+    /**
      * Capture screen as PNG screenshot with timestamp in filename.
      * Returns File reference to the created PNG.
      */

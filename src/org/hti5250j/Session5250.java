@@ -25,11 +25,12 @@ import org.hti5250j.framework.tn5250.tnvt;
 import org.hti5250j.gui.SystemRequestDialog;
 import org.hti5250j.interfaces.ScanListener;
 import org.hti5250j.interfaces.SessionInterface;
+import org.hti5250j.workflow.ScreenProvider;
 
 /**
  * A host session
  */
-public class Session5250 implements SessionInterface {
+public class Session5250 implements SessionInterface, ScreenProvider {
 
     private String configurationResource;
     private String sessionName;

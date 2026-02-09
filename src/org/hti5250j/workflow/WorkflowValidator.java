@@ -15,6 +15,7 @@ import org.hti5250j.workflow.validators.*;
  */
 public class WorkflowValidator {
     private final StepValidator stepValidator = new StepValidator();
+    private final StepOrderValidator stepOrderValidator = new StepOrderValidator();
 
     /**
      * Validates workflow structure and all steps.
@@ -40,6 +41,10 @@ public class WorkflowValidator {
                 "Add at least one step to 'steps:' list");
             return result;
         }
+
+        // Validate step ordering constraints
+        ValidationResult orderResult = stepOrderValidator.validate(workflow.getSteps());
+        result.merge(orderResult);
 
         // Validate each step
         for (int i = 0; i < workflow.getSteps().size(); i++) {

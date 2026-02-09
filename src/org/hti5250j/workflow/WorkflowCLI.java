@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.BufferedReader;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -126,26 +125,27 @@ public class WorkflowCLI {
     }
 
     /**
-     * Load dataset from CSV file (simplified - first row is headers).
+     * Load first row from CSV file using DatasetLoader.
+     * Delegates to DatasetLoader for consistent CSV parsing.
+     *
+     * @param dataFile CSV file to load
+     * @return Map of first row data (column name → value)
      */
     public static Map<String, Object> loadDataset(File dataFile) {
-        Map<String, Object> dataset = new HashMap<>();
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(dataFile.getAbsolutePath()))) {
-            String headerLine = reader.readLine();
-            if (headerLine != null) {
-                String[] headers = headerLine.split(",");
-                String dataLine = reader.readLine();
-                if (dataLine != null) {
-                    String[] values = dataLine.split(",");
-                    for (int i = 0; i < headers.length && i < values.length; i++) {
-                        dataset.put(headers[i].trim(), values[i].trim());
-                    }
-                }
+        Map<String, Object> result = new HashMap<>();
+        try {
+            DatasetLoader loader = new DatasetLoader();
+            Map<String, Map<String, String>> allRows = loader.loadCSV(dataFile);
+            if (!allRows.isEmpty()) {
+                // Get first row from CSV
+                Map<String, String> firstRow = allRows.values().iterator().next();
+                // Convert Map<String, String> to Map<String, Object>
+                result.putAll(firstRow);
             }
         } catch (Exception e) {
             System.err.println("Error loading dataset: " + e.getMessage());
         }
-        return dataset;
+        return result;
     }
 
     /**
