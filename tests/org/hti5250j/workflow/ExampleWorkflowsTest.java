@@ -11,7 +11,7 @@ class ExampleWorkflowsTest {
         File loginYaml = new File("examples/login.yaml");
         assertThat(loginYaml).exists().isFile();
 
-        WorkflowSchema workflow = WorkflowCLI.loadWorkflow(loginYaml);
+        WorkflowSchema workflow = WorkflowLoader.load(loginYaml);
 
         assertThat(workflow.getName()).isNotBlank();
         assertThat(workflow.getSteps()).isNotEmpty();
@@ -23,7 +23,7 @@ class ExampleWorkflowsTest {
         File paymentYaml = new File("examples/payment.yaml");
         assertThat(paymentYaml).exists().isFile();
 
-        WorkflowSchema workflow = WorkflowCLI.loadWorkflow(paymentYaml);
+        WorkflowSchema workflow = WorkflowLoader.load(paymentYaml);
 
         assertThat(workflow.getName()).isNotBlank();
         assertThat(workflow.getSteps()).hasSizeGreaterThanOrEqualTo(3);
@@ -37,7 +37,7 @@ class ExampleWorkflowsTest {
     @Test
     void testLoginWorkflowHasValidFields() throws Exception {
         File loginYaml = new File("examples/login.yaml");
-        WorkflowSchema workflow = WorkflowCLI.loadWorkflow(loginYaml);
+        WorkflowSchema workflow = WorkflowLoader.load(loginYaml);
 
         StepDef loginStep = workflow.getSteps().get(0);
         assertThat(loginStep.getHost()).isNotBlank();
@@ -48,7 +48,7 @@ class ExampleWorkflowsTest {
     @Test
     void testPaymentWorkflowHasDataSubstitution() throws Exception {
         File paymentYaml = new File("examples/payment.yaml");
-        WorkflowSchema workflow = WorkflowCLI.loadWorkflow(paymentYaml);
+        WorkflowSchema workflow = WorkflowLoader.load(paymentYaml);
 
         // Find FILL step
         StepDef fillStep = workflow.getSteps().stream()

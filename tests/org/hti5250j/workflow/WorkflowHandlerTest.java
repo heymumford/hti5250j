@@ -4,18 +4,75 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.hti5250j.Session5250;
+import org.hti5250j.event.SessionListener;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.framework.tn5250.ScreenOIA;
-import org.hti5250j.framework.tn5250.tnvt;
 import org.hti5250j.interfaces.SessionInterface;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 class WorkflowHandlerTest {
+
+    /**
+     * Test adapter implementing both SessionInterface and ScreenProvider.
+     */
+    static class MockSessionAdapter implements SessionInterface, ScreenProvider {
+        private final Screen5250 screen;
+
+        MockSessionAdapter(Screen5250 screen) {
+            this.screen = screen;
+        }
+
+        @Override
+        public Screen5250 getScreen() throws IllegalStateException {
+            return screen;
+        }
+
+        @Override
+        public String getConfigurationResource() {
+            return "test";
+        }
+
+        @Override
+        public boolean isConnected() {
+            return true;
+        }
+
+        @Override
+        public String getSessionName() {
+            return "test-session";
+        }
+
+        @Override
+        public int getSessionType() {
+            return 0;
+        }
+
+        @Override
+        public void connect() {}
+
+        @Override
+        public void disconnect() {}
+
+        @Override
+        public void addSessionListener(SessionListener listener) {}
+
+        @Override
+        public void removeSessionListener(SessionListener listener) {}
+
+        @Override
+        public String showSystemRequest() {
+            return null;
+        }
+
+        @Override
+        public void signalBell() {}
+    }
+
+    private SessionInterface createMockSessionWithScreen(Screen5250 mockScreen) {
+        return new MockSessionAdapter(mockScreen);
+    }
 
     /**
      * Test handleLogin() connects session and waits for keyboard unlock.
@@ -23,15 +80,14 @@ class WorkflowHandlerTest {
     @Test
     void testHandleLoginConnectsAndWaits(@TempDir File tempDir) throws Exception {
         // Setup mocks
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
-        DatasetLoader loader = new DatasetLoader();
-        ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
         when(mockOIA.isKeyBoardLocked()).thenReturn(false); // Keyboard unlocked (ready)
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        DatasetLoader loader = new DatasetLoader();
+        ArtifactCollector collector = new ArtifactCollector(tempDir);
 
         // Create and execute step
         StepDef step = new StepDef();
@@ -53,14 +109,13 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleAssertChecksScreenContent(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
+        char[] screenContent = "Welcome to IBM i System".toCharArray();
+        when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        char[] screenContent = "Welcome to IBM i System".toCharArray();
-        when(mockSession.getScreen()).thenReturn(mockScreen);
-        when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.ASSERT);
@@ -78,14 +133,13 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleAssertFailsWhenTextNotFound(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
+        char[] screenContent = "Welcome to IBM i System".toCharArray();
+        when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        char[] screenContent = "Welcome to IBM i System".toCharArray();
-        when(mockSession.getScreen()).thenReturn(mockScreen);
-        when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.ASSERT);
@@ -103,14 +157,13 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleCaptureCreatesScreenshotFile(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
+        char[] screenContent = "Screen Line 1\n".toCharArray();
+        when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        char[] screenContent = "Screen Line 1\n".toCharArray();
-        when(mockSession.getScreen()).thenReturn(mockScreen);
-        when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.CAPTURE);
@@ -136,18 +189,17 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleSubmitSendsKeyAndWaits(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
-        DatasetLoader loader = new DatasetLoader();
-        ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
         when(mockOIA.isKeyBoardLocked())
             .thenReturn(false)  // First poll: not locked
             .thenReturn(true)   // Second poll: locked
             .thenReturn(false); // Third poll: unlocked (complete)
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        DatasetLoader loader = new DatasetLoader();
+        ArtifactCollector collector = new ArtifactCollector(tempDir);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.SUBMIT);
@@ -165,15 +217,14 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleFillSendsHomeAndTabSequence(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
-        DatasetLoader loader = new DatasetLoader();
-        ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
         when(mockOIA.isKeyBoardLocked()).thenReturn(false);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        DatasetLoader loader = new DatasetLoader();
+        ArtifactCollector collector = new ArtifactCollector(tempDir);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.FILL);
@@ -196,15 +247,14 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleFillSubstitutesParameters(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
-        DatasetLoader loader = new DatasetLoader();
-        ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
         when(mockOIA.isKeyBoardLocked()).thenReturn(false);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        DatasetLoader loader = new DatasetLoader();
+        ArtifactCollector collector = new ArtifactCollector(tempDir);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.FILL);
@@ -227,12 +277,11 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleNavigateRequiresKeysParameter(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.NAVIGATE);
@@ -251,19 +300,18 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleNavigateVerifiesScreenReached(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
-        DatasetLoader loader = new DatasetLoader();
-        ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
         when(mockOIA.isKeyBoardLocked()).thenReturn(false);
 
         // Screen content contains target text
         char[] screenContent = "Payment Menu - Option Selection".toCharArray();
         when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        DatasetLoader loader = new DatasetLoader();
+        ArtifactCollector collector = new ArtifactCollector(tempDir);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.NAVIGATE);
@@ -282,19 +330,18 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleNavigateFailsWhenScreenNotFound(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
-        DatasetLoader loader = new DatasetLoader();
-        ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
         when(mockOIA.isKeyBoardLocked()).thenReturn(false);
 
         // Screen content does NOT contain target text
         char[] screenContent = "Wrong Screen".toCharArray();
         when(mockScreen.getScreenAsChars()).thenReturn(screenContent);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        DatasetLoader loader = new DatasetLoader();
+        ArtifactCollector collector = new ArtifactCollector(tempDir);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.NAVIGATE);
@@ -313,7 +360,7 @@ class WorkflowHandlerTest {
      */
     @Test
     void testHandleWaitSleepsForTimeout(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
+        SessionInterface mockSession = mock(SessionInterface.class);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
 
@@ -336,15 +383,14 @@ class WorkflowHandlerTest {
      */
     @Test
     void testKeyboardUnlockTimeoutThrowsException(@TempDir File tempDir) throws Exception {
-        Session5250 mockSession = mock(Session5250.class);
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
-        DatasetLoader loader = new DatasetLoader();
-        ArtifactCollector collector = new ArtifactCollector(tempDir);
-
-        when(mockSession.getScreen()).thenReturn(mockScreen);
         when(mockScreen.getOIA()).thenReturn(mockOIA);
         when(mockOIA.isKeyBoardLocked()).thenReturn(true); // Always locked
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
+        DatasetLoader loader = new DatasetLoader();
+        ArtifactCollector collector = new ArtifactCollector(tempDir);
 
         StepDef step = new StepDef();
         step.setAction(ActionType.LOGIN);

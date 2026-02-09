@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.hti5250j.event.SessionListener;
+import org.hti5250j.framework.tn5250.Screen5250;
+import org.hti5250j.framework.tn5250.ScreenOIA;
 import org.hti5250j.interfaces.SessionInterface;
 import java.io.File;
 import java.util.ArrayList;
@@ -12,10 +15,75 @@ import java.util.Map;
 
 class WorkflowRunnerTest {
 
+    /**
+     * Test adapter implementing both SessionInterface and ScreenProvider.
+     */
+    static class MockSessionAdapter implements SessionInterface, ScreenProvider {
+        private final Screen5250 screen;
+
+        MockSessionAdapter(Screen5250 screen) {
+            this.screen = screen;
+        }
+
+        @Override
+        public Screen5250 getScreen() throws IllegalStateException {
+            return screen;
+        }
+
+        @Override
+        public String getConfigurationResource() {
+            return "test";
+        }
+
+        @Override
+        public boolean isConnected() {
+            return true;
+        }
+
+        @Override
+        public String getSessionName() {
+            return "test-session";
+        }
+
+        @Override
+        public int getSessionType() {
+            return 0;
+        }
+
+        @Override
+        public void connect() {}
+
+        @Override
+        public void disconnect() {}
+
+        @Override
+        public void addSessionListener(SessionListener listener) {}
+
+        @Override
+        public void removeSessionListener(SessionListener listener) {}
+
+        @Override
+        public String showSystemRequest() {
+            return null;
+        }
+
+        @Override
+        public void signalBell() {}
+    }
+
+    private SessionInterface createMockSessionWithScreen(Screen5250 mockScreen) {
+        return new MockSessionAdapter(mockScreen);
+    }
+
     @Test
     void testExecuteWorkflowRunsStepsSequentially(@TempDir File tempDir) throws Exception {
         // Setup mocks
-        SessionInterface mockSession = mock(SessionInterface.class);
+        Screen5250 mockScreen = mock(Screen5250.class);
+        ScreenOIA mockOIA = mock(ScreenOIA.class);
+        when(mockOIA.isKeyBoardLocked()).thenReturn(false);
+        when(mockScreen.getOIA()).thenReturn(mockOIA);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
 
@@ -58,7 +126,8 @@ class WorkflowRunnerTest {
 
     @Test
     void testExecuteStepDispatchesToCorrectHandler(@TempDir File tempDir) throws Exception {
-        SessionInterface mockSession = mock(SessionInterface.class);
+        Screen5250 mockScreen = mock(Screen5250.class);
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
 
@@ -68,6 +137,7 @@ class WorkflowRunnerTest {
         StepDef navigateStep = new StepDef();
         navigateStep.setAction(ActionType.NAVIGATE);
         navigateStep.setScreen("menu_screen");
+        navigateStep.setKeys("[enter]");
 
         Map<String, String> emptyData = Map.of();
         runner.executeStep(navigateStep, emptyData);
@@ -78,7 +148,12 @@ class WorkflowRunnerTest {
 
     @Test
     void testParameterSubstitutionInFieldValues(@TempDir File tempDir) throws Exception {
-        SessionInterface mockSession = mock(SessionInterface.class);
+        Screen5250 mockScreen = mock(Screen5250.class);
+        ScreenOIA mockOIA = mock(ScreenOIA.class);
+        when(mockOIA.isKeyBoardLocked()).thenReturn(false);
+        when(mockScreen.getOIA()).thenReturn(mockOIA);
+
+        SessionInterface mockSession = createMockSessionWithScreen(mockScreen);
         DatasetLoader loader = new DatasetLoader();
         ArtifactCollector collector = new ArtifactCollector(tempDir);
 
@@ -98,6 +173,6 @@ class WorkflowRunnerTest {
 
         // Should execute without error (parameter substitution)
         runner.executeStep(fillStep, dataRow);
-        assertThat(true).isTrue();
+        verify(mockScreen, atLeastOnce()).sendKeys(anyString());
     }
 }

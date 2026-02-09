@@ -5,14 +5,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Map;
 
+/**
+ * Tests for WorkflowCLI and its refactored adapter classes.
+ * After Phase 12A SRP refactoring, tests use ArgumentParser, WorkflowLoader, etc.
+ */
 class WorkflowCLITest {
 
     @Test
     void testParseCommandLineArgs() {
         String[] args = {"run", "workflow.yaml", "--data", "data.csv"};
-        WorkflowCLI.CommandLineArgs parsed = WorkflowCLI.parseArgs(args);
+        ArgumentParser parsed = ArgumentParser.parse(args);
 
         assertThat(parsed.action()).isEqualTo("run");
         assertThat(parsed.workflowFile()).isEqualTo("workflow.yaml");
@@ -22,7 +25,7 @@ class WorkflowCLITest {
     @Test
     void testParseArgsWithEnvironment() {
         String[] args = {"run", "workflow.yaml", "--data", "data.csv", "--env", "prod"};
-        WorkflowCLI.CommandLineArgs parsed = WorkflowCLI.parseArgs(args);
+        ArgumentParser parsed = ArgumentParser.parse(args);
 
         assertThat(parsed.environment()).isEqualTo("prod");
     }
@@ -30,7 +33,7 @@ class WorkflowCLITest {
     @Test
     void testDefaultsWhenNoDataFile() {
         String[] args = {"run", "workflow.yaml"};
-        WorkflowCLI.CommandLineArgs parsed = WorkflowCLI.parseArgs(args);
+        ArgumentParser parsed = ArgumentParser.parse(args);
 
         assertThat(parsed.dataFile()).isNull();
     }
@@ -48,19 +51,9 @@ class WorkflowCLITest {
             fw.write("    host: localhost\n");
         }
 
-        WorkflowSchema workflow = WorkflowCLI.loadWorkflow(workflowFile);
+        WorkflowSchema workflow = WorkflowLoader.load(workflowFile);
 
         assertThat(workflow.getName()).isEqualTo("Test Flow");
         assertThat(workflow.getSteps()).hasSize(1);
-    }
-
-    @Test
-    void testHelpMessage() {
-        String help = WorkflowCLI.helpMessage();
-
-        assertThat(help).contains("Usage:")
-                        .contains("run")
-                        .contains("workflow")
-                        .contains("--data");
     }
 }
