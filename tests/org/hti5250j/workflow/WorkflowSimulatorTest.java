@@ -332,4 +332,39 @@ class WorkflowSimulatorTest {
         assertThat(result.predictedFields()).containsEntry("account_number", "ACC123456");
         assertThat(result.predictedFields()).containsEntry("amount", "1000.00");
     }
+
+    /**
+     * D5-SIM-009: Predicted fields excludes null entries from test data.
+     */
+    @Test
+    void predictedFieldsExcludesNullEntries() {
+        WorkflowSimulator simulator = new WorkflowSimulator();
+
+        WorkflowSchema workflow = new WorkflowSchema();
+        workflow.setName("null_field_test");
+
+        List<StepDef> steps = new ArrayList<>();
+
+        StepDef loginStep = new StepDef();
+        loginStep.setAction("LOGIN");
+        loginStep.setHost("host");
+        loginStep.setUser("user");
+        loginStep.setPassword("password");
+        steps.add(loginStep);
+
+        workflow.setSteps(steps);
+
+        // Test data with null values
+        Map<String, String> testData = new HashMap<>();
+        testData.put("account_number", "ACC123456");
+        testData.put("optional_field", null);  // Null value
+
+        WorkflowTolerance tolerance = WorkflowTolerance.defaults("test");
+
+        WorkflowSimulation result = simulator.simulate(workflow, testData, tolerance);
+
+        // Predicted fields should not contain null values
+        assertThat(result.predictedFields()).doesNotContainValue(null);
+        assertThat(result.predictedFields().get("account_number")).isEqualTo("ACC123456");
+    }
 }

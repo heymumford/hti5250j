@@ -155,9 +155,14 @@ public class WorkflowSimulator {
         }
 
         // Build predicted output fields (empty for simulation)
+        // Filter out null values to maintain data integrity
         Map<String, String> predictedFields = new HashMap<>();
         if (testData != null) {
-            predictedFields.putAll(testData);
+            for (Map.Entry<String, String> entry : testData.entrySet()) {
+                if (entry.getValue() != null) {
+                    predictedFields.put(entry.getKey(), entry.getValue());
+                }
+            }
         }
 
         return new WorkflowSimulation(
