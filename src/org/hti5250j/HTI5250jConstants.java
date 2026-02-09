@@ -14,7 +14,7 @@ package org.hti5250j;
 public interface HTI5250jConstants {
 
     // Version information
-    String VERSION_INFO = "0.8.0-headless.0.rtr";
+    String VERSION_INFO = "0.8.1";
 
     // STATE
     static final int STATE_DISCONNECTED = 0;
