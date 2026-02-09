@@ -130,7 +130,6 @@ class WorkflowLoaderTest {
         Files.write(workflowFile.toPath(), """
             name: PaymentWorkflow
             description: Process payment transactions
-            version: "1.0"
             steps: []
             """.getBytes());
 

@@ -30,21 +30,21 @@ class ActionRecordsTest {
     @Test
     @DisplayName("LoginAction should reject null host")
     void testLoginActionNullHost() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new LoginAction(null, "user", "pass"));
     }
 
     @Test
     @DisplayName("LoginAction should reject null user")
     void testLoginActionNullUser() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new LoginAction("host", null, "pass"));
     }
 
     @Test
     @DisplayName("LoginAction should reject null password")
     void testLoginActionNullPassword() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new LoginAction("host", "user", null));
     }
 
@@ -60,7 +60,7 @@ class ActionRecordsTest {
     @Test
     @DisplayName("NavigateAction should reject null screen")
     void testNavigateActionNullScreen() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new NavigateAction(null, "[pf3]"));
     }
 
@@ -100,7 +100,7 @@ class ActionRecordsTest {
     @Test
     @DisplayName("SubmitAction should reject null key")
     void testSubmitActionNullKey() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new SubmitAction(null));
     }
 

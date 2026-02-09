@@ -60,7 +60,7 @@ public class TerminalAdapter {
      * Print validation errors.
      */
     public static void printValidationErrors(ValidationResult result) {
-        System.out.println("✗ Validation errors found:");
+        System.err.println("✗ Validation errors found:");
         for (ValidationError error : result.getErrors()) {
             System.err.printf("  [Step %d] %s: %s%n",
                 error.stepIndex(), error.fieldName(), error.message());
