@@ -153,7 +153,7 @@ public class VirtualThreadIntegrationTest {
         // Given: Concurrent generation of both success and failure results
         int totalWorkflows = 50;
         int failureCount = 10;
-        List<WorkflowResult> results = new ArrayList<>();
+        List<WorkflowResult> results = new java.util.concurrent.CopyOnWriteArrayList<>();
         CountDownLatch latch = new CountDownLatch(totalWorkflows);
 
         var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor();
