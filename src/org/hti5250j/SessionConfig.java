@@ -302,7 +302,11 @@ public class SessionConfig {
     public Color getColorProperty(String prop) {
 
         if (sesProps.containsKey(prop)) {
-            return new Color(getIntegerProperty(prop));
+            try {
+                return new Color(Integer.parseInt((String) sesProps.get(prop)));
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
         return null;
 
@@ -407,7 +411,9 @@ public class SessionConfig {
 
     public void setKeypadMnemonicsAndFireChangeEvent(KeyMnemonic[] keyMnemonics) {
         String newValue = keyMnemonicSerializer.serialize(keyMnemonics);
-        firePropertyChange(this, CONFIG_KEYPAD_MNEMONICS, getStringProperty(CONFIG_KEYPAD_MNEMONICS), newValue);
+        String oldValue = sesProps.containsKey(CONFIG_KEYPAD_MNEMONICS) ?
+                (String) sesProps.get(CONFIG_KEYPAD_MNEMONICS) : "";
+        firePropertyChange(this, CONFIG_KEYPAD_MNEMONICS, oldValue, newValue);
         setProperty(CONFIG_KEYPAD_MNEMONICS, newValue);
     }
 
@@ -423,11 +429,14 @@ public class SessionConfig {
         }
 
         public boolean isKeypadEnabled() {
-            return YES.equals(getStringProperty(CONFIG_KEYPAD_ENABLED));
+            String value = sesProps.containsKey(CONFIG_KEYPAD_ENABLED) ?
+                    (String) sesProps.get(CONFIG_KEYPAD_ENABLED) : "";
+            return YES.equals(value);
         }
 
         public KeyMnemonic[] getKeypadMnemonics() {
-            String mnemonicData = getStringProperty(CONFIG_KEYPAD_MNEMONICS);
+            String mnemonicData = sesProps.containsKey(CONFIG_KEYPAD_MNEMONICS) ?
+                    (String) sesProps.get(CONFIG_KEYPAD_MNEMONICS) : "";
             KeyMnemonic[] result = keyMnemonicSerializer.deserialize(mnemonicData);
             if (result.length == 0) {
                 return getDefaultKeypadMnemonics();
