@@ -2,7 +2,7 @@
 
 Headless-first fork of TN5250J, a 5250 terminal emulator for IBM i (AS/400). This fork prioritizes headless execution, deterministic session management, test automation, and protocol extensions.
 
-Note: This is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250j). See [FORK.md](./FORK.md) for attribution and differences.
+Note: This is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250j). See [FORK.md](./ARCHIVE/FORK.md) for attribution and differences.
 
 ## Overview
 

@@ -337,6 +337,8 @@ private void handleLogin(LoginAction login) {
 
 **Applied:** Phase 12D (Workflow execution: 7 action types, ActionFactory converter)
 
+**ADR-012D-001:** See [ARCHITECTURE.md - Sealed Classes for Type-Safe Action Dispatch](./ARCHITECTURE.md#adr-012d-001-sealed-classes-for-type-safe-action-dispatch) for full architectural decision record.
+
 ---
 
 ### Virtual Threads (Java 21, Project Loom)

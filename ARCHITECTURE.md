@@ -764,6 +764,47 @@ throw new TimeoutException(...);
 
 ---
 
+## Architectural Decision Records (ADRs)
+
+### ADR-012C-001: Records Deferral via Fowler's YAGNI Principle
+
+**Status:** ACCEPTED (Phase 12C, 2026-02-08)
+
+**Context:** StepDef and WorkflowSchema are POJOs that could be converted to Java Records, potentially saving 41 lines of boilerplate code. However, both classes must support SnakeYAML deserialization with setter injection, which Records don't support without custom deserializers.
+
+**Decision:** Do NOT convert StepDef and WorkflowSchema to Records. Accept POJOs as a pragmatic choice for YAML compatibility. High-value Records (ValidationError, ValidationWarning, ArgumentParser) were already converted in Phase 12A.
+
+**Rationale:** Martin Fowler's YAGNI principle: "You aren't gonna need it." Converting to Records requires 100+ lines of custom SnakeYAML deserializer code to save 41 lines of boilerplate. The cost-benefit ratio doesn't justify fighting the tool (SnakeYAML). When pain points emerge (larger classes, different serialization library), refactor then—not preemptively.
+
+**Consequences:**
+- StepDef and WorkflowSchema remain as simple POJOs
+- Workflow validation and execution work with untyped YAML input
+- Future refactoring opportunity if YAML library changes or classes grow substantially
+
+**Related:** PHASE_12C_CLOSURE.md (full Fowler analysis with Technical Debt Quadrant evaluation)
+
+---
+
+### ADR-012D-001: Sealed Classes for Type-Safe Action Dispatch
+
+**Status:** ACCEPTED (Phase 12D, 2026-02-08)
+
+**Context:** Workflow actions (LOGIN, NAVIGATE, FILL, SUBMIT, ASSERT, WAIT, CAPTURE) are dispatched via switch expressions on enum types. Without sealed class enforcement, adding a new action type could result in missing handler methods, caught only at runtime.
+
+**Decision:** Implement sealed interface Action with 7 concrete record implementations (LoginAction, NavigateAction, FillAction, SubmitAction, AssertAction, WaitAction, CaptureAction). Use pattern matching for exhaustive dispatch in WorkflowRunner.
+
+**Rationale:** Sealed classes provide compile-time type safety through exhaustiveness checking. This is higher-ROI than Records because it prevents invisible bugs—if a new ActionType is added but the handler is forgotten, the compiler will fail immediately. Pattern matching replaces unsafe instanceof checks with type-safe dispatch. The boilerplate cost (7 action records + 1 sealed interface) is justified by elimination of entire categories of bugs.
+
+**Consequences:**
+- All action types are concrete, immutable records
+- Pattern matching dispatch is exhaustive (compiler-enforced)
+- Adding new action types requires explicit handler implementation
+- No runtime surprises from missing handlers
+
+**Related:** PHASE_12D_PLAN.md (full design with current state, problem analysis, and implementation plan)
+
+---
+
 ## Headless-First Philosophy
 
 HTI5250J is designed headless-first, with no GUI dependencies in core:
