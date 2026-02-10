@@ -43,13 +43,34 @@ Perform sweeping cleanup of documentation files in HTI5250J. Eliminate AI-genera
 - [ ] execution_plan.md - Ordered deletion/refactoring steps
 
 ## Status
-**IN PROGRESS** - Phase 1: Setting up Iteration 1 agent dispatch
-- Branch created: doc_cleanup ✓
-- Planning files: task_plan.md (this file) ✓
-- Next: Launch 12 parallel Iteration 1 agents
+**ITERATION 2 COMPLETE** (Branch: refactor/docs-cleanup-verify)
+- ✓ Iteration 1: Analysis (56 files cataloged, 4 audit reports)
+- ✓ README corrections: Java 21 Temurin, Gradle, Session5250 names
+- ✓ Iteration 2: Architectural verification (architecture-strategist agent)
+- ✓ Verification results: ITERATION_2_VERIFICATION_REPORT.md (comprehensive Go/No-Go assessment)
+- Result: **85% confidence to proceed with 3 mandatory blockers**
+- Next: Resolve blockers, then execute Phases 1-5 cleanup
 
-## Efficiency Metrics (to be filled)
-- Parallel services: 24 agents × 2 iterations = {actual}
-- Redundant calls: 0 (planned, verify after)
-- Backtracking: Minimize via findings.md catalog
-- Optimal path: Identify targets → Verify impact → Execute cleanup
+## Mandatory Blockers (Before Phase 2+)
+
+**Blocker 1: ADR Extraction (CRITICAL)**
+- [ ] Extract ADR-012C-001 (Records deferral via Fowler's YAGNI) → ARCHITECTURE.md
+- [ ] Extract ADR-012D-001 (Sealed classes type safety) → CODING_STANDARDS.md
+- Files: PHASE_12C_CLOSURE.md, PHASE_12D_PLAN.md
+- Impact: ADRs not documented elsewhere; must preserve before archiving PHASE files
+
+**Blocker 2: Broken Link Fixes**
+- [ ] README.md line 5: FORK.md → /ARCHIVE/FORK.md
+- [ ] Remove dead references to TESTING_EPISTEMOLOGY.md
+- [ ] Update DOCUMENTATION_INVENTORY.md after archival
+
+**Blocker 3: MEMORY.md Purpose Clarification**
+- [ ] DO NOT migrate MEMORY.md → CLAUDE.md (history ≠ instructions)
+- [ ] Archive to /docs/archive/ (safer than delete)
+- [ ] Extract critical learnings → ARCHITECTURE.md "Lessons Learned" section
+
+## Efficiency Metrics
+- Iteration 1: 1 agent (repo-research-analyst) generated 4 comprehensive reports
+- Iteration 2: 1 agent (architecture-strategist, sonnet tier) completed full verification
+- Total cost: haiku (Iteration 1) + sonnet (Iteration 2 specialist) = estimated $2-3
+- Blockers identified: 3 (all resolvable before execution phase)
