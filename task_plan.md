@@ -1,76 +1,59 @@
-# Task Plan: Documentation Cleanup & Rationalization (doc_cleanup)
+# Task Plan: Phase 14 Test ID Traceability
 
-## Mission
-Perform sweeping cleanup of documentation files in HTI5250J. Eliminate AI-generated content ("AI slop"), MEMORY.md artifacts, and redundant meta-commentary. Leave only industry-standard documentation.
+## Goal
+Implement test ID prefixes (D1-*, D3-*) to enable ARCHITECTURE.md → test traceability mapping and establish protocol verification test framework.
 
-## Baseline
-- Current branch: refactor/docs-cleanup (created 2026-02-09)
-- Scope: All .md files in repo root + docs/ directory
-- Key files identified for review:
-  - MEMORY.md (1081 lines - 80% AI-generated session notes)
-  - Various PHASE_*.md files (planning artifacts)
-  - TESTING_EPISTEMOLOGY.md (high-value, keep)
-  - CLAUDE.md (project instructions, keep)
-  - Standard: README.md, ARCHITECTURE.md, CONTRIBUTING.md
+## Status: READY FOR PHASE 14 EXECUTION
 
-## Execution Plan
+### Prerequisites Complete ✅
+- [x] Phase 1: Critical removals & data loss fixes (My5250Applet deleted, nonDisplay fixed, protocol docs added)
+- [x] Phase 2: Architecture clarity (Fowler research archived, docs verified clean)
+- [x] Phase 3: Protocol documentation (PROTOCOL_RESEARCH.md created, SessionConfig marked forRemoval)
 
-### Iteration 1: Analysis & Cataloging (12 parallel agents)
-- [x] Agent 1: repo-research-analyst - Document structure audit
-- [x] Agent 2: best-practices-researcher - Industry doc standards
-- [x] Agent 3: code-simplicity-reviewer - Identify redundancy
-- [x] Agent 4: pattern-recognition-specialist - Detect AI prose patterns
-- [ ] Agent 5: Specific: MEMORY.md content analysis
-- [ ] Agent 6: Specific: Phase documentation (numbered files)
-- [ ] Agent 7: Specific: Design docs (Architecture-related)
-- [ ] Agent 8: Specific: Test/Contract docs
-- [ ] Agent 9: Specific: Workflow/Process docs
-- [ ] Agent 10: Specific: Standards docs (CODING_STANDARDS.md, etc.)
-- [ ] Agent 11: Meta: Cross-file duplication analysis
-- [ ] Agent 12: Evidence: Lines to delete, keep, refactor
+**Build Status:** Clean (288 source files, 46 deprecation warnings, 0 errors)  
+**Test Suite:** 12,920+ tests passing
 
-### Iteration 2: Verification & Recommendations (12 parallel agents)
-- [ ] Agent 1: kieran-rails-reviewer - Code quality standards
-- [ ] Agent 2: data-integrity-guardian - Preserve critical info
-- [ ] Agent 3: deployment-verification-agent - Go/no-go for deletions
-- [ ] Agent 4: security-sentinel - Check for exposed data
-- [ ] Agent 5-12: Specialized verification per doc domain
+---
 
-## Deliverables
-- [ ] cleanup_findings.md - Structured catalog (file, severity, action)
-- [ ] cleanup_recommendations.md - What to delete/keep/refactor
-- [ ] impact_analysis.md - Cross-references (what depends on what)
-- [ ] execution_plan.md - Ordered deletion/refactoring steps
+## Phase 14 Tasks
 
-## Status
-**ITERATION 2 COMPLETE** (Branch: refactor/docs-cleanup-verify)
-- ✓ Iteration 1: Analysis (56 files cataloged, 4 audit reports)
-- ✓ README corrections: Java 21 Temurin, Gradle, Session5250 names
-- ✓ Iteration 2: Architectural verification (architecture-strategist agent)
-- ✓ Verification results: ITERATION_2_VERIFICATION_REPORT.md (comprehensive Go/No-Go assessment)
-- Result: **85% confidence to proceed with 3 mandatory blockers**
-- Next: Resolve blockers, then execute Phases 1-5 cleanup
+### 14A: Minimal D1-EBCDIC-001 Test (2 hours)
+- [ ] Create CharMappingsAPITest.java
+- [ ] Implement D1-EBCDIC-001: getCodePage() returns valid ICodePage
+- [ ] Implement D1-EBCDIC-002: Round-trip ASCII → EBCDIC → ASCII
+- [ ] Verify tests pass
 
-## Mandatory Blockers (Before Phase 2+)
+### 14B: D3 Surface Tests (8 hours)
+- [ ] D3-SCHEMA-001: Screen5250 field boundary tests (4 tests)
+- [ ] D3-PROTO-001: tnvt TN5250E negotiation (4 tests)
+- [ ] D3-PROTO-002: Stream5250 structured field serialization (4 tests)
+- [ ] D3-CONCUR-001: Session5250 concurrency (2 tests)
 
-**Blocker 1: ADR Extraction (CRITICAL)**
-- [ ] Extract ADR-012C-001 (Records deferral via Fowler's YAGNI) → ARCHITECTURE.md
-- [ ] Extract ADR-012D-001 (Sealed classes type safety) → CODING_STANDARDS.md
-- Files: PHASE_12C_CLOSURE.md, PHASE_12D_PLAN.md
-- Impact: ADRs not documented elsewhere; must preserve before archiving PHASE files
+### 14C: Test Traceability Documentation (2 hours)
+- [ ] Update ARCHITECTURE.md with test ID mapping section
+- [ ] Create test ID registry in ARCHITECTURE.md
 
-**Blocker 2: Broken Link Fixes**
-- [ ] README.md line 5: FORK.md → /ARCHIVE/FORK.md
-- [ ] Remove dead references to TESTING_EPISTEMOLOGY.md
-- [ ] Update DOCUMENTATION_INVENTORY.md after archival
+### 14D: Verification & Documentation (1 hour)
+- [ ] Verify all 14 new tests pass
+- [ ] Update REFACTORING_COMPLETE.md with Phase 14 summary
+- [ ] Full test suite verification (should be 13,117+ tests)
 
-**Blocker 3: MEMORY.md Purpose Clarification**
-- [ ] DO NOT migrate MEMORY.md → CLAUDE.md (history ≠ instructions)
-- [ ] Archive to /docs/archive/ (safer than delete)
-- [ ] Extract critical learnings → ARCHITECTURE.md "Lessons Learned" section
+---
 
-## Efficiency Metrics
-- Iteration 1: 1 agent (repo-research-analyst) generated 4 comprehensive reports
-- Iteration 2: 1 agent (architecture-strategist, sonnet tier) completed full verification
-- Total cost: haiku (Iteration 1) + sonnet (Iteration 2 specialist) = estimated $2-3
-- Blockers identified: 3 (all resolvable before execution phase)
+## Critical Decisions
+1. **Minimal working test first** — Create CharMappingsAPITest before surface tests
+2. **Real protocol APIs** — Use Screen5250, tnvt, Stream5250 directly (not mocks)
+3. **Test ID format** — `D{domain}-{category}-{number}.{subtest}` (e.g., D1-EBCDIC-001.1)
+
+## Build Verification
+
+```
+✅ 288 source files compiled (0 errors)
+✅ Build time: ~3 seconds
+✅ Ready for Phase 14 test creation
+```
+
+## Execution Status
+**IN PROGRESS** - Awaiting Phase 14 test implementation
+
+**Next Step:** Create CharMappingsAPITest.java (Phase 14A)
