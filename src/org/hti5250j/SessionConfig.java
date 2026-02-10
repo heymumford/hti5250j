@@ -264,9 +264,9 @@ public class SessionConfig {
 
     /**
      * @return
-     * @deprecated see {@link SessionConfiguration}
+     * @deprecated Use {@link SessionConfiguration} instead. Scheduled for removal in Java 21+.
      */
-    @Deprecated
+    @Deprecated(since = "0.8.1", forRemoval = true)
     public String getStringProperty(String prop) {
 
         if (sesProps.containsKey(prop)) {
@@ -278,9 +278,9 @@ public class SessionConfig {
 
     /**
      * @return
-     * @deprecated see {@link SessionConfiguration}
+     * @deprecated Use {@link SessionConfiguration} instead. Scheduled for removal in Java 21+.
      */
-    @Deprecated
+    @Deprecated(since = "0.8.1", forRemoval = true)
     public int getIntegerProperty(String prop) {
 
         if (sesProps.containsKey(prop)) {
@@ -296,9 +296,9 @@ public class SessionConfig {
 
     /**
      * @return
-     * @deprecated see {@link SessionConfiguration}
+     * @deprecated Use {@link SessionConfiguration} instead. Scheduled for removal in Java 21+.
      */
-    @Deprecated
+    @Deprecated(since = "0.8.1", forRemoval = true)
     public Color getColorProperty(String prop) {
 
         if (sesProps.containsKey(prop)) {

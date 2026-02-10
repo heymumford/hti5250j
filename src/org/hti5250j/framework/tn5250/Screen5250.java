@@ -361,8 +361,9 @@ public class Screen5250 {
                 //				if (((c >= '0' && c <= '9') || c == '.' || c == ',' || c == '-')
                 //						&& !screen[getPos(m - 1, i - 1)].nonDisplay) {
 
-                // TODO: update me here to implement the nonDisplay check as well
-                if (((c >= '0' && c <= '9') || c == '.' || c == ',' || c == '-')) {
+                // Only append visible numeric fields (nonDisplay=true hides passwords/SSNs)
+                if (((c >= '0' && c <= '9') || c == '.' || c == ',' || c == '-')
+                        && (planes.screenExtended[getPos(m - 1, i - 1)] & EXTENDED_5250_NON_DSP) == 0) {
                     sb.append(c);
                 }
                 i++;

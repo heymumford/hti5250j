@@ -11,8 +11,6 @@
 
 package org.hti5250j.framework;
 
-//import org.hti5250j.Screen5250;
-
 import org.hti5250j.framework.tn5250.Screen5250;
 
 public class Tn5250jKeyEvents extends Tn5250jEvent {

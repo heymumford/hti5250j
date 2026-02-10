@@ -595,7 +595,7 @@ public final class tnvt implements Runnable {
         byte[] bytes = null;
 
         if ((sr != null) && (sr.length() > 0)) {
-            // XXX: Not sure, if this is a sufficient check for 'clear dataq'
+            // RFC 1205 Section 4.3 - System Request codes: '2' = Clear Data Queue
             if (sr.charAt(0) == '2') {
                 dsq.clear();
             }

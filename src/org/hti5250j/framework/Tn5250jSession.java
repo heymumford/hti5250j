@@ -12,7 +12,6 @@
 package org.hti5250j.framework;
 
 import org.hti5250j.framework.tn5250.Screen5250;
-//import org.hti5250j.Screen5250;
 import org.hti5250j.SessionPanel;
 import org.hti5250j.framework.tn5250.tnvt;
 
