@@ -47,15 +47,12 @@ cd hti5250j
 
 Add to your `build.gradle`:
 ```gradle
-repositories {
-  mavenLocal()
-  // Or add Maven Central once published
-}
-
 dependencies {
   implementation 'org.hti5250j:hti5250j:1.0.0'
 }
 ```
+
+(Once published to Maven Central, it will be automatically available. For local development, use `./gradlew publishToMavenLocal`)
 
 Basic usage:
 ```java
