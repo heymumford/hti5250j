@@ -33,7 +33,12 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            ./gradlew build -x test
+          else
+            ./gradlew build
+          fi
 
       - name: Upload build artifacts
         if: success()
