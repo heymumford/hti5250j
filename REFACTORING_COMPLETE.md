@@ -307,3 +307,147 @@ Audit-driven refactoring has systematically addressed 44+ issues with zero regre
 **Prepared by:** Claude Code (Haiku 4.5)  
 **Date:** 2026-02-09  
 **Total effort:** 28.6 hours (Phases 1-3) / 50.6 total plan
+
+---
+
+## Phase 14: Test ID Traceability (Pending Verification)
+
+**Status:** Tests created and compiled; awaiting test run completion
+
+### 14A: Minimal D1-EBCDIC Test ✅
+
+**File:** `tests/org/hti5250j/encoding/CharMappingsAPITest.java`
+**Test Count:** 5 tests (D1-EBCDIC-001 through D1-EBCDIC-005)
+
+```
+D1-EBCDIC-001: getCodePage() returns valid ICodePage for CCSID 37
+D1-EBCDIC-002: Round-trip ASCII → EBCDIC → ASCII preserves content
+D1-EBCDIC-003: Numeric characters round-trip correctly
+D1-EBCDIC-004: Multiple code pages are available
+D1-EBCDIC-005: Invalid code page returns default (CCSID 37)
+```
+
+**Rationale:** Tests the public CharMappings API, which is the entry point for all codec operations. Round-trip verification ensures bidirectional symmetry required by Phase 3 protocol research.
+
+---
+
+### 14B: D3 Surface Tests ✅
+
+#### D3-SCHEMA-001: Field Boundary Enforcement
+
+**File:** `tests/org/hti5250j/surfaces/Screen5250FieldBoundaryTest.java`
+**Test Count:** 6 tests
+
+```
+D3-SCHEMA-001.1: Field boundaries prevent out-of-bounds writes
+D3-SCHEMA-001.2: Numeric field accepts digits and valid punctuation
+D3-SCHEMA-001.3: NonDisplay fields are protected from export
+D3-SCHEMA-001.4: Protected fields are marked read-only
+D3-SCHEMA-001.5: Field writes don't corrupt adjacent fields
+D3-SCHEMA-001.6: Row/column position calculation is consistent
+```
+
+**Rationale:** Verifies field isolation and attribute enforcement (nonDisplay protection for passwords/SSNs, PROTECTED flag for read-only fields). Tests the fix from Phase 1.3.
+
+---
+
+#### D3-PROTO-001: TN5250E Negotiation
+
+**File:** `tests/org/hti5250j/surfaces/TnvtNegotiationSurfaceTest.java`
+**Test Count:** 4 tests
+
+```
+D3-PROTO-001.1: TN5250E negotiation handles IAC DO request
+D3-PROTO-001.2: TN5250E feature code is correct (RFC 1205)
+D3-PROTO-001.3: Telnet command bytes are correct (RFC 854)
+D3-PROTO-001.4: Device name negotiation uses ASCII encoding
+```
+
+**Rationale:** Tests protocol negotiation constants and format compliance with RFC 1205/854. Establishes baseline for Phase 15+ real i5 negotiation testing.
+
+---
+
+#### D3-PROTO-002: Structured Field Serialization
+
+**File:** `tests/org/hti5250j/surfaces/Stream5250StructuredFieldTest.java`
+**Test Count:** 7 tests
+
+```
+D3-PROTO-002.1: Write To Display command uses correct opcode (0x11)
+D3-PROTO-002.2: Repeat To Address command uses correct opcode (0x13)
+D3-PROTO-002.3: Start of Field order uses correct code (0x1D)
+D3-PROTO-002.4: Field attribute PROTECTED flag is 0x20
+D3-PROTO-002.5: Field attribute HIDDEN flag is 0x04
+D3-PROTO-002.6: Structured field length includes header bytes
+D3-PROTO-002.7: Multiple structured fields parse independently
+```
+
+**Rationale:** Verifies opcode constants and field attribute encoding match 5250 protocol specification. Essential for data parsing and field validation.
+
+---
+
+#### D3-CONCUR-001: Virtual Thread Concurrency
+
+**File:** `tests/org/hti5250j/surfaces/Session5250ConcurrencyTest.java`
+**Test Count:** 4 tests
+
+```
+D3-CONCUR-001.1: Concurrent screen reads are thread-safe
+D3-CONCUR-001.2: Concurrent field writes don't interfere
+D3-CONCUR-001.3: Handles 1000 concurrent virtual threads
+D3-CONCUR-001.4: Virtual threads have minimal per-thread overhead
+```
+
+**Rationale:** Verifies that Session5250 is safe under high-concurrency virtual thread load. Tests the design goal from Phase 13 (587K ops/sec @ 1000 concurrent sessions).
+
+---
+
+### 14C: Test Traceability Documentation ✅
+
+**File:** Updated `ARCHITECTURE.md`
+
+Added new "Test Traceability (Phase 14)" section with:
+- Component → Test File mapping table
+- Test ID registry for D1 and D3 domains
+- Test ID format specification: `D{domain}-{category}-{number}.{subtest}`
+- Domain reference guide (D1-D4)
+- Link to TESTING.md for four-domain philosophy
+
+**Impact:** Enables future developers to map architecture components to verification tests, supporting:
+- Code review validation
+- Protocol uncertainty resolution (Phase 14 blockers identified in PROTOCOL_RESEARCH.md)
+- Architecture documentation consistency
+
+---
+
+### 14D: Verification Results (PENDING)
+
+Test suite execution in progress. Expected results:
+
+| Metric | Expected | Target |
+|--------|----------|--------|
+| New Tests | 21 | 14+ (exceeded) |
+| New Test Classes | 4 | 4 ✅ |
+| Test Compilation | Success | Success ✅ |
+| Total Tests (after) | ~13,124+ | 13,103+ |
+| Build Status | Clean | Clean |
+| Deprecation Warnings | ~46 | 46 (Phase 15 migration) |
+
+---
+
+### Summary
+
+**Phase 14 deliverables:**
+- ✅ 21 new tests with explicit test ID prefixes
+- ✅ 4 surface test classes covering protocol, schema, concurrency
+- ✅ Canonical test ID format documented in ARCHITECTURE.md
+- ✅ Test registry enabling component → test traceability
+- ⏳ Full test suite verification (in progress)
+
+**Status on completion:** All code complete, tests compiled, awaiting verification run.
+
+**Unblocked for Phase 15:**
+- Real IBM i system testing can now use D1 codec tests as baseline
+- Protocol behavior uncertainties can be addressed with D3 surface tests as foundation
+- Session5250 concurrency testing framework established for high-load workloads
+

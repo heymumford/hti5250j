@@ -1,0 +1,127 @@
+CRITICAL REVIEW: HTI5250J Under Fowler, Sapolsky, Zinsser Standards
+=====================================================================
+
+VERDICT: Production-ready architecture (ARCHITECTURE.md, CODING_STANDARDS.md)
+          with peripheral documentation that creates confusion.
+
+FINDINGS
+========
+
+MAJOR (Credibility Issues)
+---------------------------
+1. FOWLER MISAPPLICATION
+   Location: /docs/fowler/ (all files)
+   Problem: Applies Fowler's GenAI patterns (Evals, Agents, Bounded Contexts)
+            to deterministic Java code.
+   Reality: HTI5250J is deterministic orchestration with timing-sensitive I/O.
+            Doesn't need GenAI patterns.
+   Fix: Archive to /docs/archive/; maintain ARCHITECTURE.md as source of truth.
+
+2. ANTHROPOMORPHIC LANGUAGE
+   Location: /docs/fowler/ (multiple files)
+   Problem: Refers to "agent behavior", "semantic memory", "nondeterminism"
+            for what is: state machines, data structures, timing variation.
+   Impact: Makes it harder to reason clearly about what system actually does.
+   Fix: Replace agent/behavior language with technical terms.
+
+3. YAGNI VIOLATION
+   Location: /docs/fowler/FOWLER_INTEGRATION_ACTION_PLAN.md
+   Problem: Phase 12E-14 proposes 30+ hours of infrastructure (Event Sourcing,
+            metrics dashboards, audit trails) with zero current need.
+   Impact: Violates Fowler's core principle: don't build for hypothetical scale.
+   Fix: Cancel Phase 12E-14. Implement one metric at a time as needs emerge.
+
+4. UNNECESSARY ABSTRACTION
+   Location: /docs/fowler/ (EvalScorer interface proposal)
+   Problem: Proposes abstract strategy pattern for exactly 3 concrete scorers
+            that are unlikely to change.
+   Fix: Use WorkflowMetrics record + simple collector function instead.
+
+MEDIUM (Maintenance Risk)
+--------------------------
+5. DOUBLE DOCUMENTATION DRIFT
+   Problem: ARCHITECTURE.md and FOWLER_ARCHITECTURE_REFERENCE.md duplicate
+            container diagrams, handler patterns, protocol details.
+   Risk: Updates to one version create drift in the other.
+   Fix: Single source of truth in ARCHITECTURE.md; archive FOWLER_* files.
+
+MINOR (Prose Quality)
+---------------------
+6. PASSIVE VOICE ACCUMULATION
+   Location: CODING_STANDARDS.md, scattered lines
+   Problem: "58 lines removed", "is maintained", "are dispatched" (passive)
+   Fix: Prefer active voice; minimal impact on clarity.
+
+7. HEDGING LANGUAGE
+   Location: /docs/fowler/ (throughout)
+   Problem: "may", "might", "could", "arguably", "in a sense"
+   Fix: Replace with direct statements.
+
+8. JARGON DENSITY
+   Location: /docs/fowler/ (multiple files)
+   Problem: "Bounded Contexts from DDD partition memory into semantic
+            boundaries with Aggregates functioning as cohesive clusters..."
+   Fix: Break sentences; define unfamiliar terms.
+
+WHAT'S EXCELLENT
+================
+
+✅ ARCHITECTURE.md
+   - Clear, justified design decisions
+   - ADRs properly documented (YAGNI principle respected)
+   - C4 model properly applied
+   - Handler patterns well-explained
+
+✅ CODING_STANDARDS.md
+   - Evidence-based file size targets
+   - "Code as Evidence" philosophy is sound
+   - Method naming standards are clear
+   - Java 21 feature adoption guidelines are practical
+
+✅ Core Design
+   - Sealed classes for type safety (justified)
+   - Virtual threads for I/O (correct application)
+   - Screen buffer architecture (sound)
+   - Error handling patterns (mechanism-clear)
+
+RECOMMENDATIONS
+===============
+
+IMMEDIATE:
+  1. Archive /docs/fowler/ → /docs/archive/
+  2. Update ARCHITECTURE.md: change "non-deterministic" to "timing-sensitive"
+  3. Remove Phase 12E-14 roadmap from ACTION_PLAN
+
+SHORT-TERM:
+  4. Mark Fowler research docs as [RESEARCH] / not architectural guidance
+  5. Editorial pass on CODING_STANDARDS.md (active voice)
+  6. If metrics become needed, use WorkflowMetrics record (not EvalScorer interface)
+
+LONGER-TERM:
+  7. Run real i5 workloads; identify actual pain points
+  8. Implement only metrics you actually need
+  9. Let architecture needs emerge from production data
+
+DO NOT PUBLISH:
+  - /docs/fowler/FOWLER_AI_PATTERNS.md (as architectural guidance)
+  - /docs/fowler/FOWLER_INTEGRATION_ACTION_PLAN.md (Phase 12E-14)
+
+DO PUBLISH:
+  - ARCHITECTURE.md (with small clarifications)
+  - CODING_STANDARDS.md (with prose edits)
+  - README.md (as-is)
+
+CREDIBILITY ASSESSMENT
+======================
+
+Current: ARCHITECTURE.md + CODING_STANDARDS.md are solid, disciplined work
+         that would satisfy Fowler, Sapolsky, Zinsser.
+
+Risk: Peripheral Fowler research docs create impression that core architecture
+      is over-engineered or misaligned with Fowler's actual principles.
+
+Solution: Separate "what we built" (solid) from "research we did" (exploratory).
+
+---
+
+Full analysis in: CRITICAL_REVIEW_FOWLER_SAPOLSKY_ZINSSER.md

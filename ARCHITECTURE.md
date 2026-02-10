@@ -817,6 +817,45 @@ HTI5250J is designed headless-first, with no GUI dependencies in core:
 
 ---
 
+## Test Traceability (Phase 14)
+
+This section maps architecture components to specific test files that verify their contracts through the four-domain testing framework.
+
+### D1: Unit Tests (Component API Surface)
+
+| Component | Test File | Test IDs | Coverage |
+|-----------|-----------|----------|----------|
+| **CharMappings** (codec API) | `CharMappingsAPITest.java` | D1-EBCDIC-001 to -005 | Codec availability, round-trip conversion |
+
+### D3: Surface Tests (Protocol, Schema, Concurrency)
+
+| Component | Test File | Test IDs | Coverage |
+|-----------|-----------|----------|----------|
+| **Screen5250** (field boundaries) | `Screen5250FieldBoundaryTest.java` | D3-SCHEMA-001.1 to -006 | Field isolation, attribute protection, boundary enforcement |
+| **tnvt** (TN5250E negotiation) | `TnvtNegotiationSurfaceTest.java` | D3-PROTO-001.1 to -004 | Protocol negotiation, Telnet commands, device naming |
+| **Stream5250** (structured fields) | `Stream5250StructuredFieldTest.java` | D3-PROTO-002.1 to -007 | WTD/RA/SF command opcodes, field attributes, stream parsing |
+| **Session5250** (concurrency) | `Session5250ConcurrencyTest.java` | D3-CONCUR-001.1 to -004 | Virtual thread safety, field isolation, high-concurrency load (1000 threads) |
+
+### Test ID Format
+
+Format: `D{domain}-{category}-{number}.{subtest}`
+
+**Examples:**
+- `D1-EBCDIC-001` — First unit test for EBCDIC encoding
+- `D3-SCHEMA-001.3` — Third subtest of first schema test
+- `D3-PROTO-002.7` — Seventh subtest of second protocol test
+
+### Domain Reference
+
+- **D1** — Unit tests (isolation, pre-commit gate, individual component APIs)
+- **D2** — Contract tests (real IBM i system, continuous drift detection)
+- **D3** — Surface tests (protocol round-trip, schema enforcement, concurrency)
+- **D4** — Scenario tests (workflows, error recovery, stress testing)
+
+See [TESTING.md](./TESTING.md) for complete four-domain testing philosophy and risk matrix.
+
+---
+
 ## Related Documentation
 
 - [TESTING.md](./TESTING.md) — Four-domain test architecture
@@ -826,6 +865,6 @@ HTI5250J is designed headless-first, with no GUI dependencies in core:
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** February 8, 2026
-**Phase Reference:** Phase 11 (Workflow Execution Handlers, commit cef8929)
+**Document Version:** 1.1
+**Last Updated:** February 9, 2026
+**Phase Reference:** Phase 14 (Test ID Traceability, commit pending)
