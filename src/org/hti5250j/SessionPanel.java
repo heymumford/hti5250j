@@ -57,6 +57,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
     private boolean firstScreen;
     private char[] signonSave;
+    private boolean headlessMode = false;
 
     private Screen5250 screen;
     protected Session5250 session;
@@ -104,19 +105,44 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
             }
         });
 
-        ensureGuiGraphicBufferInitialized();
+        // Only initialize GUI components if not in headless mode
+        if (!headlessMode) {
+            ensureGuiGraphicBufferInitialized();
+        }
 
         setRubberBand(new TNRubberBand(this));
         keyHandler = KeyboardHandler.getKeyboardHandlerInstance(session);
 
         if (!sesConfig.isPropertyExists("width") ||
-                !sesConfig.isPropertyExists("height"))
+                !sesConfig.isPropertyExists("height")) {
             // set the initialize size
-            this.setSize(guiGraBuf.getPreferredSize());
-        else {
+            if (guiGraBuf != null) {
+                this.setSize(guiGraBuf.getPreferredSize());
+            } else {
+                // Headless mode: use reasonable defaults
+                this.setSize(640, 480);
+            }
+        } else {
 
-            this.setSize(sesConfig.getIntegerProperty("width"),
-                    sesConfig.getIntegerProperty("height"));
+            int width = 640, height = 480;
+            try {
+                if (sesConfig.isPropertyExists("width")) {
+                    String widthStr = sesConfig.getProperties().getProperty("width");
+                    if (widthStr != null && !widthStr.isEmpty()) {
+                        width = Integer.parseInt(widthStr);
+                    }
+                }
+                if (sesConfig.isPropertyExists("height")) {
+                    String heightStr = sesConfig.getProperties().getProperty("height");
+                    if (heightStr != null && !heightStr.isEmpty()) {
+                        height = Integer.parseInt(heightStr);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                // Use defaults
+                log.warn("Invalid width/height property format: " + e.getMessage());
+            }
+            this.setSize(width, height);
         }
 
         addMouseListener(new MouseAdapter() {
@@ -165,7 +191,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
         });
 
-        if (YES.equals(sesConfig.getStringProperty("mouseWheel"))) {
+        if (YES.equals(sesConfig.getProperties().getProperty("mouseWheel", ""))) {
             scroller.addMouseWheelListener(this);
         }
 
@@ -184,14 +210,25 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
         this.requestFocus();
 
-        doubleClick = YES.equals(sesConfig.getStringProperty("doubleClick"));
+        doubleClick = YES.equals(sesConfig.getProperties().getProperty("doubleClick", ""));
     }
 
     public void setRunningHeadless(boolean headless) {
+        this.headlessMode = headless;
+
         if (headless) {
-            screen.getOIA().removeOIAListener(guiGraBuf);
-            screen.removeScreenListener(guiGraBuf);
+            // Remove listeners if GUI component exists
+            if (guiGraBuf != null) {
+                screen.getOIA().removeOIAListener(guiGraBuf);
+                screen.removeScreenListener(guiGraBuf);
+                guiGraBuf = null; // Free ~2MB
+            }
+            // Prevent future initialization
         } else {
+            // Re-enable GUI if needed
+            if (guiGraBuf == null) {
+                ensureGuiGraphicBufferInitialized();
+            }
             screen.getOIA().addOIAListener(guiGraBuf);
             screen.addScreenListener(guiGraBuf);
         }
@@ -306,7 +343,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
         if (session.getConfiguration().isPropertyExists("confirmTabClose")) {
             this.requestFocus();
             final ConfirmTabCloseDialog tabclsdlg = new ConfirmTabCloseDialog(this);
-            if (YES.equals(session.getConfiguration().getStringProperty("confirmTabClose"))) {
+            if (YES.equals(session.getConfiguration().getProperties().getProperty("confirmTabClose", ""))) {
                 if (!tabclsdlg.show()) {
                     result = false;
                 }
@@ -325,7 +362,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
     private boolean confirmSignOffClose() {
 
         if (sesConfig.isPropertyExists("confirmSignoff") &&
-                YES.equals(sesConfig.getStringProperty("confirmSignoff"))) {
+                YES.equals(sesConfig.getProperties().getProperty("confirmSignoff", ""))) {
             this.requestFocus();
             int result = JOptionPane.showConfirmDialog(
                     this.getParent(),            // the parent that the dialog blocks
@@ -619,6 +656,11 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
         ensureGuiGraphicBufferInitialized();
 
+        // Skip rendering if in headless mode with no GUI component
+        if (guiGraBuf == null) {
+            return;
+        }
+
         Graphics2D graphics2D = (Graphics2D) graphics;
         if (rubberband.isAreaSelected() && !rubberband.isDragging()) {
             rubberband.erase();
@@ -670,7 +712,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
     }
 
     private void ensureGuiGraphicBufferInitialized() {
-        if (guiGraBuf == null) {
+        if (guiGraBuf == null && !headlessMode) {
             guiGraBuf = new GuiGraphicBuffer(screen, this, sesConfig);
             guiGraBuf.getImageBuffer(0, 0);
         }
@@ -778,6 +820,9 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
      */
     @Override
     public Graphics getDrawingGraphics() {
+        if (guiGraBuf == null) {
+            return null;
+        }
         return guiGraBuf.getDrawingArea();
     }
 
@@ -786,6 +831,9 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
     }
 
     public Rect getBoundingArea() {
+        if (guiGraBuf == null) {
+            return new Rect(0, 0, screen.getColumns(), screen.getRows());
+        }
         Rectangle awtRect = new Rectangle();
         guiGraBuf.getBoundingArea(awtRect);
         return new Rect(awtRect.x, awtRect.y, awtRect.width, awtRect.height);
@@ -793,20 +841,31 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
     @Override
     public Point translateStart(Point start) {
+        if (guiGraBuf == null) {
+            return start;
+        }
         return guiGraBuf.translateStart(start);
     }
 
     @Override
     public Point translateEnd(Point end) {
+        if (guiGraBuf == null) {
+            return end;
+        }
         return guiGraBuf.translateEnd(end);
     }
 
     public int getPosFromView(int x, int y) {
+        if (guiGraBuf == null) {
+            return 0;
+        }
         return guiGraBuf.getPosFromView(x, y);
     }
 
     public void getBoundingArea(Rectangle bounds) {
-        guiGraBuf.getBoundingArea(bounds);
+        if (guiGraBuf != null) {
+            guiGraBuf.getBoundingArea(bounds);
+        }
     }
 
     @Override
@@ -827,6 +886,9 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
         //   back to screen coordinates because we are translating the starting
         //   point to the 5250 screen coordinates
         //	      return !screen.isKeyboardLocked() && (screen.isWithinScreenArea(b.getStartPoint().x,b.getStartPoint().y));
+        if (guiGraBuf == null) {
+            return false;
+        }
         return guiGraBuf.isWithinScreenArea(rubberBand.getStartPoint().x, rubberBand.getStartPoint().y);
 
     }
@@ -998,7 +1060,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
                 }
 
                 // check for on connect macro
-                String mac = sesConfig.getStringProperty("connectMacro");
+                String mac = sesConfig.getProperties().getProperty("connectMacro", "");
                 if (mac.length() > 0)
                     executeMacro(mac);
                 break;

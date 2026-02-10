@@ -1,9 +1,12 @@
 package org.hti5250j.workflow;
 
 import org.hti5250j.Session5250;
+import org.hti5250j.HeadlessScreenRenderer;
+import org.hti5250j.SessionConfig;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.framework.tn5250.ScreenOIA;
 import org.hti5250j.interfaces.SessionInterface;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import javax.imageio.ImageIO;
 
 public class WorkflowRunner {
     private final SessionInterface session;
@@ -165,12 +169,60 @@ public class WorkflowRunner {
         String screenName = capture.name() != null ? capture.name() : "screenshot";
         screenName = datasetLoader.replaceParameters(screenName, dataRow);
 
-        String screenContent = getScreenContent(screen);
-        String formattedDump = formatScreenDump(screenContent);
+        try {
+            // Generate PNG screenshot using HeadlessScreenRenderer (no GUI required)
+            BufferedImage screenshot = generateScreenshot(screen);
 
-        File captureFile = saveCaptureAsText(formattedDump, screenName);
+            // Save PNG
+            File pngFile = saveCapturePng(screenshot, screenName);
+            artifactCollector.appendLedger("CAPTURE", "PNG: " + pngFile.getName());
 
-        artifactCollector.appendLedger("CAPTURE", "Screenshot: " + captureFile.getName());
+            // Also save text representation for accessibility
+            String screenContent = getScreenContent(screen);
+            String formattedDump = formatScreenDump(screenContent);
+            File textFile = saveCaptureAsText(formattedDump, screenName + ".txt");
+            artifactCollector.appendLedger("CAPTURE", "Text: " + textFile.getName());
+
+        } catch (Exception e) {
+            // Fallback to text-only capture
+            String screenContent = getScreenContent(screen);
+            String formattedDump = formatScreenDump(screenContent);
+            File captureFile = saveCaptureAsText(formattedDump, screenName);
+            artifactCollector.appendLedger("CAPTURE", "Text (fallback): " + captureFile.getName());
+        }
+    }
+
+    /**
+     * Generate BufferedImage screenshot without requiring persistent GUI components.
+     * Uses HeadlessScreenRenderer for pure headless mode support.
+     */
+    private BufferedImage generateScreenshot(Screen5250 screen) {
+        // Get session configuration if available
+        SessionConfig config = null;
+        if (session instanceof Session5250) {
+            config = ((Session5250) session).getConfiguration();
+        }
+
+        if (config == null) {
+            throw new IllegalStateException("Cannot determine session configuration for screenshot generation");
+        }
+
+        // Use HeadlessScreenRenderer for stateless rendering (no GUI required)
+        return HeadlessScreenRenderer.renderScreen(screen, config);
+    }
+
+    /**
+     * Save BufferedImage as PNG file in artifacts directory.
+     */
+    private File saveCapturePng(BufferedImage image, String baseName) throws IOException {
+        File artifactDir = new File("artifacts");
+        if (!artifactDir.exists()) {
+            artifactDir.mkdirs();
+        }
+
+        File pngFile = new File(artifactDir, baseName + ".png");
+        ImageIO.write(image, "PNG", pngFile);
+        return pngFile;
     }
 
     // Helper methods

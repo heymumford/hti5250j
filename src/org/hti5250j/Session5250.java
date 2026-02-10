@@ -183,6 +183,10 @@ public class Session5250 implements SessionInterface, ScreenProvider {
      */
     @Override
     public String showSystemRequest() {
+        // In headless mode, guiComponent may be null
+        if (guiComponent == null) {
+            return null;
+        }
         final SystemRequestDialog sysreqdlg = new SystemRequestDialog(this.guiComponent);
         return sysreqdlg.show();
     }
