@@ -115,8 +115,18 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
             this.setSize(guiGraBuf.getPreferredSize());
         else {
 
-            this.setSize(sesConfig.getIntegerProperty("width"),
-                    sesConfig.getIntegerProperty("height"));
+            int width = 640, height = 480;
+            try {
+                if (sesConfig.isPropertyExists("width")) {
+                    width = Integer.parseInt(sesConfig.getProperties().getProperty("width"));
+                }
+                if (sesConfig.isPropertyExists("height")) {
+                    height = Integer.parseInt(sesConfig.getProperties().getProperty("height"));
+                }
+            } catch (NumberFormatException e) {
+                // Use defaults
+            }
+            this.setSize(width, height);
         }
 
         addMouseListener(new MouseAdapter() {
@@ -165,7 +175,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
         });
 
-        if (YES.equals(sesConfig.getStringProperty("mouseWheel"))) {
+        if (YES.equals(sesConfig.getProperties().getProperty("mouseWheel", ""))) {
             scroller.addMouseWheelListener(this);
         }
 
@@ -184,7 +194,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
         this.requestFocus();
 
-        doubleClick = YES.equals(sesConfig.getStringProperty("doubleClick"));
+        doubleClick = YES.equals(sesConfig.getProperties().getProperty("doubleClick", ""));
     }
 
     public void setRunningHeadless(boolean headless) {
@@ -306,7 +316,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
         if (session.getConfiguration().isPropertyExists("confirmTabClose")) {
             this.requestFocus();
             final ConfirmTabCloseDialog tabclsdlg = new ConfirmTabCloseDialog(this);
-            if (YES.equals(session.getConfiguration().getStringProperty("confirmTabClose"))) {
+            if (YES.equals(session.getConfiguration().getProperties().getProperty("confirmTabClose", ""))) {
                 if (!tabclsdlg.show()) {
                     result = false;
                 }
@@ -325,7 +335,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
     private boolean confirmSignOffClose() {
 
         if (sesConfig.isPropertyExists("confirmSignoff") &&
-                YES.equals(sesConfig.getStringProperty("confirmSignoff"))) {
+                YES.equals(sesConfig.getProperties().getProperty("confirmSignoff", ""))) {
             this.requestFocus();
             int result = JOptionPane.showConfirmDialog(
                     this.getParent(),            // the parent that the dialog blocks
@@ -998,7 +1008,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
                 }
 
                 // check for on connect macro
-                String mac = sesConfig.getStringProperty("connectMacro");
+                String mac = sesConfig.getProperties().getProperty("connectMacro", "");
                 if (mac.length() > 0)
                     executeMacro(mac);
                 break;

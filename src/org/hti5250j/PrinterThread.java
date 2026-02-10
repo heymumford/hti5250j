@@ -76,54 +76,64 @@ class PrinterThread extends Thread implements Printable {
             pf.setOrientation(PageFormat.PORTRAIT);
 
 
+        // Get properties from sesProps
+        var props = config.getProperties();
+
         if (numCols != 132) {
-            if (config.getStringProperty("print.portWidth").length() != 0 &&
-                    config.getStringProperty("print.portHeight").length() != 0 &&
-                    config.getStringProperty("print.portImageWidth").length() != 0 &&
-                    config.getStringProperty("print.portImageHeight").length() != 0 &&
-                    config.getStringProperty("print.portImage.X").length() != 0 &&
-                    config.getStringProperty("print.portImage.Y").length() != 0) {
+            String portWidth = props.getProperty("print.portWidth", "");
+            String portHeight = props.getProperty("print.portHeight", "");
+            String portImageWidth = props.getProperty("print.portImageWidth", "");
+            String portImageHeight = props.getProperty("print.portImageHeight", "");
+            String portImageX = props.getProperty("print.portImage.X", "");
+            String portImageY = props.getProperty("print.portImage.Y", "");
+
+            if (!portWidth.isEmpty() && !portHeight.isEmpty() &&
+                    !portImageWidth.isEmpty() && !portImageHeight.isEmpty() &&
+                    !portImageX.isEmpty() && !portImageY.isEmpty()) {
 
                 Paper paper = pf.getPaper();
 
                 paper.setSize(
-                        Double.parseDouble(config.getStringProperty("print.portWidth")),
-                        Double.parseDouble(config.getStringProperty("print.portHeight")));
+                        Double.parseDouble(portWidth),
+                        Double.parseDouble(portHeight));
 
                 paper.setImageableArea(
-                        Double.parseDouble(config.getStringProperty("print.portImage.X")),
-                        Double.parseDouble(config.getStringProperty("print.portImage.Y")),
-                        Double.parseDouble(config.getStringProperty("print.portImageWidth")),
-                        Double.parseDouble(config.getStringProperty("print.portImageHeight")));
+                        Double.parseDouble(portImageX),
+                        Double.parseDouble(portImageY),
+                        Double.parseDouble(portImageWidth),
+                        Double.parseDouble(portImageHeight));
                 pf.setPaper(paper);
             }
         } else {
 
-            if (config.getStringProperty("print.landWidth").length() != 0 &&
-                    config.getStringProperty("print.landHeight").length() != 0 &&
-                    config.getStringProperty("print.landImageWidth").length() != 0 &&
-                    config.getStringProperty("print.landImageHeight").length() != 0 &&
-                    config.getStringProperty("print.landImage.X").length() != 0 &&
-                    config.getStringProperty("print.landImage.Y").length() != 0) {
+            String landWidth = props.getProperty("print.landWidth", "");
+            String landHeight = props.getProperty("print.landHeight", "");
+            String landImageWidth = props.getProperty("print.landImageWidth", "");
+            String landImageHeight = props.getProperty("print.landImageHeight", "");
+            String landImageX = props.getProperty("print.landImage.X", "");
+            String landImageY = props.getProperty("print.landImage.Y", "");
+
+            if (!landWidth.isEmpty() && !landHeight.isEmpty() &&
+                    !landImageWidth.isEmpty() && !landImageHeight.isEmpty() &&
+                    !landImageX.isEmpty() && !landImageY.isEmpty()) {
 
                 Paper paper = pf.getPaper();
 
                 paper.setSize(
-                        Double.parseDouble(config.getStringProperty("print.landWidth")),
-                        Double.parseDouble(config.getStringProperty("print.landHeight")));
+                        Double.parseDouble(landWidth),
+                        Double.parseDouble(landHeight));
 
                 paper.setImageableArea(
-                        Double.parseDouble(config.getStringProperty("print.landImage.X")),
-                        Double.parseDouble(config.getStringProperty("print.landImage.Y")),
-                        Double.parseDouble(config.getStringProperty("print.landImageWidth")),
-                        Double.parseDouble(config.getStringProperty("print.landImageHeight")));
+                        Double.parseDouble(landImageX),
+                        Double.parseDouble(landImageY),
+                        Double.parseDouble(landImageWidth),
+                        Double.parseDouble(landImageHeight));
             }
         }
 
-        if (config.getStringProperty("print.font").length() > 0) {
-
-            font = new Font(config.getStringProperty("print.font"),
-                    Font.PLAIN, 8);
+        String printFont = props.getProperty("print.font", "");
+        if (!printFont.isEmpty()) {
+            font = new Font(printFont, Font.PLAIN, 8);
         }
 
         //--- Set the printable class to this one since we
