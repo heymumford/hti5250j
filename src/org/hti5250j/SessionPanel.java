@@ -127,13 +127,20 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
             int width = 640, height = 480;
             try {
                 if (sesConfig.isPropertyExists("width")) {
-                    width = Integer.parseInt(sesConfig.getProperties().getProperty("width"));
+                    String widthStr = sesConfig.getProperties().getProperty("width");
+                    if (widthStr != null && !widthStr.isEmpty()) {
+                        width = Integer.parseInt(widthStr);
+                    }
                 }
                 if (sesConfig.isPropertyExists("height")) {
-                    height = Integer.parseInt(sesConfig.getProperties().getProperty("height"));
+                    String heightStr = sesConfig.getProperties().getProperty("height");
+                    if (heightStr != null && !heightStr.isEmpty()) {
+                        height = Integer.parseInt(heightStr);
+                    }
                 }
             } catch (NumberFormatException e) {
                 // Use defaults
+                log.warn("Invalid width/height property format: " + e.getMessage());
             }
             this.setSize(width, height);
         }
