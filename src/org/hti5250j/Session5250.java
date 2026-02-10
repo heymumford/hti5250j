@@ -23,8 +23,13 @@ import org.hti5250j.framework.common.SessionManager;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.framework.tn5250.tnvt;
 import org.hti5250j.gui.SystemRequestDialog;
+import org.hti5250j.interfaces.HeadlessSession;
+import org.hti5250j.interfaces.RequestHandler;
 import org.hti5250j.interfaces.ScanListener;
 import org.hti5250j.interfaces.SessionInterface;
+import org.hti5250j.session.DefaultHeadlessSession;
+import org.hti5250j.session.GuiRequestHandler;
+import org.hti5250j.session.NullRequestHandler;
 import org.hti5250j.workflow.ScreenProvider;
 
 /**
@@ -42,6 +47,8 @@ public class Session5250 implements SessionInterface, ScreenProvider {
     private tnvt vt;
     private final Screen5250 screen;
     private SessionPanel guiComponent;
+    private RequestHandler requestHandler;
+    private HeadlessSession headlessDelegate;
 
     private List<SessionListener> sessionListeners = null;
     private final ReadWriteLock sessionListenerLock = new ReentrantReadWriteLock();
@@ -65,6 +72,14 @@ public class Session5250 implements SessionInterface, ScreenProvider {
             heartBeat = true;
 
         screen = new Screen5250();
+
+        // Initialize headless support: default to NullRequestHandler for headless mode
+        this.requestHandler = new NullRequestHandler();
+
+        // Create headless delegate that wraps this Session5250 instance
+        // This allows Session5250 to provide both SessionInterface (backward compatible)
+        // and HeadlessSession (new programmatic API) via the same underlying session
+        this.headlessDelegate = new DefaultHeadlessSession(this, requestHandler);
 
         //screen.setVT(vt);
 
@@ -175,7 +190,15 @@ public class Session5250 implements SessionInterface, ScreenProvider {
 
     @Override
     public void signalBell() {
-        Toolkit.getDefaultToolkit().beep();
+        // In headless mode, don't try to beep (no audio system available)
+        // Only attempt beep if GUI component is active
+        if (guiComponent != null) {
+            try {
+                Toolkit.getDefaultToolkit().beep();
+            } catch (Exception e) {
+                // Silently ignore if audio system unavailable (Docker, CI environments)
+            }
+        }
     }
 
     /* (non-Javadoc)
@@ -183,12 +206,26 @@ public class Session5250 implements SessionInterface, ScreenProvider {
      */
     @Override
     public String showSystemRequest() {
-        // In headless mode, guiComponent may be null
-        if (guiComponent == null) {
-            return null;
+        // Phase 15B: Use RequestHandler abstraction for extensibility (Robot Framework)
+        // If GUI component present, upgrade to GuiRequestHandler (interactive dialog)
+        // Otherwise, use injected requestHandler (NullRequestHandler for headless, custom for Robot Framework)
+
+        if (guiComponent != null) {
+            // GUI mode: show interactive dialog
+            try {
+                RequestHandler guiHandler = new GuiRequestHandler(guiComponent);
+                String screenText = new String(screen.getScreenAsChars());
+                return guiHandler.handleSystemRequest(screenText);
+            } catch (Exception e) {
+                // Fallback to existing dialog for compatibility
+                final SystemRequestDialog sysreqdlg = new SystemRequestDialog(this.guiComponent);
+                return sysreqdlg.show();
+            }
         }
-        final SystemRequestDialog sysreqdlg = new SystemRequestDialog(this.guiComponent);
-        return sysreqdlg.show();
+
+        // Headless mode: use injected RequestHandler (extensible for Robot Framework)
+        String screenText = new String(screen.getScreenAsChars());
+        return requestHandler.handleSystemRequest(screenText);
     }
 
     @Override
@@ -427,6 +464,44 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         } finally {
             sessionListenerLock.writeLock().unlock();
         }
+    }
+
+    /**
+     * Get the HeadlessSession interface for programmatic automation.
+     * <p>
+     * Phase 15B: Enables Robot Framework, Jython adapters, and other programmatic
+     * clients to interact with the session through a clean, GUI-independent API.
+     * <p>
+     * This is the same underlying session as the SessionInterface, but accessed
+     * through a modern, fully headless interface designed for automation.
+     *
+     * @return HeadlessSession interface wrapping this Session5250 instance
+     * @since Phase 15B
+     */
+    public HeadlessSession asHeadlessSession() {
+        return headlessDelegate;
+    }
+
+    /**
+     * Set custom RequestHandler for SYSREQ (F3 key) handling.
+     * <p>
+     * Enables Robot Framework and custom automation logic to intercept and handle
+     * system request dialogs (SYSREQ) programmatically.
+     * <p>
+     * Default: NullRequestHandler (returns to menu)
+     * GUI mode: Automatically upgraded to GuiRequestHandler (interactive dialog)
+     *
+     * @param handler custom RequestHandler implementation (e.g., Robot Framework adapter)
+     * @throws NullPointerException if handler is null
+     * @since Phase 15B
+     */
+    public void setRequestHandler(RequestHandler handler) {
+        if (handler == null) {
+            throw new NullPointerException("RequestHandler cannot be null");
+        }
+        this.requestHandler = handler;
+        // Update delegate to use new handler
+        this.headlessDelegate = new DefaultHeadlessSession(this, handler);
     }
 
 }

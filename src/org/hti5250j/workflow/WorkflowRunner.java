@@ -5,6 +5,7 @@ import org.hti5250j.HeadlessScreenRenderer;
 import org.hti5250j.SessionConfig;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.framework.tn5250.ScreenOIA;
+import org.hti5250j.interfaces.RequestHandler;
 import org.hti5250j.interfaces.SessionInterface;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -37,6 +38,48 @@ public class WorkflowRunner {
             System.err.println("WARNING: WorkflowRunner on platform thread. " +
                              "Expected virtual thread for efficient blocking I/O.");
         }
+    }
+
+    /**
+     * Set custom RequestHandler for SYSREQ (F3 key) handling.
+     * <p>
+     * Phase 15B: Enables Robot Framework, Jython adapters, and workflow-specific logic
+     * to intercept and handle system request dialogs programmatically.
+     * <p>
+     * Example: Custom handler that responds to SYSREQ with workflow-specific logic
+     * (e.g., selecting menu options, handling confirmations automatically).
+     * <p>
+     * This method has no effect if the session does not support RequestHandler
+     * (only Session5250 and its derivatives support this feature).
+     *
+     * @param requestHandler custom RequestHandler implementation
+     * @throws NullPointerException if requestHandler is null
+     * @since Phase 15B
+     */
+    public void setRequestHandler(RequestHandler requestHandler) {
+        if (requestHandler == null) {
+            throw new NullPointerException("RequestHandler cannot be null");
+        }
+
+        // Inject handler into underlying Session5250 if available
+        if (session instanceof Session5250) {
+            ((Session5250) session).setRequestHandler(requestHandler);
+        }
+    }
+
+    /**
+     * Get the underlying session as Session5250 if available.
+     * <p>
+     * Useful for accessing extended APIs not available through SessionInterface,
+     * such as HeadlessSession interface, custom RequestHandler injection, etc.
+     * <p>
+     * Phase 15B: Enables advanced usage patterns (Robot Framework adapters, etc.)
+     *
+     * @return Session5250 instance, or null if session is not a Session5250
+     * @since Phase 15B
+     */
+    public Session5250 getSession5250() {
+        return (session instanceof Session5250) ? (Session5250) session : null;
     }
 
     /**
