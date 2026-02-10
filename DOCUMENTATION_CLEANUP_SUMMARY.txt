@@ -1,0 +1,161 @@
+DOCUMENTATION CLEANUP ANALYSIS - Quick Reference
+=================================================
+
+Repository: /Users/vorthruna/ProjectsWATTS/tn5250j-headless
+Date: 2026-02-09
+Total .md files found: 56
+Total lines: 20,043
+
+KEY FINDINGS
+============
+
+ACTIVE PRODUCTION DOCS (Keep as-is, currently referenced in commits/PRs):
+- /README.md (400 lines) - project overview, quick start
+- /ARCHITECTURE.md (790 lines) - C1-C4 system design
+- /CODING_STANDARDS.md (886 lines) - Java 21 conventions
+- /TESTING.md (603 lines) - four-domain test framework
+- /CONTRIBUTING.md (78 lines) - contribution guidelines
+- /SECURITY.md (153 lines) - security policy
+- /examples/README.md (291 lines) - workflow examples
+- /.github/PULL_REQUEST_TEMPLATE.md (21 lines) - GitHub automation
+
+Subtotal: 8 files, 3,222 lines
+
+PHASE PLANNING DOCS (Archive to /docs/archive/ - historical but reference value):
+- PHASE_12D_PLAN.md (631 lines) - sealed classes design
+- PHASE_12C_CLOSURE.md (191 lines) - Fowler analysis
+- PHASE_13_TASK_PLAN.md (149 lines) - batch processing plan
+- PHASE_13_COMPLETION_REPORT.md (164 lines) - completion summary
+- PHASE_13_PR_STATUS.md (170 lines) - PR merge status
+- PHASE_12E_TASK_PLAN.md (657 lines) - workflow execution
+- PHASE_12E_STATUS.md (216 lines) - status tracking
+- ARCHIVE/PHASE_*.md (5 files, 1,680 lines) - already archived
+
+Subtotal: 12 files, 4,728 lines
+
+SESSION ARTIFACTS (Delete - AI session work tracking, no lasting value):
+- BUG_HUNT_REPORT.md (518 lines)
+- BUG_HUNT_FINAL_REPORT.md (353 lines)
+- BUG_HUNT_COMPLETION_CHECKLIST.md (362 lines)
+- BUG_HUNT_INDEX.md (358 lines)
+- CYCLE_1_SUMMARY.md (234 lines)
+- CYCLE_2_CHECKLIST.md (177 lines)
+- CYCLE_2_REPORT.md (345 lines)
+- CYCLE_3_IMPLEMENTATION_REPORT.md (397 lines)
+- CYCLE_4_PLAN.md (192 lines)
+- CYCLE_4_EXECUTION_BLOCK_1_2_3.md (227 lines)
+- CYCLE_4_FINAL_REPORT.md (393 lines)
+- task_plan.md (55 lines)
+- SHIP_EXECUTION_SUMMARY.md (194 lines)
+- TEST_FAILURE_ANALYSIS.md (251 lines)
+- evidence.md (205 lines)
+- findings.md (45 lines)
+- bug_fixes.md (356 lines)
+- root_cause_analysis.md (462 lines)
+- refactoring_plan.md (486 lines)
+- cleanup_findings.md (49 lines)
+
+Subtotal: 20 files, 6,000 lines
+
+RESEARCH DOCS (Move to /docs/fowler/ - Fowler pattern analysis):
+- FOWLER_INDEX.md (377 lines)
+- FOWLER_ARCHITECTURE_REFERENCE.md (326 lines)
+- FOWLER_AI_PATTERNS.md (796 lines)
+- FOWLER_RESEARCH_SUMMARY.md (356 lines)
+- FOWLER_INTEGRATION_ACTION_PLAN.md (404 lines)
+- FOWLER_INTEGRATION_CHECKLIST.md (270 lines)
+
+Subtotal: 6 files, 2,529 lines
+
+ALREADY ARCHIVED in /ARCHIVE/ (13 files):
+- README.md, FORK.md, REQUIREMENTS.md, CHANGELOG.md, etc.
+Subtotal: 13 files, 3,556 lines
+
+REFERENCE DOCS (Keep as-is):
+- /docs/VIRTUAL_THREADS.md (351 lines) - Phase 2 deep-dive
+
+Subtotal: 1 file, 351 lines
+
+ORPHANED REFERENCES (Found in docs but file missing):
+- TESTING_EPISTEMOLOGY.md referenced 3x but not found
+- API docs referenced but not in repo
+- TEST_ARCHITECTURE.md linked to /ARCHIVE/TEST_ARCHITECTURE.md
+
+FILES BY STATUS
+===============
+
+| Status       | Count | Lines   | Recommendation |
+|--------------|-------|---------|-----------------|
+| ACTIVE       | 8     | 3,222   | KEEP            |
+| ARCHIVE      | 12    | 4,728   | MOVE to /docs/  |
+| SESSION      | 20    | 6,000   | DELETE          |
+| RESEARCH     | 6     | 2,529   | MOVE to /docs/  |
+| ARCHIVED     | 13    | 3,556   | ALREADY DONE    |
+| REFERENCE    | 1     | 351     | KEEP            |
+| TOTAL        | 56    | 20,043  |                 |
+
+CLEANUP PHASES
+==============
+
+Phase 1 - Delete Session Artifacts (1 hour, 20 files, 6,000 lines)
+  - Delete all CYCLE_*.md files
+  - Delete all BUG_HUNT_*.md files
+  - Delete SHIP_EXECUTION_SUMMARY.md
+  - Delete TEST_FAILURE_ANALYSIS.md
+  - Delete evidence.md, findings.md
+  - Delete task_plan.md
+  - Delete bug_fixes.md, root_cause_analysis.md, refactoring_plan.md
+  - Delete cleanup_findings.md (after this work)
+
+Phase 2 - Archive Phase Docs (2 hours, 12 files, 4,728 lines)
+  - Move PHASE_*.md (5 files) to /docs/archive/
+  - Move ARCHIVE/PHASE_*.md (already done, verify)
+  - Create /docs/archive/README.md index
+  - Extract key ADR decisions to ARCHITECTURE.md
+
+Phase 3 - Reorganize Research (1 hour, 6 files, 2,529 lines)
+  - Move FOWLER_*.md (6 files) to /docs/fowler/
+  - Create /docs/fowler/README.md index
+  - Link from ARCHITECTURE.md
+
+Phase 4 - Update Active Docs (2 hours, 4 files)
+  - README.md: Verify Java 21, sealed classes
+  - ARCHITECTURE.md: Add Phase 13 details, ADR section
+  - TESTING.md: Add Phase 13 stress results
+  - CODING_STANDARDS.md: Link sealed classes patterns
+
+TOTAL EFFORT: ~6 hours for complete cleanup
+
+VERIFICATION CHECKLIST
+======================
+
+[ ] Phase 1: Session artifacts deleted (20 files)
+[ ] Phase 2: Phase docs archived with index (12 files)
+[ ] Phase 3: Research docs reorganized with index (6 files)
+[ ] Phase 4: Active docs verified and updated (4 files)
+[ ] All git references update (.gitignore, links in README)
+[ ] No broken links in remaining docs
+[ ] DOCUMENTATION_INVENTORY.md placed in repo
+[ ] Create cleanup PR and merge to refactor/docs-cleanup
+
+OUTPUT
+======
+
+Created: /Users/vorthruna/ProjectsWATTS/tn5250j-headless/DOCUMENTATION_INVENTORY.md (304 lines)
+
+This file provides:
+- Comprehensive table of all 56 .md files
+- Categorization by type and status
+- Full consolidation roadmap with phases
+- Activity analysis (commits, references)
+- File maintenance summary
+- Orphaned file detection
+- Ready-to-execute cleanup plan
+
+NEXT STEPS
+==========
+
+1. Review DOCUMENTATION_INVENTORY.md for completeness
+2. Execute Phase 1-4 deletions/moves as documented
+3. Create PR: refactor/docs-cleanup with summary
+4. After merge: Update CLAUDE.md memory with completion status

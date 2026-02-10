@@ -1,63 +1,55 @@
-# Task Plan: 12-Agent Parallel Bug Hunt + 4 Optimization Cycles
+# Task Plan: Documentation Cleanup & Rationalization (doc_cleanup)
 
 ## Mission
-Find and fix bugs across 12 specialized domains in HTI5250J codebase, then apply 4 rounds of optimization refactoring.
+Perform sweeping cleanup of documentation files in HTI5250J. Eliminate AI-generated content ("AI slop"), MEMORY.md artifacts, and redundant meta-commentary. Leave only industry-standard documentation.
 
-## Project Baseline
-- 453 Java files analyzed
-- Build: Ant (build.xml)
-- Test framework: JUnit 5, Mockito
-- Architecture: Sealed actions, records, pattern matching (Java 21)
-- Current phase: 12E (Workflow Simulation)
+## Baseline
+- Current branch: refactor/docs-cleanup (created 2026-02-09)
+- Scope: All .md files in repo root + docs/ directory
+- Key files identified for review:
+  - MEMORY.md (1081 lines - 80% AI-generated session notes)
+  - Various PHASE_*.md files (planning artifacts)
+  - TESTING_EPISTEMOLOGY.md (high-value, keep)
+  - CLAUDE.md (project instructions, keep)
+  - Standard: README.md, ARCHITECTURE.md, CONTRIBUTING.md
 
 ## Execution Plan
 
-### Cycle 1: Discovery (All 12 agents scan in parallel)
-- [x] Agent 1: Static Analysis (grep, pattern matching - 18 findings)
-- [x] Agent 2: Concurrency (DatasetLoader, ArtifactCollector - 2 issues found)
-- [x] Agent 3: Resource Leaks (FileWriter verified safe - 0 issues)
-- [x] Agent 4: API Contracts (Null safety - 3 critical issues)
-- [x] Agent 5: Test Coverage (Edge cases - coverage gaps identified)
-- [x] Agent 6: Performance (Percentile calc - O(1) but wrong)
-- [x] Agent 7: Error Handling (Exception context loss - 1 high issue)
-- [x] Agent 8: Input Validation (Null pointers - 3 critical issues)
-- [x] Agent 9: Logic Bugs (Percentile off-by-one, SUBMIT validation)
-- [x] Agent 10: Integration (CSV batch detection - 1 high issue)
-- [x] Agent 11: Security (Credentials not found in code - safe)
-- [x] Agent 12: Configuration (Hardcoded timeouts identified - low priority)
+### Iteration 1: Analysis & Cataloging (12 parallel agents)
+- [x] Agent 1: repo-research-analyst - Document structure audit
+- [x] Agent 2: best-practices-researcher - Industry doc standards
+- [x] Agent 3: code-simplicity-reviewer - Identify redundancy
+- [x] Agent 4: pattern-recognition-specialist - Detect AI prose patterns
+- [ ] Agent 5: Specific: MEMORY.md content analysis
+- [ ] Agent 6: Specific: Phase documentation (numbered files)
+- [ ] Agent 7: Specific: Design docs (Architecture-related)
+- [ ] Agent 8: Specific: Test/Contract docs
+- [ ] Agent 9: Specific: Workflow/Process docs
+- [ ] Agent 10: Specific: Standards docs (CODING_STANDARDS.md, etc.)
+- [ ] Agent 11: Meta: Cross-file duplication analysis
+- [ ] Agent 12: Evidence: Lines to delete, keep, refactor
 
-### Cycle 2: Root Cause Analysis
-- [ ] Agents dig deeper on findings
-- [ ] Categorize by severity (CRITICAL/HIGH/MEDIUM/LOW)
-- [ ] Identify root causes and patterns
-- [ ] Collect evidence for reproducibility
-
-### Cycle 3: Fix Implementation (TDD)
-- [ ] Write failing tests first
-- [ ] Implement fixes
-- [ ] Verify all tests pass
-- [ ] Zero regressions in existing tests
-
-### Cycle 4: Optimization Refactoring
-- [ ] Eliminate technical debt discovered
-- [ ] Apply performance optimizations
-- [ ] Reduce code duplication
-- [ ] Improve maintainability
+### Iteration 2: Verification & Recommendations (12 parallel agents)
+- [ ] Agent 1: kieran-rails-reviewer - Code quality standards
+- [ ] Agent 2: data-integrity-guardian - Preserve critical info
+- [ ] Agent 3: deployment-verification-agent - Go/no-go for deletions
+- [ ] Agent 4: security-sentinel - Check for exposed data
+- [ ] Agent 5-12: Specialized verification per doc domain
 
 ## Deliverables
-- [ ] findings.md - Structured catalog with severity levels
-- [ ] bug_fixes.md - TDD-based fixes applied
-- [ ] refactoring_plan.md - Optimization recommendations
-- [ ] evidence.md - Test results before/after
+- [ ] cleanup_findings.md - Structured catalog (file, severity, action)
+- [ ] cleanup_recommendations.md - What to delete/keep/refactor
+- [ ] impact_analysis.md - Cross-references (what depends on what)
+- [ ] execution_plan.md - Ordered deletion/refactoring steps
 
 ## Status
-**CYCLE 1 COMPLETE** - 12 agents completed discovery phase
-- 18 bugs found (3 CRITICAL, 4 HIGH, 6 MEDIUM, 5 LOW)
-- Key findings: Percentile off-by-one, null dereferences, concurrency issues
-- Evidence collected in findings.md, bug_fixes.md, evidence.md
-- Baseline tests running (ant test in progress)
+**IN PROGRESS** - Phase 1: Setting up Iteration 1 agent dispatch
+- Branch created: doc_cleanup ✓
+- Planning files: task_plan.md (this file) ✓
+- Next: Launch 12 parallel Iteration 1 agents
 
-## Next: Cycle 2 Root Cause Analysis
-- Detailed analysis of each finding
-- Pattern identification across codebase
-- Prepare TDD test cases for fixes
+## Efficiency Metrics (to be filled)
+- Parallel services: 24 agents × 2 iterations = {actual}
+- Redundant calls: 0 (planned, verify after)
+- Backtracking: Minimize via findings.md catalog
+- Optimal path: Identify targets → Verify impact → Execute cleanup

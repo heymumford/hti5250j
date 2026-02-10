@@ -38,3 +38,19 @@ certificates/
 .DS_Store
 Thumbs.db
 ARCHIVE/
+
+# Documentation cleanup temp files
+*~
+*.bak
+*.backup
+.cleanup-temp/
+cleanup_temp/
+
+# Temporary analysis files
+*-analysis.md
+*-findings.md.tmp
+
+# Editor backups
+*#
+#*#
+.#*

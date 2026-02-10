@@ -18,9 +18,9 @@ TN5250J Headless is a Java library and toolkit for communicating with IBM i (AS/
 ## Quick Start
 
 ### Prerequisites
-- Java 11 or higher
+- Java 21 Temurin (recommended) or Java 17+ (minimum)
 - Gradle 7.x or higher
-- Linux, macOS, or Windows
+- POSIX system (Linux, macOS, or equivalent)
 
 ### Building
 
@@ -53,13 +53,13 @@ repositories {
 }
 
 dependencies {
-  implementation 'com.heymumford:tn5250j-headless:1.0.0'
+  implementation 'org.hti5250j:hti5250j:1.0.0'
 }
 ```
 
 Basic usage:
 ```java
-TN5250Session session = new TN5250Session("192.168.1.100", 23);
+Session5250 session = new Session5250("192.168.1.100", 23);
 session.connect();
 session.sendKeys("USER");
 session.sendKeys("PASSWORD");
@@ -247,7 +247,7 @@ See [FORK.md](./FORK.md) for full comparison and migration notes.
 ### Example 1: Simple Authentication
 
 ```java
-TN5250Session session = new TN5250Session("ibmi.example.com", 23);
+Session5250 session = new Session5250("ibmi.example.com", 23);
 session.connect();
 
 // Type credentials
@@ -275,7 +275,7 @@ pool.setMaxSize(20);
 pool.start();
 
 // Borrow session from pool
-TN5250Session session = pool.borrowSession();
+Session5250 session = pool.borrowSession();
 
 // Use session
 session.sendString("WRKSYSVAL");
@@ -354,7 +354,7 @@ Run specific tier:
 ### Session Options
 
 ```java
-TN5250Session session = new TN5250Session("ibmi.example.com", 23);
+Session5250 session = new Session5250("ibmi.example.com", 23);
 session.setConnectionTimeout(10000);       // 10 seconds
 session.setReadTimeout(5000);              // 5 seconds
 session.setCharacterEncoding("UTF-8");     // Character set
