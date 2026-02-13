@@ -368,8 +368,8 @@ public class CharsetConversionPairwiseTest {
      * TEST 17: Unmappable Unicode character handling (U+2764 = heart symbol).
      * Dimension: Character type [undefined]
      *            Direction [ASCII→EBCDIC]
-     * Risk: Unmappable chars could throw ArrayIndexOutOfBoundsException
-     * Note: This test documents expected behavior with current implementation
+     * Status: FIXED - Implementation now throws CharacterConversionException
+     * The bug has been fixed - CodepageConverterAdapter validates char values before conversion
      */
     @ParameterizedTest
     @MethodSource("data")
@@ -378,20 +378,10 @@ public class CharsetConversionPairwiseTest {
         setUp();
         char unmappableChar = '\u2764'; // Heart symbol (value 10084) - unlikely in EBCDIC
 
-        try {
-            byte result = cp.uni2ebcdic(unmappableChar);
-            // If conversion succeeds, result must be valid
-            assertTrue(result >= Byte.MIN_VALUE && result <= Byte.MAX_VALUE,"Unmappable char conversion should yield byte value in CP " + codePage);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // Current implementation throws on unmappable chars
-            // This documents the behavior; caller must validate input
-            assertNotNull(e,"ArrayIndexOutOfBoundsException indicates validation needed in CP "
-                    + codePage);
-        } catch (Exception e) {
-            // Any other exception is unexpected
-            fail("Unexpected exception for unmappable char in CP " + codePage + ": "
-                    + e.getClass().getName());
-        }
+        // After fix: Implementation throws CharacterConversionException for unmappable chars
+        assertThrows(CharacterConversionException.class, () -> {
+            cp.uni2ebcdic(unmappableChar);
+        }, "Unmappable character should throw CharacterConversionException in CP " + codePage);
     }
 
     /**

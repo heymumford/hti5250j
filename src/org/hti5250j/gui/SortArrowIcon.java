@@ -9,9 +9,8 @@ package org.hti5250j.gui;
 /**
  * DEPRECATED: This class is no longer needed.
  *
- * The original SortArrowIcon was a custom icon renderer derived from
- * unlicensed JavaPro magazine code. This class is now a no-op provided
- * only for backward compatibility.
+ * This class is now a no-op provided only for backward compatibility.
+ * Previous implementations used custom icon rendering.
  *
  * REPLACEMENT: TableRowSorter (used by JSortTable) automatically manages
  * sort indicators in table headers using platform-native rendering.

@@ -15,7 +15,7 @@ import java.util.Vector;
 /**
  * Modern replacement for JSortTable using standard Java Swing components.
  * Uses TableRowSorter (standard since Java 6) instead of custom sorting implementation.
- * This eliminates dependency on unlicensed JavaPro magazine code.
+ * This implementation uses only standard, licensed Swing APIs.
  *
  * Features:
  * - Sorts columns by clicking headers (built-in TableRowSorter behavior)

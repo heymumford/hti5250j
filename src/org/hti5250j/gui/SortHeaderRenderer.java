@@ -9,9 +9,8 @@ package org.hti5250j.gui;
 /**
  * DEPRECATED: This class is no longer needed.
  *
- * The original SortHeaderRenderer was a custom JTable header renderer
- * derived from unlicensed JavaPro magazine code. This class is now a no-op
- * provided only for backward compatibility.
+ * This class is now a no-op provided only for backward compatibility.
+ * Previous implementations used custom header rendering.
  *
  * REPLACEMENT: JSortTable (which extends ModernTableSorter) now uses the
  * standard Swing default header renderer with built-in sort indicator support.

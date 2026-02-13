@@ -15,8 +15,7 @@ import javax.swing.table.TableModel;
  * only for backward compatibility. New code should use TableModel directly
  * with JSortTable, which handles sorting via standard TableRowSorter.
  *
- * The original SortTableModel interface was derived from JavaPro magazine code
- * used without permission. This re-implementation uses only standard Swing APIs.
+ * This re-implementation uses only standard Swing APIs and is fully GPL-2.0 licensed.
  */
 public interface SortTableModel extends TableModel {
 

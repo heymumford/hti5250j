@@ -11,15 +11,14 @@ import javax.swing.table.TableModel;
 /**
  * Backward-compatible replacement for the original JSortTable class.
  * This implementation uses standard Java Swing components (TableRowSorter)
- * instead of custom code from unlicensed sources.
+ * for all sorting functionality.
  *
  * DEPRECATION NOTICE: Use ModernTableSorter directly for new code.
  * This class exists only for backward compatibility with existing code
  * that references JSortTable.
  *
- * The original JSortTable contained code from a JavaPro magazine article
- * used without permission. This replacement provides equivalent functionality
- * using only standard Swing APIs available since Java 6.
+ * This replacement provides equivalent functionality using only standard
+ * Swing APIs available since Java 6.
  */
 public class JSortTable extends ModernTableSorter {
 

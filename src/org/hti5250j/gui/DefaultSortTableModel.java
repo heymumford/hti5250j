@@ -16,9 +16,8 @@ import javax.swing.table.*;
  * However, the sortColumn() method is primarily for backward compatibility.
  * When used with JSortTable, sorting is handled automatically by TableRowSorter.
  *
- * NOTE: This class inherits from the original implementation which contained
- * code from unlicensed JavaPro magazine sources. This version maintains the
- * interface but encourages migration to using JSortTable directly.
+ * NOTE: This implementation uses only standard Swing APIs and encourages
+ * migration to using JSortTable or ModernTableSorter directly.
  */
 public class DefaultSortTableModel extends DefaultTableModel
         implements SortTableModel {
