@@ -13,7 +13,9 @@ package org.hti5250j.encoding.builtin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.hti5250j.encoding.CharacterConversionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.CharMappings;
@@ -90,6 +92,31 @@ public class CCSID37Test {
             final char afterall = cp.ebcdic2uni(converted & 0xFF);
             assertEquals(beginvalue, afterall,"Testing before and after item #" + i);
         }
+    }
+
+    /**
+     * Test that uni2ebcdic throws CharacterConversionException for invalid codepoints.
+     * This test verifies that the silent exception handling issue is fixed.
+     */
+    @Test
+    public void uni2ebcdic_withInvalidCodepoint_throwsConversionException() {
+        CCSID37 codec = new CCSID37();
+        codec.init();
+        assertThatThrownBy(() -> codec.uni2ebcdic((char) 0xFFFF))
+            .isInstanceOf(CharacterConversionException.class)
+            .hasMessageContaining("0xFFFF");
+    }
+
+    /**
+     * Test that uni2ebcdic throws CharacterConversionException with descriptive message.
+     */
+    @Test
+    public void uni2ebcdic_withOutOfRangeCodepoint_throwsExceptionWithContext() {
+        CCSID37 codec = new CCSID37();
+        codec.init();
+        assertThatThrownBy(() -> codec.uni2ebcdic((char) 0xDEAD))
+            .isInstanceOf(CharacterConversionException.class)
+            .hasMessageContaining("0xDEAD");
     }
 
 }

@@ -18,9 +18,10 @@ import org.hti5250j.encoding.ICodePage;
 import org.hti5250j.framework.transport.SocketConnector;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
 import org.hti5250j.tools.logging.HTI5250jLogger;
+import org.hti5250j.interfaces.IUIDispatcher;
+import org.hti5250j.interfaces.UIDispatcherFactory;
 
 import javax.net.ssl.SSLSocket;
-import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
@@ -73,6 +74,7 @@ public final class tnvt implements Runnable {
     private static final int PCCMD_MAX_LENGTH = 123;
 
     private final HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
+    private IUIDispatcher uiDispatcher;
 
     private Socket sock;
     private BufferedInputStream bin;
@@ -129,6 +131,10 @@ public final class tnvt implements Runnable {
             log.info(" new session -> " + controller.getSessionName());
         }
 
+        // Initialize UI dispatcher (auto-detects headless mode)
+        // Can be overridden via setUIDispatcher() for custom implementations
+        this.uiDispatcher = UIDispatcherFactory.getDefaultDispatcher();
+
         enhanced = type;
         this.support132 = support132;
         setCodePage("37");
@@ -160,6 +166,14 @@ public final class tnvt implements Runnable {
         return session;
     }
 
+    /**
+     * Set the UI dispatcher for headless operation.
+     * Call this before connect() to enable headless mode.
+     * @param dispatcher the UI dispatcher to use
+     */
+    public void setUIDispatcher(IUIDispatcher dispatcher) {
+        this.uiDispatcher = dispatcher;
+    }
 
     public void setSSLType(String type) {
         sslType = type;
@@ -235,7 +249,7 @@ public final class tnvt implements Runnable {
             this.port = port;
 
             try {
-                SwingUtilities.invokeAndWait(new Runnable() {
+                uiDispatcher.invokeAndWait(new Runnable() {
                     public void run() {
                         screen52.getOIA().setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT,
                                 ScreenOIA.OIA_LEVEL_INPUT_INHIBITED, "X - Connecting");
@@ -287,7 +301,7 @@ public final class tnvt implements Runnable {
             // Note: Virtual threads ignore setPriority(); all run at normal priority
 
             try {
-                SwingUtilities.invokeAndWait(new Runnable() {
+                uiDispatcher.invokeAndWait(new Runnable() {
                     public void run() {
                         screen52.getOIA().setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED,
                                 ScreenOIA.OIA_LEVEL_INPUT_INHIBITED);

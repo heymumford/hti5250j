@@ -1,71 +1,36 @@
 /*
- * SPDX-FileCopyrightText: 2002
  * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-
-
-
-
 package org.hti5250j.gui;
-/*
-=====================================================================
 
-  SortHeaderRenderer.java
+/**
+ * DEPRECATED: This class is no longer needed.
+ *
+ * The original SortHeaderRenderer was a custom JTable header renderer
+ * derived from unlicensed JavaPro magazine code. This class is now a no-op
+ * provided only for backward compatibility.
+ *
+ * REPLACEMENT: JSortTable (which extends ModernTableSorter) now uses the
+ * standard Swing default header renderer with built-in sort indicator support.
+ * This renderer is automatically applied by TableRowSorter.
+ *
+ * NOTE: If this class appears in your code, it can be safely removed.
+ * JSortTable will handle header rendering automatically.
+ *
+ * @deprecated Use JSortTable which automatically handles header rendering
+ */
+@Deprecated(since = "0.9.0", forRemoval = false)
+public class SortHeaderRenderer {
 
-  Created by Claude Duguay
-  Copyright (c) 2002
-   This was taken from a Java Pro magazine article
-   http://www.fawcette.com/javapro/codepage.asp?loccode=jp0208
-
-   I have NOT asked for permission to use this.
-
-=====================================================================
-*/
-
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
-
-public class SortHeaderRenderer extends DefaultTableCellRenderer {
-
-    private static final long serialVersionUID = 1L;
-    public static Icon NONSORTED = new SortArrowIcon(SortArrowIcon.NONE);
-    public static Icon ASCENDING = new SortArrowIcon(SortArrowIcon.ASCENDING);
-    public static Icon DECENDING = new SortArrowIcon(SortArrowIcon.DECENDING);
-
+    /**
+     * This class is deprecated and no longer provides any functionality.
+     * JSortTable uses Swing's built-in TableRowSorter which provides
+     * automatic header rendering with sort indicators.
+     */
     public SortHeaderRenderer() {
-        setHorizontalTextPosition(LEFT);
-        setHorizontalAlignment(CENTER);
-    }
-
-    public Component getTableCellRendererComponent(JTable table,
-                                                   Object value,
-                                                   boolean isSelected,
-                                                   boolean hasFocus, int row, int col) {
-
-        int index = -1;
-        boolean ascending = true;
-        if (table instanceof JSortTable) {
-            JSortTable sortTable = (JSortTable) table;
-            index = sortTable.getSortedColumnIndex();
-            ascending = sortTable.isSortedColumnAscending();
-        }
-        if (table != null) {
-            JTableHeader header = table.getTableHeader();
-            if (header != null) {
-                setForeground(header.getForeground());
-                setBackground(header.getBackground());
-                setFont(header.getFont());
-            }
-        }
-
-        Icon icon = ascending ? ASCENDING : DECENDING;
-        setIcon(col == index ? icon : NONSORTED);
-        setText((value == null) ? "" : value.toString());
-        setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-        return this;
+        // No-op constructor for backward compatibility
     }
 }

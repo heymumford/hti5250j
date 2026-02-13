@@ -1,87 +1,72 @@
 /*
- * SPDX-FileCopyrightText: 2002
  * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-
-
-
-
 package org.hti5250j.gui;
-/*
-=====================================================================
 
-  JSortTable.java
+import javax.swing.table.TableModel;
 
-  Created by Claude Duguay
-  Copyright (c) 2002
-   This was taken from a Java Pro magazine article
-   http://www.fawcette.com/javapro/codepage.asp?loccode=jp0208
-
-   I have NOT asked for permission to use this.
-
-=====================================================================
-*/
-
-import javax.swing.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-public class JSortTable extends JTable implements MouseListener {
+/**
+ * Backward-compatible replacement for the original JSortTable class.
+ * This implementation uses standard Java Swing components (TableRowSorter)
+ * instead of custom code from unlicensed sources.
+ *
+ * DEPRECATION NOTICE: Use ModernTableSorter directly for new code.
+ * This class exists only for backward compatibility with existing code
+ * that references JSortTable.
+ *
+ * The original JSortTable contained code from a JavaPro magazine article
+ * used without permission. This replacement provides equivalent functionality
+ * using only standard Swing APIs available since Java 6.
+ */
+public class JSortTable extends ModernTableSorter {
 
     private static final long serialVersionUID = 1L;
-    private int sortedColumnIndex = -1;
-    private boolean sortedColumnAscending = true;
 
+    /**
+     * Create a JSortTable with a SortTableModel.
+     *
+     * @param model A SortTableModel instance
+     */
     public JSortTable(SortTableModel model) {
         super(model);
-        initSortHeader();
     }
 
-    private void initSortHeader() {
-        JTableHeader header = getTableHeader();
-        header.setDefaultRenderer(new SortHeaderRenderer());
-        header.addMouseListener(this);
+    /**
+     * Create a JSortTable with a generic TableModel.
+     *
+     * @param model A TableModel instance
+     */
+    public JSortTable(TableModel model) {
+        super(model);
     }
 
+    /**
+     * Get the index of the currently sorted column.
+     * Returns -1 if table is unsorted.
+     *
+     * @return Column index or -1
+     */
     int getSortedColumnIndex() {
-        return sortedColumnIndex;
-    }
-
-    boolean isSortedColumnAscending() {
-        return sortedColumnAscending;
-    }
-
-    public void mouseReleased(MouseEvent event) {
-        TableColumnModel colModel = getColumnModel();
-        int index = colModel.getColumnIndexAtX(event.getX());
-        int modelIndex = colModel.getColumn(index).getModelIndex();
-
-        SortTableModel model = (SortTableModel) getModel();
-        if (model.isSortable(modelIndex)) {
-            // toggle ascension, if already sorted
-            if (sortedColumnIndex == index) {
-                sortedColumnAscending = !sortedColumnAscending;
-            }
-            sortedColumnIndex = index;
-
-            model.sortColumn(modelIndex, sortedColumnAscending);
+        var sortKeys = getRowSorter().getSortKeys();
+        if (sortKeys.isEmpty()) {
+            return -1;
         }
+        return sortKeys.get(0).getColumn();
     }
 
-    public void mousePressed(MouseEvent event) {
-    }
-
-    public void mouseClicked(MouseEvent event) {
-    }
-
-    public void mouseEntered(MouseEvent event) {
-    }
-
-    public void mouseExited(MouseEvent event) {
+    /**
+     * Check if the current sort is ascending.
+     *
+     * @return true if ascending, false if descending
+     */
+    boolean isSortedColumnAscending() {
+        var sortKeys = getRowSorter().getSortKeys();
+        if (sortKeys.isEmpty()) {
+            return true;
+        }
+        return sortKeys.get(0).getSortOrder() == javax.swing.SortOrder.ASCENDING;
     }
 }

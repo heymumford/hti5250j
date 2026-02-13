@@ -26,6 +26,7 @@ import javax.swing.KeyStroke;
 
 import org.hti5250j.event.KeyChangeListener;
 import org.hti5250j.interfaces.ConfigureFactory;
+import org.hti5250j.interfaces.IKeyEvent;
 import org.hti5250j.interfaces.OptionAccessFactory;
 import org.hti5250j.tools.LangTool;
 
@@ -212,6 +213,15 @@ public class KeyMapper {
 
     }
 
+    /**
+     * Check if the given headless key event equals the last processed keystroke.
+     * @param ke the key event to check
+     * @return true if equal to last keystroke
+     */
+    public final static boolean isEqualLast(IKeyEvent ke) {
+        return workStroke.equals(ke);
+    }
+
     public final static boolean isEqualLast(KeyEvent ke) {
         return workStroke.equals(ke);
     }
@@ -236,6 +246,37 @@ public class KeyMapper {
                 "------ Key Map key=keycode,isShiftDown,isControlDown,isAltDown,isAltGrDown,location --------");
     }
 
+    /**
+     * Get keystroke text from a headless key event.
+     * @param ke the key event
+     * @return keystroke text
+     */
+    public final static String getKeyStrokeText(IKeyEvent ke) {
+        return getKeyStrokeText(ke, false);
+    }
+
+    /**
+     * Get keystroke text from a headless key event with AltGraph state.
+     * @param ke the key event
+     * @param isAltGr whether AltGraph is down
+     * @return keystroke text
+     */
+    public final static String getKeyStrokeText(IKeyEvent ke, boolean isAltGr) {
+        if (!workStroke.equals(ke, isAltGr)) {
+            workStroke.setAttributes(ke, isAltGr);
+            lastKeyMnemonic = mappedKeys.get(workStroke);
+        }
+
+        if (lastKeyMnemonic != null &&
+                lastKeyMnemonic.endsWith(KeyStroker.altSuffix)) {
+
+            lastKeyMnemonic = lastKeyMnemonic.substring(0,
+                    lastKeyMnemonic.indexOf(KeyStroker.altSuffix));
+        }
+
+        return lastKeyMnemonic;
+    }
+
     public final static String getKeyStrokeText(KeyEvent ke) {
         return getKeyStrokeText(ke, false);
     }
@@ -255,6 +296,35 @@ public class KeyMapper {
 
         return lastKeyMnemonic;
 
+    }
+
+    /**
+     * Get keystroke mnemonic from a headless key event.
+     * @param ke the key event
+     * @return keystroke mnemonic
+     */
+    public final static String getKeyStrokeMnemonic(IKeyEvent ke) {
+        return getKeyStrokeMnemonic(ke, false);
+    }
+
+    /**
+     * Get keystroke mnemonic from a headless key event with AltGraph state.
+     * @param ke the key event
+     * @param isAltGr whether AltGraph is down
+     * @return keystroke mnemonic
+     */
+    public final static String getKeyStrokeMnemonic(IKeyEvent ke, boolean isAltGr) {
+        workStroke.setAttributes(ke, isAltGr);
+        String keyMnemonic = mappedKeys.get(workStroke);
+
+        if (keyMnemonic != null &&
+                keyMnemonic.endsWith(KeyStroker.altSuffix)) {
+
+            keyMnemonic = keyMnemonic.substring(0,
+                    keyMnemonic.indexOf(KeyStroker.altSuffix));
+        }
+
+        return keyMnemonic;
     }
 
     public final static String getKeyStrokeMnemonic(KeyEvent ke) {
@@ -329,6 +399,26 @@ public class KeyMapper {
         return false;
     }
 
+    /**
+     * Check if a headless key event is defined in the key map.
+     * @param ke the key event
+     * @return true if defined
+     */
+    public final static boolean isKeyStrokeDefined(IKeyEvent ke) {
+        return isKeyStrokeDefined(ke, false);
+    }
+
+    /**
+     * Check if a headless key event is defined in the key map with AltGraph state.
+     * @param ke the key event
+     * @param isAltGr whether AltGraph is down
+     * @return true if defined
+     */
+    public final static boolean isKeyStrokeDefined(IKeyEvent ke, boolean isAltGr) {
+        workStroke.setAttributes(ke, isAltGr);
+        return (null != mappedKeys.get(workStroke));
+    }
+
     public final static boolean isKeyStrokeDefined(KeyEvent ke) {
         return isKeyStrokeDefined(ke, false);
     }
@@ -383,6 +473,32 @@ public class KeyMapper {
             }
         }
 
+    }
+
+    /**
+     * Set a keystroke mapping from a headless key event.
+     * @param which the keystroke name
+     * @param ke the key event
+     */
+    public final static void setKeyStroke(String which, IKeyEvent ke) {
+        if (ke == null)
+            return;
+        Collection<String> v = mappedKeys.values();
+        Set<KeyStroker> o = mappedKeys.keySet();
+        Iterator<KeyStroker> k = o.iterator();
+        Iterator<String> i = v.iterator();
+        while (k.hasNext()) {
+            KeyStroker ks = k.next();
+            String keyVal = i.next();
+            if (keyVal.equals(which)) {
+                mappedKeys.remove(ks);
+                mappedKeys.put(new KeyStroker(ke), keyVal);
+                return;
+            }
+        }
+
+        // if we got here it was a dead key and we need to add it.
+        mappedKeys.put(new KeyStroker(ke), which);
     }
 
     public final static void setKeyStroke(String which, KeyEvent ke) {

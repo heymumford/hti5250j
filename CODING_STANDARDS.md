@@ -98,54 +98,365 @@ public boolean isKeyboardAvailable() { return oiaState.isUnlocked(); }
 
 ---
 
-### Principle 3: Comments Explain Intent, Not Logic
+### Principle 3: Code Tells Its Story (Self-Documenting First, Comments Second)
 
-**Bad (repeats code):**
+**Philosophy**: Code should be readable without comments. Use naming and structure to reveal intent. Comments add context and explain WHY, never HOW.
+
+---
+
+#### 3.1: Self-Documenting Code Through Naming
+
+**Goal**: Eliminate comments by writing code that explains itself.
+
+**Bad (requires comment to explain WHAT):**
 ```java
-// Increment counter
-counter++;
+// Calculate field offset
+int x = (col * 80) + row;
 ```
 
-**Good (explains why):**
+**Good (name reveals intent, no comment needed):**
 ```java
-// Move to next field in tab order (skip hidden fields)
-counter++;
+int fieldOffset = calculateFieldOffset(row, col, SCREEN_WIDTH);
 ```
 
-**Bad (ignores knowledge debt):**
+**Bad (comment explains HOW):**
 ```java
-// Get the screen character
-char c = planes.getChar(pos);
-```
-
-**Good (explains context):**
-```java
-// Fetch extended attributes for word-wrapping decision
-// (getChar alone doesn't indicate 5250 semantics: EBCDIC, field boundaries, etc.)
-char c = planes.getChar(pos);
-```
-
-**When to Comment:**
-- ✓ Why a non-obvious choice exists
-- ✓ What assumptions must hold (preconditions)
-- ✓ Workarounds for i5 quirks or protocol edge cases
-- ✓ Cross-file dependencies or contract boundaries
-- ✗ What the code literally does (reader can see that)
-- ✗ Obvious operations (`buffer[i] = 0`)
-
-**Example (Protocol Workaround):**
-```java
-// IBM i sends screen refresh asynchronously without explicit signal.
-// We poll OIA every 100ms instead of waiting for a "ready" notification.
-// Timeout after 5s if refresh never completes (dead i5 detection).
-while (System.currentTimeMillis() < deadline) {
-  if (screen.getOIA().isKeyboardAvailable()) {
-    return;
-  }
-  Thread.sleep(100);  // 100ms poll interval
+// Loop through characters and check if hex value is less than 0x40
+for (int i = 0; i < buffer.length; i++) {
+  if (buffer[i] < 0x40) { ... }
 }
-throw new TimeoutException("Keyboard unlock timeout");
 ```
+
+**Good (extracted method reveals intent):**
+```java
+for (int i = 0; i < buffer.length; i++) {
+  if (isControlCharacter(buffer[i])) { ... }
+}
+
+private boolean isControlCharacter(byte value) {
+  return value < 0x40;  // EBCDIC control characters are < 0x40
+}
+```
+
+---
+
+#### 3.2: When Comments Are Crutches (Anti-Patterns)
+
+**❌ Anti-Pattern 1: Commenting WHAT (code already says it)**
+```java
+// Set the field attribute to reverse image
+field.setAttribute(REVERSE_IMAGE);
+```
+**Fix**: Remove comment. Code is clear.
+
+**❌ Anti-Pattern 2: Commenting HOW (code shows the steps)**
+```java
+// First convert EBCDIC to hex, then shift left 4 bits, then OR with next byte
+int value = (ebcdicToHex(buffer[i]) << 4) | ebcdicToHex(buffer[i+1]);
+```
+**Fix**: Extract method with descriptive name:
+```java
+int value = parseEBCDICHexPair(buffer, i);
+```
+
+**❌ Anti-Pattern 3: Commenting Because Names Are Cryptic**
+```java
+// adj holds the field attribute bits
+int adj = getAttr();
+// Extract bits 6-7 for orientation
+int x = adj & 0xc0;
+```
+**Fix**: Use clear names (from Principle 1):
+```java
+int fieldAttribute = getFieldAttribute();
+int orientationMask = fieldAttribute & ORIENTATION_BITS_MASK;
+```
+
+**❌ Anti-Pattern 4: Block Comments Explaining Obvious Flow**
+```java
+// Connect to host
+session.connect();
+// Wait for keyboard
+session.waitForKeyboard();
+// Send login screen
+session.sendKeys("LOGIN");
+```
+**Fix**: Remove comments. The method names are self-explanatory. If you need to group related operations, extract to a method:
+```java
+performLogin(session);  // Single line, clear intent
+
+private void performLogin(Session5250 session) throws Exception {
+  session.connect();
+  session.waitForKeyboard();
+  session.sendKeys("LOGIN");
+}
+```
+
+---
+
+#### 3.3: When Comments Add Value (Good Uses)
+
+**✓ Use Case 1: Explain WHY (Business Logic, Non-Obvious Decisions)**
+```java
+// IBM i behavior: keyboard unlocks before screen refresh completes.
+// We must wait for BOTH unlock AND "Input Inhibited" flag clear.
+// Empirically verified: 50ms between unlock and flag clear on AS/400 V7R3.
+waitForKeyboardUnlock();
+waitForInputInhibitedClear();
+```
+
+**✓ Use Case 2: Document Assumptions and Preconditions**
+```java
+/**
+ * Parse field attributes from data stream.
+ *
+ * Preconditions:
+ * - buffer must contain at least 2 bytes at position
+ * - buffer[position] must be 0x20 (Start of Field marker)
+ * - Caller must validate buffer bounds before calling
+ */
+private FieldAttribute parseFieldAttribute(byte[] buffer, int position) { ... }
+```
+
+**✓ Use Case 3: Workarounds for External System Quirks**
+```java
+// WORKAROUND: Some IBM i versions send duplicate keyboard unlock signals.
+// First signal may be spurious (keyboard still locked).
+// Always wait 100ms and re-check OIA state before proceeding.
+Thread.sleep(100);
+if (!screen.getOIA().isKeyboardAvailable()) {
+  waitForKeyboardUnlock();  // Retry
+}
+```
+
+**✓ Use Case 4: Reference External Documentation**
+```java
+// Implements 5250 data stream protocol per RFC 2877 Section 4.3
+// Character Set Identifier (CSI) negotiation sequence
+byte[] csiNegotiation = buildCSINegotiation(codePage);
+```
+
+**✓ Use Case 5: TODOs and Known Limitations**
+```java
+// TODO(Phase 13): Add support for double-byte character sets (DBCS)
+// Current implementation assumes single-byte EBCDIC (code pages 37, 500, 273)
+// DBCS requires SO/SI (Shift Out/Shift In) handling in parseTextField()
+```
+
+---
+
+#### 3.4: Comment Density Guidelines
+
+**Target**: ≤ 10% comment-to-code ratio (excluding JavaDoc)
+
+**Measurement**:
+```bash
+# Good: 20 lines of code, 2 lines of comments (10%)
+# Warning: 20 lines of code, 5 lines of comments (25%) - over-commented
+# Bad: 20 lines of code, 10 lines of comments (50%) - comment crutch
+```
+
+**How to reduce comment density**:
+1. Extract methods with descriptive names
+2. Use constants for magic numbers
+3. Use enums for state machines
+4. Rename variables to reveal purpose
+
+**Before (40% comments, 5 lines code, 2 lines comments):**
+```java
+// Position in screen buffer
+int p = 0;
+// Loop counter
+int i = 0;
+// Get the attribute
+int a = getAttr();
+// Check if protected
+if ((a & 0x20) != 0) { ... }
+```
+
+**After (0% comments, 5 lines code, 0 comments):**
+```java
+int screenPosition = 0;
+int fieldIndex = 0;
+int fieldAttribute = getFieldAttribute();
+if (isProtectedField(fieldAttribute)) { ... }
+```
+
+---
+
+#### 3.5: JavaDoc: Document Contracts, Not Implementation
+
+**Good JavaDoc (Contract-Based):**
+```java
+/**
+ * Wait for keyboard to unlock with timeout.
+ *
+ * Keyboard unlock indicates IBM i is ready for input. This method
+ * polls the OIA (Operator Information Area) until isKeyboardAvailable()
+ * returns true or timeout expires.
+ *
+ * @param timeoutMs Maximum wait time in milliseconds
+ * @throws TimeoutException if keyboard remains locked after timeout
+ * @throws InterruptedException if polling is interrupted
+ *
+ * @see ScreenOIA#isKeyboardAvailable()
+ */
+public void waitForKeyboardUnlock(long timeoutMs) throws TimeoutException { ... }
+```
+
+**Bad JavaDoc (Repeats Code):**
+```java
+/**
+ * Wait for keyboard unlock.
+ *
+ * This method uses a while loop to check System.currentTimeMillis()
+ * and compares it to a deadline. It calls Thread.sleep(100) between
+ * checks. If the deadline is exceeded, it throws TimeoutException.
+ */
+public void waitForKeyboardUnlock(long timeoutMs) throws TimeoutException { ... }
+```
+
+**JavaDoc Checklist**:
+- [ ] Describes WHAT the method does (contract)
+- [ ] Explains WHY this method exists (use case)
+- [ ] Documents preconditions and postconditions
+- [ ] Lists exceptions and when they occur
+- [ ] ❌ Does NOT describe HOW (implementation details)
+- [ ] ❌ Does NOT repeat parameter names without context
+
+---
+
+#### 3.6: Integration with WRITING_STYLE.md
+
+Code comments follow the same clarity principles as documentation:
+
+| Principle | Application to Code Comments |
+|-----------|------------------------------|
+| **Clarity over cleverness** | Use plain language, avoid jargon unless necessary |
+| **Brevity over ceremony** | No "world's first" or "revolutionary" in comments |
+| **Active over passive** | "Waits for..." not "A wait is performed for..." |
+| **Concrete over abstract** | "Polls every 100ms" not "Polls periodically" |
+| **Simple over complex** | Short sentences, avoid nested clauses |
+
+**See**: [WRITING_STYLE.md](./WRITING_STYLE.md) for comprehensive writing guidelines.
+
+---
+
+#### 3.7: Examples - Comment Elimination Through Better Code
+
+**Example 1: Extract Method**
+
+**Before (Comment Crutch):**
+```java
+// Calculate checksum by XORing all bytes
+int checksum = 0;
+for (int i = 0; i < buffer.length; i++) {
+  checksum ^= buffer[i];
+}
+```
+
+**After (Self-Documenting):**
+```java
+int checksum = calculateXORChecksum(buffer);
+
+private int calculateXORChecksum(byte[] buffer) {
+  int result = 0;
+  for (byte b : buffer) {
+    result ^= b;
+  }
+  return result;
+}
+```
+
+---
+
+**Example 2: Use Constants**
+
+**Before (Comment Crutch):**
+```java
+// 0x20 is the Start of Field marker in 5250 protocol
+if (buffer[i] == 0x20) { ... }
+```
+
+**After (Self-Documenting):**
+```java
+private static final byte START_OF_FIELD_MARKER = 0x20;
+
+if (buffer[i] == START_OF_FIELD_MARKER) { ... }
+```
+
+---
+
+**Example 3: Use Enums for State**
+
+**Before (Comment Crutch):**
+```java
+// State values: 0=disconnected, 1=connecting, 2=connected, 3=error
+private int connectionState = 0;
+
+// Check if connected
+if (connectionState == 2) { ... }
+```
+
+**After (Self-Documenting):**
+```java
+private enum ConnectionState {
+  DISCONNECTED,
+  CONNECTING,
+  CONNECTED,
+  ERROR
+}
+
+private ConnectionState state = ConnectionState.DISCONNECTED;
+
+if (state == ConnectionState.CONNECTED) { ... }
+```
+
+---
+
+**Example 4: Descriptive Predicates**
+
+**Before (Comment Crutch):**
+```java
+// Check if this is a protected field (bit 5 set in attribute byte)
+if ((fieldAttr & 0x20) != 0) { ... }
+```
+
+**After (Self-Documenting):**
+```java
+if (isProtectedField(fieldAttr)) { ... }
+
+private boolean isProtectedField(int attribute) {
+  return (attribute & FIELD_PROTECT_BIT) != 0;
+}
+
+private static final int FIELD_PROTECT_BIT = 0x20;
+```
+
+---
+
+#### 3.8: When to Comment (Decision Tree)
+
+```
+                  Is the code unclear?
+                         |
+          +--------------+--------------+
+         YES                           NO
+          |                             |
+    Can naming fix it?           No comment needed
+          |
+    +-----+-----+
+   YES         NO
+    |           |
+Rename it   Is it WHY or HOW?
+ (done)          |
+          +------+------+
+         WHY           HOW
+          |             |
+    Add comment   Refactor code
+    (context)      (extract method,
+                    use constants,
+                    better names)
 
 ---
 

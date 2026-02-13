@@ -12,6 +12,7 @@
 package org.hti5250j.keyboard;
 
 import java.awt.event.KeyEvent;
+import org.hti5250j.interfaces.IKeyEvent;
 
 /**
  * This class is basically a wrapper for KeyEvent that is used internally to the
@@ -40,7 +41,7 @@ public class KeyStroker {
      *
      * @since 1.4
      */
-    public static final int KEY_LOCATION_UNKNOWN = 0;
+    public static final int KEY_LOCATION_UNKNOWN = KeyCodes.KEY_LOCATION_UNKNOWN;
 
     /**
      * A constant indicating that the key pressed or released
@@ -51,7 +52,7 @@ public class KeyStroker {
      *
      * @since 1.4
      */
-    public static final int KEY_LOCATION_STANDARD = 1;
+    public static final int KEY_LOCATION_STANDARD = KeyCodes.KEY_LOCATION_STANDARD;
 
     /**
      * A constant indicating that the key pressed or released is in
@@ -60,7 +61,7 @@ public class KeyStroker {
      *
      * @since 1.4
      */
-    public static final int KEY_LOCATION_LEFT = 2;
+    public static final int KEY_LOCATION_LEFT = KeyCodes.KEY_LOCATION_LEFT;
 
     /**
      * A constant indicating that the key pressed or released is in
@@ -69,7 +70,7 @@ public class KeyStroker {
      *
      * @since 1.4
      */
-    public static final int KEY_LOCATION_RIGHT = 3;
+    public static final int KEY_LOCATION_RIGHT = KeyCodes.KEY_LOCATION_RIGHT;
 
     /**
      * A constant indicating that the key event originated on the
@@ -78,7 +79,22 @@ public class KeyStroker {
      *
      * @since 1.4
      */
-    public static final int KEY_LOCATION_NUMPAD = 4;
+    public static final int KEY_LOCATION_NUMPAD = KeyCodes.KEY_LOCATION_NUMPAD;
+
+    /**
+     * Create a KeyStroker from an IKeyEvent (headless-compatible).
+     * @param ke the key event
+     */
+    public KeyStroker(IKeyEvent ke) {
+        this.keyCode = ke.getKeyCode();
+        this.isShiftDown = ke.isShiftDown();
+        this.isControlDown = ke.isControlDown();
+        this.isAltDown = ke.isAltDown();
+        this.isAltGrDown = ke.isAltGraphDown();
+        this.location = ke.getKeyLocation();
+
+        hashCode = computeHashCode();
+    }
 
     public KeyStroker(KeyEvent ke) {
 
@@ -90,12 +106,7 @@ public class KeyStroker {
         this.isAltGrDown = ke.isAltGraphDown();
         this.location = ke.getKeyLocation();
 
-        hashCode = keyCode +
-                (isShiftDown ? 1 : 0) +
-                (isControlDown ? 1 : 0) +
-                (isAltDown ? 1 : 0) +
-                (isAltGrDown ? 1 : 0) +
-                location;
+        hashCode = computeHashCode();
 
     }
 
@@ -109,12 +120,7 @@ public class KeyStroker {
         this.isAltGrDown = isAltGrDown;
         this.location = ke.getKeyLocation();
 
-        hashCode = keyCode +
-                (isShiftDown ? 1 : 0) +
-                (isControlDown ? 1 : 0) +
-                (isAltDown ? 1 : 0) +
-                (isAltGrDown ? 1 : 0) +
-                location;
+        hashCode = computeHashCode();
 
     }
 
@@ -132,12 +138,23 @@ public class KeyStroker {
         this.isAltGrDown = isAltGrDown;
         this.location = location;
 
-        hashCode = keyCode +
-                (isShiftDown ? 1 : 0) +
-                (isControlDown ? 1 : 0) +
-                (isAltDown ? 1 : 0) +
-                (isAltGrDown ? 1 : 0) +
-                location;
+        hashCode = computeHashCode();
+    }
+
+    /**
+     * Set attributes from an IKeyEvent (headless-compatible).
+     * @param ke the key event
+     * @param isAltGr whether AltGraph is down
+     */
+    public void setAttributes(IKeyEvent ke, boolean isAltGr) {
+        keyCode = ke.getKeyCode();
+        isShiftDown = ke.isShiftDown();
+        isControlDown = ke.isControlDown();
+        isAltDown = ke.isAltDown();
+        isAltGrDown = isAltGr;
+        location = ke.getKeyLocation();
+
+        hashCode = computeHashCode();
     }
 
     public void setAttributes(KeyEvent ke, boolean isAltGr) {
@@ -149,12 +166,22 @@ public class KeyStroker {
         isAltGrDown = isAltGr;
         location = ke.getKeyLocation();
 
-        hashCode = keyCode +
-                (isShiftDown ? 1 : 0) +
-                (isControlDown ? 1 : 0) +
-                (isAltDown ? 1 : 0) +
-                (isAltGrDown ? 1 : 0) +
-                location;
+        hashCode = computeHashCode();
+    }
+
+    /**
+     * Compute hash code using bit-shifting to avoid collisions.
+     * Layout: keyCode (bits 0-15) | shift (bit 16) | control (bit 17) |
+     *         alt (bit 18) | altGr (bit 19) | location (bits 20-23)
+     * @return computed hash code
+     */
+    private int computeHashCode() {
+        return keyCode
+             | (isShiftDown ? (1 << 16) : 0)
+             | (isControlDown ? (1 << 17) : 0)
+             | (isAltDown ? (1 << 18) : 0)
+             | (isAltGrDown ? (1 << 19) : 0)
+             | ((location & 0xF) << 20);
     }
 
     public int hashCode() {
@@ -183,6 +210,35 @@ public class KeyStroker {
 
     public int getLocation() {
         return location;
+    }
+
+    /**
+     * Check equality with an IKeyEvent (headless-compatible).
+     * @param ke the key event to compare
+     * @return true if equal
+     */
+    public boolean equals(IKeyEvent ke) {
+        return (keyCode == ke.getKeyCode() &&
+                isShiftDown == ke.isShiftDown() &&
+                isControlDown == ke.isControlDown() &&
+                isAltDown == ke.isAltDown() &&
+                isAltGrDown == ke.isAltGraphDown() &&
+                location == ke.getKeyLocation());
+    }
+
+    /**
+     * Check equality with an IKeyEvent and explicit AltGraph state.
+     * @param ke the key event to compare
+     * @param altGrDown the AltGraph state to compare
+     * @return true if equal
+     */
+    public boolean equals(IKeyEvent ke, boolean altGrDown) {
+        return (keyCode == ke.getKeyCode() &&
+                isShiftDown == ke.isShiftDown() &&
+                isControlDown == ke.isControlDown() &&
+                isAltDown == ke.isAltDown() &&
+                isAltGrDown == altGrDown &&
+                location == ke.getKeyLocation());
     }
 
     public boolean equals(KeyEvent ke) {
@@ -246,7 +302,7 @@ public class KeyStroker {
                 (isControlDown ? "Ctrl + " : "") +
                 (isAltDown ? "Alt + " : "") +
                 (isAltGrDown ? "Alt-Gr + " : "") +
-                KeyEvent.getKeyText(keyCode);
+                KeyCodes.getKeyText(keyCode);
     }
 
     public int getKeyCode() {

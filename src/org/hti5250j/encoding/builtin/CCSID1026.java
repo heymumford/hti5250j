@@ -6,65 +6,48 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-
-
-
 package org.hti5250j.encoding.builtin;
 
+import org.hti5250j.encoding.CCSIDFactory;
+
 /**
+ * EBCDIC CECP: Turkish (CCSID 1026) character encoding.
+ *
+ * Phase 3: Migrated to use factory pattern with JSON configuration.
+ * This class now delegates to CCSIDFactory for character mapping.
+ *
  * @author master_jaf
- * @see http://www-01.ibm.com/software/globalization/ccsid/ccsid1026.jsp
+ *
+ * @deprecated Use CCSIDFactory.getConverter("1026") directly.
+ * This wrapper will be removed in a future release.
  */
+@Deprecated(since = "Phase 3", forRemoval = true)
 public final class CCSID1026 extends CodepageConverterAdapter {
 
     public final static String NAME = "1026";
-    public final static String DESCR = "Turkey Latin 5";
+    public final static String DESCR = "CECP: Turkish";
 
-    /*
-     * Char maps manually extracted from JTOpen v6.4. Because char maps can't be
-     * covered by any license, this should legal.
+    private final CodepageConverterAdapter delegate;
+
+    /**
+     * Create a CCSID1026 converter using the factory pattern.
+     * Delegates to CCSIDFactory which loads mappings from JSON configuration.
      */
-    private static final char[] codepage = {'\u0000', '\u0001', '\u0002',
-            '\u0003', '\u009C', '\t', '\u0086', '\u007F', '\u0097', '\u008D',
-            '\u008E', '\u000B', '\f', '\r', '\u000E', '\u000F', '\u0010',
-            '\u0011', '\u0012', '\u0013', '\u009D', '\u0085', '\u0008',
-            '\u0087', '\u0018', '\u0019', '\u0092', '\u008F', '\u001C',
-            '\u001D', '\u001E', '\u001F', '\u0080', '\u0081', '\u0082',
-            '\u0083', '\u0084', '\n', '\u0017', '\u001B', '\u0088', '\u0089',
-            '\u008A', '\u008B', '\u008C', '\u0005', '\u0006', '\u0007',
-            '\u0090', '\u0091', '\u0016', '\u0093', '\u0094', '\u0095',
-            '\u0096', '\u0004', '\u0098', '\u0099', '\u009A', '\u009B',
-            '\u0014', '\u0015', '\u009E', '\u001A', ' ', '\u00A0', '\u00E2',
-            '\u00E4', '\u00E0', '\u00E1', '\u00E3', '\u00E5', '{', '\u00F1',
-            '\u00C7', '.', '<', '(', '+', '!', '&', '\u00E9', '\u00EA',
-            '\u00EB', '\u00E8', '\u00ED', '\u00EE', '\u00EF', '\u00EC',
-            '\u00DF', '\u011E', '\u0130', '*', ')', ';', '^', '-', '/',
-            '\u00C2', '\u00C4', '\u00C0', '\u00C1', '\u00C3', '\u00C5', '[',
-            '\u00D1', '\u015F', ',', '%', '_', '>', '?', '\u00F8', '\u00C9',
-            '\u00CA', '\u00CB', '\u00C8', '\u00CD', '\u00CE', '\u00CF',
-            '\u00CC', '\u0131', ':', '\u00D6', '\u015E', '\'', '=', '\u00DC',
-            '\u00D8', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', '\u00AB',
-            '\u00BB', '}', '`', '\u00A6', '\u00B1', '\u00B0', 'j', 'k', 'l',
-            'm', 'n', 'o', 'p', 'q', 'r', '\u00AA', '\u00BA', '\u00E6',
-            '\u00B8', '\u00C6', '\u00A4', '\u00B5', '\u00F6', 's', 't', 'u',
-            'v', 'w', 'x', 'y', 'z', '\u00A1', '\u00BF', ']', '$', '@',
-            '\u00AE', '\u00A2', '\u00A3', '\u00A5', '\u00B7', '\u00A9',
-            '\u00A7', '\u00B6', '\u00BC', '\u00BD', '\u00BE', '\u00AC', '|',
-            '\u00AF', '\u00A8', '\u00B4', '\u00D7', '\u00E7', 'A', 'B', 'C',
-            'D', 'E', 'F', 'G', 'H', 'I', '\u00AD', '\u00F4', '~', '\u00F2',
-            '\u00F3', '\u00F5', '\u011F', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-            'Q', 'R', '\u00B9', '\u00FB', '\\', '\u00F9', '\u00FA', '\u00FF',
-            '\u00FC', '\u00F7', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            '\u00B2', '\u00D4', '#', '\u00D2', '\u00D3', '\u00D5', '0', '1',
-            '2', '3', '4', '5', '6', '7', '8', '9', '\u00B3', '\u00DB', '"',
-            '\u00D9', '\u00DA', '\u009F',};
-
-    public String getName() {
-        return NAME;
+    public CCSID1026() {
+        this.delegate = CCSIDFactory.getConverter("1026");
+        if (this.delegate == null) {
+            throw new RuntimeException("CCSID1026 mappings not found in factory");
+        }
     }
 
+    @Override
+    public String getName() {
+        return delegate.getName();
+    }
+
+    @Override
     public String getDescription() {
-        return DESCR;
+        return delegate.getDescription();
     }
 
     public String getEncoding() {
@@ -72,7 +55,35 @@ public final class CCSID1026 extends CodepageConverterAdapter {
     }
 
     @Override
+    public CodepageConverterAdapter init() {
+        delegate.init();
+        return this;
+    }
+
+    @Override
+    public char ebcdic2uni(int index) {
+        return delegate.ebcdic2uni(index);
+    }
+
+    @Override
+    public byte uni2ebcdic(char index) {
+        return delegate.uni2ebcdic(index);
+    }
+
+    @Override
     protected char[] getCodePage() {
-        return codepage;
+        // This method is abstract in CodepageConverterAdapter and must be implemented
+        // but we delegate all conversion work to the factory converter
+        throw new UnsupportedOperationException("Use factory converter directly");
+    }
+
+    @Override
+    public boolean isDoubleByteActive() {
+        return delegate.isDoubleByteActive();
+    }
+
+    @Override
+    public boolean secondByteNeeded() {
+        return delegate.secondByteNeeded();
     }
 }

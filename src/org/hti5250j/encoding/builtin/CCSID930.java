@@ -97,4 +97,26 @@ public final class CCSID930 implements ICodepageConverter {
     public boolean secondByteNeeded() {
         return secondByteNeeded.get();
     }
+
+    /**
+     * Check if the given byte is a shift-in control character (0x0E).
+     * Shift-in activates double-byte mode for processing DBCS characters.
+     *
+     * @param aByte the byte value to check
+     * @return true if the byte is a shift-in character, false otherwise
+     */
+    public boolean isShiftIn(int aByte) {
+        return (aByte & 0xff) == SHIFT_IN;
+    }
+
+    /**
+     * Check if the given byte is a shift-out control character (0x0F).
+     * Shift-out deactivates double-byte mode and returns to single-byte processing.
+     *
+     * @param aByte the byte value to check
+     * @return true if the byte is a shift-out character, false otherwise
+     */
+    public boolean isShiftOut(int aByte) {
+        return (aByte & 0xff) == SHIFT_OUT;
+    }
 }

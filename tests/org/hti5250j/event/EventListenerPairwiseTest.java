@@ -628,8 +628,8 @@ public class EventListenerPairwiseTest {
         }
 
         void fireSessionChanged(String message, int state) {
-            SessionChangeEvent event = new SessionChangeEvent(this, message);
-            event.setState(state);
+            // SessionChangeEvent is now immutable - use constructor with all parameters
+            SessionChangeEvent event = new SessionChangeEvent(this, message, state);
             for (SessionListener listener : sessionListeners) {
                 listener.onSessionChanged(event);
             }

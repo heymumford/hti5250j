@@ -25,9 +25,20 @@ import org.hti5250j.SessionPanel;
 import org.hti5250j.event.KeyChangeListener;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.tools.system.OperatingSystem;
+import org.hti5250j.interfaces.IKeyEvent;
+import org.hti5250j.headless.HeadlessKeyEvent;
 
 /**
+ * Swing-compatible keyboard handler with headless delegation.
  *
+ * This class bridges Swing KeyEvent processing to the headless-compatible
+ * IKeyHandler interface, enabling operation in both GUI and server
+ * environments.
+ *
+ * Wave 3A Track 3: IKeyHandler interface extraction (DEPRECATED wrapper)
+ *
+ * @deprecated Use IKeyHandler and HeadlessKeyboardHandler directly for
+ *             new code. This class is maintained for backward compatibility.
  */
 public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeListener {
 
@@ -41,6 +52,12 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
     protected String lastKeyStroke = null;
     protected StringBuffer recordBuffer;
     protected boolean recording;
+
+    /**
+     * Headless-compatible delegate for cross-platform operation.
+     * @since Wave 3A Track 3
+     */
+    protected IKeyHandler headlessDelegate;
 
     /**
      * Creates a new keyboard handler.
@@ -165,6 +182,68 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
             case KeyEvent.KEY_RELEASED:
                 keyReleased(evt);
                 break;
+        }
+    }
+
+    /**
+     * Bridge method to support headless operation via IKeyHandler.
+     *
+     * Converts Swing KeyEvent to IKeyEvent and delegates to
+     * headless handler for cross-platform compatibility.
+     *
+     * @param evt the Swing KeyEvent
+     * @return true if the event was handled
+     *
+     * @since Wave 3A Track 3
+     */
+    public boolean processKeyEventHeadless(KeyEvent evt) {
+        if (headlessDelegate == null) {
+            return false;
+        }
+
+        try {
+            // Convert Swing KeyEvent to platform-independent IKeyEvent
+            IKeyEvent keyEvent = new HeadlessKeyEvent(
+                evt.getKeyCode(),
+                evt.isShiftDown(),
+                evt.isControlDown(),
+                evt.isAltDown(),
+                evt.isAltGraphDown(),
+                evt.getKeyLocation(),
+                evt.getKeyChar()
+            );
+
+            return headlessDelegate.handleKey(keyEvent);
+        } catch (Exception e) {
+            System.err.println("Error processing key event in headless mode: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get the headless delegate handler.
+     *
+     * @return the IKeyHandler delegate, or null if not set
+     *
+     * @since Wave 3A Track 3
+     */
+    public IKeyHandler getHeadlessDelegate() {
+        return headlessDelegate;
+    }
+
+    /**
+     * Set the headless delegate handler.
+     *
+     * Used for dependency injection of custom key handler implementations.
+     *
+     * @param delegate the IKeyHandler to use
+     *
+     * @since Wave 3A Track 3
+     */
+    public void setHeadlessDelegate(IKeyHandler delegate) {
+        this.headlessDelegate = delegate;
+        if (delegate != null) {
+            delegate.setKeyMapper(keyMap);
         }
     }
 

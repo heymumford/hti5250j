@@ -495,8 +495,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
     private void fireSessionJump(int dir) {
         if (sessionJumpListeners != null) {
             int size = sessionJumpListeners.size();
-            final SessionJumpEvent jumpEvent = new SessionJumpEvent(this);
-            jumpEvent.setJumpDirection(dir);
+            final SessionJumpEvent jumpEvent = new SessionJumpEvent(this, dir, null);
             for (int i = 0; i < size; i++) {
                 SessionJumpListener target = sessionJumpListeners.elementAt(i);
                 target.onSessionJump(jumpEvent);
@@ -669,7 +668,7 @@ public class SessionPanel extends JPanel implements RubberBandCanvasIF, SessionC
 
         //Rectangle r = g.getClipBounds();
 
-        graphics2D.setColor(guiGraBuf.colorBg);
+        graphics2D.setColor(guiGraBuf.getBackgroundColor());
         graphics2D.fillRect(0, 0, getWidth(), getHeight());
 
         guiGraBuf.drawImageBuffer(graphics2D);

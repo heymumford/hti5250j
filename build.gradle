@@ -25,6 +25,7 @@ repositories {
 dependencies {
     implementation runtimeLibs
     implementation devLibs
+    implementation 'com.google.code.gson:gson:2.10.1'
 
     testImplementation runtimeLibs
     testImplementation devLibs
@@ -41,10 +42,10 @@ dependencies {
 sourceSets {
     main {
         java { srcDirs = ['src'] }
-        resources { srcDirs = ['resources'] }
+        resources { srcDirs = ['resources', 'src/main/resources'] }
     }
     test {
-        java { srcDirs = ['tests'] }
+        java { srcDirs = ['tests', 'src/test/java'] }
     }
 }
 
