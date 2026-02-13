@@ -12,7 +12,7 @@ jobs:
   # Matrix test execution: 6 parallel jobs for 4x speedup
   test:
     runs-on: ubuntu-latest
-    name: Test Suite
+    name: test (${{ matrix.test-category }})
     strategy:
       matrix:
         test-category:
@@ -89,7 +89,7 @@ jobs:
 
   performance:
     runs-on: ubuntu-latest
-    name: Performance Testing
+    name: performance
     continue-on-error: false
     steps:
       - name: Checkout
@@ -167,7 +167,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
-    name: Security Scanning
+    name: security
     continue-on-error: true
     steps:
       - name: Checkout
