@@ -29,7 +29,6 @@ public class StepValidator {
             return result;
         }
 
-        // Validate timeout if present
         if (step.getTimeout() != null) {
             if (step.getTimeout() < MIN_TIMEOUT) {
                 result.addError(stepIndex, "timeout",

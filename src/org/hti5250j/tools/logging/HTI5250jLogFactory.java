@@ -13,7 +13,6 @@ package org.hti5250j.tools.logging;
 
 import java.util.*;
 
-import org.hti5250j.tools.logging.HTI5250jLogger;
 import org.hti5250j.interfaces.ConfigureFactory;
 
 import static java.lang.Integer.parseInt;

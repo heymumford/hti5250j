@@ -9,38 +9,11 @@ package org.hti5250j.event;
 import java.util.EventObject;
 
 /**
- * Bootstrap event data converted to record-like semantics.
- *
- * While Java 21 Records cannot extend non-record classes (EventObject),
- * this class provides record-like semantics with immutable fields and
- * auto-generated equals/hashCode/toString methods, reducing boilerplate
- * by 80% compared to the original mutable implementation.
- *
- * Immutability:
- * - All fields are declared final and initialized in constructor
- * - No setters are provided (deprecated methods are no-ops for source compatibility)
- * - Thread-safe: Can be safely shared across listeners without synchronization
- *
- * Record-like Components:
- * - source(): The event source (required by EventObject contract)
- * - bootOptions(): Session boot options string (never null)
- * - message(): Optional message describing bootstrap state (never null)
- *
- * Usage:
- * ```
- * // Traditional constructor (most compatible)
- * BootEvent event = new BootEvent(source, "session=S001");
- *
- * // Record-like component accessors
- * String options = event.bootOptions();
- * String msg = event.message();
- *
- * // Backward-compatible getter methods
- * String options = event.getNewSessionOptions();
- * String msg = event.getMessage();
- * ```
- *
- * @since Phase 15D (Java 21 modernization with TDD)
+ * Bootstrap event data with immutable fields and record-like semantics.
+ * <p>
+ * All fields are final and initialized in the constructor. Deprecated setter
+ * methods are no-ops retained for source compatibility. Thread-safe for
+ * sharing across listeners without synchronization.
  */
 public class BootEvent extends EventObject {
 
@@ -94,99 +67,57 @@ public class BootEvent extends EventObject {
         this.message = message != null ? message : "";
     }
 
-    /**
-     * Record-like component accessor for source.
-     *
-     * @return the event source
-     */
+    /** @return the event source */
     public Object source() {
         return getSource();
     }
 
-    /**
-     * Record-like component accessor for boot options.
-     *
-     * @return the boot options (never null)
-     */
+    /** @return the boot options (never null) */
     public String bootOptions() {
         return bootOptions;
     }
 
-    /**
-     * Record-like component accessor for message.
-     *
-     * @return the message (never null)
-     */
+    /** @return the message (never null) */
     public String message() {
         return message;
     }
 
-    /**
-     * Backward-compatible accessor for session options.
-     * Record-style component accessor: bootOptions()
-     *
-     * @return the boot options (never null)
-     */
+    /** @return the boot options (never null) */
     public String getNewSessionOptions() {
         return bootOptions;
     }
 
     /**
-     * Backward-compatible mutator for session options.
-     *
-     * NOTE: This class is now effectively immutable. This method is provided
-     * for source compatibility only and does NOT modify this event.
-     * Code should migrate to creating new BootEvent instances with the
-     * desired options.
-     *
-     * @param options the new options (ignored due to immutability)
-     * @deprecated Immutable; create a new BootEvent instance instead
+     * @param options the new options (ignored -- this class is immutable)
+     * @deprecated Create a new BootEvent instance instead
      */
-    @Deprecated(forRemoval = true, since = "Phase 15D")
+    @Deprecated(forRemoval = true)
     public void setNewSessionOptions(String options) {
-        // No-op: Fields are final and immutable
-        // Existing code that calls this method will not break, but the call has no effect
+        // No-op: fields are final and immutable
     }
 
-    /**
-     * Backward-compatible accessor for bootstrap message.
-     * Record-style component accessor: message()
-     *
-     * @return the message (never null)
-     */
+    /** @return the message (never null) */
     public String getMessage() {
         return message;
     }
 
     /**
-     * Backward-compatible mutator for bootstrap message.
-     *
-     * NOTE: This class is now effectively immutable. This method is provided
-     * for source compatibility only and does NOT modify this event.
-     * Code should migrate to creating new BootEvent instances with the
-     * desired message.
-     *
-     * @param msg the new message (ignored due to immutability)
-     * @deprecated Immutable; create a new BootEvent instance instead
+     * @param msg the new message (ignored -- this class is immutable)
+     * @deprecated Create a new BootEvent instance instead
      */
-    @Deprecated(forRemoval = true, since = "Phase 15D")
+    @Deprecated(forRemoval = true)
     public void setMessage(String msg) {
-        // No-op: Fields are final and immutable
-        // Existing code that calls this method will not break, but the call has no effect
+        // No-op: fields are final and immutable
     }
 
-    /**
-     * Value-based equality (record-style semantics).
-     *
-     * Two BootEvents are equal if they have the same source, boot options, and message.
-     *
-     * @param obj the object to compare
-     * @return true if this event equals the other object
-     */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof BootEvent)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof BootEvent)) {
+            return false;
+        }
 
         BootEvent other = (BootEvent) obj;
         return (getSource() == null ? other.getSource() == null : getSource().equals(other.getSource())) &&
@@ -194,11 +125,6 @@ public class BootEvent extends EventObject {
                message.equals(other.message);
     }
 
-    /**
-     * Consistent hashCode with equals (record-style semantics).
-     *
-     * @return hash code for this event
-     */
     @Override
     public int hashCode() {
         int result = getSource() != null ? getSource().hashCode() : 0;
@@ -207,11 +133,6 @@ public class BootEvent extends EventObject {
         return result;
     }
 
-    /**
-     * Useful string representation (record-style semantics).
-     *
-     * @return string representation of this event
-     */
     @Override
     public String toString() {
         return "BootEvent{" +

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Properties;
 
-import org.hti5250j.ExternalProgramConfig;
 import org.hti5250j.interfaces.ConfigureFactory;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
 import org.hti5250j.tools.logging.HTI5250jLogger;
@@ -107,9 +106,6 @@ public class OperatingSystem {
      *            "https://","mailto:" or "file://").
      */
     public static void displayURL(String url) {
-        // Check Customized External Program first
-        if (launchExternalProgram(url)) return;
-
         // first let's check if we have an external protocol program defined
         String command = null;
         String protocol = "";
@@ -118,8 +114,9 @@ public class OperatingSystem {
         try {
             urlUrl = new java.net.URL(url);
             protocol = urlUrl.getProtocol();
-            if (protocol.startsWith("http"))
+            if (protocol.startsWith("http")) {
                 protocol = "http";
+            }
         } catch (MalformedURLException e) {
             LOG.warn(e.getMessage());
         }
@@ -133,8 +130,9 @@ public class OperatingSystem {
 
             Object[] urlParm = new Object[1];
             urlParm[0] = url;
-            if (commandTemplate.lastIndexOf("{0}") == -1)
+            if (commandTemplate.lastIndexOf("{0}") == -1) {
                 commandTemplate += " {0}";
+            }
             java.text.MessageFormat format = new java.text.MessageFormat(commandTemplate);
             try {
                 command = format.format(urlParm);
@@ -189,39 +187,6 @@ public class OperatingSystem {
         }
     }
 
-    /**
-     * @param url
-     * @return true when found external program and has been launched; false when not found external program.
-     */
-    private static boolean launchExternalProgram(String url) {
-        // first let's check if we have an external protocol program defined
-        try {
-            Properties properties = ExternalProgramConfig.getInstance().getEtnPgmProps();
-            String count = properties.getProperty("etn.pgm.support.total.num");
-            if (count != null && count.length() > 0) {
-                int total = Integer.parseInt(count);
-                for (int i = 1; i <= total; i++) {
-                    String program = properties.getProperty("etn.pgm." + i + ".command.name");
-                    if (url.toLowerCase().startsWith(program.toLowerCase())) {
-                        String params = url.substring(program.length() + 1);
-                        params = params.replace(',', ' ');
-                        String command;
-                        if (isWindows()) {
-                            command = properties.getProperty("etn.pgm." + i + ".command.window") + " " + params;
-                        } else {
-                            command = properties.getProperty("etn.pgm." + i + ".command.unix") + " " + params;
-                        }
-                        LOG.info("Execute External Program: " + command);
-                        execute(command);
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception exx) {
-            LOG.warn("Unable to run External Program: " + exx.getMessage());
-        }
-        return false;
-    }
 
     public static int execute(String command) {
 
@@ -237,12 +202,11 @@ public class OperatingSystem {
 //         if (exitCode != 0) {
 //            log.warn("Error processing command, command='" + command + "'");
 //         }
-        }
-//      catch (InterruptedException exc) {
-//         log.warn("Error processing command, command='" + command + "'");
-//         log.warn("Caught: " + exc.getMessage());
 //      }
-        catch (IOException ioe) {
+//         log.warn("Caught: " + exc.getMessage());
+//         log.warn("Error processing command, command='" + command + "'");
+//      catch (InterruptedException exc) {
+        } catch (IOException ioe) {
             LOG.warn("Error processing command, command='" + command + "'");
             LOG.warn("Caught: " + ioe.getMessage());
         }
@@ -293,8 +257,9 @@ public class OperatingSystem {
             }
         }
 
-        if (System.getProperty("java.version").compareTo("1.4") >= 0)
+        if (System.getProperty("java.version").compareTo("1.4") >= 0) {
             java14 = true;
+        }
 
     } //}}}
 

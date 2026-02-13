@@ -28,9 +28,6 @@ import java.nio.charset.CharsetEncoder;
         this.decoder = decoder;
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.encoding.CodePage#ebcdic2uni(int)
-     */
     @Override
     public char ebcdic2uni(int codepoint) {
         try {
@@ -42,9 +39,6 @@ import java.nio.charset.CharsetEncoder;
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.encoding.CodePage#uni2ebcdic(char)
-     */
     @Override
     public byte uni2ebcdic(char character) {
         try {

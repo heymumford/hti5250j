@@ -29,24 +29,24 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
 public class Screen5250 {
 
     // error codes to be sent to the host on an error
-    private final static int ERR_CURSOR_PROTECTED = 0x05;
-    private final static int ERR_INVALID_SIGN = 0x11;
-    private final static int ERR_NO_ROOM_INSERT = 0x12;
-    private final static int ERR_NUMERIC_ONLY = 0x09;
-    private final static int ERR_DUP_KEY_NOT_ALLOWED = 0x19;
-    private final static int ERR_NUMERIC_09 = 0x10;
-    private final static int ERR_FIELD_MINUS = 0x16;
-    private final static int ERR_FIELD_EXIT_INVALID = 0x18;
-    private final static int ERR_ENTER_NO_ALLOWED = 0x20;
-    private final static int ERR_MANDITORY_ENTER = 0x21;
+    private static final int ERR_CURSOR_PROTECTED = 0x05;
+    private static final int ERR_INVALID_SIGN = 0x11;
+    private static final int ERR_NO_ROOM_INSERT = 0x12;
+    private static final int ERR_NUMERIC_ONLY = 0x09;
+    private static final int ERR_DUP_KEY_NOT_ALLOWED = 0x19;
+    private static final int ERR_NUMERIC_09 = 0x10;
+    private static final int ERR_FIELD_MINUS = 0x16;
+    private static final int ERR_FIELD_EXIT_INVALID = 0x18;
+    private static final int ERR_ENTER_NO_ALLOWED = 0x20;
+    private static final int ERR_MANDITORY_ENTER = 0x21;
 
-    final static byte STATUS_SYSTEM = 1;
-    final static byte STATUS_ERROR_CODE = 2;
-    final static byte STATUS_VALUE_ON = 1;
-    final static byte STATUS_VALUE_OFF = 2;
+    static final byte STATUS_SYSTEM = 1;
+    static final byte STATUS_ERROR_CODE = 2;
+    static final byte STATUS_VALUE_ON = 1;
+    static final byte STATUS_VALUE_OFF = 2;
 
-    final static int initAttr = 32;
-    final static char initChar = 0;
+    static final int initAttr = 32;
+    static final char initChar = 0;
 
     private final KeyMnemonicResolver keyMnemonicResolver = new KeyMnemonicResolver();
     private final HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
@@ -87,12 +87,10 @@ public class Screen5250 {
     // screen planes
     protected ScreenPlanes planes;
 
-    //Added by Barry
     private StringBuffer keybuf;
 
     public Screen5250() {
 
-        //Added by Barry
         this.keybuf = new StringBuffer();
 
         try {
@@ -146,8 +144,9 @@ public class Screen5250 {
 
         //  If they are not the same then we need to inform the listeners that
         //  the size changed.
-        if (oldRows != numRows || oldCols != numCols)
+        if (oldRows != numRows || oldCols != numCols) {
             fireScreenSizeChanged();
+        }
 
     }
 
@@ -200,10 +199,11 @@ public class Screen5250 {
                 // only copy printable characters (in this case >= ' ')
                 char c = planes.getChar(getPos(m - 1, i - 1));
                 if (c >= ' ' && (planes.screenExtended[getPos(m - 1, i - 1)] & EXTENDED_5250_NON_DSP)
-                        == 0)
+                        == 0) {
                     sb.append(c);
-                else
+                } else {
                     sb.append(' ');
+                }
 
                 i++;
             }
@@ -259,8 +259,9 @@ public class Screen5250 {
 
                 // If we go paste the end of the screen then let's start over from
                 //   the beginning of the screen space.
-                if (cpos > length)
+                if (cpos > length) {
                     cpos = 0;
+                }
             } else {
 
                 // we will default to set the character always.
@@ -268,8 +269,9 @@ public class Screen5250 {
 
                 // If we are in a special paste scenario then we check for valid
                 //   characters to paste.
-                if (special && (!Character.isLetter(c) && !Character.isDigit(c)))
+                if (special && (!Character.isLetter(c) && !Character.isDigit(c))) {
                     setIt = false;
+                }
 
                 // we will only push a character to the screen space if we are in
                 //  a field
@@ -279,16 +281,18 @@ public class Screen5250 {
                     screenFields.setCurrentFieldMDT();
                 }
                 //  If we placed a character then we go to the next position.
-                if (setIt)
+                if (setIt) {
                     cpos++;
+                }
                 // we will append the information to our debug buffer.
                 pd.append(c);
             }
         }
 
         // if we have anything else not logged then log it out.
-        if (pd.length() > 0)
+        if (pd.length() > 0) {
             log.info("pasted >" + pd + "<");
+        }
 
         // restore out position within the FFT.
         screenFields.restoreCurrentField();
@@ -356,12 +360,8 @@ public class Screen5250 {
             while (t-- > 0) {
 
                 // only copy printable numeric characters (in this case >= ' ')
-                //				char c = screen[getPos(m - 1, i - 1)].getChar();
                 char c = planes.getChar(getPos(m - 1, i - 1));
-                //				if (((c >= '0' && c <= '9') || c == '.' || c == ',' || c == '-')
-                //						&& !screen[getPos(m - 1, i - 1)].nonDisplay) {
 
-                // TODO: update me here to implement the nonDisplay check as well
                 if (((c >= '0' && c <= '9') || c == '.' || c == ',' || c == '-')) {
                     sb.append(c);
                 }
@@ -402,8 +402,9 @@ public class Screen5250 {
 
         if (!oia.isKeyBoardLocked()) {
 
-            if (pos < 0)
+            if (pos < 0) {
                 return false;
+            }
             // because getRowColFromPoint returns offset of 1,1 we need to
             //    translate to offset 0,0
             //         pos -= (numCols + 1);
@@ -418,12 +419,14 @@ public class Screen5250 {
                     case BUTTON_RIGHT:
                     case BUTTON_MIDDLE:
                         while (planes.getWhichGUI(--pos) != BUTTON_LEFT) {
+                            // no-op
                         }
                     case BUTTON_LEFT:
                         if (planes.getChar(pos) == 'F') {
                             pos++;
-                        } else
+                        } else {
                             aidFlag = false;
+                        }
 
                         if (planes.getChar(pos + 1) != '='
                                 && planes.getChar(pos + 1) != '.'
@@ -437,6 +440,8 @@ public class Screen5250 {
                         }
                         break;
 
+                    default:
+                        break;
                 }
                 if (aidFlag) {
                     switch (g) {
@@ -463,10 +468,10 @@ public class Screen5250 {
                         case BUTTON_MIDDLE_EB:
                         case BUTTON_RIGHT_EB:
                             StringBuffer eb = new StringBuffer();
-                            while (planes.getWhichGUI(pos--) != BUTTON_LEFT_EB)
-                                ;
+                            while (planes.getWhichGUI(pos--) != BUTTON_LEFT_EB) {
                             while (planes.getWhichGUI(pos++) != BUTTON_RIGHT_EB) {
                                 eb.append(planes.getChar(pos));
+                            }
                             }
                             org.hti5250j.tools.system.OperatingSystem.displayURL(eb
                                     .toString());
@@ -477,20 +482,19 @@ public class Screen5250 {
 
                         default:
                             int aidKey = Integer.parseInt(aid.toString());
-                            if (aidKey >= 1 && aidKey <= 12)
+                            if (aidKey >= 1 && aidKey <= 12) {
                                 sessionVT.sendAidKey(0x30 + aidKey);
-                            if (aidKey >= 13 && aidKey <= 24)
+                            }
+                            if (aidKey >= 13 && aidKey <= 24) {
                                 sessionVT.sendAidKey(0xB0 + (aidKey - 12));
+                            }
                     }
                 } else {
                     if (screenFields.getCurrentField() != null) {
                         int xPos = screenFields.getCurrentField().startPos();
                         for (int x = 0; x < aid.length(); x++) {
-                            //                  System.out.println(sr + "," + (sc + x) + " " +
-                            // aid.charAt(x));
                             planes.setChar(xPos + x, aid.charAt(x));
                         }
-                        //                  System.out.println(aid);
                         screenFields.setCurrentFieldMDT();
                         sessionVT.sendAidKey(AID_ENTER);
                     }
@@ -500,20 +504,13 @@ public class Screen5250 {
                 // but something else here was done like aid keys or the such
                 return false;
             }
-            // this is a note to not execute this code here when we
-            // implement
-            //   the remain after edit function option.
-            //				if (gui.rubberband.isAreaSelected()) {
-            //					gui.rubberband.reset();
-            //					gui.repaint();
-            //				} else {
             goto_XY(pos);
             isInField(lastPos);
 
             // return back to the calling object that the cursor was indeed
             //  moved with in the screen object
             return true;
-            //				}
+            //                }
         }
         return false;
     }
@@ -525,10 +522,11 @@ public class Screen5250 {
 
     protected void setPrehelpState(boolean setErrorCode, boolean lockKeyboard,
                                    boolean unlockIfLocked) {
-        if (oia.isKeyBoardLocked() && unlockIfLocked)
+        if (oia.isKeyBoardLocked() && unlockIfLocked) {
             oia.setKeyBoardLocked(false);
-        else
+        } else {
             oia.setKeyBoardLocked(lockKeyboard);
+        }
         bufferedKeys = null;
         oia.setKeysBuffered(false);
 
@@ -571,7 +569,6 @@ public class Screen5250 {
         }
     }
 
-    //Added by Barry
     public String getKeys() {
         String result = this.keybuf.toString();
         this.keybuf = new StringBuffer();
@@ -788,8 +785,9 @@ public class Screen5250 {
 
                 if (!screenFields.isCanSendAid()) {
                     displayError(ERR_ENTER_NO_ALLOWED);
-                } else
+                } else {
                     sendAid(mnem);
+                }
                 simulated = true;
 
                 break;
@@ -809,9 +807,9 @@ public class Screen5250 {
                         && !screenFields.isCurrentFieldBypassField()) {
 
                     if (screenFields.getCurrentField().startPos() == lastPos) {
-                        if (backspaceError)
+                        if (backspaceError) {
                             displayError(ERR_CURSOR_PROTECTED);
-                        else {
+                        } else {
                             gotoFieldPrev();
                             goto_XY(screenFields.getCurrentField().endPos());
                             updateDirty();
@@ -838,8 +836,9 @@ public class Screen5250 {
                     resetDirty(screenFields.getCurrentField().startPos);
                     gotoFieldPrev();
                     updateDirty();
-                } else
+                } else {
                     gotoFieldPrev();
+                }
 
                 if (screenFields.isCurrentFieldContinued()) {
                     do {
@@ -902,8 +901,9 @@ public class Screen5250 {
                         resetDirty(screenFields.getCurrentField().startPos);
                         gotoFieldNext();
                         updateDirty();
-                    } else
+                    } else {
                         gotoFieldNext();
+                    }
                 } else {
                     do {
                         gotoFieldNext();
@@ -946,8 +946,9 @@ public class Screen5250 {
                         } else {
                             do {
                                 gotoFieldNext();
-                                if (screenFields.isCurrentFieldContinued())
+                                if (screenFields.isCurrentFieldContinued()) {
                                     fieldExit();
+                                }
                             } while (screenFields.isCurrentFieldContinuedMiddle()
                                     || screenFields.isCurrentFieldContinuedLast());
                         }
@@ -976,8 +977,9 @@ public class Screen5250 {
                         } else {
                             do {
                                 gotoFieldNext();
-                                if (screenFields.isCurrentFieldContinued())
+                                if (screenFields.isCurrentFieldContinued()) {
                                     fieldExit();
+                                }
                             } while (screenFields.isCurrentFieldContinuedMiddle()
                                     || screenFields.isCurrentFieldContinuedLast());
                         }
@@ -993,7 +995,7 @@ public class Screen5250 {
                 break;
             case INSERT:
                 // we toggle it
-                oia.setInsertMode(oia.isInsertMode() ? false : true);
+                oia.setInsertMode(!oia.isInsertMode());
                 break;
             case HOME:
                 // position to the home position set
@@ -1001,8 +1003,9 @@ public class Screen5250 {
                     goto_XY(homePos - numCols - 1);
                     // now check if we are in a field
                     isInField(lastPos);
-                } else
+                } else {
                     gotoField(1);
+                }
                 break;
             case KEYPAD_0:
                 simulated = simulateKeyStroke('0');
@@ -1065,8 +1068,9 @@ public class Screen5250 {
                             }
                             simulated = true;
                             updateDirty();
-                            if (screenFields.isCurrentFieldAutoEnter())
+                            if (screenFields.isCurrentFieldAutoEnter()) {
                                 sendAid(AID_ENTER);
+                            }
 
                         }
                     } else {
@@ -1095,8 +1099,9 @@ public class Screen5250 {
                         } else {
                             do {
                                 gotoFieldNext();
-                                if (screenFields.isCurrentFieldContinued())
+                                if (screenFields.isCurrentFieldContinued()) {
                                     fieldExit();
+                                }
                             } while (screenFields.isCurrentFieldContinuedMiddle()
                                     || screenFields.isCurrentFieldContinuedLast());
                         }
@@ -1104,8 +1109,9 @@ public class Screen5250 {
 
                     updateDirty();
                     simulated = true;
-                    if (autoFE)
+                    if (autoFE) {
                         sendAid(AID_ENTER);
+                    }
 
                 } else {
                     displayError(ERR_CURSOR_PROTECTED);
@@ -1135,8 +1141,9 @@ public class Screen5250 {
                     updateDirty();
                     simulated = true;
 
-                    if (autoFE)
+                    if (autoFE) {
                         sendAid(AID_ENTER);
+                    }
 
                 } else {
                     displayError(ERR_CURSOR_PROTECTED);
@@ -1172,8 +1179,9 @@ public class Screen5250 {
                         }
                         updateDirty();
                         simulated = true;
-                        if (autoFE)
+                        if (autoFE) {
                             sendAid(AID_ENTER);
+                        }
 
                     } else {
                         displayError(ERR_FIELD_MINUS);
@@ -1243,8 +1251,9 @@ public class Screen5250 {
                     int startRow = getRow(lastPos) + 1;
                     int startPos = lastPos;
 
-                    if (startRow == getRows())
+                    if (startRow == getRows()) {
                         startRow = 0;
+                    }
 
                     setCursor(++startRow, 1);
 
@@ -1270,15 +1279,17 @@ public class Screen5250 {
                 break;
             case FAST_CURSOR_DOWN:
                 int rowNow = (getCurrentRow() - 1) + 3;
-                if (rowNow > getRows() - 1)
+                if (rowNow > getRows() - 1) {
                     rowNow = rowNow - getRows();
+                }
                 this.goto_XY(getPos(rowNow, getCurrentCol() - 1));
                 simulated = true;
                 break;
             case FAST_CURSOR_UP:
                 rowNow = (getCurrentRow() - 1) - 3;
-                if (rowNow < 0)
+                if (rowNow < 0) {
                     rowNow = (getRows()) + rowNow;
+                }
                 this.goto_XY(getPos(rowNow, getCurrentCol() - 1));
                 simulated = true;
                 break;
@@ -1289,8 +1300,9 @@ public class Screen5250 {
                     colNow = getColumns() + colNow;
                     rowNow--;
                 }
-                if (rowNow < 0)
+                if (rowNow < 0) {
                     rowNow = getRows() - 1;
+                }
 
                 process_XY(getPos(rowNow, colNow));
                 simulated = true;
@@ -1302,8 +1314,9 @@ public class Screen5250 {
                     colNow = colNow - getColumns();
                     rowNow++;
                 }
-                if (rowNow > getRows() - 1)
+                if (rowNow > getRows() - 1) {
                     rowNow = getRows() - rowNow;
+                }
 
                 process_XY(getPos(rowNow, colNow));
                 simulated = true;
@@ -1320,7 +1333,9 @@ public class Screen5250 {
     protected boolean simulateKeyStroke(char c) {
 
         if (isStatusErrorCode() && !Character.isISOControl(c) && !keyProcessed) {
-            if (resetRequired) return false;
+            if (resetRequired) {
+                return false;
+            }
             resetError();
         }
 
@@ -1355,46 +1370,54 @@ public class Screen5250 {
                         break;
                     case 1: // Alpha Only
                         if (Character.isLetter(c) || c == ',' || c == '-'
-                                || c == '.' || c == ' ')
+                                || c == '.' || c == ' ') {
                             updateField = true;
+                        }
                         break;
                     case 3: // Numeric only
                         if (Character.isDigit(c) || c == '+' || c == ','
-                                || c == '-' || c == '.' || c == ' ')
+                                || c == '-' || c == '.' || c == ' ') {
                             updateField = true;
-                        else
+                        } else {
                             numericError = true;
+                        }
                         break;
                     case 5: // Digits only
-                        if (Character.isDigit(c))
+                        if (Character.isDigit(c)) {
                             updateField = true;
-                        else
+                        } else {
                             displayError(ERR_NUMERIC_09);
+                        }
                         break;
                     case 7: // Signed numeric
-                        if (Character.isDigit(c) || c == '+' || c == '-')
+                        if (Character.isDigit(c) || c == '+' || c == '-') {
                             if (lastPos == screenFields.getCurrentField().endPos()
-                                    && (c != '+' && c != '-'))
+                                    && (c != '+' && c != '-')) {
                                 displayError(ERR_INVALID_SIGN);
-                            else
+                            } else {
                                 updateField = true;
-                        else
+                            }
+                        } else {
                             displayError(ERR_NUMERIC_09);
+                        }
+                        break;
+                    default:
                         break;
                 }
 
                 if (updateField) {
-                    if (screenFields.isCurrentFieldToUpper())
+                    if (screenFields.isCurrentFieldToUpper()) {
                         c = Character.toUpperCase(c);
+                    }
 
                     updatePos = true;
                     resetDirty(lastPos);
 
                     if (oia.isInsertMode()) {
                         if (endOfField(false) != screenFields.getCurrentField()
-                                .endPos())
+                                .endPos()) {
                             shiftRight(lastPos);
-                        else {
+                        } else {
 
                             displayError(ERR_NO_ROOM_INSERT);
                             updatePos = false;
@@ -1417,31 +1440,25 @@ public class Screen5250 {
                                 .getCurrentFieldPos())) {
                             if (screenFields.isCurrentFieldAutoEnter()) {
                                 autoEnter = true;
-                            } else if (!screenFields.isCurrentFieldFER())
+                            } else if (!screenFields.isCurrentFieldFER()) {
                                 gotoFieldNext();
-                            else {
-                                //                        screenFields.getCurrentField().changePos(1);
-                                //
-                                //                        if (screenFields.
-                                //                        cursorPos == endPos)
-                                //                           System.out.println("end of field");
-                                //
-                                //                        feError != feError;
-                                //                        if (feError)
-                                //                           displayError(ERR_FIELD_EXIT_INVALID);
+                            } else {
+                                // Field exit required - no action needed here
                             }
 
-                        } else
+                        } else {
                             setCursor(screenFields.getCurrentField()
                                     .getCursorRow() + 1, screenFields
                                     .getCurrentField().getCursorCol() + 1);
+                        }
 
                     }
 
                     fireScreenChanged(1);
 
-                    if (autoEnter)
+                    if (autoEnter) {
                         sendAid(AID_ENTER);
+                    }
                 } else {
                     if (numericError) {
                         displayError(ERR_NUMERIC_ONLY);
@@ -1508,7 +1525,9 @@ public class Screen5250 {
 
         }
         screenFields.getCurrentField().getKeyPos(endPos);
-        if (posSpace) screenFields.getCurrentField().changePos(+1);
+        if (posSpace) {
+            screenFields.getCurrentField().changePos(+1);
+        }
         return screenFields.getCurrentFieldPos();
 
     }
@@ -1577,6 +1596,7 @@ public class Screen5250 {
                     sf.setRightAdjusted();
                 }
                 case 7 -> sf.setManditoryEntered();
+                default -> { }
             }
         } else {
             // Signed numeric fields need right-adjustment padding
@@ -1598,8 +1618,9 @@ public class Screen5250 {
 
         // subtract 1 from count for signed numeric - note for later
         if (screenFields.getCurrentField().isSignedNumeric()) {
-            if (planes.getChar(end - 1) != '-')
+            if (planes.getChar(end - 1) != '-') {
                 count--;
+            }
         }
 
         int pos = screenFields.getCurrentField().startPos();
@@ -1645,8 +1666,9 @@ public class Screen5250 {
 
             if (screenFields.isCurrentFieldContinued()) {
                 gotoFieldNext();
-                if (screenFields.getCurrentField().isContinuedFirst())
+                if (screenFields.getCurrentField().isContinuedFirst()) {
                     break;
+                }
 
                 pos = screenFields.getCurrentField().startPos();
                 planes.setChar(pPos, planes.getChar(pos));
@@ -1696,17 +1718,15 @@ public class Screen5250 {
 
     public int getRow(int pos) {
 
-        //      if (pos == 0)
-        //         return 1;
-
         int row = pos / numCols;
 
         if (row < 0) {
 
             row = lastPos / numCols;
         }
-        if (row > (lenScreen / numCols) - 1)
+        if (row > (lenScreen / numCols) - 1) {
             row = (lenScreen / numCols) - 1;
+        }
 
         return row;
 
@@ -1714,7 +1734,9 @@ public class Screen5250 {
 
     public int getCol(int pos) {
         int col = pos % (getColumns());
-        if (col > 0) return col;
+        if (col > 0) {
+            return col;
+        }
         return 0;
     }
 
@@ -1738,7 +1760,6 @@ public class Screen5250 {
      */
     public int getCurrentPos() {
 
-        //		return lastPos + numCols + 1;
         return lastPos + 1;
 
     }
@@ -1815,10 +1836,12 @@ public class Screen5250 {
 
     private void process_XY(int pos) {
 
-        if (pos < 0)
+        if (pos < 0) {
             pos = lenScreen + pos;
-        if (pos > lenScreen - 1)
+        }
+        if (pos > lenScreen - 1) {
             pos = pos - lenScreen;
+        }
 
         // if there was a field exit error then we need to treat the movement
         //  of the cursor in a special way that equals that of Client Access.
@@ -2037,11 +2060,9 @@ public class Screen5250 {
             // only draw printable characters (in this case >= ' ')
             if ((c >= ' ') && (!planes.isAttributePlace(x))) {
                 sac[x] = c;
-                // TODO: implement the underline check here
-                //				if (screen[x].underLine && c <= ' ')
-                //					sac[x] = '_';
-            } else
+            } else {
                 sac[x] = ' ';
+            }
         }
 
         return sac;
@@ -2062,11 +2083,9 @@ public class Screen5250 {
             // only draw printable characters (in this case >= ' ')
             if ((c >= ' ') && (!planes.isAttributePlace(x))) {
                 sac[x] = c;
-                // TODO: implement the underline check here
-                //				if (screen[x].underLine && c <= ' ')
-                //					sac[x] = '_';
-            } else
+            } else {
                 sac[x] = ' ';
+            }
         }
 
         return sac;
@@ -2298,10 +2317,8 @@ public class Screen5250 {
 
     // this routine is based on offset 0,0 not 1,1
     protected void goto_XY(int pos) {
-        //      setCursorOff();
         updateCursorLoc();
         lastPos = pos;
-        //      setCursorOn();
         updateCursorLoc();
     }
 
@@ -2316,8 +2333,9 @@ public class Screen5250 {
 
         int sizeFields = screenFields.getSize();
 
-        if (f > sizeFields || f <= 0)
+        if (f > sizeFields || f <= 0) {
             return false;
+        }
 
         screenFields.setCurrentField(screenFields.getField(f - 1));
 
@@ -2358,8 +2376,9 @@ public class Screen5250 {
             while (planes.getChar(lastPos) > ' ' && pos != lastPos) {
                 advancePos();
             }
-        } else
+        } else {
             advancePos();
+        }
 
         // now that we are positioned on the next space character get the
         // next none space character
@@ -2383,8 +2402,9 @@ public class Screen5250 {
         // position previous white space character
         while (planes.getChar(lastPos) <= ' ') {
             changePos(-1);
-            if (pos == lastPos)
+            if (pos == lastPos) {
                 break;
+            }
         }
 
         changePos(-1);
@@ -2403,13 +2423,15 @@ public class Screen5250 {
      */
     private void gotoFieldNext() {
 
-        if (screenFields.isCurrentFieldHighlightedEntry())
+        if (screenFields.isCurrentFieldHighlightedEntry()) {
             unsetFieldHighlighted(screenFields.getCurrentField());
+        }
 
         screenFields.gotoFieldNext();
 
-        if (screenFields.isCurrentFieldHighlightedEntry())
+        if (screenFields.isCurrentFieldHighlightedEntry()) {
             setFieldHighlighted(screenFields.getCurrentField());
+        }
     }
 
     /**
@@ -2417,13 +2439,15 @@ public class Screen5250 {
      */
     private void gotoFieldPrev() {
 
-        if (screenFields.isCurrentFieldHighlightedEntry())
+        if (screenFields.isCurrentFieldHighlightedEntry()) {
             unsetFieldHighlighted(screenFields.getCurrentField());
+        }
 
         screenFields.gotoFieldPrev();
 
-        if (screenFields.isCurrentFieldHighlightedEntry())
+        if (screenFields.isCurrentFieldHighlightedEntry()) {
             setFieldHighlighted(screenFields.getCurrentField());
+        }
 
     }
 
@@ -2455,16 +2479,13 @@ public class Screen5250 {
 
         w = width;
         // set leading attribute byte
-        //		screen[lastPos].setCharAndAttr(initChar, initAttr, true);
         planes.setScreenCharAndAttr(lastPos, initChar, initAttr, true);
         setDirty(lastPos);
 
         advancePos();
         // set upper left
-        //		screen[lastPos].setCharAndAttr((char) ul, colorAttr, false);
         planes.setScreenCharAndAttr(lastPos, (char) ul, colorAttr, false);
         if (gui) {
-            //			screen[lastPos].setUseGUI(UPPER_LEFT);
             planes.setUseGUI(lastPos, UPPER_LEFT);
         }
         setDirty(lastPos);
@@ -2474,10 +2495,8 @@ public class Screen5250 {
         // draw top row
 
         while (w-- >= 0) {
-            //			screen[lastPos].setCharAndAttr((char) upper, colorAttr, false);
             planes.setScreenCharAndAttr(lastPos, (char) upper, colorAttr, false);
             if (gui) {
-                //				screen[lastPos].setUseGUI(UPPER);
                 planes.setUseGUI(lastPos, UPPER);
             }
             setDirty(lastPos);
@@ -2485,11 +2504,9 @@ public class Screen5250 {
         }
 
         // set upper right
-        //		screen[lastPos].setCharAndAttr((char) ur, colorAttr, false);
         planes.setScreenCharAndAttr(lastPos, (char) ur, colorAttr, false);
 
         if (gui) {
-            //			screen[lastPos].setUseGUI(UPPER_RIGHT);
             planes.setUseGUI(lastPos, UPPER_RIGHT);
         }
         setDirty(lastPos);
@@ -2522,19 +2539,15 @@ public class Screen5250 {
             w = width;
             // fill it in
             while (w-- >= 0) {
-                //				screen[lastPos].setCharAndAttr(initChar, initAttr, true);
                 planes.setScreenCharAndAttr(lastPos, initChar, initAttr, true);
-                //				screen[lastPos].setUseGUI(NO_GUI);
                 planes.setUseGUI(lastPos, NO_GUI);
                 setDirty(lastPos);
                 advancePos();
             }
 
             // set right
-            //			screen[lastPos].setCharAndAttr((char) right, colorAttr, false);
             planes.setScreenCharAndAttr(lastPos, (char) right, colorAttr, false);
             if (gui) {
-                //				screen[lastPos].setUseGUI(RIGHT);
                 planes.setUseGUI(lastPos, GUI_RIGHT);
             }
 
@@ -2542,7 +2555,6 @@ public class Screen5250 {
             advancePos();
 
             // set ending attribute byte
-            //			screen[lastPos].setCharAndAttr(initChar, initAttr, true);
             planes.setScreenCharAndAttr(lastPos, initChar, initAttr, true);
             setDirty(lastPos);
 
@@ -2550,16 +2562,13 @@ public class Screen5250 {
         }
 
         // set leading attribute byte
-        //		screen[lastPos].setCharAndAttr(initChar, initAttr, true);
         planes.setScreenCharAndAttr(lastPos, initChar, initAttr, true);
         setDirty(lastPos);
         advancePos();
 
         // set lower left
-        //		screen[lastPos].setCharAndAttr((char) ll, colorAttr, false);
         planes.setScreenCharAndAttr(lastPos, (char) ll, colorAttr, false);
         if (gui) {
-            //			screen[lastPos].setUseGUI(LOWER_LEFT);
             planes.setUseGUI(lastPos, LOWER_LEFT);
         }
         setDirty(lastPos);
@@ -2608,20 +2617,10 @@ public class Screen5250 {
                                    int totalColScrollable, int sliderRowPos, int sliderColPos,
                                    int sbSize) {
 
-        //      System.out.println("Scrollbar flag: " + flag +
-        //                           " scrollable Rows: " + totalRowScrollable +
-        //                           " scrollable Cols: " + totalColScrollable +
-        //                           " thumb Row: " + sliderRowPos +
-        //                           " thumb Col: " + sliderColPos +
-        //                           " size: " + sbSize +
-        //                           " row: " + getRow(lastPos) +
-        //                           " col: " + getCol(lastPos));
-
         int sp = lastPos;
         int size = sbSize - 2;
 
         int thumbPos = (int) (size * ((float) sliderColPos / (float) totalColScrollable));
-        //      System.out.println(thumbPos);
         planes.setScreenCharAndAttr(sp, ' ', 32, false);
         planes.setUseGUI(sp, BUTTON_SB_UP);
 
@@ -2629,10 +2628,11 @@ public class Screen5250 {
         while (ctr < size) {
             sp += numCols;
             planes.setScreenCharAndAttr(sp, ' ', 32, false);
-            if (ctr == thumbPos)
+            if (ctr == thumbPos) {
                 planes.setUseGUI(sp, BUTTON_SB_THUMB);
-            else
+            } else {
                 planes.setUseGUI(sp, BUTTON_SB_GUIDE);
+            }
             ctr++;
         }
         sp += numCols;
@@ -2669,11 +2669,9 @@ public class Screen5250 {
         // Calculation moves position to first text position
 
         //  if bit 2 is on then this is a footer
-        if ((orientation & 0x20) == 0x20)
+        if ((orientation & 0x20) == 0x20) {
             pos += ((depth + 1) * numCols);
-
-        //      System.out.println(pos + "," + width + "," + len+ "," + getRow(pos)
-        //                              + "," + getCol(pos) + "," + ((orientation >> 6) & 0xf0));
+        }
 
         for (int x = 0; x < len; x++) {
             planes.setChar(pos, title.charAt(x));
@@ -2736,9 +2734,6 @@ public class Screen5250 {
             }
             default -> log.warn("Invalid roll direction parameter: " + updown + " — please report this");
         }
-        //      System.out.println(" end roll");
-        //      dumpScreen();
-
     }
 
     public void dumpScreen() {
@@ -2790,15 +2785,17 @@ public class Screen5250 {
             int x = len;
 
             boolean gui = guiInterface;
-            if (sf.isBypassField())
+            if (sf.isBypassField()) {
                 gui = false;
+            }
 
             while (x-- > 0) {
 
-                if (planes.getChar(lastPos) == 0)
+                if (planes.getChar(lastPos) == 0) {
                     planes.setScreenCharAndAttr(lastPos, ' ', lastAttr, false);
-                else
+                } else {
                     planes.setScreenAttr(lastPos, lastAttr);
+                }
 
                 if (gui) {
                     planes.setUseGUI(lastPos, FIELD_MIDDLE);
@@ -2811,20 +2808,22 @@ public class Screen5250 {
 
             }
 
-            if (gui)
+            if (gui) {
                 if (len > 1) {
                     planes.setUseGUI(sf.startPos(), FIELD_LEFT);
 
-                    if (lastPos > 0)
+                    if (lastPos > 0) {
                         planes.setUseGUI(lastPos - 1, FIELD_RIGHT);
-                    else
+                    } else {
                         planes.setUseGUI(lastPos, FIELD_RIGHT);
+                    }
 
                 } else {
+                // no-op
+            }
                     planes.setUseGUI(lastPos - 1, FIELD_ONE);
                 }
 
-            //         screen[lastPos].setCharAndAttr(initChar,initAttr,true);
             setEndingAttr(initAttr);
 
             lastPos = sf.startPos();
@@ -2861,8 +2860,9 @@ public class Screen5250 {
 
                 boolean f = true;
 
-                if (l >= lenScreen)
+                if (l >= lenScreen) {
                     l = lenScreen - 1;
+                }
 
                 if (l > 1) {
                     while (l-- > 0) {
@@ -2887,8 +2887,6 @@ public class Screen5250 {
                 }
             }
         }
-
-        //updateDirty();
     }
 
     /**
@@ -2979,11 +2977,6 @@ public class Screen5250 {
     protected void setAttr(int cByte) {
         lastAttr = cByte;
 
-        //      int sattr = screen[lastPos].getCharAttr();
-        //         System.out.println("changing from " + sattr + " to attr " + lastAttr
-        // +
-        //                     " at " + (this.getRow(lastPos) + 1) + "," + (this.getCol(lastPos) +
-        // 1));
         planes.setScreenCharAndAttr(lastPos, initChar, lastAttr, true);
         setDirty(lastPos);
 
@@ -2995,17 +2988,13 @@ public class Screen5250 {
             planes.setScreenAttr(lastPos, lastAttr);
             if (guiInterface && !isInField(lastPos, false)) {
                 int g = planes.getWhichGUI(lastPos);
-                if (g >= FIELD_LEFT && g <= FIELD_ONE)
+                if (g >= FIELD_LEFT && g <= FIELD_ONE) {
                     planes.setUseGUI(lastPos, NO_GUI);
+                }
             }
             setDirty(lastPos);
             advancePos();
         }
-
-        // sanity check for right now
-        //      if (times > 200)
-        //         System.out.println(" setAttr = " + times + " start = " + (sr + 1) +
-        // "," + (sc + 1));
 
         lastPos = pos;
     }
@@ -3085,10 +3074,12 @@ public class Screen5250 {
     protected void changePos(int i) {
 
         lastPos += i;
-        if (lastPos < 0)
+        if (lastPos < 0) {
             lastPos = lenScreen + lastPos;
-        if (lastPos > lenScreen - 1)
+        }
+        if (lastPos > lenScreen - 1) {
             lastPos = lastPos - lenScreen;
+        }
     }
 
     protected void goHome() {
@@ -3129,8 +3120,9 @@ public class Screen5250 {
     }
 
     protected void setPendingInsert(boolean flag) {
-        if (homePos != -1)
+        if (homePos != -1) {
             pendingInsert = flag;
+        }
     }
 
     /**
@@ -3203,6 +3195,8 @@ public class Screen5250 {
                 }
                 break;
 
+            default:
+                break;
         }
     }
 
@@ -3300,7 +3294,6 @@ public class Screen5250 {
      */
     private synchronized void fireScreenChanged(int update) {
         if (dirtyScreen.x() > dirtyScreen.y()) {
-            //         log.info(" x < y " + dirtyScreen);
             return;
         }
 
@@ -3397,8 +3390,9 @@ public class Screen5250 {
                     ScreenOIA.OIA_LEVEL_INPUT_INHIBITED);
         }
 
-        if (oia.isMessageWait())
+        if (oia.isMessageWait()) {
             oia.setMessageLightOn();
+        }
         setCursorOn();
     }
 

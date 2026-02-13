@@ -19,7 +19,7 @@ public interface ICodePage {
      * @return the Unicode character representing the EBCDIC codepoint
      * @throws CharacterConversionException if the codepoint cannot be converted
      */
-    public abstract char ebcdic2uni(int index);
+    char ebcdic2uni(int index);
 
     /**
      * Convert a Unicode character in it's byte representation.
@@ -29,7 +29,7 @@ public interface ICodePage {
      * @return the EBCDIC byte representation of the character
      * @throws CharacterConversionException if the character cannot be converted to EBCDIC
      */
-    public abstract byte uni2ebcdic(char index);
+    byte uni2ebcdic(char index);
 
     boolean isDoubleByteActive();
 

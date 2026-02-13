@@ -10,11 +10,8 @@ import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 /**
  * Configurable CCSID converter using JSON-loaded character mappings.
  *
- * Phase 2: Replaces individual CCSID*.java classes by dynamically loading
+ * Replaces individual CCSID*.java classes by dynamically loading
  * character mappings from ccsid-mappings.json at runtime.
- *
- * This class extends CodepageConverterAdapter and implements the getCodePage()
- * method to return mappings loaded by CCSIDMappingLoader.
  */
 public class ConfigurableCodepageConverter extends CodepageConverterAdapter {
 

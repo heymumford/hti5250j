@@ -29,8 +29,6 @@ public class ScreenField {
     protected ScreenField setField(int attr, int row, int col, int len,
                                    int ffw1, int ffw2, int fcw1, int fcw2) {
 
-        // startRow = row;
-        // startCol = col;
         startPos = (row * s.getColumns()) + col;
         endPos = startPos + length - 1;
         cursorProg = 0;
@@ -75,12 +73,11 @@ public class ScreenField {
             switch (adj) {
                 case 5, 6 -> rightAdjd = false;      // Right-aligned field
                 case 7 -> manditoried = false;        // Mandatory input field
+                default -> { }
             }
 
         }
         mdt = (ffw1 & 0x8) == 0x8;
-        // if (mdt)
-        // s.masterMDT = true;
         return mdt;
     }
 
@@ -97,7 +94,6 @@ public class ScreenField {
         this.fcw1 = fcw1;
         this.fcw2 = fcw2;
 
-        // if ((fcw1 & 0x88) == 0x88) {
         if (fcw1 == 0x88) {
 
             cursorProg = fcw2;
@@ -301,13 +297,11 @@ public class ScreenField {
         return (ffw2 & 0x7);
     }
 
-    // is field exit required
     public boolean isFER() {
 
         return (ffw2 & 0x40) == 0x40;
     }
 
-    // is field manditory enter
     public boolean isMandatoryEnter() {
 
         return (ffw2 & 0x8) == 0x8;
@@ -320,7 +314,6 @@ public class ScreenField {
 
     }
 
-    // bits 5 - 7
     public int getFieldShift() {
 
         return (ffw1 & 0x7);

@@ -10,9 +10,9 @@ import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 /**
  * Factory for creating CCSID converter instances.
  *
- * Phase 2: Factory pattern implementation for dynamic CCSID converter instantiation.
- * Replaces hardcoded if-statements in BuiltInCodePageFactory with data-driven
- * configuration from ccsid-mappings.json.
+ * Uses a factory pattern for dynamic CCSID converter instantiation,
+ * loading character mappings from ccsid-mappings.json instead of
+ * hardcoded if-statements.
  */
 public class CCSIDFactory {
 
@@ -23,12 +23,10 @@ public class CCSIDFactory {
      * @return ConfigurableCodepageConverter for the CCSID, or null if not available
      */
     public static CodepageConverterAdapter getConverter(String ccsidId) {
-        // Verify CCSID is available
         if (!CCSIDMappingLoader.isAvailable(ccsidId)) {
             return null;
         }
 
-        // Create and return converter with JSON-loaded mappings
         return new ConfigurableCodepageConverter(ccsidId);
     }
 }

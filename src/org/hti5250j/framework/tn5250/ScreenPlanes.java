@@ -13,10 +13,6 @@ package org.hti5250j.framework.tn5250;
 
 import static org.hti5250j.HTI5250jConstants.*;
 
-import java.util.Properties;
-
-import org.hti5250j.ExternalProgramConfig;
-
 public class ScreenPlanes {
 
     private final Screen5250 scr;
@@ -147,10 +143,11 @@ public class ScreenPlanes {
         // * NOTE * for developers I have changed the send qry to pass different
         //    parameters to the host so check setsize for setting error line as well.
         //
-        if (line == 0 || line > numRows)
+        if (line == 0 || line > numRows) {
             errorLineNum = numRows;
-        else
+        } else {
             errorLineNum = line;
+        }
     }
 
     /**
@@ -208,7 +205,7 @@ public class ScreenPlanes {
     }
 
     protected boolean isErrorLineSaved() {
-        return errorLine == null ? false : true;
+        return errorLine != null;
     }
 
     protected void setScreenCharAndAttr(int pos, char c, int attr, boolean isAttr) {
@@ -233,7 +230,6 @@ public class ScreenPlanes {
     protected void setScreenAttr(int pos, int attr) {
 
         screenAttr[pos] = (char) attr;
-        //screenGUI[pos] = initChar;
         disperseAttribute(pos, attr);
 
     }
@@ -247,8 +243,9 @@ public class ScreenPlanes {
     protected final void setChar(int pos, char c) {
         screenIsChanged[pos] = screen[pos] == c ? '0' : '1';
         screen[pos] = c;
-        if (screenIsAttr[pos] == 1)
+        if (screenIsAttr[pos] == 1) {
             setScreenCharAndAttr(pos, c, 32, false);
+        }
 
     }
 
@@ -261,7 +258,7 @@ public class ScreenPlanes {
     }
 
     protected final boolean isAttributePlace(int pos) {
-        return screenIsAttr[pos] == 1 ? true : false;
+        return screenIsAttr[pos] == 1;
     }
 
     public final void setUseGUI(int pos, int which) {
@@ -277,8 +274,9 @@ public class ScreenPlanes {
         char ul = 0;
         char nd = 0;
 
-        if (attr == 0)
+        if (attr == 0) {
             return;
+        }
 
         switch (attr) {
             case 32: // green normal
@@ -469,11 +467,11 @@ public class ScreenPlanes {
     }
 
     protected final boolean isChanged(int pos) {
-        return screenIsChanged[pos] == 0 ? false : true;
+        return screenIsChanged[pos] != 0;
     }
 
     protected final boolean isUseGui(int pos) {
-        return screenGUI[pos] == NO_GUI ? false : true;
+        return screenGUI[pos] != NO_GUI;
     }
 
     /**
@@ -607,8 +605,9 @@ public class ScreenPlanes {
         //      if(buffer == null)
         //         throw new OhioException(sessionVT.getSessionConfiguration(),
         //                     OhioScreen.class.getName(), "osohio.screen.ohio00300", 1);
-        if (buffer == null)
+        if (buffer == null) {
             return 0;
+        }
 
         int min = Math.min(Math.min(buffer.length, bufferLength), screenSize);
         if ((from + min) > screenSize) {
@@ -651,9 +650,8 @@ public class ScreenPlanes {
      * @throws OhioException
      */
     public synchronized int GetScreen(char buffer[], int bufferLength, int row,
-                                      int col, int length, int plane)
+                                      int col, int length, int plane) {
     //                                       throws OhioException {
-    {
         // Call GetScreen function after converting row and column to
         // a position.
         return GetScreen(buffer, bufferLength, convertRowColToPos(row, col),
@@ -691,9 +689,8 @@ public class ScreenPlanes {
      * @throws OhioException
      */
     protected int GetScreenRect(char buffer[], int bufferLength,
-                                int startPos, int endPos, int plane)
+                                int startPos, int endPos, int plane) {
     //                                             throws OhioException {
-    {
         // We will use the row,col routine here because it is easier to use
         // row colum than it is for position since I wrote the other first and
         // am to lazy to implement it here
@@ -741,9 +738,8 @@ public class ScreenPlanes {
      */
     protected int GetScreenRect(char buffer[], int bufferLength,
                                 int startRow, int startCol,
-                                int endRow, int endCol, int plane)
+                                int endRow, int endCol, int plane) {
     //                                             throws OhioException {
-    {
         // number of bytes obtained
         int numBytes = 0;
 
@@ -804,8 +800,9 @@ public class ScreenPlanes {
         for (int x = 0; x < lenScreen; x++) {
 
             hs = false;
-            if (s.isInField(x, false))
+            if (s.isInField(x, false)) {
                 continue;
+            }
 
             // First check for PF keys
             if (x > 0 && screen[x] == 'F') {
@@ -818,12 +815,13 @@ public class ScreenPlanes {
                             screen[x + 2] <= '9' &&
                             (screen[x + 3] == '=' ||
                                     screen[x + 3] == '-' ||
-                                    screen[x + 3] == '/'))
+                                    screen[x + 3] == '/')) {
                         hs = true;
-                    else if (screen[x + 2] == '=' ||
+                    } else if (screen[x + 2] == '=' ||
                             screen[x + 3] == '-' ||
-                            screen[x + 3] == '/')
+                            screen[x + 3] == '/') {
                         hs = true;
+                    }
 
                     if (hs) {
                         screenGUI[x] = BUTTON_LEFT;
@@ -831,12 +829,14 @@ public class ScreenPlanes {
                         int ns = 0;
                         int row = x / numCols;
                         while (ns < 2 && ++x / numCols == row) {
-                            if (screen[x] <= ' ')
+                            if (screen[x] <= ' ') {
                                 ns++;
-                            else
+                            } else {
                                 ns = 0;
-                            if (ns < 2)
+                            }
+                            if (ns < 2) {
                                 screenGUI[x] = BUTTON_MIDDLE;
+                            }
 
                         }
 
@@ -872,8 +872,9 @@ public class ScreenPlanes {
 
                         if (screen[stop] <= ' ') {
                             ns++;
-                        } else
+                        } else {
                             ns = 0;
+                        }
 
                         if (screen[stop] == '.') {
                             int io = 0;
@@ -884,8 +885,9 @@ public class ScreenPlanes {
                             }
                         }
 
-                        if (ns > 3)
+                        if (ns > 3) {
                             break;
+                        }
                     }
 
                     screenGUI[++os] = BUTTON_LEFT;
@@ -928,8 +930,9 @@ public class ScreenPlanes {
 
                         if (screen[stop] == ' ') {
                             ns++;
-                        } else
+                        } else {
                             ns = 0;
+                        }
 
                         if (screen[stop] == '=') {
                             int io = 0;
@@ -940,8 +943,9 @@ public class ScreenPlanes {
                             }
                         }
 
-                        if (ns > 2)
+                        if (ns > 2) {
                             break;
+                        }
                     }
 
                     screenGUI[++os] = BUTTON_LEFT;
@@ -1077,9 +1081,8 @@ public class ScreenPlanes {
                     screenGUI[--x] = BUTTON_RIGHT_EB;
                 }
 
-            }
             // now lets check for MAILTO: .
-            else if (!hs && x > 0 && x < lenScreen - 7 &&
+            } else if (!hs && x > 0 && x < lenScreen - 7 &&
                     Character.toLowerCase(screen[x]) == 'm' &&
                     screen[x - 1] <= ' ' &&
                     screenGUI[x] == NO_GUI &&
@@ -1103,39 +1106,12 @@ public class ScreenPlanes {
                     }
                     screenGUI[--x] = BUTTON_RIGHT_EB;
                 }
-            }
-            // now lets check for External Program: .
-            else if (!hs && x > 0 && x < lenScreen - 7 &&
-                    screen[x - 1] <= ' ' &&
-                    screenGUI[x] == NO_GUI &&
-                    (screenExtended[x] & EXTENDED_5250_NON_DSP) == 0
-            ) {
-                Properties etnProps = ExternalProgramConfig.getInstance().getEtnPgmProps();
-                String count = etnProps.getProperty("etn.pgm.support.total.num");
-                if (count != null && count.length() > 0) {
-                    int total = Integer.parseInt(count);
-                    for (int i = 1; i <= total; i++) {
-                        String program = etnProps.getProperty("etn.pgm." + i + ".command.name");
-                        String key = "";
-                        if (x + program.length() >= screen.length) break;
-                        for (int j = 0; j <= program.length(); j++) {
-                            key += screen[x + j];
-                        }
-                        if (key.toLowerCase().equals(program.toLowerCase() + ":")) {
-                            hs = true;
-                            screenGUI[x] = BUTTON_LEFT_EB;
-                            while (screen[++x] > ' ') {
-                                screenGUI[x] = BUTTON_MIDDLE_EB;
-                            }
-                            screenGUI[--x] = BUTTON_RIGHT_EB;
-                            break;
-                        }
-                    }
-                }
+            // External Program detection removed (dead code)
             }
 
-            if (!retHS && hs)
+            if (!retHS && hs) {
                 retHS = true;
+            }
 
         }
 
@@ -1179,8 +1155,9 @@ public class ScreenPlanes {
 
         sp = x;
 
-        if (Character.isDigit(screen[sp + 1]))
+        if (Character.isDigit(screen[sp + 1])) {
             hs = false;
+        }
         // now lets make sure there are no more than numSuff spaces after option
         while (hs && (++sp < lenScreen && screen[sp] <= ' '
                 || screen[sp] == suff)) {
@@ -1191,8 +1168,9 @@ public class ScreenPlanes {
                 break;
             }
         }
-        if (hs && !Character.isLetterOrDigit(screen[sp]))
+        if (hs && !Character.isLetterOrDigit(screen[sp])) {
             hs = false;
+        }
         if (hs) {
             return os;
         }

@@ -1,7 +1,6 @@
 # HTI5250J Architecture
 
 **Date:** February 2026
-**Phase:** 11 (Workflow Execution Handlers)
 **Audience:** Contributors, integrators, and users seeking to understand system design
 
 ## Executive Summary
@@ -40,9 +39,8 @@ HTI5250J sits at the boundary between client automation (test frameworks, CLI to
 ┌────────────▼──────────────────────────────────────────┐
 │          IBM i (AS/400) System                        │
 │  ┌────────────────────────────────────────────────┐  │
-│  │  Program: PMTENT (payment entry)               │  │
-│  │  Program: LNINQ (line inquiry)                 │  │
-│  │  Display: 5-field form + OIA status            │  │
+│  │  Application programs and displays             │  │
+│  │  5250 data streams + OIA status                │  │
 │  └────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
 ```
@@ -295,18 +293,9 @@ Client                              Server (IBM i)
 **Purpose:** Convert between EBCDIC (IBM i wire format) and UTF-8 (Java string representation).
 
 **Key Operations:**
-- `ebcdicToString(byte[] buffer)` → EBCDIC 037 (US) → UTF-8 string
-- `stringToEbcdic(String s)` → UTF-8 string → EBCDIC bytes
+- `ebcdicToString(byte[] buffer)` -- EBCDIC 037 (US) to UTF-8 string
+- `stringToEbcdic(String s)` -- UTF-8 string to EBCDIC bytes
 - Handle attribute bytes (not character data) in planes[1] and planes[2]
-
-**Example:**
-```
-IBM i sends: 0xC8 0x85 0x93 0x93 0x96 (EBCDIC)
-             ↓
-Codec converts to "Hello" (UTF-8)
-             ↓
-Client calls session.getScreenText() → receives "Hello"
-```
 
 **Files:**
 - `src/org/hti5250j/codec/EBCDICCodec.java`
@@ -338,7 +327,7 @@ Client calls session.getScreenText() → receives "Hello"
 
 ## C3: Components Per Container
 
-### WorkflowRunner (Phase 11 Handler Orchestration)
+### WorkflowRunner (Handler Orchestration)
 
 The workflow runner implements six execution handlers, dispatched via switch expression:
 
@@ -367,40 +356,9 @@ private void executeStep(StepDef step) throws Exception {
 | ASSERT | expected text | Pass/fail + dump | None | N/A |
 | CAPTURE | name | Screenshot file | None | N/A |
 
-**Parameter Substitution:**
+**Parameter Substitution:** YAML fields use `${data.<column>}` syntax, resolved at runtime from CSV dataset values (e.g., `${data.account_id}` resolves to the `account_id` column value for the current row).
 
-```yaml
-step:
-  action: FILL
-  fields:
-    account: "${data.account_id}"    ← Replaced with CSV column value
-    amount: "${data.amount}"         ← Replaced with CSV column value
-```
-
-Resolution:
-```
-"${data.account_id}" → lookup column "account_id" in CSV → "ACC001"
-```
-
-**Error Handling:**
-
-```java
-// Pattern 1: Navigation failure
-try {
-  handleNavigate(step);
-} catch (NavigationException e) {
-  logError("Failed to reach: " + step.screen);
-  throw e;  // Stop workflow, return error + artifacts
-}
-
-// Pattern 2: Assertion failure
-try {
-  handleAssert(step);
-} catch (AssertionException e) {
-  logError("Assertion failed: " + step.text);
-  throw e;  // Includes screen dump in exception
-}
-```
+**Error Handling:** Handler exceptions (`NavigationException`, `AssertionException`) stop workflow execution and propagate with collected artifacts (screen dumps, execution log) for debugging.
 
 **Files:**
 - `src/org/hti5250j/workflow/WorkflowRunner.java` (handler dispatch)
@@ -412,80 +370,21 @@ try {
 
 ### Screen5250 (Component Detail)
 
-Screen5250 maintains three "planes" (IBM 5250 terminology):
+Screen5250 maintains three planes of 1920 bytes each (80x24): character data (EBCDIC), extended attributes (color, blink, reverse video), and display attributes (field type, hidden, protected). The `fieldMap` maps positions to `ScreenField` objects, and `oiaState` tracks keyboard lock, cursor position, and message indicators. See the state breakdown in C2 above.
 
-```
-planes[0] (Character Plane)
-  └─ 1920 bytes (80 columns × 24 rows)
-     └─ EBCDIC encoded characters
-
-planes[1] (Extended Attributes Plane)
-  └─ 1920 bytes
-     └─ Color, blink, reverse video, etc.
-
-planes[2] (Display Attributes Plane)
-  └─ 1920 bytes
-     └─ Field type, hidden, protected, etc.
-
-fieldMap: Map<Integer, ScreenField>
-  └─ Position → ScreenField (name, type, COMP-3 format, etc.)
-
-oiaState: ScreenOIA
-  ├─ keyboardLocked: boolean
-  ├─ messageWaiting: String
-  ├─ cursorPosition: int
-  └─ inputInhibitedReason: String
-```
-
-**Dirty Region Tracking:**
-
-```java
-// Before update
-dirtyScreen = new Rect(0, 0, 0, 0);  // Empty
-
-// After setText(row: 5, col: 10, text: "Hello")
-dirtyScreen = new Rect(col: 10, row: 5, width: 5, height: 1);
-
-// Multiple updates expand dirty region
-setText(row: 5, col: 15, text: "World")  // Adjacent
-dirtyScreen = new Rect(col: 10, row: 5, width: 10, height: 1);
-```
+**Dirty Region Tracking:** Screen5250 maintains a `dirtyScreen` rectangle that expands to encompass all updated regions since last read, enabling efficient rendering.
 
 ---
 
 ### tnvt (Component Detail: TN5250E Protocol)
 
-tnvt implements the TN5250E state machine:
-
-```
-State: DISCONNECTED
-  └─ connect() calls negotiateProtocol()
-
-State: NEGOTIATING
-  ├─ Send: IAC DO NAWS
-  ├─ Recv: IAC WILL NAWS
-  ├─ Send: IAC SB NAWS 80 24 IAC SE
-  └─ Transition to: CONNECTED
-
-State: CONNECTED
-  ├─ receiveDataStream()
-  │  └─ Parse TN5250E Record Format Table (RFT)
-  │  └─ Update Screen5250
-  │
-  ├─ send(bytes)
-  │  └─ Queue to DataStreamProducer
-  │
-  └─ disconnect()
-     └─ Close socket, stop virtual threads
-
-State: DISCONNECTED
-```
+tnvt follows a three-state lifecycle: DISCONNECTED -> NEGOTIATING (IAC handshake, see C2) -> CONNECTED. In the CONNECTED state, `receiveDataStream()` parses TN5250E Record Format Table (RFT) packets and updates Screen5250, while `send()` queues bytes to `DataStreamProducer`. The `disconnect()` call closes the socket and stops virtual threads.
 
 ---
 
 ## C4: Code-Level Detail (Keyboard State Machine)
 
-The keyboard state machine is the core of Phase 11. It sequences operations to ensure IBM i screen refresh completes before client reads results.
+The keyboard state machine sequences operations to ensure IBM i screen refresh completes before client reads results.
 
 ### State Diagram (ASCII)
 
@@ -516,162 +415,36 @@ NAVIGATE_COMPLETE (keyboard: UNLOCKED - screen refreshed)
 ```java
 private void waitForKeyboardUnlock(long timeoutMs) throws TimeoutException {
   long deadline = System.currentTimeMillis() + timeoutMs;
-  int pollCount = 0;
-
   while (true) {
-    // Check timeout
-    if (System.currentTimeMillis() > deadline) {
-      throw new TimeoutException(
-        String.format(
-          "Keyboard unlock timeout (%dms). OIA state: %s",
-          timeoutMs, getOiaDebugInfo()
-        )
-      );
-    }
-
-    // Poll OIA (every 100ms)
-    if (screen.getOIA().isKeyboardAvailable()) {
-      return;  // Ready for input
-    }
-
-    // Sleep before next poll
+    if (System.currentTimeMillis() > deadline)
+      throw new TimeoutException("Keyboard unlock timeout: " + timeoutMs + "ms");
+    if (screen.getOIA().isKeyboardAvailable())
+      return;
     Thread.sleep(100);  // 100ms poll interval
-    pollCount++;
   }
 }
 ```
 
 ### Code Pattern: handleFill()
 
-```java
-private void handleFill(StepDef step) throws Exception {
-  Map<String, String> fields = step.fields;  // { "account": "ACC001", ... }
+Each field is populated with a HOME (reset cursor), sendString (type value), TAB (advance) sequence, with a `waitForKeyboardUnlock(5000)` call after each field to accommodate server-side field validation.
 
-  for (Map.Entry<String, String> entry : fields.entrySet()) {
-    String fieldName = entry.getKey();
-    String value = entry.getValue();
+### Error Handling: AssertionException
 
-    // 1. Reset cursor to field start
-    session.sendKey(KeyCode.HOME);
-    Thread.sleep(50);  // Let i5 process
-
-    // 2. Type field value
-    session.sendString(value);
-    Thread.sleep(50);
-
-    // 3. Move to next field
-    session.sendKey(KeyCode.TAB);
-
-    // 4. Wait for keyboard (field validation may be slow)
-    waitForKeyboardUnlock(5000);
-  }
-
-  // All fields populated
-  logArtifact("FILL completed: " + fields.size() + " fields");
-}
-```
-
-### Error Handling Pattern: AssertionException with Dump
-
-```java
-private void handleAssert(StepDef step) throws AssertionException {
-  String expectedText = step.text;
-  String screenText = session.getScreenText();
-
-  if (!screenText.contains(expectedText)) {
-    // Include full screen dump for debugging
-    String dump = formatScreenDump(screenText, 80);
-    throw new AssertionException(
-      String.format(
-        "Screen did not contain: '%s'\nExpected: %s\nActual screen:\n%s",
-        expectedText,
-        screenText,  // Full text for search
-        dump         // Formatted dump for visual inspection
-      )
-    );
-  }
-}
-```
+When `handleAssert()` fails to find expected text on screen, it throws `AssertionException` with both the raw screen text and a formatted 80-column dump for visual debugging.
 
 ---
 
-## Phase 11 Workflow Execution Pipeline
+## Workflow Execution Pipeline
 
-A complete workflow execution follows this sequence:
-
-```
-1. LOAD WORKFLOW
-   └─ Parse YAML: WorkflowSchema
-   └─ Validate: WorkflowValidator
-   └─ Extract: steps[] array
-
-2. LOAD DATASET
-   └─ Parse CSV: Map<String, String> per row
-   └─ Validate: ${data.x} references resolved
-
-3. SESSION SETUP
-   └─ Create Session5250
-   └─ Create Screen5250 (empty buffer)
-   └─ Create tnvt (virtual threads ready)
-
-4. EXECUTE STEPS
-   ├─ Step 0: LOGIN
-   │  ├─ Extract: host, user, password (from step)
-   │  ├─ Session.connect(host)
-   │  ├─ Session.waitForKeyboard(30s)
-   │  └─ Ready for NAVIGATE
-   │
-   ├─ Step 1: NAVIGATE
-   │  ├─ Substitute: keystroke = "WRKSYSVAL<ENTER>"
-   │  ├─ Session.sendString(keystroke)
-   │  ├─ waitForKeyboardLockCycle() [lock → unlock]
-   │  ├─ Verify: screenText contains step.screen
-   │  └─ Ready for FILL or ASSERT
-   │
-   ├─ Step 2: FILL
-   │  ├─ For each field:
-   │  │  ├─ Substitute: value = ${data.account_id} → "ACC001"
-   │  │  ├─ HOME key
-   │  │  ├─ sendString(value)
-   │  │  ├─ TAB key
-   │  │  └─ waitForKeyboard()
-   │  └─ Ready for SUBMIT
-   │
-   ├─ Step 3: SUBMIT
-   │  ├─ Substitute: key = step.key (e.g., ENTER)
-   │  ├─ Session.sendKey(key)
-   │  ├─ waitForKeyboardLockCycle() [lock → unlock]
-   │  └─ Ready for ASSERT
-   │
-   ├─ Step 4: ASSERT
-   │  ├─ screenText = Session.getScreenText()
-   │  ├─ Verify: screenText contains step.text
-   │  └─ Throw AssertionException if missing (includes dump)
-   │
-   └─ Step 5: CAPTURE
-      ├─ screenDump = formatScreenDump(80 columns)
-      └─ Write to: artifacts/screenshots/step_5_assert.txt
-
-5. CLEANUP
-   ├─ Session.disconnect()
-   └─ Return results (success/failure + artifacts)
-```
+A workflow execution proceeds through five stages: load YAML definition, load CSV dataset, create session objects, execute steps (LOGIN, NAVIGATE, FILL, SUBMIT, ASSERT, CAPTURE), and cleanup. Each step uses the keyboard state machine described in C4 above.
 
 **Artifact Output:**
 
 ```
 artifacts/
-├── ledger.txt (execution timeline)
-│   └─ 2026-02-08 14:30:15.123 [LOGIN] Connecting to ibmi.example.com:23
-│   └─ 2026-02-08 14:30:15.456 [LOGIN] Keyboard unlocked, ready for input
-│   └─ 2026-02-08 14:30:15.478 [NAVIGATE] Sending: WRKSYSVAL<ENTER>
-│   └─ 2026-02-08 14:30:16.234 [NAVIGATE] Screen verified: Work with System Values
-│   └─ ...
-│
-└── screenshots/
-    ├── step_0_login.txt (screen dump after LOGIN)
-    ├── step_1_navigate.txt (screen dump after NAVIGATE)
-    └── step_4_assert.txt (screen dump confirming ASSERT)
+├── ledger.txt          (timestamped execution log)
+└── screenshots/        (screen dumps per step)
 ```
 
 ---
@@ -732,17 +505,7 @@ Thread readThread = Thread.ofVirtual()
 - Polling detects screen refresh reliably
 - Timeout prevents indefinite hangs
 
-**Code:**
-```java
-// Session5250.java
-while (System.currentTimeMillis() < deadline) {
-  if (screen.getOIA().isKeyboardAvailable()) {
-    return;  // Screen ready
-  }
-  Thread.sleep(100);  // Poll interval
-}
-throw new TimeoutException(...);
-```
+See `waitForKeyboardUnlock()` in the C4 section above for the implementation pattern.
 
 ### Decision 3: Screen Buffer Over Socket Streaming
 
@@ -763,8 +526,6 @@ throw new TimeoutException(...);
 - Type safety (action is enum, not string)
 
 ### Decision 5: HeadlessSession Abstraction for Extensibility
-
-**Phase:** 15B (Headless Abstractions, February 2026)
 
 **Chosen:** Four-interface abstraction (HeadlessSession, RequestHandler, Factory, Facade pattern)
 
@@ -802,60 +563,34 @@ throw new TimeoutException(...);
 
    **Rationale:** Single-method interface, enables framework integration, headless-safe
 
-3. **Session5250 as Facade** — 100% backward compatible
-   - Added `requestHandler` field (injectable, defaults to NullRequestHandler)
-   - Exposed `asHeadlessSession()` method for opt-in access
-   - Exposed `setRequestHandler()` method for dynamic injection
-   - Made `signalBell()` headless-safe (null-check before Toolkit.beep())
-   - All existing APIs unchanged
+3. **Session5250 as Facade** — 100% backward compatible. Adds injectable `requestHandler` (defaults to NullRequestHandler), `asHeadlessSession()` for opt-in access, and headless-safe `signalBell()`. All existing APIs unchanged.
 
-   **Rationale:** Backward compatibility, no breaking changes, opt-in adoption
-
-4. **HeadlessSessionFactory** — Polymorphic creation
-   ```java
-   public interface HeadlessSessionFactory {
-       HeadlessSession createSession(String name, Properties props) throws Exception;
-       HeadlessSession createSession(String name, Properties props, RequestHandler handler) throws Exception;
-   }
-   ```
-   **Rationale:** Dependency injection, testing, Spring Boot integration
+4. **HeadlessSessionFactory** — Polymorphic creation via `createSession(name, props)` and `createSession(name, props, handler)` overloads. Supports dependency injection and Spring Boot integration.
 
 **Impact:**
-- ✅ Memory efficiency: Headless sessions ~500KB (10x reduction)
-- ✅ Extensibility: Custom SYSREQ handlers for automation frameworks
-- ✅ Concurrency: 1000+ virtual thread sessions without 2MB GUI overhead
-- ✅ Backward compatibility: Session5250 unchanged, existing code works as-is
-- ✅ Clear contract: HeadlessSession documents "pure" API
+- Memory efficiency: Headless sessions ~500KB (10x reduction)
+- Extensibility: Custom SYSREQ handlers for automation frameworks
+- Concurrency: 1000+ virtual thread sessions without 2MB GUI overhead
+- Backward compatibility: Session5250 unchanged, existing code works as-is
+- Clear contract: HeadlessSession documents the pure headless API
 
 **Files:**
 - Interfaces: `HeadlessSession.java`, `RequestHandler.java`, `HeadlessSessionFactory.java`
 - Implementations: `DefaultHeadlessSession.java`, `NullRequestHandler.java`, `GuiRequestHandler.java`, `DefaultHeadlessSessionFactory.java`
-- Tests: 7 test classes, 80+ test methods, 800+ lines
 - Documentation: ADR-015, migration guide, Robot Framework example
 
 ---
 
 ## Headless-First Philosophy
 
-HTI5250J is designed headless-first, with no GUI dependencies in core:
+HTI5250J is designed headless-first. Core session APIs have no GUI dependencies and work in Docker, servers, and CI/CD. Legacy GUI code (SessionPanel.java) exists but is optional. HeadlessSession (see Decision 5 above) is the recommended API for all new code.
 
-- ✓ Core session API works in Docker, servers, CI/CD
-- ✓ No Swing/AWT imports in critical path
-- ✓ Protocol testing works offline
-- ✓ **Phase 15B:** HeadlessSession abstraction formally decouples GUI
-- ⚠ Legacy GUI code (SessionPanel.java) exists but is optional
-- ⚠ Planned deprecation in Phase 14+
-
-### Phase 15B: Formal HeadlessSession Abstraction
-
-As of Phase 15B, HeadlessSession is the recommended API for all new headless code:
-
-| Use Case | API | Memory | GUI | Custom SYSREQ |
-|----------|-----|--------|-----|---------------|
-| **Interactive terminal** | Session5250 + GUI | 2.5MB | ✓ Swing/AWT | Dialog only |
-| **Headless automation** | HeadlessSession | 500KB | ✗ None | Custom handler |
-| **Robot Framework** | HeadlessSession + RequestHandler | 500KB | ✗ None | ✓ Jython adapter |
-| **High-concurrency** | Virtual threads + HeadlessSession | 500KB × 1000s | ✗ None | ✓ Custom handler |
+| Use Case | API | Memory | Custom SYSREQ |
+|----------|-----|--------|---------------|
+| **Interactive terminal** | Session5250 + GUI | 2.5MB | Dialog only |
+| **Headless automation** | HeadlessSession | 500KB | Custom handler |
+| **Robot Framework** | HeadlessSession + RequestHandler | 500KB | Jython adapter |
+| **High-concurrency** | Virtual threads + HeadlessSession | 500KB x 1000s | Custom handler |
 
 **Migration:** See [MIGRATION_GUIDE_SESSION5250_TO_HEADLESS.md](./MIGRATION_GUIDE_SESSION5250_TO_HEADLESS.md)
 
@@ -864,7 +599,7 @@ As of Phase 15B, HeadlessSession is the recommended API for all new headless cod
 ## Related Documentation
 
 **Architecture & Design:**
-- [ADR-015-Headless-Abstractions.md](./ADR-015-Headless-Abstractions.md) — Phase 15B decision record
+- [ADR-015-Headless-Abstractions.md](./ADR-015-Headless-Abstractions.md) — HeadlessSession decision record
 - [MIGRATION_GUIDE_SESSION5250_TO_HEADLESS.md](./MIGRATION_GUIDE_SESSION5250_TO_HEADLESS.md) — HeadlessSession adoption guide
 
 **Development Standards:**
@@ -875,11 +610,10 @@ As of Phase 15B, HeadlessSession is the recommended API for all new headless cod
 **Quick Reference:**
 - [README.md](./README.md) — Quick start and usage examples
 - [examples/README.md](./examples/README.md) — Workflow examples and execution
-- [examples/HeadlessSessionExample.java](../examples/HeadlessSessionExample.java) — Java headless tutorial
-- [examples/HTI5250J.py](../examples/HTI5250J.py) — Jython Robot Framework library
+- [examples/HeadlessSessionExample.java](./examples/HeadlessSessionExample.java) — Java headless tutorial
+- [examples/HTI5250J.py](./examples/HTI5250J.py) — Jython Robot Framework library
 
 ---
 
-**Document Version:** 2.0 (Phase 15B)
-**Last Updated:** February 9, 2026
-**Phase Reference:** Phase 15B (Headless Abstractions) + Phase 11 (Workflow Execution)
+**Document Version:** 2.1
+**Last Updated:** February 2026

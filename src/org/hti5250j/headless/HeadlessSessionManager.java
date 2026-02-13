@@ -65,20 +65,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see ISessionManager
  * @see ISession
  * @see HeadlessSession
- * @since Wave 3A Track 3
+ * @since 0.12.0
  */
 public class HeadlessSessionManager implements ISessionManager {
 
-    /** Thread-safe session storage: ID → Session */
     private final Map<String, ISession> sessions = new ConcurrentHashMap<>();
 
-    /**
-     * Create a new headless session manager.
-     *
-     * Initializes with empty session collection.
-     */
     public HeadlessSessionManager() {
-        // Empty: sessions initialized above
     }
 
     @Override
@@ -86,13 +79,8 @@ public class HeadlessSessionManager implements ISessionManager {
         validateHostname(hostname);
         validatePort(port);
 
-        // Generate unique session ID using UUID v4
         String sessionId = UUID.randomUUID().toString();
-
-        // Create headless session (state: CREATED)
         ISession session = new HeadlessSession(sessionId, hostname, port);
-
-        // Store in concurrent map
         sessions.put(sessionId, session);
 
         return sessionId;
@@ -110,7 +98,6 @@ public class HeadlessSessionManager implements ISessionManager {
 
         ISession session = sessions.remove(sessionId);
         if (session != null) {
-            // Clean up if connected
             if (session.isConnected()) {
                 session.disconnect();
             }
@@ -130,7 +117,7 @@ public class HeadlessSessionManager implements ISessionManager {
     }
 
     @Override
-    public ISessionState getSessionState(String sessionId) {
+    public String getSessionState(String sessionId) {
         validateSessionId(sessionId);
 
         ISession session = sessions.get(sessionId);
@@ -138,34 +125,19 @@ public class HeadlessSessionManager implements ISessionManager {
             throw new IllegalArgumentException("Session not found: " + sessionId);
         }
 
-        // Determine state based on connection status
         if (session.isConnected()) {
-            return ISessionState.CONNECTED;
+            return "CONNECTED";
         } else {
-            return ISessionState.CREATED;
+            return "CREATED";
         }
     }
 
-    // ============ Validation Helpers ============
-
-    /**
-     * Validate hostname is non-null and non-empty.
-     *
-     * @param hostname The hostname to validate
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateHostname(String hostname) {
         if (hostname == null || hostname.trim().isEmpty()) {
             throw new IllegalArgumentException("Hostname must not be null or empty");
         }
     }
 
-    /**
-     * Validate port is in valid range (1-65535).
-     *
-     * @param port The port to validate
-     * @throws IllegalArgumentException if invalid
-     */
     private void validatePort(int port) {
         if (port < 1 || port > 65535) {
             throw new IllegalArgumentException(
@@ -173,12 +145,6 @@ public class HeadlessSessionManager implements ISessionManager {
         }
     }
 
-    /**
-     * Validate session ID is non-null and non-empty.
-     *
-     * @param sessionId The session ID to validate
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateSessionId(String sessionId) {
         if (sessionId == null || sessionId.trim().isEmpty()) {
             throw new IllegalArgumentException("Session ID must not be null or empty");

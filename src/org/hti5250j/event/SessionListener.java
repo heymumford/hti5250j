@@ -14,5 +14,5 @@ package org.hti5250j.event;
 
 public interface SessionListener {
 
-    public void onSessionChanged(SessionChangeEvent changeEvent);
+    void onSessionChanged(SessionChangeEvent changeEvent);
 }

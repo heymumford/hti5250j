@@ -17,11 +17,6 @@ public class ArtifactCollector {
         this.ledgerFile = new File(artifactDir, "execution-ledger.jsonl");
     }
 
-    /**
-     * Get the artifact directory for this collector.
-     *
-     * @return artifact directory File
-     */
     public File getArtifactDir() {
         return artifactDir;
     }

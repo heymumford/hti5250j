@@ -24,24 +24,15 @@ import java.awt.Rectangle;
  * - Thread-safe for reference assignments
  * - Supports dirty region accumulation via union operations
  *
- * Phase 4 of GuiGraphicBuffer refactoring (Wave 3A Track 2).
- *
  * @author Eric C. Mumford
  * @since 2026-02-13
  */
 public class DrawingContext {
 
-    // Graphics context reference
     private Graphics2D graphics;
-
-    // Dirty region tracking for optimized repaints
     private Rectangle dirtyRegion;
     private boolean dirty;
-
-    // Double buffering state
     private boolean doubleBuffered;
-
-    // Clipping region (bounds for graphics operations)
     private Rectangle clipRegion;
 
     /**
@@ -86,10 +77,8 @@ public class DrawingContext {
      */
     public void markDirty(int x, int y, int width, int height) {
         if (dirtyRegion == null) {
-            // First dirty region: create new rectangle
             dirtyRegion = new Rectangle(x, y, width, height);
         } else {
-            // Accumulate: union with existing dirty region
             dirtyRegion.add(new Rectangle(x, y, width, height));
         }
         dirty = true;

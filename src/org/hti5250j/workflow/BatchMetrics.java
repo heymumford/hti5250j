@@ -37,11 +37,9 @@ public record BatchMetrics(
             throw new IllegalArgumentException("Results cannot be empty");
         }
 
-        // Count successes and failures
         int successCount = (int) results.stream().filter(WorkflowResult::success).count();
         int failureCount = results.size() - successCount;
 
-        // Collect failures for diagnostics
         List<WorkflowResult> failures = new ArrayList<>();
         for (WorkflowResult result : results) {
             if (!result.success()) {
@@ -49,7 +47,6 @@ public record BatchMetrics(
             }
         }
 
-        // Extract latencies and compute percentiles
         List<Long> latencies = new ArrayList<>();
         for (WorkflowResult result : results) {
             if (result.success()) {
@@ -63,7 +60,6 @@ public record BatchMetrics(
         long p50 = latencies.isEmpty() ? 0 : latencies.get((int)Math.ceil(latencies.size() * 0.50) - 1);
         long p99 = latencies.isEmpty() ? 0 : latencies.get((int)Math.ceil(latencies.size() * 0.99) - 1);
 
-        // Calculate throughput (workflows per second)
         long durationNanos = endNanos - startNanos;
         long durationMs = durationNanos / 1_000_000;
         double throughput = durationMs > 0 ? (results.size() * 1000.0) / durationMs : 0;
@@ -87,7 +83,6 @@ public record BatchMetrics(
         System.out.printf("  Throughput:        %.1f workflows/sec%n", throughputOpsPerSec);
         System.out.println("═".repeat(70));
 
-        // Print failures if any
         if (!failures.isEmpty()) {
             System.out.println("\n  FAILURES:");
             for (WorkflowResult failure : failures) {

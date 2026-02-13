@@ -34,7 +34,7 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
         register();
     }
 
-    public static synchronized final BuiltInCodePageFactory getInstance() {
+    public static final synchronized BuiltInCodePageFactory getInstance() {
         if (singleton == null) {
             singleton = new BuiltInCodePageFactory();
         }
@@ -84,13 +84,11 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
      * @return an {@link ICodePage} object OR null, of not found
      */
     public ICodePage getCodePage(String encoding) {
-        // Phase 2: Try factory-based converter first (20 single-byte CCSIDs)
         CodepageConverterAdapter factoryConverter = CCSIDFactory.getConverter(encoding);
         if (factoryConverter != null) {
             return factoryConverter.init();
         }
 
-        // Fall back to reflection-based loading for remaining converters (CCSID930, etc.)
         for (Class<?> clazz : clazzes) {
             final ICodepageConverter converter = getConverterFromClassName(clazz);
             if (converter != null && converter.getName().equals(encoding)) {

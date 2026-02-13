@@ -25,7 +25,6 @@ import java.util.Properties;
  * to injectable RequestHandler implementations. This follows Dependency Inversion:
  * the session depends on an abstraction (RequestHandler), not concrete GUI code.
  *
- * @since Phase 15B
  */
 public interface HeadlessSession {
 

@@ -23,7 +23,7 @@ public class DESSHA1 implements Serializable {
     private final MessageDigest md;
 
     /** quick array to convert byte values to hex codes. */
-    private final static char[] HEX = {'0', '1', '2', '3', '4', '5', '6', '7',
+    private static final char[] HEX = {'0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     /**
@@ -47,10 +47,12 @@ public class DESSHA1 implements Serializable {
      * @return <code>String</code> with the hash in hex string form
      */
     public String digest(String identifier, String key) {
-        if (identifier != null)
+        if (identifier != null) {
             md.update(identifier.getBytes());
-        if (key != null)
+        }
+        if (key != null) {
             md.update(key.getBytes());
+        }
 
         return DESSHA1.bytesToHex(md.digest());
     }

@@ -71,9 +71,9 @@ public class KeyStrokenizer {
                     } else {
                         c = keyStrokes.charAt(index);
 
-                        if (c == '[')
+                        if (c == '[') {
                             index++;
-                        else {
+                        } else {
                             while (!gotOne) {
 
                                 if (c == ']') { // did we find an ending

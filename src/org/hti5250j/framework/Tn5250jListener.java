@@ -25,7 +25,5 @@ public abstract class Tn5250jListener {
 
     public abstract String getName();
 
-    public abstract void setController(Tn5250jController control);
-
-    public abstract void sessionCreated(Tn5250jSession session);
+    // setController and sessionCreated methods removed (dead code - Tn5250jController and Tn5250jSession deleted)
 }

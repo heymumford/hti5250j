@@ -23,24 +23,27 @@ public final class LangTool {
     private static ResourceBundle labels = null;
 
     public static void init() {
-        if (labels != null)
+        if (labels != null) {
             return;
+        }
 
         locale = Locale.getDefault();
         init("tn5250jMsgs");
     }
 
     public static void init(Locale l) {
-        if (labels != null)
+        if (labels != null) {
             return;
+        }
 
         locale = l;
         init("tn5250jMsgs");
     }
 
     public static void init(String initMsgFile) {
-        if (labels != null)
+        if (labels != null) {
             return;
+        }
 
         try {
             labels = ResourceBundle.getBundle(initMsgFile, locale);

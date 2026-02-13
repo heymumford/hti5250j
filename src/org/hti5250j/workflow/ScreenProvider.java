@@ -6,7 +6,7 @@ import org.hti5250j.framework.tn5250.Screen5250;
  * Provider interface for accessing screen without coupling to Session5250.
  * Enables polymorphic session types in future (e.g., mock sessions, session pools).
  *
- * @since Phase 11
+ * @since 0.12.0
  */
 public interface ScreenProvider {
     /**

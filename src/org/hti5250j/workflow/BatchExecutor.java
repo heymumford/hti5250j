@@ -44,11 +44,9 @@ public class BatchExecutor {
 
         long batchStartNanos = System.nanoTime();
 
-        // Create virtual thread executor (one thread per task, reused efficiently)
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
         List<Future<WorkflowResult>> futures = new ArrayList<>();
 
-        // Submit one workflow per CSV row (parallel execution on virtual threads)
         for (Map.Entry<String, Map<String, String>> entry : csvRows.entrySet()) {
             String rowKey = entry.getKey();
             Map<String, String> dataRow = entry.getValue();
@@ -59,7 +57,6 @@ public class BatchExecutor {
             futures.add(future);
         }
 
-        // Collect results with timeout per workflow
         List<WorkflowResult> results = new ArrayList<>();
         for (Future<WorkflowResult> future : futures) {
             try {
@@ -106,28 +103,23 @@ public class BatchExecutor {
         long startNanos = System.nanoTime();
 
         try {
-            // Extract LOGIN step to get host/user/password
             StepDef loginStep = workflow.getSteps().stream()
                 .filter(s -> s.getAction() == ActionType.LOGIN)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Workflow requires LOGIN step"));
 
-            // Create independent session from LOGIN step
             SessionInterface session = SessionFactory.createFromLoginStep(loginStep);
 
-            // Setup independent artifact directory for this workflow
             String workflowNamePath = workflow.getName().replaceAll("\\s+", "_");
             String uniquePath = workflowNamePath + "_" + rowKey;
             File artifactDir = new File("artifacts/" + uniquePath);
             artifactDir.mkdirs();
             ArtifactCollector collector = new ArtifactCollector(artifactDir);
 
-            // Execute workflow on virtual thread (blocking I/O is efficient)
             DatasetLoader loader = new DatasetLoader();
             WorkflowRunner runner = new WorkflowRunner(session, loader, collector);
             runner.executeWorkflow(workflow, dataRow);
 
-            // Close session
             try {
                 session.disconnect();
             } catch (Exception e) {

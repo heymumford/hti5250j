@@ -10,7 +10,7 @@ import java.awt.Color;
 /**
  * Color palette for the HTI5250J terminal emulator.
  *
- * Minimal implementation for Phase 1 CCSID refactoring.
+ * Manages configurable terminal colors for foreground, background, and UI elements.
  */
 public class ColorPalette {
     private Color colorBlack = new Color(0, 0, 0);
@@ -30,45 +30,105 @@ public class ColorPalette {
     private Color text = new Color(255, 255, 255);
     private boolean guiInterface = false;
 
-    // Getters
-    public Color getBlue() { return colorBlue; }
-    public Color getRed() { return colorRed; }
-    public Color getGreen() { return colorGreen; }
-    public Color getYellow() { return colorYellow; }
-    public Color getTurquoise() { return colorTurquoise; }
-    public Color getWhite() { return colorWhite; }
-    public Color getPink() { return colorPink; }
-    public Color getBlack() { return colorBlack; }
-    public Color getBg() { return colorBg; }
-    public Color getGuiField() { return guiFieldColor; }
-    public Color getCursor() { return cursorColor; }
-    public Color getSeparator() { return separatorColor; }
-    public Color getHexAttr() { return hexAttrColor; }
-    public Color getBackground() { return background; }
-    public Color getText() { return text; }
+    public Color getBlue() {
+        return colorBlue;
+    }
+    public Color getRed() {
+        return colorRed;
+    }
+    public Color getGreen() {
+        return colorGreen;
+    }
+    public Color getYellow() {
+        return colorYellow;
+    }
+    public Color getTurquoise() {
+        return colorTurquoise;
+    }
+    public Color getWhite() {
+        return colorWhite;
+    }
+    public Color getPink() {
+        return colorPink;
+    }
+    public Color getBlack() {
+        return colorBlack;
+    }
+    public Color getBg() {
+        return colorBg;
+    }
+    public Color getGuiField() {
+        return guiFieldColor;
+    }
+    public Color getCursor() {
+        return cursorColor;
+    }
+    public Color getSeparator() {
+        return separatorColor;
+    }
+    public Color getHexAttr() {
+        return hexAttrColor;
+    }
+    public Color getBackground() {
+        return background;
+    }
+    public Color getText() {
+        return text;
+    }
 
-    // Setters
-    public void setBlue(Color c) { this.colorBlue = c; }
-    public void setRed(Color c) { this.colorRed = c; }
-    public void setGreen(Color c) { this.colorGreen = c; }
-    public void setYellow(Color c) { this.colorYellow = c; }
-    public void setTurquoise(Color c) { this.colorTurquoise = c; }
-    public void setWhite(Color c) { this.colorWhite = c; }
-    public void setPink(Color c) { this.colorPink = c; }
-    public void setBlack(Color c) { this.colorBlack = c; }
-    public void setBg(Color c) { this.colorBg = c; }
-    public void setGuiField(Color c) { this.guiFieldColor = c; }
-    public void setCursor(Color c) { this.cursorColor = c; }
-    public void setSeparator(Color c) { this.separatorColor = c; }
-    public void setHexAttr(Color c) { this.hexAttrColor = c; }
-    public void setBackground(Color c) { this.background = c; }
-    public void setText(Color c) { this.text = c; }
-    public void setGuiInterface(boolean value) { this.guiInterface = value; }
-    public boolean isGuiInterface() { return guiInterface; }
+    public void setBlue(Color c) {
+        this.colorBlue = c;
+    }
+    public void setRed(Color c) {
+        this.colorRed = c;
+    }
+    public void setGreen(Color c) {
+        this.colorGreen = c;
+    }
+    public void setYellow(Color c) {
+        this.colorYellow = c;
+    }
+    public void setTurquoise(Color c) {
+        this.colorTurquoise = c;
+    }
+    public void setWhite(Color c) {
+        this.colorWhite = c;
+    }
+    public void setPink(Color c) {
+        this.colorPink = c;
+    }
+    public void setBlack(Color c) {
+        this.colorBlack = c;
+    }
+    public void setBg(Color c) {
+        this.colorBg = c;
+    }
+    public void setGuiField(Color c) {
+        this.guiFieldColor = c;
+    }
+    public void setCursor(Color c) {
+        this.cursorColor = c;
+    }
+    public void setSeparator(Color c) {
+        this.separatorColor = c;
+    }
+    public void setHexAttr(Color c) {
+        this.hexAttrColor = c;
+    }
+    public void setBackground(Color c) {
+        this.background = c;
+    }
+    public void setText(Color c) {
+        this.text = c;
+    }
+    public void setGuiInterface(boolean value) {
+        this.guiInterface = value;
+    }
+    public boolean isGuiInterface() {
+        return guiInterface;
+    }
 
-    // Color lookup methods (temporary Phase 1 support)
     public Color getForegroundColor(char colorConstant) {
-        // Map color constants to Color objects
         switch (colorConstant) {
             case 0: return colorBlack;
             case 1: return colorRed;
@@ -83,7 +143,6 @@ public class ColorPalette {
     }
 
     public Color getBackgroundColor(char colorValue) {
-        // Extract background color from upper byte
         char bgColor = (char) ((colorValue >> 8) & 0xFF);
         return getForegroundColor(bgColor);
     }

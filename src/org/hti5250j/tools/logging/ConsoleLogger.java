@@ -33,63 +33,73 @@ public final class ConsoleLogger implements HTI5250jLogger {
     }
 
     public void debug(Object message) {
-        if (isDebugEnabled())
+        if (isDebugEnabled()) {
             System.out.println("DEBUG [" + clazz + "] " + ((message != null) ? message.toString() : ""));
+        }
     }
 
     public void debug(Object message, Throwable throwable) {
-        if (isDebugEnabled())
+        if (isDebugEnabled()) {
             System.out.println("DEBUG [" + clazz + "] "
                     + ((message != null) ? message.toString() : "")
                     + ((throwable != null) ? throwable.getMessage() : ""));
+        }
     }
 
     public void info(Object message) {
-        if (isInfoEnabled())
+        if (isInfoEnabled()) {
             System.out.println("INFO [" + clazz + "] " + ((message != null) ? message.toString() : ""));
+        }
     }
 
     public void info(Object message, Throwable throwable) {
-        if (isInfoEnabled())
+        if (isInfoEnabled()) {
             System.out.println("INFO [" + clazz + "] "
                     + ((message != null) ? message.toString() : "")
                     + ((throwable != null) ? throwable.getMessage() : ""));
+        }
     }
 
     public void warn(Object message) {
-        if (isWarnEnabled())
+        if (isWarnEnabled()) {
             System.err.println("WARN [" + clazz + "] " + ((message != null) ? message.toString() : ""));
+        }
     }
 
     public void warn(Object message, Throwable throwable) {
-        if (isWarnEnabled())
+        if (isWarnEnabled()) {
             System.err.println("WARN [" + clazz + "] "
                     + ((message != null) ? message.toString() : "")
                     + ((throwable != null) ? throwable.getMessage() : ""));
+        }
     }
 
     public void error(Object message) {
-        if (isErrorEnabled())
+        if (isErrorEnabled()) {
             System.err.println("ERROR [" + clazz + "] " + ((message != null) ? message.toString() : ""));
+        }
     }
 
     public void error(Object message, Throwable throwable) {
-        if (isErrorEnabled())
+        if (isErrorEnabled()) {
             System.err.println("ERROR [" + clazz + "] "
                     + ((message != null) ? message.toString() : "")
                     + ((throwable != null) ? throwable.getMessage() : ""));
+        }
     }
 
     public void fatal(Object message) {
-        if (isFatalEnabled())
+        if (isFatalEnabled()) {
             System.err.println("FATAL [" + clazz + "] " + ((message != null) ? message.toString() : ""));
+        }
     }
 
     public void fatal(Object message, Throwable throwable) {
-        if (isFatalEnabled())
+        if (isFatalEnabled()) {
             System.err.println("FATAL [" + clazz + "] "
                     + ((message != null) ? message.toString() : "")
                     + ((throwable != null) ? throwable.getMessage() : ""));
+        }
     }
 
     public boolean isDebugEnabled() {

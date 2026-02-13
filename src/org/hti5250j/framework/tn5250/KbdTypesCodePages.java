@@ -27,7 +27,7 @@ public enum KbdTypesCodePages {
     BGB("Bulgarian", "BGB", "1150", "1025", "1025"),
     CAB("Canadian French", "CAB", "341", "260", "65535"),
     CAI("Canadian French MNCS", "CAI", "697", "500", "500"),
-    //	YGI("Croatian","YGI","959","870","870"),
+    //    YGI("Croatian","YGI","959","870","870"),
     CYB("Cyrillic", "CYB", "960", "880", "880"),
     CSB("Czech", "CSB", "959", "870", "870"),
     DMB("Danish", "DMB", "697", "277", "277"),
@@ -45,14 +45,14 @@ public enum KbdTypesCodePages {
     ICI("Icelandic MNCS", "ICI", "697", "500", "500"),
     INB("International", "INB", "697", "500", "500"),
     INBX("International-X", "INB", "697", "500", "500-ch"),
-    //	INB("International MNCS","INB","697","500","500"),
+    //    INB("International MNCS","INB","697","500","500"),
     IRB("Farsi (Iran)", "IRB", "1219", "1097", "1097"),
     ITB("Italian", "ITB", "697", "280", "280"),
     ITI("Italian MNCS", "ITI", "697", "500", "500"),
     JEB("Japanese-English", "JEB", "697", "281", "65535"),
     JEI("Japanese- English MNCS", "JEI", "697", "500", "500"),
     JKB("Japanese Kanji and Katakana", "JKB", "1172", "290", "5026"),
-    //	JUB("Japanese Kanji and US English","JUB","697","37","See note 3."),
+    //    JUB("Japanese Kanji and US English","JUB","697","37","See note 3."),
     KAB("Japanese Katakana", "KAB", "332", "290", "290"),
     JPB("Japanese Latin Extended", "JPB", "1172", "1027", "1027"),
     KOB("Korean", "KOB", "1173", "833", "833"),
@@ -73,7 +73,7 @@ public enum KbdTypesCodePages {
     RCB("Simplified Chinese", "RCB", "1174", "836", "836"),
     SKB("Slovakian", "SKB", "959", "870", "870"),
     SKBX("Slovakian 870-sk", "SKB", "959", "870", "870-sk"), // Workaround, to catch up Java codepage '870-sk'
-    //	YGI("Slovenian","YGI","959","870","870"),
+    //    YGI("Slovenian","YGI","959","870","870"),
     SPB("Spanish", "SPB", "697", "284", "284"),
     SPI("Spanish MNCS", "SPI", "697", "500", "500"),
     SSB("Spanish Speaking", "SSB", "697", "284", "284"),
@@ -97,14 +97,7 @@ public enum KbdTypesCodePages {
     public final String codepage;
     public final String ccsid;
 
-    /**
-     * @param description
-     * @param kbdType
-     * @param charset
-     * @param codepage
-     * @param ccsid
-     */
-    private KbdTypesCodePages(String description, String kbdType, String charset, String codepage, String ccsid) {
+    KbdTypesCodePages(String description, String kbdType, String charset, String codepage, String ccsid) {
         this.description = description;
         this.kbdType = kbdType;
         this.charset = charset;

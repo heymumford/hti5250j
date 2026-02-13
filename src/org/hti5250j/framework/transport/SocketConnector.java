@@ -65,7 +65,6 @@ public class SocketConnector {
                 sslType.toUpperCase().equals(HTI5250jConstants.SSL_TYPE_NONE)) {
             logger.info("Creating Plain Socket");
             try {
-                // Use Socket Constructor!!! SocketFactory for jdk 1.4
                 socket = new Socket(destination, port);
             } catch (Exception e) {
                 ex = e;

@@ -26,7 +26,6 @@ public class WorkflowValidator {
     public ValidationResult validate(WorkflowSchema workflow) {
         ValidationResult result = new ValidationResult();
 
-        // Validate workflow structure
         if (workflow == null) {
             result.addError(-1, "workflow", "Workflow is null", "Provide a valid workflow");
             return result;
@@ -42,11 +41,9 @@ public class WorkflowValidator {
             return result;
         }
 
-        // Validate step ordering constraints
         ValidationResult orderResult = stepOrderValidator.validate(workflow.getSteps());
         result.merge(orderResult);
 
-        // Validate each step
         for (int i = 0; i < workflow.getSteps().size(); i++) {
             ValidationResult stepResult = validateStep(workflow.getSteps().get(i), i);
             result.merge(stepResult);
@@ -72,10 +69,8 @@ public class WorkflowValidator {
             return result;
         }
 
-        // Validate timeout bounds
         result.merge(stepValidator.validate(step, stepIndex));
 
-        // Validate action-specific constraints
         ActionValidator actionValidator = getActionValidator(step.getAction());
         if (actionValidator != null) {
             result.merge(actionValidator.validate(step, stepIndex));

@@ -15,7 +15,6 @@ import javax.swing.Timer;
  * Encapsulates all cursor-related state and operations including position tracking,
  * visibility control, blink state management, and cursor size settings.
  *
- * Phase 3 extraction from GuiGraphicBuffer refactoring.
  */
 public class CursorManager {
 

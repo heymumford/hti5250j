@@ -14,9 +14,9 @@ package org.hti5250j.event;
 
 public interface ScreenListener {
 
-    public void onScreenChanged(int inUpdate, int startRow, int startCol,
+    void onScreenChanged(int inUpdate, int startRow, int startCol,
                                 int endRow, int endCol);
 
-    public void onScreenSizeChanged(int rows, int cols);
+    void onScreenSizeChanged(int rows, int cols);
 
 }

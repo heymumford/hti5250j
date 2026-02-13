@@ -11,7 +11,6 @@
 
 package org.hti5250j.interfaces;
 
-import java.util.Vector;
 
 /**
  * An interface defining objects that can create OptionAccess
@@ -29,7 +28,7 @@ public abstract class OptionAccessFactory {
         return factory;
     }
 
-    private static final void setFactory() {
+    private static void setFactory() {
         if (factory == null) {
             try {
                 String className = System.getProperty(OptionAccessFactory.class.getName());
@@ -41,20 +40,19 @@ public abstract class OptionAccessFactory {
                     }
                 }
             } catch (Exception ex) {
-                ;
             }
-            if (OptionAccessFactory.factory == null) { //take the default
+            if (OptionAccessFactory.factory == null) {
                 OptionAccessFactory.factory = new org.hti5250j.OptionAccess();
             }
         }
     }
 
-    abstract public boolean isValidOption(String option);
+    public abstract boolean isValidOption(String option);
 
-    abstract public boolean isRestrictedOption(String option);
+    public abstract boolean isRestrictedOption(String option);
 
-    abstract public int getNumberOfRestrictedOptions();
+    public abstract int getNumberOfRestrictedOptions();
 
-    abstract public void reload();
+    public abstract void reload();
 
 }

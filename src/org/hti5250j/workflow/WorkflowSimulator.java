@@ -58,7 +58,6 @@ public class WorkflowSimulator {
         long cumulativeDurationMs = 0;
         String predictedOutcome = "success";
 
-        // Validate workflow structure
         if (workflow == null || workflow.getSteps() == null || workflow.getSteps().isEmpty()) {
             warnings.add("Workflow is empty or invalid");
             return new WorkflowSimulation(
@@ -69,18 +68,15 @@ public class WorkflowSimulator {
             );
         }
 
-        // Simulate each step
         for (int i = 0; i < workflow.getSteps().size(); i++) {
             StepDef step = workflow.getSteps().get(i);
             String stepName = step.getAction().toString();
             String prediction = "success";
             Optional<String> stepWarning = Optional.empty();
 
-            // Estimate duration for this step
             long stepDuration = "LOGIN".equals(stepName) ? LOGIN_DURATION_MS : STEP_DURATION_MS;
             cumulativeDurationMs += stepDuration;
 
-            // Check timeout
             if (cumulativeDurationMs > tolerance.maxDurationMs()) {
                 prediction = "timeout";
                 predictedOutcome = "timeout";
@@ -94,12 +90,10 @@ public class WorkflowSimulator {
                 );
             }
 
-            // Check step-specific constraints
             if ("FILL".equals(stepName) && step.getFields() != null) {
                 for (Map.Entry<String, String> field : step.getFields().entrySet()) {
                     String fieldValue = field.getValue();
 
-                    // Check for truncation (field value too long)
                     if (fieldValue != null && fieldValue.length() > 255) {
                         warnings.add(
                             String.format(
@@ -111,7 +105,6 @@ public class WorkflowSimulator {
                         );
                     }
 
-                    // Check precision loss
                     try {
                         double numValue = Double.parseDouble(fieldValue);
                         if (numValue != Math.round(numValue * 100.0) / 100.0) {
@@ -125,12 +118,10 @@ public class WorkflowSimulator {
                             );
                         }
                     } catch (NumberFormatException e) {
-                        // Not a number, skip precision check
                     }
                 }
             }
 
-            // Check ASSERT step has proper field
             if ("ASSERT".equals(stepName)) {
                 if ((step.getScreen() == null || step.getScreen().isEmpty())
                     && (step.getText() == null || step.getText().isEmpty())) {
@@ -143,19 +134,15 @@ public class WorkflowSimulator {
             SimulatedStep simStep = new SimulatedStep(i, stepName, prediction, stepWarning);
             simulatedSteps.add(simStep);
 
-            // Add step warning to main warnings list if present
             if (stepWarning.isPresent()) {
                 warnings.add(stepWarning.get());
             }
 
-            // Stop if timeout detected
             if ("timeout".equals(prediction)) {
                 break;
             }
         }
 
-        // Build predicted output fields (empty for simulation)
-        // Filter out null values to maintain data integrity
         Map<String, String> predictedFields = new HashMap<>();
         if (testData != null) {
             for (Map.Entry<String, String> entry : testData.entrySet()) {

@@ -24,8 +24,8 @@ import static org.hti5250j.framework.tn5250.ByteExplainer.*;
  */
 public final class CCSID930 implements ICodepageConverter {
 
-    public final static String NAME = "930";
-    public final static String DESCR = "Japan Katakana (extended range), DBCS";
+    public static final String NAME = "930";
+    public static final String DESCR = "Japan Katakana (extended range), DBCS";
 
     private final AtomicBoolean doubleByteActive = new AtomicBoolean(false);
     private final AtomicBoolean secondByteNeeded = new AtomicBoolean(false);

@@ -75,11 +75,10 @@ public class DataStreamProducer implements Runnable {
                     // But the loadStream fails on this, so we check it here!
                     if (abyte0.length > 0) {
                         loadStream(abyte0, 0);
-                    }
-                    // WVL - LDC : 16/07/2003 : TR.000345
-                    // Returning no bytes means the input buffer has
                     // reached end-of-stream, so we do a disconnect!
-                    else {
+                    // Returning no bytes means the input buffer has
+                    // WVL - LDC : 16/07/2003 : TR.000345
+                    } else {
                         done = true;
                         vt.disconnect();
                     }
@@ -91,14 +90,16 @@ public class DataStreamProducer implements Runnable {
             } catch (IOException ioe) {
 
                 log.warn(ioe.getMessage());
-                if (me.isInterrupted())
+                if (me.isInterrupted()) {
                     done = true;
+                }
 
             } catch (Exception ex) {
 
                 log.warn(ex.getMessage());
-                if (me.isInterrupted())
+                if (me.isInterrupted()) {
                     done = true;
+                }
 
             }
         }
@@ -140,8 +141,9 @@ public class DataStreamProducer implements Runnable {
             }
             try {
                 dsq.put(buf);
-                if (streamBuffer.length > buf.length + offset + MINIMAL_PARTIAL_STREAM_LEN)
+                if (streamBuffer.length > buf.length + offset + MINIMAL_PARTIAL_STREAM_LEN) {
                     loadStream(streamBuffer, offset + buf_len);
+                }
             } catch (InterruptedException ex) {
                 log.warn("load stream error.", ex);
             }
@@ -174,8 +176,7 @@ public class DataStreamProducer implements Runnable {
             // happens e.g. when the connection is closed from the AS/400.
             // So we stop in this case!
             // ==> an empty byte array is returned from this method.
-            if (i == -1) // nothing read!
-            {
+            if (i == -1) { // nothing read!
                 done = true;
                 vt.disconnect();
                 continue;
@@ -203,8 +204,9 @@ public class DataStreamProducer implements Runnable {
             }
             baosin.write(i);
             // check for end of record EOR and IAC  - FFEF
-            if (j == 255 && i == 239)
+            if (j == 255 && i == 239) {
                 done = true;
+            }
 
             // This is to check for the TELNET TIMING MARK OPTION
             // rfc860 explains this in more detail.  When we receive it

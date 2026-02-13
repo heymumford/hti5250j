@@ -11,7 +11,6 @@ package org.hti5250j.keyboard;
  */
 public final class KeyCodes {
 
-    // Prevent instantiation
     private KeyCodes() {}
 
     /**
@@ -46,12 +45,10 @@ public final class KeyCodes {
 
     /**
      * Get the text description of a key code.
-     * This is a fallback implementation that returns the numeric code as a string.
      * @param keyCode the key code
      * @return text description
      */
     public static String getKeyText(int keyCode) {
-        // Simple implementation - can be enhanced with actual key name mappings
         return "KeyCode_" + keyCode;
     }
 }

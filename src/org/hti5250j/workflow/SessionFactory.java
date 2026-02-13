@@ -44,7 +44,6 @@ public class SessionFactory {
         props.setProperty("SESSION_USER", loginStep.getUser());
         props.setProperty("SESSION_PASSWORD", loginStep.getPassword());
 
-        // Use default SessionConfig with dummy paths
         SessionConfig config = new SessionConfig("dummy", "dummy");
 
         return new Session5250(props, "workflow-session", "WorkflowSession", config);

@@ -69,8 +69,9 @@ public class As400Util {
         // Here we interrogate the the DIGIT portion for the sign
         // 0x0f = positive -> 0x0f | 0x0d = 0x0f
         // 0x0d = negative -> 0x0d | 0x0d = 0x0d
-        if ((byteD | 0x0d) == 0x0d)
+        if ((byteD | 0x0d) == 0x0d) {
             p2i *= -1;
+        }
 
         return p2i;
 

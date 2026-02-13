@@ -24,8 +24,8 @@ import org.hti5250j.encoding.CCSIDFactory;
 @Deprecated(since = "Phase 3", forRemoval = true)
 public final class CCSID1147 extends CodepageConverterAdapter {
 
-    public final static String NAME = "1147";
-    public final static String DESCR = "CECP: France (Euro)";
+    public static final String NAME = "1147";
+    public static final String DESCR = "CECP: France (Euro)";
 
     private final CodepageConverterAdapter delegate;
 

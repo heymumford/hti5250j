@@ -25,7 +25,6 @@ package org.hti5250j.interfaces;
  *         return menu_option  # Return "1" for first option, etc.
  * </pre>
  *
- * @since Phase 15B
  */
 public interface RequestHandler {
 

@@ -24,8 +24,8 @@ import org.hti5250j.encoding.CCSIDFactory;
 @Deprecated(since = "Phase 3", forRemoval = true)
 public final class CCSID875 extends CodepageConverterAdapter {
 
-    public final static String NAME = "875";
-    public final static String DESCR = "CECP: Greek";
+    public static final String NAME = "875";
+    public static final String DESCR = "CECP: Greek";
 
     private final CodepageConverterAdapter delegate;
 

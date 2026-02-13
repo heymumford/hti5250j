@@ -24,8 +24,8 @@ import org.hti5250j.encoding.CCSIDFactory;
 @Deprecated(since = "Phase 3", forRemoval = true)
 public final class CCSID424 extends CodepageConverterAdapter {
 
-    public final static String NAME = "424";
-    public final static String DESCR = "CECP: Hebrew";
+    public static final String NAME = "424";
+    public static final String DESCR = "CECP: Hebrew";
 
     private final CodepageConverterAdapter delegate;
 

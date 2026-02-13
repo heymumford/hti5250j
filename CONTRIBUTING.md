@@ -10,7 +10,7 @@ This repository is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5
 - License: GPL-2.0-or-later
 
 **This Fork (TN5250J Headless):**
-- Repository: https://github.com/heymumford/tn5250j
+- Repository: https://github.com/heymumford/hti5250j
 - Maintainer: Eric C. Mumford (@heymumford)
 - License: GPL-2.0-or-later
 
@@ -32,8 +32,8 @@ This fork follows SemVer with an upstream‑anchored pre‑release suffix:
 
 Examples:
 
-- `0.8.0-headless.1`
-- `0.8.0-headless.2+upstream.0.8.0.abcdef`
+- `0.12.0`
+- `0.12.1+upstream.0.8.0.abcdef`
 
 Increment rules:
 
@@ -67,7 +67,7 @@ Use SPDX headers for new files and when updating legacy headers:
 ## Questions
 
 - Upstream issues: https://github.com/tn5250j/tn5250j/issues
-- Fork issues: https://github.com/heymumford/tn5250j/issues
+- Fork issues: https://github.com/heymumford/hti5250j/issues
 - License text: [LICENSE](./LICENSE)
 
 ## Legal

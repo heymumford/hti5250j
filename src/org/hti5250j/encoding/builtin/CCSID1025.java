@@ -24,8 +24,8 @@ import org.hti5250j.encoding.CCSIDFactory;
 @Deprecated(since = "Phase 3", forRemoval = true)
 public final class CCSID1025 extends CodepageConverterAdapter {
 
-    public final static String NAME = "1025";
-    public final static String DESCR = "CECP: Cyrillic";
+    public static final String NAME = "1025";
+    public static final String DESCR = "CECP: Cyrillic";
 
     private final CodepageConverterAdapter delegate;
 

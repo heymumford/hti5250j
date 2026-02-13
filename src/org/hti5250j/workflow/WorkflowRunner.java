@@ -13,8 +13,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 
 public class WorkflowRunner {
@@ -43,7 +41,7 @@ public class WorkflowRunner {
     /**
      * Set custom RequestHandler for SYSREQ (F3 key) handling.
      * <p>
-     * Phase 15B: Enables Robot Framework, Jython adapters, and workflow-specific logic
+     * Enables Robot Framework, Jython adapters, and workflow-specific logic
      * to intercept and handle system request dialogs programmatically.
      * <p>
      * Example: Custom handler that responds to SYSREQ with workflow-specific logic
@@ -54,14 +52,13 @@ public class WorkflowRunner {
      *
      * @param requestHandler custom RequestHandler implementation
      * @throws NullPointerException if requestHandler is null
-     * @since Phase 15B
+     * @since 0.12.0
      */
     public void setRequestHandler(RequestHandler requestHandler) {
         if (requestHandler == null) {
             throw new NullPointerException("RequestHandler cannot be null");
         }
 
-        // Inject handler into underlying Session5250 if available
         if (session instanceof Session5250) {
             ((Session5250) session).setRequestHandler(requestHandler);
         }
@@ -73,10 +70,10 @@ public class WorkflowRunner {
      * Useful for accessing extended APIs not available through SessionInterface,
      * such as HeadlessSession interface, custom RequestHandler injection, etc.
      * <p>
-     * Phase 15B: Enables advanced usage patterns (Robot Framework adapters, etc.)
+     * Enables advanced usage patterns (Robot Framework adapters, etc.)
      *
      * @return Session5250 instance, or null if session is not a Session5250
-     * @since Phase 15B
+     * @since 0.12.0
      */
     public Session5250 getSession5250() {
         return (session instanceof Session5250) ? (Session5250) session : null;
@@ -213,14 +210,10 @@ public class WorkflowRunner {
         screenName = datasetLoader.replaceParameters(screenName, dataRow);
 
         try {
-            // Generate PNG screenshot using HeadlessScreenRenderer (no GUI required)
             BufferedImage screenshot = generateScreenshot(screen);
-
-            // Save PNG
             File pngFile = saveCapturePng(screenshot, screenName);
             artifactCollector.appendLedger("CAPTURE", "PNG: " + pngFile.getName());
 
-            // Also save text representation for accessibility
             String screenContent = getScreenContent(screen);
             String formattedDump = formatScreenDump(screenContent);
             File textFile = saveCaptureAsText(formattedDump, screenName + ".txt");
@@ -240,7 +233,6 @@ public class WorkflowRunner {
      * Uses HeadlessScreenRenderer for pure headless mode support.
      */
     private BufferedImage generateScreenshot(Screen5250 screen) {
-        // Get session configuration if available
         SessionConfig config = null;
         if (session instanceof Session5250) {
             config = ((Session5250) session).getConfiguration();
@@ -250,7 +242,6 @@ public class WorkflowRunner {
             throw new IllegalStateException("Cannot determine session configuration for screenshot generation");
         }
 
-        // Use HeadlessScreenRenderer for stateless rendering (no GUI required)
         return HeadlessScreenRenderer.renderScreen(screen, config);
     }
 
@@ -267,8 +258,6 @@ public class WorkflowRunner {
         ImageIO.write(image, "PNG", pngFile);
         return pngFile;
     }
-
-    // Helper methods
 
     private Screen5250 getScreen() throws IllegalStateException {
         if (!(session instanceof ScreenProvider)) {

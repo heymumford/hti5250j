@@ -12,5 +12,5 @@ package org.hti5250j.event;
 
 public interface EmulatorActionListener {
 
-    public void onEmulatorAction(EmulatorActionEvent actionEvent);
+    void onEmulatorAction(EmulatorActionEvent actionEvent);
 }

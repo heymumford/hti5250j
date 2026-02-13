@@ -30,25 +30,20 @@ public class WorkflowExecutor {
             throw new IllegalArgumentException("Workflow cannot be null");
         }
 
-        // Load dataset (if provided)
         Map<String, String> dataRow = loadDataset(dataFileArg);
 
-        // Extract LOGIN step to get host/user/password
         StepDef loginStep = workflow.getSteps().stream()
             .filter(s -> s.getAction() == ActionType.LOGIN)
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Workflow requires LOGIN step"));
 
-        // Create session from LOGIN step properties
         SessionInterface session = SessionFactory.createFromLoginStep(loginStep);
 
-        // Setup artifact collection
         String workflowNamePath = workflow.getName().replaceAll("\\s+", "_");
         File artifactDir = new File("artifacts/" + workflowNamePath);
         artifactDir.mkdirs();
         ArtifactCollector collector = new ArtifactCollector(artifactDir);
 
-        // Execute workflow via WorkflowRunner
         DatasetLoader loader = new DatasetLoader();
         WorkflowRunner runner = new WorkflowRunner(session, loader, collector);
 
@@ -84,7 +79,6 @@ public class WorkflowExecutor {
             throw new IllegalArgumentException("Data file required for batch execution");
         }
 
-        // Load all rows from CSV file
         DatasetLoader loader = new DatasetLoader();
         Map<String, Map<String, String>> allRows = loader.loadCSV(new File(dataFileArg));
 
@@ -92,7 +86,6 @@ public class WorkflowExecutor {
             throw new IllegalArgumentException("CSV file contains no data rows");
         }
 
-        // Execute all workflows in parallel using virtual threads
         return BatchExecutor.executeAll(workflow, allRows, environment);
     }
 
@@ -113,7 +106,6 @@ public class WorkflowExecutor {
             DatasetLoader loader = new DatasetLoader();
             Map<String, Map<String, String>> csvData = loader.loadCSV(new File(dataFileArg));
             if (!csvData.isEmpty()) {
-                // Get first row from CSV
                 result = csvData.values().iterator().next();
             }
         } catch (Exception e) {

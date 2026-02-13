@@ -286,6 +286,5 @@ See the examples above for reference implementations.
 ## Architecture & Testing
 
 For detailed information on system architecture and testing strategy, see:
-- [ARCHITECTURE.md](../ARCHITECTURE.md) — System design and workflow execution pipeline
-- [TESTING.md](../TESTING.md) — Four-domain test framework
-- [CODING_STANDARDS.md](../CODING_STANDARDS.md) — Development conventions
+- [ARCHITECTURE.md](../ARCHITECTURE.md) -- System design and workflow execution pipeline
+- [TESTING.md](../TESTING.md) -- Four-domain test framework

@@ -38,20 +38,15 @@ package org.hti5250j.headless;
  *
  * @see ISession
  * @see ISessionManager
- * @since Wave 3A Track 3
+ * @since 0.12.0
  */
 public class HeadlessSession implements ISession {
 
-    /** Unique session identifier (assigned by manager) */
     private final String id;
-
-    /** Target host name or IP address (immutable) */
     private final String hostname;
-
-    /** Target port number (immutable) */
     private final int port;
 
-    /** Connection state (volatile for visibility) */
+    /** Volatile for cross-thread visibility of connection state */
     private volatile boolean connected;
 
     /**
@@ -79,7 +74,7 @@ public class HeadlessSession implements ISession {
         this.id = id;
         this.hostname = hostname;
         this.port = port;
-        this.connected = false;  // Initially disconnected
+        this.connected = false;
     }
 
     @Override
@@ -104,17 +99,13 @@ public class HeadlessSession implements ISession {
 
     @Override
     public void connect() {
-        // In headless mode, "connection" is just state tracking.
-        // Real TCP connection happens in TN5250 layer (tnvt.java).
-        // This method marks the session as "active" for the headless manager.
+        // State tracking only; real TCP connection happens in TN5250 layer (tnvt.java)
         this.connected = true;
     }
 
     @Override
     public void disconnect() {
-        // In headless mode, "disconnection" is just state tracking.
-        // Real TCP cleanup happens in TN5250 layer.
-        // This method marks the session as "inactive".
+        // State tracking only; real TCP cleanup happens in TN5250 layer
         this.connected = false;
     }
 

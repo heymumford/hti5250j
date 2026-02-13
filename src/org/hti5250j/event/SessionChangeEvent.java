@@ -10,16 +10,8 @@ package org.hti5250j.event;
 import java.util.EventObject;
 
 /**
- * Immutable record-like event representing a session state change event.
- *
- * This class encapsulates the data associated with changes in session
- * connection state with record-like semantics. It provides:
- * - Immutable fields (stored as final)
- * - Auto-generated equals/hashCode/toString
- * - Record component accessors with backward-compatible getter methods
- * - Thread-safe distribution across listeners
- *
- * @since Phase 15D
+ * Immutable event representing a session state change.
+ * Provides record-like accessors and thread-safe distribution across listeners.
  */
 public class SessionChangeEvent extends EventObject implements java.io.Serializable {
 
@@ -69,46 +61,34 @@ public class SessionChangeEvent extends EventObject implements java.io.Serializa
         this.state = state;
     }
 
-    /**
-     * Gets the message associated with this event (record component accessor).
-     *
-     * @return the message, or null if not set
-     */
+    /** @return the message, or null if not set */
     public String message() {
         return message;
     }
 
-    /**
-     * Gets the message associated with this event (backward compatibility).
-     *
-     * @return the message, or null if not set
-     */
+    /** @return the message, or null if not set */
     public String getMessage() {
         return message;
     }
 
-    /**
-     * Gets the session state (record component accessor).
-     *
-     * @return the state value
-     */
+    /** @return the state value */
     public int state() {
         return state;
     }
 
-    /**
-     * Gets the session state (backward compatibility).
-     *
-     * @return the state value
-     */
+    /** @return the state value */
     public int getState() {
         return state;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof SessionChangeEvent)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof SessionChangeEvent)) {
+            return false;
+        }
 
         SessionChangeEvent other = (SessionChangeEvent) obj;
         return state == other.state &&

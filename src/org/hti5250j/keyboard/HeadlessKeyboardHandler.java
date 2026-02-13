@@ -27,23 +27,18 @@ import org.hti5250j.interfaces.IKeyEvent;
  * - Supports key recording for macro playback
  * - Thread-safe for concurrent key processing
  *
- * @since Wave 3A Track 3 (KeyboardHandler Extraction)
  */
 public class HeadlessKeyboardHandler implements IKeyHandler {
 
-    // Instance state
     private KeyMapper keyMapper;
     private StringBuffer recordBuffer;
     private boolean recording;
-    private boolean altGraphDown; // AltGr state tracking for Linux
+    private boolean altGraphDown;
     private String lastKeyStroke;
     private boolean keyProcessed;
 
     /**
      * Create a headless keyboard handler.
-     *
-     * Initializes the handler without requiring Swing components
-     * or a Session5250 context.
      */
     public HeadlessKeyboardHandler() {
         this.keyMapper = new KeyMapper();
@@ -55,51 +50,37 @@ public class HeadlessKeyboardHandler implements IKeyHandler {
         this.keyProcessed = false;
     }
 
-    /**
-     * Process a key event in headless mode.
-     *
-     * @param event the key event to process
-     * @return true if the key was handled, false otherwise
-     */
     @Override
     public boolean handleKey(IKeyEvent event) {
-        // Reject null events
         if (event == null) {
             return false;
         }
 
-        // Skip consumed events
         if (event.isConsumed()) {
             return false;
         }
 
-        // Reset keyProcessed flag for this event
         keyProcessed = false;
 
-        // Track AltGraph state (Linux compatibility)
+        // Track AltGraph state for Linux compatibility
         if (event.getKeyCode() == java.awt.event.KeyEvent.VK_ALT_GRAPH) {
             altGraphDown = true;
             return false;
         }
 
-        // Handle special modifier keys
         if (isModifierKey(event.getKeyCode())) {
             return false;
         }
 
-        // Map the key using KeyMapper
         String keyStroke = getKeyStrokeText(event);
 
         if (keyStroke != null && !keyStroke.isEmpty() && !keyStroke.equals("null")) {
-            // Handle special keys (function keys, arrow keys, etc.)
             if (keyStroke.startsWith("[")) {
-                // Terminal function key or special key
                 if (recording) {
                     recordBuffer.append(keyStroke);
                 }
                 keyProcessed = true;
             } else {
-                // Regular character or macro
                 if (recording) {
                     recordBuffer.append(keyStroke);
                 }
@@ -107,7 +88,6 @@ public class HeadlessKeyboardHandler implements IKeyHandler {
             }
         }
 
-        // Update state for next event
         if (!keyProcessed && event.getKeyCode() == java.awt.event.KeyEvent.VK_ALT_GRAPH) {
             altGraphDown = false;
         }
@@ -115,11 +95,6 @@ public class HeadlessKeyboardHandler implements IKeyHandler {
         return keyProcessed;
     }
 
-    /**
-     * Set the key mapper for this handler.
-     *
-     * @param mapper the KeyMapper to use
-     */
     @Override
     public void setKeyMapper(KeyMapper mapper) {
         if (mapper != null) {
@@ -127,9 +102,6 @@ public class HeadlessKeyboardHandler implements IKeyHandler {
         }
     }
 
-    /**
-     * Reset the handler state.
-     */
     @Override
     public void reset() {
         this.recordBuffer = null;
@@ -139,50 +111,28 @@ public class HeadlessKeyboardHandler implements IKeyHandler {
         this.keyProcessed = false;
     }
 
-    /**
-     * Get the recording buffer.
-     *
-     * @return the buffer contents, or null if not recording
-     */
     @Override
     public String getRecordingBuffer() {
         return (recordBuffer != null) ? recordBuffer.toString() : null;
     }
 
-    /**
-     * Start recording keystrokes.
-     */
     @Override
     public void startRecording() {
         recording = true;
         recordBuffer = new StringBuffer();
     }
 
-    /**
-     * Stop recording keystrokes.
-     */
     @Override
     public void stopRecording() {
         recording = false;
         // Keep recordBuffer for retrieval via getRecordingBuffer()
     }
 
-    /**
-     * Check if recording is active.
-     *
-     * @return true if currently recording
-     */
     @Override
     public boolean isRecording() {
         return recording;
     }
 
-    /**
-     * Check if a key code is a modifier key.
-     *
-     * @param keyCode the key code to check
-     * @return true if the key is a modifier
-     */
     private boolean isModifierKey(int keyCode) {
         return keyCode == java.awt.event.KeyEvent.VK_CAPS_LOCK ||
                keyCode == java.awt.event.KeyEvent.VK_SHIFT ||
@@ -191,21 +141,11 @@ public class HeadlessKeyboardHandler implements IKeyHandler {
                keyCode == java.awt.event.KeyEvent.VK_CONTROL;
     }
 
-    /**
-     * Get the keystroke text for an event.
-     *
-     * Uses KeyMapper to translate the raw key event to a
-     * mnemonic or character string.
-     *
-     * @param event the key event
-     * @return the keystroke text, or null if unmappable
-     */
     private String getKeyStrokeText(IKeyEvent event) {
         try {
             lastKeyStroke = KeyMapper.getKeyStrokeText(event);
             return lastKeyStroke;
         } catch (Exception e) {
-            // Log the exception but don't crash
             System.err.println("Error mapping key event: " + e.getMessage());
             return null;
         }

@@ -8,7 +8,7 @@ package org.hti5250j.workflow;
  * Immutable login action with host and credentials.
  * Constructor validates non-null, non-empty fields.
  */
-public final record LoginAction(String host, String user, String password) implements Action {
+public record LoginAction(String host, String user, String password) implements Action {
     public LoginAction {
         if (host == null || host.isEmpty()) {
             throw new IllegalArgumentException("host required");
