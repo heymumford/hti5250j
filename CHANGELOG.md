@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-02-12
+## [0.12.0] - 2026-02-12
 
 ### Summary
 Successfully completed refactoring with TDD approach. Extracted GuiGraphicBuffer responsibilities, implemented headless architecture, and created comprehensive test coverage.
