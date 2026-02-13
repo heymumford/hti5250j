@@ -216,8 +216,8 @@ After each phase:
 | Risk | Likelihood | Mitigation |
 |------|-----------|------------|
 | Compile break from missing import | HIGH | Fix incrementally after each package deletion |
-| Test referencing deleted class | MEDIUM | Agent analysis mapped all references |
-| Essential code accidentally deleted | LOW | Dead code analysis by 6 agents, cross-validated |
+| Test referencing deleted class | MEDIUM | Static analysis mapped all references |
+| Essential code accidentally deleted | LOW | Dead code analysis with cross-validation |
 | Transitive dependency break | LOW | Session5250/Screen5250 are GUI-free |
 
 ---

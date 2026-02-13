@@ -282,10 +282,20 @@ session.connect();
 
 ## Documentation
 
+### Project Documentation
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — System models, containers, components, workflow pipeline
 - [TESTING.md](./TESTING.md) — Test framework (Unit, Continuous Contracts, Surface, Scenario)
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — Contributing guidelines
 - [CHANGELOG.md](./CHANGELOG.md) — Release history
+- [SECURITY.md](./SECURITY.md) — Security considerations and best practices
+
+### Protocol & Technical Reference
+- [docs/5250_COMPLETE_REFERENCE.md](./docs/5250_COMPLETE_REFERENCE.md) — **Comprehensive 5250 protocol reference** covering Telnet, GDS records, operations, commands, structured fields, attributes, and TN5250E extensions. Authoritative source based on RFC 1205, RFC 2877, RFC 4777, and IBM documentation.
+- [docs/INDEX.md](./docs/INDEX.md) — Navigation index for all technical documentation
+
+### Archived Documentation
+Planning, strategy, and assessment documents have been archived in the [archive/](./archive/) directory to keep the root clean and focused on shipping code.
+- [archive/planning/README.md](./archive/planning/README.md) — Index of archived planning documents
 
 ## Performance Characteristics
 

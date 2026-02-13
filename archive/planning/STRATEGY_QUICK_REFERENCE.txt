@@ -1,0 +1,356 @@
+═══════════════════════════════════════════════════════════════════════════════
+  HTI5250J OPEN SOURCE STRATEGY - QUICK REFERENCE GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+PROJECT: GPL-2.0-or-later Headless 5250 Terminal Emulator for IBM i
+MAINTAINER: Eric C. Mumford (@heymumford)
+STATUS: v0.12.0 (production-ready)
+STRATEGY DATE: February 2026
+
+───────────────────────────────────────────────────────────────────────────────
+  THE PROBLEM WE SOLVE
+───────────────────────────────────────────────────────────────────────────────
+
+IBM i automation engineers face a gap:
+  ❌ No headless 5250 library in Java ecosystem
+  ❌ Only GUI-focused TN5250J (20+ years old, inactive)
+  ❌ Commercial tools cost $500-2000 per seat
+  ❌ Custom Telnet clients = high maintenance burden
+
+HTI5250J solution:
+  ✓ Pure Java, headless, containerizable
+  ✓ Session pooling for reuse
+  ✓ YAML-based workflow automation
+  ✓ 99.55% test pass rate
+  ✓ Free & open-source (GPL-2.0)
+
+───────────────────────────────────────────────────────────────────────────────
+  5 STRATEGIC GOALS
+───────────────────────────────────────────────────────────────────────────────
+
+1. DISTRIBUTION       → Maven Central, Docker Hub, GHCR
+2. COMMUNITY        → 5+ active contributors, clear governance
+3. ADOPTION         → 500+ downloads, 100+ GitHub stars
+4. SUSTAINABILITY   → 1-2 releases per quarter
+5. THOUGHT LEADERSHIP → 1-2 conference talks, blog series
+
+───────────────────────────────────────────────────────────────────────────────
+  5-PHASE IMPLEMENTATION TIMELINE
+───────────────────────────────────────────────────────────────────────────────
+
+Phase 1: FOUNDATION (Weeks 1-4)
+┌─────────────────────────────────────────────────────┐
+│ Setup Maven Central account                          │
+│ Create GitHub Discussions categories                 │
+│ Write governance model (GOVERNANCE.md)               │
+│ Create community infrastructure (CoC, FAQ)           │
+└─────────────────────────────────────────────────────┘
+   Effort: 15 hours  |  Owner: Eric C. Mumford
+
+Phase 2: MAVEN CENTRAL RELEASE (Weeks 5-8)
+┌─────────────────────────────────────────────────────┐
+│ Configure Gradle publishing + GitHub Actions         │
+│ Generate GPG keys for artifact signing               │
+│ Publish v0.13.0 to Maven Central                    │
+│ Verify artifact discoverable (mvnrepository.com)     │
+└─────────────────────────────────────────────────────┘
+   Effort: 8 hours  |  Owner: Eric C. Mumford
+
+Phase 3: DOCKER & CI/CD (Weeks 9-12)
+┌─────────────────────────────────────────────────────┐
+│ Create Dockerfile (multi-stage build)                │
+│ Build GitHub Actions workflow for Docker publishing  │
+│ Publish to Docker Hub + GitHub Container Registry    │
+│ Create examples: docker-compose, k8s StatefulSet     │
+└─────────────────────────────────────────────────────┘
+   Effort: 20 hours  |  Owner: Eric C. Mumford + contributor
+
+Phase 4: CONTENT & COMMUNITY GROWTH (Weeks 13-20)
+┌─────────────────────────────────────────────────────┐
+│ Write 2-3 blog posts (Medium, personal blog)         │
+│ Create code examples (Spring Boot, Kubernetes)       │
+│ Tag 10+ "good-first-issue" items                     │
+│ Recruit first 5-10 contributors                      │
+│ Submit conference proposals (COMMON, JavaOne, etc.)  │
+└─────────────────────────────────────────────────────┘
+   Effort: 25 hours  |  Owner: Eric C. Mumford + volunteers
+
+Phase 5: GRAALVM NATIVE IMAGE (Weeks 21+, DEFERRED to v1.0.0)
+┌─────────────────────────────────────────────────────┐
+│ Add GraalVM native-image support                     │
+│ Create native binaries (macOS, Linux, Windows)       │
+│ Create Homebrew formula                              │
+│ Publish lightweight binary releases                  │
+└─────────────────────────────────────────────────────┘
+   Effort: 30 hours  |  Owner: TBD (post-v1.0.0)
+
+───────────────────────────────────────────────────────────────────────────────
+  TARGET PERSONAS & HOW TO REACH THEM
+───────────────────────────────────────────────────────────────────────────────
+
+Persona #1: IBM i QA ENGINEERS (30% market)
+  Pain:    Manual testing, regression burden, expensive licenses
+  Solution: YAML-based automation, free & open-source
+  Channels: COMMON conference, WRKGRP forums, IBM i LinkedIn group
+  Message: "Automate 5250 testing in modern CI/CD pipelines"
+  Year 1:  50-100 active users in community
+
+Persona #2: ENTERPRISE JAVA DEVELOPERS (40% market)
+  Pain:    Legacy system integration, no headless library
+  Solution: Maven Central, type-safe APIs, Spring Boot integration
+  Channels: r/java, JavaOne, Java Weekly, DZone
+  Message: "Headless 5250 for modern Java microservices"
+  Year 1:  50-100 Maven Central downloads
+
+Persona #3: DEVOPS/SRE TEAMS (20% market)
+  Pain:    IBM i integration in k8s, no health checks
+  Solution: Docker images, k8s manifests, CI/CD integration
+  Channels: DevOps Subreddit, Kubernetes community, DevOps Days
+  Message: "Containerize legacy system integration"
+  Year 1:  200+ Docker pulls, 5-10 k8s deployments
+
+Persona #4: OPEN SOURCE CONTRIBUTORS (10% market)
+  Pain:    Fork maintenance burden, protocol knowledge gap
+  Solution: Clear governance, good-first-issue tagging
+  Channels: GitHub Trending, Hacker News, Java Weekly
+  Message: "Help modernize legacy protocol, become core maintainer"
+  Year 1:  5-10 active contributors, 3+ core maintainers
+
+───────────────────────────────────────────────────────────────────────────────
+  KEY DISTRIBUTION CHANNELS (PRIORITY ORDER)
+───────────────────────────────────────────────────────────────────────────────
+
+TIER 1 (Critical) - Weeks 1-8:
+  ✓ Maven Central Repository     → 80% of enterprise Java discovers here
+  ✓ GitHub Discussions           → Community hub, RFCs, Q&A
+
+TIER 2 (High-Impact) - Weeks 9-12:
+  • Docker Hub + GHCR            → Container deployments, DevOps reach
+  • Conference Presentations     → COMMON, JavaOne, DevOps Days
+  • Blog Posts                   → Medium, personal blog, syndication
+
+TIER 3 (Community Growth) - Ongoing:
+  ◦ GitHub Trending              → Developer visibility
+  ◦ Social Media                 → Twitter, LinkedIn, r/java, r/ibm
+  ◦ Mailing List                 → Newsletter (optional, Year 1+)
+
+TIER 4 (Future) - Post-v1.0.0:
+  ◦ SDKMAN                       → JVM ecosystem package manager
+  ◦ GraalVM Native Image         → Lightweight distributions
+  ◦ Dual-Licensing               → Commercial support tier
+
+───────────────────────────────────────────────────────────────────────────────
+  GOVERNANCE MODEL (DECISION-MAKING)
+───────────────────────────────────────────────────────────────────────────────
+
+MAINTAINER (Now)
+  👤 Eric C. Mumford (@heymumford)
+  ⏱️ 8-10 hours/week
+  ⚡ Final decision authority (prefers consensus)
+
+CORE MAINTAINERS (Target: Q4 2026, 2-3 people)
+  ✓ Code review + architecture guidance
+  ✓ Recruited from: 5+ PRs, 50+ hours, 6+ months
+  ✓ Criteria: Deep expertise, consistent contribution
+
+COMMITTERS (Target: Q4 2026, 3-5 people)
+  ✓ Detailed code review, test coverage focus
+  ✓ Recruited from: 3+ PRs, 30+ hours
+  ✓ No merge authority (but fast-track to maintainer)
+
+DECISION FRAMEWORK
+  Trivial (bugs, docs)       → Maintainer only
+  Small (features, refactor) → Maintainer + 1 review
+  Medium (API changes)       → Maintainer + 2 reviews (consensus)
+  Large (breaking changes)   → RFC + community vote (2 weeks)
+
+───────────────────────────────────────────────────────────────────────────────
+  CRITICAL SUCCESS METRICS (12-MONTH TARGETS)
+───────────────────────────────────────────────────────────────────────────────
+
+DISTRIBUTION
+  □ Maven Central: 500+ downloads
+  □ Docker Hub: 200+ pulls
+  □ GitHub: 100+ stars, 10+ forks
+
+COMMUNITY
+  □ GitHub Discussions: 50+ posts
+  □ Active contributors: 5+
+  □ Issues closed: 30+ (cumulative)
+  □ PRs merged: 15+ (cumulative)
+
+TECHNICAL
+  □ Test pass rate: 99%+
+  □ Code coverage: 82%+
+  □ Security findings: 0 critical
+  □ Release cadence: 1-2 per quarter
+
+ENGAGEMENT
+  □ Blog readers: 1000+
+  □ Conference talks: 1-2 accepted
+  □ Mailing list: 100+ subscribers
+
+───────────────────────────────────────────────────────────────────────────────
+  WEEK 1 QUICK START CHECKLIST
+───────────────────────────────────────────────────────────────────────────────
+
+Mon:
+  [ ] Request Maven Central account (https://issues.sonatype.org)
+      └─ Click "Create Jira account"
+      └─ Complete profile, request namespace "org.hti5250j"
+
+Tue:
+  [ ] Create GitHub Discussions categories
+      └─ Settings → Discussions → Enable feature
+      └─ Add: Getting Started, Workflows, Protocol, Integration, Governance
+
+Wed:
+  [ ] Draft v0.13.0 release notes
+      └─ Open CHANGELOG.md
+      └─ Summarize features/fixes since v0.12.0
+
+Thu:
+  [ ] Begin build.gradle publishing configuration
+      └─ Add maven-publish + signing plugins
+      └─ Create pom with license, developers, scm info
+
+Fri:
+  [ ] Plan governance model review
+      └─ Read GOVERNANCE.md section 2-3
+      └─ Prepare for potential questions
+
+═══════════════════════════════════════════════════════════════════════════════
+  KEY NUMBERS
+═══════════════════════════════════════════════════════════════════════════════
+
+MARKET SIZE (Year 1 addressable):
+  • IBM i QA engineers: 2,000-3,000 individuals
+  • Java developers integrating IBM i: 1,000-5,000
+  • DevOps/SRE managing legacy systems: 500-2,000
+  • Open source contributors: 100-500
+  → Total addressable: 3,500-10,500 individuals
+  → Conservative adoption: 125-265 active users (Year 1)
+
+EFFORT ESTIMATES:
+  • Phase 1 (Foundation): 15 hours
+  • Phase 2 (Maven Central): 8 hours
+  • Phase 3 (Docker): 20 hours
+  • Phase 4 (Content): 25 hours
+  • Phase 5 (GraalVM): 30 hours (deferred)
+  → Total Year 1: 68 hours (~10 hours/month)
+
+BUDGET (Optional):
+  • Maven Central: FREE (open-source)
+  • Docker Hub: FREE (public registry)
+  • GitHub: FREE (public repos)
+  • Conference booth (COMMON): $2-3K (optional)
+  • Domain + email: $15-30/year
+  → Total recommended spend: $0-3K
+
+═══════════════════════════════════════════════════════════════════════════════
+  RELATED DOCUMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Complete Strategy Documents:
+  📄 STRATEGY_SUMMARY.md (5 pages)
+     Executive overview, key sections, quick start
+
+  📄 OPEN_SOURCE_STRATEGY.md (52 pages)
+     Comprehensive 12-month plan with detailed tactics
+
+  📄 GOVERNANCE.md (25 pages)
+     Decision-making framework, contributor tiers, conflict resolution
+
+  📄 IMPLEMENTATION_CHECKLIST.md (20 pages)
+     Week-by-week tasks, success metrics, risk mitigation
+
+  📄 MARKET_PERSONAS.md (18 pages)
+     Target personas, pain points, channels, content calendar
+
+Existing Project Documents:
+  📄 README.md
+     Quick start, features, usage examples
+
+  📄 CONTRIBUTING.md
+     Contribution guidelines, versioning policy, SPDX headers
+
+  📄 SECURITY.md
+     Security scanning, vulnerability reporting, best practices
+
+  📄 ARCHITECTURE.md
+     System design, component models, workflow pipeline
+
+═══════════════════════════════════════════════════════════════════════════════
+  DECISION CHECKPOINTS (When to make big calls)
+═══════════════════════════════════════════════════════════════════════════════
+
+Maven Central Namespace:
+  Q: org.hti5250j or com.heymumford?
+  A: org.hti5250j (standard for open-source; com.* is for domain owners)
+  Decision: FINAL ✓
+
+Conference Budget (COMMON booth):
+  Q: Worth $2-3K for Q2 sponsorship?
+  A: YES if attending anyway; MAYBE if virtual option available
+  Decision: DEFER to Phase 4 (after Maven Central success)
+
+Core Maintainer Recruitment:
+  Q: Start now or after Phase 2?
+  A: Identify candidates in Phase 3; formal recruit in Phase 4
+  Decision: DEFER to Phase 4 (need community momentum first)
+
+Dual-Licensing:
+  Q: Add Contributor License Agreement (CLA) now?
+  A: NO—premature for Year 1; revisit at v1.0.0
+  Decision: DEFER to v1.0.0 (not needed yet)
+
+GraalVM Native Image:
+  Q: Essential for Year 1 adoption?
+  A: NO—nice-to-have; focus on core library first
+  Decision: DEFER to v1.0.0 (Weeks 21+)
+
+═══════════════════════════════════════════════════════════════════════════════
+  SUCCESS LOOKS LIKE (FEBRUARY 2027)
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Maven Central: HTI5250J v0.13.0 published, 500+ downloads
+✅ Docker Hub: heymumford/hti5250j:latest, 200+ pulls
+✅ GitHub: 100+ stars, 10+ forks, 5+ active contributors
+✅ Community: 50+ Discussions posts, 1-2 conference talks accepted
+✅ Releases: v0.13.0, v0.14.0, (v1.0.0 if major features completed)
+✅ Governance: 2-3 core maintainers, 3-5 committers established
+✅ Adoption: First case studies + documented production deployments
+✅ Impact: QA engineers automating 5250 tests, Java devs integrating IBM i
+
+═══════════════════════════════════════════════════════════════════════════════
+  QUICK LINKS
+═══════════════════════════════════════════════════════════════════════════════
+
+Maven Central:
+  • Sonatype JIRA: https://issues.sonatype.org
+  • Maven Central Search: https://mvnrepository.com
+
+Distribution:
+  • Docker Hub: https://hub.docker.com/
+  • GHCR: https://ghcr.io/
+
+Communities:
+  • r/java: https://reddit.com/r/java
+  • r/ibm: https://reddit.com/r/ibm
+  • COMMON: https://www.common.org/
+  • Kubernetes Slack: https://kubernetes.slack.com/
+
+Content Platforms:
+  • Java Weekly: https://javaweekly.net/
+  • DZone: https://dzone.com/
+  • Medium: https://medium.com/
+
+═══════════════════════════════════════════════════════════════════════════════
+  VERSION: 1.0  |  DATE: February 2026  |  STATUS: READY TO IMPLEMENT
+═══════════════════════════════════════════════════════════════════════════════
+
+Print this page. Post it on your desk. Reference it weekly.
+
+The plan is clear. The timeline is realistic. The community is ready.
+
+Execute Phase 1 starting: February 10, 2026
