@@ -124,6 +124,28 @@ public class KeyStroker {
 
     }
 
+    /**
+     * Create a KeyStroker with explicit key attributes (headless-compatible).
+     * @param keyCode the key code
+     * @param isShiftDown whether shift is down
+     * @param isControlDown whether control is down
+     * @param isAltDown whether alt is down
+     */
+    public KeyStroker(int keyCode,
+                      boolean isShiftDown,
+                      boolean isControlDown,
+                      boolean isAltDown) {
+
+        this.keyCode = keyCode;
+        this.isShiftDown = isShiftDown;
+        this.isControlDown = isControlDown;
+        this.isAltDown = isAltDown;
+        this.isAltGrDown = false;
+        this.location = KEY_LOCATION_UNKNOWN;
+
+        hashCode = computeHashCode();
+    }
+
     public KeyStroker(int keyCode,
                       boolean isShiftDown,
                       boolean isControlDown,
@@ -137,6 +159,21 @@ public class KeyStroker {
         this.isAltDown = isAltDown;
         this.isAltGrDown = isAltGrDown;
         this.location = location;
+
+        hashCode = computeHashCode();
+    }
+
+    /**
+     * Set attributes from an IKeyEvent (headless-compatible).
+     * @param ke the key event
+     */
+    public void setAttributes(IKeyEvent ke) {
+        keyCode = ke.getKeyCode();
+        isShiftDown = ke.isShiftDown();
+        isControlDown = ke.isControlDown();
+        isAltDown = ke.isAltDown();
+        isAltGrDown = ke.isAltGraphDown();
+        location = ke.getKeyLocation();
 
         hashCode = computeHashCode();
     }

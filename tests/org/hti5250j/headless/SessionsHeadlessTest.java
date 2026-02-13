@@ -51,8 +51,8 @@ public class SessionsHeadlessTest {
     @Test
     public void testCreateSessionHeadless() {
         String sessionId = sessionManager.createSession("ibm-host", 23);
-        assertNotNull("Session ID should be created", sessionId);
-        assertFalse("Session ID should not be empty", sessionId.isEmpty());
+        assertNotNull(sessionId, "Session ID should be created");
+        assertFalse(sessionId.isEmpty(), "Session ID should not be empty");
     }
 
     /**
@@ -65,9 +65,9 @@ public class SessionsHeadlessTest {
     public void testGetSessionWithoutGUI() {
         String sessionId = sessionManager.createSession("mainframe", 23);
         ISession session = sessionManager.getSession(sessionId);
-        assertNotNull("Should retrieve session", session);
-        assertEquals("Session should have correct hostname", "mainframe", session.getHostname());
-        assertEquals("Session should have correct port", 23, session.getPort());
+        assertNotNull(session, "Should retrieve session");
+        assertEquals("mainframe", session.getHostname(), "Session should have correct hostname");
+        assertEquals(23, session.getPort(), "Session should have correct port");
     }
 
     /**
@@ -80,8 +80,8 @@ public class SessionsHeadlessTest {
     public void testCloseSessionHeadless() {
         String sessionId = sessionManager.createSession("test-host", 23);
         boolean closed = sessionManager.closeSession(sessionId);
-        assertTrue("Should close session successfully", closed);
-        assertNull("Session should be removed", sessionManager.getSession(sessionId));
+        assertTrue(closed, "Should close session successfully");
+        assertNull(sessionManager.getSession(sessionId), "Session should be removed");
     }
 
     // ============ Session Management Tests ============
@@ -97,7 +97,7 @@ public class SessionsHeadlessTest {
         sessionManager.createSession("host1", 23);
         sessionManager.createSession("host2", 23);
         sessionManager.createSession("host3", 23);
-        assertEquals("Should track 3 sessions", 3, sessionManager.getSessionCount());
+        assertEquals(3, sessionManager.getSessionCount(), "Should track 3 sessions");
     }
 
     /**
@@ -113,7 +113,7 @@ public class SessionsHeadlessTest {
         String id3 = sessionManager.createSession("host3", 23);
 
         String[] sessions = sessionManager.listSessions();
-        assertEquals("Should list 3 sessions", 3, sessions.length);
+        assertEquals(3, sessions.length, "Should list 3 sessions");
 
         // Verify all created sessions are in list
         boolean found1 = false, found2 = false, found3 = false;
@@ -122,9 +122,9 @@ public class SessionsHeadlessTest {
             if (id.equals(id2)) found2 = true;
             if (id.equals(id3)) found3 = true;
         }
-        assertTrue("Should contain session 1", found1);
-        assertTrue("Should contain session 2", found2);
-        assertTrue("Should contain session 3", found3);
+        assertTrue(found1, "Should contain session 1");
+        assertTrue(found2, "Should contain session 2");
+        assertTrue(found3, "Should contain session 3");
     }
 
     // ============ State & Configuration Tests ============
@@ -138,9 +138,9 @@ public class SessionsHeadlessTest {
     @Test
     public void testSessionStateTracking() {
         String sessionId = sessionManager.createSession("test-host", 23);
-        assertEquals("New session should be CREATED",
-                     ISessionState.CREATED,
-                     sessionManager.getSessionState(sessionId));
+        assertEquals(ISessionState.CREATED,
+                     sessionManager.getSessionState(sessionId),
+                     "New session should be CREATED");
     }
 
     /**
@@ -154,9 +154,9 @@ public class SessionsHeadlessTest {
         String sessionId = sessionManager.createSession("legacy-as400", 23);
         ISession session = sessionManager.getSession(sessionId);
 
-        assertEquals("Should preserve hostname", "legacy-as400", session.getHostname());
-        assertEquals("Should preserve port", 23, session.getPort());
-        assertEquals("Should have unique ID", sessionId, session.getId());
+        assertEquals("legacy-as400", session.getHostname(), "Should preserve hostname");
+        assertEquals(23, session.getPort(), "Should preserve port");
+        assertEquals(sessionId, session.getId(), "Should have unique ID");
     }
 
     /**
@@ -167,8 +167,8 @@ public class SessionsHeadlessTest {
      */
     @Test
     public void testGetNonExistentSession() {
-        assertNull("Non-existent session should return null",
-                   sessionManager.getSession("invalid-session-id"));
+        assertNull(sessionManager.getSession("invalid-session-id"),
+                   "Non-existent session should return null");
     }
 
     // ============ Error Handling Tests ============
@@ -182,7 +182,7 @@ public class SessionsHeadlessTest {
     @Test
     public void testCloseNonExistentSession() {
         boolean closed = sessionManager.closeSession("invalid-session-id");
-        assertFalse("Closing non-existent session should return false", closed);
+        assertFalse(closed, "Closing non-existent session should return false");
     }
 
     /**
@@ -196,10 +196,10 @@ public class SessionsHeadlessTest {
         String sessionId = sessionManager.createSession("test-host", 23);
 
         boolean firstClose = sessionManager.closeSession(sessionId);
-        assertTrue("First close should succeed", firstClose);
+        assertTrue(firstClose, "First close should succeed");
 
         boolean secondClose = sessionManager.closeSession(sessionId);
-        assertFalse("Second close should fail", secondClose);
+        assertFalse(secondClose, "Second close should fail");
     }
 
 }

@@ -1,5 +1,6 @@
 package org.hti5250j.gui;
 
+import org.hti5250j.ScreenRenderer;
 import org.junit.Before;
 import org.junit.Test;
 
