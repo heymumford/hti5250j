@@ -294,10 +294,10 @@ public class EBCDICPairwiseTest {
     }
 
     /**
-     * TEST 13: Unmappable character handling reveals missing bounds checking
+     * TEST 13: Unmappable character handling with proper exception
      * Dimension: Edge case (unmappable) x Character range (extended) x Conversion
-     * Risk: ArrayIndexOutOfBoundsException for unmappable chars (found bug!)
-     * Status: This test documents existing behavior - code does not validate char values
+     * Status: FIXED - Implementation now throws CharacterConversionException instead of ArrayIndexOutOfBoundsException
+     * The bug has been fixed - CodepageConverterAdapter now validates char values before conversion
      */
     @ParameterizedTest
     @MethodSource("data")
@@ -307,16 +307,10 @@ public class EBCDICPairwiseTest {
         // Try a character that may not map in all code pages
         char unmappableChar = '\u2764'; // Heart symbol - unlikely in EBCDIC (value 10084)
 
-        try {
-            byte ebcdic = cp.uni2ebcdic(unmappableChar);
-            // If it doesn't throw, check result is valid
-            assertTrue(ebcdic >= Byte.MIN_VALUE && ebcdic <= Byte.MAX_VALUE,"Unmappable char should convert to some byte value");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // BUG: The implementation does not validate char values before using as array index
-            // This is expected behavior with current implementation - it crashes on unmappable chars
-            // TODO: Implement character validation in CodepageConverterAdapter.uni2ebcdic()
-            assertNotNull(e.getClass().getName(),"ArrayIndexOutOfBoundsException should indicate bounds violation");
-        }
+        // After fix: Implementation throws CharacterConversionException for unmappable chars
+        assertThrows(CharacterConversionException.class, () -> {
+            cp.uni2ebcdic(unmappableChar);
+        }, "Unmappable character should throw CharacterConversionException");
     }
 
     /**

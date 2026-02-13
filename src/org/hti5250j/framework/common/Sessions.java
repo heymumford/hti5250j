@@ -12,11 +12,12 @@ package org.hti5250j.framework.common;
 
 import java.util.*;
 import java.awt.event.*;
-import javax.swing.Timer;
 
 import org.hti5250j.Session5250;
 import org.hti5250j.tools.logging.*;
 import org.hti5250j.interfaces.SessionsInterface;
+import org.hti5250j.interfaces.IScheduler;
+import org.hti5250j.gui.adapters.SwingScheduler;
 
 
 /**
@@ -27,7 +28,7 @@ public class Sessions implements SessionsInterface, ActionListener {
 
     private List<Session5250> sessions = null;
     private int count = 0;
-    private Timer heartBeater;
+    private IScheduler heartBeater;
 
     private HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
 
@@ -59,8 +60,9 @@ public class Sessions implements SessionsInterface, ActionListener {
         sessions.add(newSession);
         log.debug("adding Session: " + newSession.getSessionName());
         if (newSession.isSendKeepAlive() && heartBeater == null) {
-            heartBeater = new Timer(15000, this);
-//         heartBeater = new Timer(3000,this);
+            // Use SwingScheduler for GUI mode (backward compatible)
+            heartBeater = new SwingScheduler(this, 15000);
+//         heartBeater = new SwingScheduler(this, 3000);
             heartBeater.start();
 
         }

@@ -1,76 +1,64 @@
 /*
- * SPDX-FileCopyrightText: 2002
  * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-
-
-
-
 package org.hti5250j.gui;
-/*
-=====================================================================
 
-  SortArrowIcon.java
+/**
+ * DEPRECATED: This class is no longer needed.
+ *
+ * This class is now a no-op provided only for backward compatibility.
+ * Previous implementations used custom icon rendering.
+ *
+ * REPLACEMENT: TableRowSorter (used by JSortTable) automatically manages
+ * sort indicators in table headers using platform-native rendering.
+ *
+ * NOTE: If this class appears in your code, it can be safely removed.
+ * Sort indicators are now provided automatically by the Swing framework.
+ *
+ * @deprecated Use JSortTable which automatically provides sort indicators
+ */
+@Deprecated(since = "0.9.0", forRemoval = false)
+public class SortArrowIcon {
 
-  Created by Claude Duguay
-  Copyright (c) 2002
-   This was taken from a Java Pro magazine article
-   http://www.fawcette.com/javapro/codepage.asp?loccode=jp0208
-
-   I have NOT asked for permission to use this.
-
-=====================================================================
-*/
-
-import java.awt.*;
-import javax.swing.*;
-
-public class SortArrowIcon implements Icon {
-
+    /**
+     * Constants maintained for backward compatibility but no longer used.
+     */
     public static final int NONE = 0;
-    public static final int DECENDING = 1;
+    public static final int DECENDING = 1;  // Note: typo preserved for compatibility
     public static final int ASCENDING = 2;
 
-    protected int direction;
-    protected int width = 8;
-    protected int height = 8;
-
+    /**
+     * This class is deprecated and no longer provides any functionality.
+     * TableRowSorter provides automatic sort indicators without custom icons.
+     */
     public SortArrowIcon(int direction) {
-        this.direction = direction;
+        // No-op constructor for backward compatibility
     }
 
+    /**
+     * @deprecated Not used - icons are managed by TableRowSorter
+     */
+    @Deprecated
     public int getIconWidth() {
-        return width;
+        return 0;
     }
 
+    /**
+     * @deprecated Not used - icons are managed by TableRowSorter
+     */
+    @Deprecated
     public int getIconHeight() {
-        return height;
+        return 0;
     }
 
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        Color bg = c.getBackground();
-        Color light = bg.brighter();
-        Color shade = bg.darker();
-
-        int w = width;
-        int h = height;
-        int m = w / 2;
-        if (direction == ASCENDING) {
-            g.setColor(shade);
-            g.drawLine(x, y, x + w, y);
-            g.drawLine(x, y, x + m, y + h);
-            g.setColor(light);
-            g.drawLine(x + w, y, x + m, y + h);
-        }
-        if (direction == DECENDING) {
-            g.setColor(shade);
-            g.drawLine(x + m, y, x, y + h);
-            g.setColor(light);
-            g.drawLine(x, y + h, x + w, y + h);
-            g.drawLine(x + m, y, x + w, y + h);
-        }
+    /**
+     * @deprecated Not used - icons are managed by TableRowSorter
+     */
+    @Deprecated
+    public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        // No-op
     }
 }

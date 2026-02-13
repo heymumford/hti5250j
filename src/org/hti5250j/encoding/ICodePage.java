@@ -15,8 +15,9 @@ public interface ICodePage {
     /**
      * Convert a single byte (or maybe more bytes which representing one character) to a Unicode character.
      *
-     * @param index
-     * @return
+     * @param index the EBCDIC codepoint to convert
+     * @return the Unicode character representing the EBCDIC codepoint
+     * @throws CharacterConversionException if the codepoint cannot be converted
      */
     public abstract char ebcdic2uni(int index);
 
@@ -24,8 +25,9 @@ public interface ICodePage {
      * Convert a Unicode character in it's byte representation.
      * Therefore, only 8bit codepages are supported.
      *
-     * @param index
-     * @return
+     * @param index the Unicode character to convert
+     * @return the EBCDIC byte representation of the character
+     * @throws CharacterConversionException if the character cannot be converted to EBCDIC
      */
     public abstract byte uni2ebcdic(char index);
 

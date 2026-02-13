@@ -421,8 +421,7 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         try {
             if (this.sessionListeners != null) {
                 for (SessionListener listener : this.sessionListeners) {
-                    SessionChangeEvent sce = new SessionChangeEvent(this);
-                    sce.setState(state);
+                    SessionChangeEvent sce = new SessionChangeEvent(this, null, state);
                     listener.onSessionChanged(sce);
                 }
             }

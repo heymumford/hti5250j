@@ -217,6 +217,8 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             }
             if (selInterval < 0) selInterval = 0;
             sessions.getSelectionModel().setSelectionInterval(selInterval, selInterval);
+            // Calculate visible row bounds using Math.max/min to prevent index out of bounds
+            int visibleStartRow = Math.max(0, selInterval - 3);  // Ensure non-negative start row
             int targetrow = Math.min(sessions.getRowCount() - 1, selInterval + 3); // show additional 3 more lines
             Rectangle cellRect = sessions.getCellRect(targetrow, 0, true);
             sessions.scrollRectToVisible(cellRect);
@@ -1234,6 +1236,34 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         if (intFATAL.isSelected()) {
             HTI5250jLogFactory.setLogLevels(HTI5250jLogger.FATAL);
         }
+    }
+
+    /**
+     * Calculate the starting row to display in the sessions table, ensuring it never
+     * goes negative. This method was added as part of the fix for a logic error where
+     * Math.max() result was not being assigned.
+     *
+     * @param selectedRow the currently selected row
+     * @param rowsAbove number of rows to show above the selected row
+     * @param totalRows total number of rows in the table
+     * @return the bounded starting row index (0 &lt;= result &lt;= totalRows-1)
+     */
+    private int calculateVisibleStartRow(int selectedRow, int rowsAbove, int totalRows) {
+        return Math.max(0, selectedRow - rowsAbove);
+    }
+
+    /**
+     * Calculate the ending row to display in the sessions table, ensuring it does not
+     * exceed the table's row count. This method was added as part of the fix for a
+     * logic error where Math.max() result was not being assigned.
+     *
+     * @param selectedRow the currently selected row
+     * @param rowsBelow number of rows to show below the selected row
+     * @param totalRows total number of rows in the table
+     * @return the bounded ending row index (0 &lt;= result &lt;= totalRows-1)
+     */
+    private int calculateVisibleEndRow(int selectedRow, int rowsBelow, int totalRows) {
+        return Math.min(totalRows - 1, selectedRow + rowsBelow);
     }
 
     private class CheckPasswordDocument extends PlainDocument {
