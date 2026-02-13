@@ -21,9 +21,9 @@ import java.util.Properties;
  */
 public abstract class ConfigureFactory {
 
-    static final public String SESSIONS = "sessions";
-    static final public String MACROS = "macros";
-    static final public String KEYMAP = "keymap";
+    public static final String SESSIONS = "sessions";
+    public static final String MACROS = "macros";
+    public static final String KEYMAP = "keymap";
     private static ConfigureFactory factory;
 
     /**
@@ -34,7 +34,7 @@ public abstract class ConfigureFactory {
         return factory;
     }
 
-    private static final void setFactory() {
+    private static void setFactory() {
         if (factory == null) {
             try {
                 String className = System.getProperty(ConfigureFactory.class.getName());
@@ -46,45 +46,43 @@ public abstract class ConfigureFactory {
                     }
                 }
             } catch (Exception ex) {
-                ;
             }
-            if (ConfigureFactory.factory == null) { //take the default
-//        ConfigureFactory.factory = new GlobalConfigureFactory();
+            if (ConfigureFactory.factory == null) {
                 ConfigureFactory.factory = new GlobalConfigure();
             }
         }
     }
 
-    abstract public void reloadSettings();
+    public abstract void reloadSettings();
 
-    abstract public void saveSettings();
+    public abstract void saveSettings();
 
-    abstract public String getProperty(String regKey);
+    public abstract String getProperty(String regKey);
 
-    abstract public String getProperty(String regKey, String defaultValue);
+    public abstract String getProperty(String regKey, String defaultValue);
 
-    abstract public void setProperties(String regKey, Properties regProps);
+    public abstract void setProperties(String regKey, Properties regProps);
 
-    abstract public void setProperties(String regKey, String fileName, String header);
+    public abstract void setProperties(String regKey, String fileName, String header);
 
-    abstract public void setProperties(String regKey, String fileName, String header,
+    public abstract void setProperties(String regKey, String fileName, String header,
                                        boolean createFile);
 
-    abstract public Properties getProperties(String regKey);
+    public abstract Properties getProperties(String regKey);
 
-    abstract public Properties getProperties(String regKey, String fileName);
+    public abstract Properties getProperties(String regKey, String fileName);
 
-    abstract public Properties getProperties(String regKey, String fileName,
+    public abstract Properties getProperties(String regKey, String fileName,
                                              boolean createFile, String header);
 
-    abstract public Properties getProperties(String regKey, String fileName,
+    public abstract Properties getProperties(String regKey, String fileName,
                                              boolean createFile, String header,
                                              boolean reloadIfLoaded);
 
-    abstract public void saveSettings(String regKey);
+    public abstract void saveSettings(String regKey);
 
-    abstract public void saveSettings(String regKey, String header);
+    public abstract void saveSettings(String regKey, String header);
 
-    abstract public void saveSettings(String regKey, String fileName, String header);
+    public abstract void saveSettings(String regKey, String fileName, String header);
 
 }

@@ -25,7 +25,6 @@ import org.hti5250j.gui.HTI5250jFileChooser;
 public class SendScreenImageToFile {
 
     SessionPanel session;
-    //  Change sent by Luc - LDC to pass a parent frame like the other dialogs
     Frame parent;
     private HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
 
@@ -67,11 +66,12 @@ public class SendScreenImageToFile {
             File file;
 
             try {
-                if (!pcFileChooser.getSelectedFile().getCanonicalPath().endsWith(".png"))
+                if (!pcFileChooser.getSelectedFile().getCanonicalPath().endsWith(".png")) {
                     file = new File(pcFileChooser.getSelectedFile().getCanonicalPath()
                             + ".png");
-                else
+                } else {
                     file = pcFileChooser.getSelectedFile();
+                }
 
 
                 EncodeComponent.encode(EncodeComponent.PNG, session, file);

@@ -20,12 +20,12 @@ public class HTI5250jFontsSelection extends JComboBox {
 
     public HTI5250jFontsSelection() {
         super();
-        // fonts
         Font[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 
         for (int x = 0; x < fonts.length; x++) {
-            if (fonts[x].getFontName().indexOf('.') < 0)
+            if (fonts[x].getFontName().indexOf('.') < 0) {
                 addItem(fonts[x].getFontName());
+            }
         }
 
     }

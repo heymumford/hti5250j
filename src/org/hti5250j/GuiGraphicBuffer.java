@@ -20,7 +20,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -64,8 +63,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     private Rectangle2D iArea; // insert indicator
     private Rectangle2D kbArea; // keybuffer indicator
     private Rectangle2D scriptArea; // script indicator
-    private final static String xSystem = "X - System";
-    private final static String xError = "X - II";
+    private static final String xSystem = "X - System";
+    private static final String xError = "X - II";
     private int crossRow;
     private Rectangle crossRect = new Rectangle();
     private int offTop = 0;   // offset from top
@@ -81,17 +80,11 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     /*default*/ Font font;
     private int lenScreen;
     private boolean showHex;
-    // Color management delegated to ColorPalette (Phase 1 extraction)
     private ColorPalette colorPalette;
-    // Font metrics management delegated to CharacterMetrics (Phase 2 extraction)
     private CharacterMetrics characterMetrics;
-    // Cursor state management delegated to CursorManager (Phase 3 extraction)
     private CursorManager cursorManager;
-    // Drawing context management delegated to DrawingContext (Phase 4 extraction)
     private final DrawingContext drawingContext = new DrawingContext();
-    // Screen rendering delegated to ScreenRenderer (Phase 5 extraction)
     private ScreenRenderer screenRenderer;
-    // Temporary color fields for Phase 1 (will be refactored later)
     /*default*/ Color colorBlack = new Color(0, 0, 0);
     /*default*/ Color colorRed = new Color(255, 0, 0);
     /*default*/ Color colorGreen = new Color(0, 255, 0);
@@ -141,48 +134,32 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
         config.addSessionConfigListener(this);
 
-        // Initialize color palette (Phase 1 extraction)
         this.colorPalette = new ColorPalette();
-
-        // Initialize character metrics (Phase 2 extraction)
         this.characterMetrics = new CharacterMetrics();
-
-        // Initialize cursor manager (Phase 3 extraction)
         this.cursorManager = new CursorManager();
-
-        // Initialize screen renderer (Phase 5 extraction)
         this.screenRenderer = new ScreenRenderer(colorPalette, characterMetrics, cursorManager, drawingContext);
 
-        // load the session properties from it's profile.
         loadProps();
 
-        // change by Luc - LDC If the font from the properties file does not
-        // exist
-        //    select the default font
         String fontName = null;
         if (config.isPropertyExists("font")) {
             fontName = getStringProperty("font");
-            if (GUIGraphicsUtils.isFontNameExists(fontName) == false)
+            if (!GUIGraphicsUtils.isFontNameExists(fontName)) {
                 fontName = null;
+            }
         }
 
-        //      if (!config.isPropertyExists("font")) {
         if (fontName == null) {
             font = new Font(GUIGraphicsUtils.getDefaultFont(), Font.PLAIN, 14);
-            //         font = new Font("Courier New",Font.PLAIN,14);
             config.setProperty("font", font.getFontName());
         } else {
-            //font = new Font(getStringProperty("font"),Font.PLAIN,14);
             font = new Font(fontName, Font.PLAIN, 14);
         }
 
         gui.setFont(font);
 
         getSettings();
-        // Delegate font metrics to CharacterMetrics
         characterMetrics.setFont(font);
-
-        // Cache line metrics and dimensions from CharacterMetrics
         lm = characterMetrics.getLineMetrics();
         columnWidth = characterMetrics.getCharWidth();
         rowHeight = characterMetrics.getCharHeight();
@@ -206,23 +183,15 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
      */
     public void actionPerformed(ActionEvent actionevent) {
         if (actionevent.getSource() instanceof javax.swing.Timer) {
-
-            //         if (!cursorActive)
-            //            return;
-            //
-            //         if (cursorShown)
-            //            setCursorOff();
-            //         else
-            //            setCursorOn();
-            if (screen.isCursorActive())
+            if (screen.isCursorActive()) {
                 screen.setCursorActive(false);
-            else
+            } else {
                 screen.setCursorActive(true);
+            }
         }
     }
 
     public boolean isBlinkCursor() {
-        // Delegate to CursorManager (Phase 3 extraction)
         return cursorManager.isBlinkEnabled();
 
     }
@@ -230,13 +199,9 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     public void resize(int width, int height) {
 
         if (bi.getWidth() != width || bi.getHeight() != height) {
-            //         synchronized (lock) {
             bi = null;
             bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             getSettings();
-            // tell waiting threads to wake up
-            //            lock.notifyAll();
-            //         }
         }
 
     }
@@ -248,71 +213,81 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     }
 
     protected final void loadColors() {
-        // Phase 1 refactoring: Delegate to ColorPalette
         colorPalette.setGuiInterface(cfg_guiInterface);
 
-        // Load colors from config or use defaults
-        if (!config.isPropertyExists("colorBg"))
+        if (!config.isPropertyExists("colorBg")) {
             setProperty("colorBg", Integer.toString(colorPalette.getBackground().getRGB()));
-        else
+        } else {
             colorPalette.setBackground(getColorProperty("colorBg"));
+        }
 
         gui.setBackground(colorPalette.getBackground());
 
-        if (!config.isPropertyExists("colorBlue"))
+        if (!config.isPropertyExists("colorBlue")) {
             setProperty("colorBlue", Integer.toString(colorPalette.getBlue().getRGB()));
-        else
+        } else {
             colorPalette.setBlue(getColorProperty("colorBlue"));
+        }
 
-        if (!config.isPropertyExists("colorTurq"))
+        if (!config.isPropertyExists("colorTurq")) {
             setProperty("colorTurq", Integer.toString(colorPalette.getTurquoise().getRGB()));
-        else
+        } else {
             colorPalette.setTurquoise(getColorProperty("colorTurq"));
+        }
 
-        if (!config.isPropertyExists("colorRed"))
+        if (!config.isPropertyExists("colorRed")) {
             setProperty("colorRed", Integer.toString(colorPalette.getRed().getRGB()));
-        else
+        } else {
             colorPalette.setRed(getColorProperty("colorRed"));
+        }
 
-        if (!config.isPropertyExists("colorWhite"))
+        if (!config.isPropertyExists("colorWhite")) {
             setProperty("colorWhite", Integer.toString(colorPalette.getWhite().getRGB()));
-        else
+        } else {
             colorPalette.setWhite(getColorProperty("colorWhite"));
+        }
 
-        if (!config.isPropertyExists("colorYellow"))
+        if (!config.isPropertyExists("colorYellow")) {
             setProperty("colorYellow", Integer.toString(colorPalette.getYellow().getRGB()));
-        else
+        } else {
             colorPalette.setYellow(getColorProperty("colorYellow"));
+        }
 
-        if (!config.isPropertyExists("colorGreen"))
+        if (!config.isPropertyExists("colorGreen")) {
             setProperty("colorGreen", Integer.toString(colorPalette.getGreen().getRGB()));
-        else
+        } else {
             colorPalette.setGreen(getColorProperty("colorGreen"));
+        }
 
-        if (!config.isPropertyExists("colorPink"))
+        if (!config.isPropertyExists("colorPink")) {
             setProperty("colorPink", Integer.toString(colorPalette.getPink().getRGB()));
-        else
+        } else {
             colorPalette.setPink(getColorProperty("colorPink"));
+        }
 
-        if (!config.isPropertyExists("colorGUIField"))
+        if (!config.isPropertyExists("colorGUIField")) {
             setProperty("colorGUIField", Integer.toString(colorPalette.getGuiField().getRGB()));
-        else
+        } else {
             colorPalette.setGuiField(getColorProperty("colorGUIField"));
+        }
 
-        if (!config.isPropertyExists("colorCursor"))
+        if (!config.isPropertyExists("colorCursor")) {
             setProperty("colorCursor", Integer.toString(colorPalette.getCursor().getRGB()));
-        else
+        } else {
             colorPalette.setCursor(getColorProperty("colorCursor"));
+        }
 
-        if (!config.isPropertyExists("colorSep"))
+        if (!config.isPropertyExists("colorSep")) {
             setProperty("colorSep", Integer.toString(colorPalette.getSeparator().getRGB()));
-        else
+        } else {
             colorPalette.setSeparator(getColorProperty("colorSep"));
+        }
 
-        if (!config.isPropertyExists("colorHexAttr"))
+        if (!config.isPropertyExists("colorHexAttr")) {
             setProperty("colorHexAttr", Integer.toString(colorPalette.getHexAttr().getRGB()));
-        else
+        } else {
             colorPalette.setHexAttr(getColorProperty("colorHexAttr"));
+        }
     }
 
     public void loadProps() {
@@ -322,8 +297,9 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         colSepLine = ColumnSeparator.getFromName(getStringProperty("colSeparator"));
 
         if (config.isPropertyExists("showAttr")) {
-            if (getStringProperty("showAttr").equals("Hex"))
+            if (getStringProperty("showAttr").equals("Hex")) {
                 showHex = true;
+            }
         }
 
         if (config.isPropertyExists("guiInterface")) {
@@ -337,17 +313,19 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (config.isPropertyExists("guiShowUnderline")) {
-            if (getStringProperty("guiShowUnderline").equals("Yes"))
+            if (getStringProperty("guiShowUnderline").equals("Yes")) {
                 cfg_guiShowUnderline = true;
-            else
+            } else {
                 cfg_guiShowUnderline = false;
+            }
         }
 
         if (config.isPropertyExists("hotspots")) {
-            if (getStringProperty("hotspots").equals("Yes"))
+            if (getStringProperty("hotspots").equals("Yes")) {
                 hotSpots = true;
-            else
+            } else {
                 hotSpots = false;
+            }
         }
 
         if (config.isPropertyExists("hsMore")) {
@@ -365,33 +343,41 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (config.isPropertyExists("cursorSize")) {
-            if (getStringProperty("cursorSize").equals("Full"))
+            if (getStringProperty("cursorSize").equals("Full")) {
                 cursorManager.setCursorSize(2);
-            if (getStringProperty("cursorSize").equals("Half"))
+            }
+            if (getStringProperty("cursorSize").equals("Half")) {
                 cursorManager.setCursorSize(1);
-            if (getStringProperty("cursorSize").equals("Line"))
+            }
+            if (getStringProperty("cursorSize").equals("Line")) {
                 cursorManager.setCursorSize(0);
+            }
 
         }
 
         if (config.isPropertyExists("crossHair")) {
-            if (getStringProperty("crossHair").equals("None"))
+            if (getStringProperty("crossHair").equals("None")) {
                 crossHair = 0;
-            if (getStringProperty("crossHair").equals("Horz"))
+            }
+            if (getStringProperty("crossHair").equals("Horz")) {
                 crossHair = 1;
-            if (getStringProperty("crossHair").equals("Vert"))
+            }
+            if (getStringProperty("crossHair").equals("Vert")) {
                 crossHair = 2;
-            if (getStringProperty("crossHair").equals("Both"))
+            }
+            if (getStringProperty("crossHair").equals("Both")) {
                 crossHair = 3;
+            }
 
         }
 
         if (config.isPropertyExists("rulerFixed")) {
 
-            if (getStringProperty("rulerFixed").equals("Yes"))
+            if (getStringProperty("rulerFixed").equals("Yes")) {
                 rulerFixed = true;
-            else
+            } else {
                 rulerFixed = false;
+            }
 
         }
 
@@ -412,18 +398,20 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (config.isPropertyExists("resetRequired")) {
-            if (getStringProperty("resetRequired").equals("Yes"))
+            if (getStringProperty("resetRequired").equals("Yes")) {
                 screen.setResetRequired(true);
-            else
+            } else {
                 screen.setResetRequired(false);
+            }
         }
 
         if (config.isPropertyExists("useAntialias")) {
 
-            if (getStringProperty("useAntialias").equals("Yes"))
+            if (getStringProperty("useAntialias").equals("Yes")) {
                 antialiased = true;
-            else
+            } else {
                 antialiased = false;
+            }
 
         }
 
@@ -434,10 +422,11 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (config.isPropertyExists("backspaceError")) {
-            if (getStringProperty("backspaceError").equals("Yes"))
+            if (getStringProperty("backspaceError").equals("Yes")) {
                 screen.setBackspaceError(true);
-            else
+            } else {
                 screen.setBackspaceError(false);
+            }
         }
     }
 
@@ -494,10 +483,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
      * @param newValue the new value
      */
     private void handlePropertyChange(String pn, Object newValue) {
-        // Common property change handling logic
         boolean resetAttr = false;
 
-        // Phase 1 refactoring: Delegate color changes to ColorPalette
         if (pn.equals("colorBg")) {
             colorPalette.setBackground((Color) newValue);
             resetAttr = true;
@@ -559,41 +546,49 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (pn.equals("cursorSize")) {
-            // Delegate to CursorManager (Phase 3 extraction)
-            if (newValue.equals("Full"))
+            if (newValue.equals("Full")) {
                 cursorManager.setCursorSize(2);
-            if (newValue.equals("Half"))
+            }
+            if (newValue.equals("Half")) {
                 cursorManager.setCursorSize(1);
-            if (newValue.equals("Line"))
+            }
+            if (newValue.equals("Line")) {
                 cursorManager.setCursorSize(0);
+            }
 
         }
 
         if (pn.equals("crossHair")) {
-            if (newValue.equals("None"))
+            if (newValue.equals("None")) {
                 crossHair = 0;
-            if (newValue.equals("Horz"))
+            }
+            if (newValue.equals("Horz")) {
                 crossHair = 1;
-            if (newValue.equals("Vert"))
+            }
+            if (newValue.equals("Vert")) {
                 crossHair = 2;
-            if (newValue.equals("Both"))
+            }
+            if (newValue.equals("Both")) {
                 crossHair = 3;
+            }
         }
 
         if (pn.equals("rulerFixed")) {
-            if (newValue.equals("Yes"))
+            if (newValue.equals("Yes")) {
                 rulerFixed = true;
-            else
+            } else {
                 rulerFixed = false;
+            }
         }
 
         colSepLine = ColumnSeparator.getFromName(newValue.toString());
 
         if (pn.equals("showAttr")) {
-            if (newValue.equals("Hex"))
+            if (newValue.equals("Hex")) {
                 showHex = true;
-            else
+            } else {
                 showHex = false;
+            }
         }
 
         if (pn.equals("guiInterface")) {
@@ -607,24 +602,27 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (pn.equals("guiShowUnderline")) {
-            if (newValue.equals("Yes"))
+            if (newValue.equals("Yes")) {
                 cfg_guiShowUnderline = true;
-            else
+            } else {
                 cfg_guiShowUnderline = false;
+            }
         }
 
         if (pn.equals("hotspots")) {
-            if (newValue.equals("Yes"))
+            if (newValue.equals("Yes")) {
                 hotSpots = true;
-            else
+            } else {
                 hotSpots = false;
+            }
         }
 
         if (pn.equals("resetRequired")) {
-            if (newValue.equals("Yes"))
+            if (newValue.equals("Yes")) {
                 screen.setResetRequired(true);
-            else
+            } else {
                 screen.setResetRequired(false);
+            }
         }
 
         if (pn.equals("hsMore")) {
@@ -641,55 +639,41 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
         if (pn.equals("font")) {
             font = new Font((String) newValue, Font.PLAIN, 14);
-            // Delegate font change to CharacterMetrics (Phase 2 extraction)
             characterMetrics.setFont(font);
             updateFont = true;
         }
 
         if (pn.equals("useAntialias")) {
-            if (newValue.equals("Yes"))
+            if (newValue.equals("Yes")) {
                 setUseAntialias(true);
-            else
+            } else {
                 setUseAntialias(false);
+            }
             updateFont = true;
         }
 
         if (pn.equals("fontScaleHeight")) {
-
-            //         try {
             sfh = Float.parseFloat((String) newValue);
             updateFont = true;
-            //         }
-
         }
 
         if (pn.equals("fontScaleWidth")) {
-
-            //         try {
             sfw = Float.parseFloat((String) newValue);
             updateFont = true;
-            //         }
-
         }
 
         if (pn.equals("fontPointSize")) {
-
-            //         try {
             ps132 = Float.parseFloat((String) newValue);
             updateFont = true;
-            //         }
-
         }
 
         if (pn.equals("cursorBottOffset")) {
-            // Delegate to CursorManager (Phase 3 extraction)
             cursorManager.setCursorBottOffset(getIntProperty("cursorBottOffset"));
         }
 
         if (pn.equals("cursorBlink")) {
 
             log.debug(getStringProperty("cursorBlink"));
-            // Delegate to CursorManager (Phase 3 extraction)
             if (newValue.equals("Yes")) {
 
                 if (cursorManager.getBlinker() == null) {
@@ -709,10 +693,11 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (pn.equals("backspaceError")) {
-            if (newValue.equals("Yes"))
+            if (newValue.equals("Yes")) {
                 screen.setBackspaceError(true);
-            else
+            } else {
                 screen.setBackspaceError(false);
+            }
         }
 
         if (updateFont) {
@@ -722,9 +707,6 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         }
 
         if (resetAttr) {
-            //			for (int y = 0; y < lenScreen; y++) {
-            //				screen[y].setAttribute(screen[y].getCharAttr());
-            //			}
             drawOIA();
         }
 
@@ -748,14 +730,18 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         x -= offLeft;
         y -= offTop;
 
-        if (x > tArea.getMaxX())
+        if (x > tArea.getMaxX()) {
             x = (int) tArea.getMaxX() - 1;
-        if (y > tArea.getMaxY())
+        }
+        if (y > tArea.getMaxY()) {
             y = (int) tArea.getMaxY() - 1;
-        if (x < tArea.getMinX())
+        }
+        if (x < tArea.getMinX()) {
             x = 0;
-        if (y < tArea.getMinY())
+        }
+        if (y < tArea.getMinY()) {
             y = 0;
+        }
 
         int s0 = y / rowHeight;
         int s1 = x / columnWidth;
@@ -780,14 +766,18 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
      */
     public int getRowColFromPoint(int x, int y) {
 
-        if (x > tArea.getMaxX())
+        if (x > tArea.getMaxX()) {
             x = (int) tArea.getMaxX() - 1;
-        if (y > tArea.getMaxY())
+        }
+        if (y > tArea.getMaxY()) {
             y = (int) tArea.getMaxY() - 1;
-        if (x < tArea.getMinX())
+        }
+        if (x < tArea.getMinX()) {
             x = 0;
-        if (y < tArea.getMinY())
+        }
+        if (y < tArea.getMinY()) {
             y = 0;
+        }
 
         int s0 = y / rowHeight;
         int s1 = x / columnWidth;
@@ -924,7 +914,6 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             // set up all the variables that are used in calculating the new
             // size
             font = derivedFont;
-            // Delegate font metrics calculation to CharacterMetrics (Phase 2 extraction)
             characterMetrics.setFont(font);
             lm = characterMetrics.getLineMetrics();
             columnWidth = characterMetrics.getCharWidth();
@@ -935,10 +924,12 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             // set the offsets for the screen centering.
             offLeft = (width - getWidth()) / 2;
             offTop = (height - getHeight()) / 2;
-            if (offLeft < 0)
+            if (offLeft < 0) {
                 offLeft = 0;
-            if (offTop < 0)
+            }
+            if (offTop < 0) {
                 offTop = 0;
+            }
 
             drawOIA();
 
@@ -958,14 +949,9 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
         int width2 = columnWidth * screen.getColumns();
         int height2 = rowHeight * (screen.getRows() + 2);
-        //      synchronized (lock) {
         if (bi == null || bi.getWidth() != width2 || bi.getHeight() != height2) {
-            // allocate a buffer Image with appropriate size
             bi = new BufferedImage(width2, height2, BufferedImage.TYPE_INT_RGB);
         }
-        //         // tell waiting threads to wake up
-        //         lock.notifyAll();
-        //      }
         drawOIA();
         return bi;
     }
@@ -982,9 +968,10 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         // get ourselves a global pointer to the graphics
         g2d = getDrawingArea();
 
-        if (antialiased)
+        if (antialiased) {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
                 RenderingHints.VALUE_COLOR_RENDER_SPEED);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
@@ -1030,7 +1017,6 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     public void drawCursor(int row, int col) {
 
-        // Delegate cursor drawing to CursorManager (Phase 3 extraction)
         int botOffset = cursorManager.getCursorBottOffset();
         boolean insertMode = screen.getOIA().isInsertMode();
 
@@ -1060,6 +1046,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                         columnWidth,
                         rowHeight - botOffset
                 );
+                break;
+            default:
                 break;
         }
 
@@ -1114,6 +1102,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                         bi.getWidth(null), 1);
                 updateImage(crossRect.x, 0, 1, bi.getHeight(null) - rowHeight - rowHeight);
                 break;
+            default:
+                break;
         }
 
         g2.dispose();
@@ -1123,8 +1113,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         g2.fill(pArea);
         g2.setColor(colorWhite);
 
-        g2.drawString((row + 1) + "/" + (col + 1)
-                , (float) pArea.getX(),
+        g2.drawString((row + 1) + "/" + (col + 1),
+                 (float) pArea.getX(),
                 (float) pArea.getY() + rowHeight);
         updateImage(pArea.getBounds());
         g2.dispose();
@@ -1177,48 +1167,20 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
      */
     public Graphics2D getDrawingArea() {
 
-        //      try {
-        //         synchronized (lock) {
-        // wait until there is something to read
-        //            while (bi == null) {
-        //               log.debug(" bi = null ");
-        //               lock.wait();
-        //            }
-        // we have the lock and state we're seeking
-        // check for selected area and erase it before updating screen
-        //         if (gui.rubberband != null && gui.rubberband.isAreaSelected()) {
-        //            gui.rubberband.erase();
-        //         }
-
         Graphics2D g2;
 
         g2 = bi.createGraphics();
-        // tell waiting threads to wake up
-        //            lock.notifyAll();
         return g2;
-        //         }
-        //      }
-        //      catch (InterruptedException ie) {
-        //         log.warn("getDrawingarea : " + ie.getMessage());
-        //         return null;
-        //      }
     }
 
     public synchronized void drawImageBuffer(Graphics2D gg2d, int x, int y, int width, int height) {
 
-        /**
-         * @todo this is a hack and should be fixed at the root of the problem
-         */
         if (gg2d == null) {
             log.debug(" we got a null graphic object ");
             return;
         }
 
-        //      synchronized (lock) {
         gg2d.drawImage(bi.getSubimage(x, y, width, height), null, x + offLeft, y + offTop);
-        // tell waiting threads to wake up
-        //         lock.notifyAll();
-        //      }
 
     }
 
@@ -1230,52 +1192,23 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             gui.rubberband.erase();
         }
 
-        // Get graphics context from DrawingContext (Phase 4 extraction)
         Graphics2D gg2d = drawingContext.getGraphics();
         gg2d.setClip(x, y, width, height);
-        //		if (!cursorActive && x + width <= bi.getWidth(null)
-        //				&& y + height <= (bi.getHeight(null) - fmWidth)) {
-        //			paintComponent2(biGraphics2d);
-        //		}
-
-        //      if (tileimage != null) {
-        //
-        //         AlphaComposite ac =
-        // AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
-        //         g2d.setComposite(ac);
-        //         g2d.drawImage(tileimage, null, null);
-        //      }
-
-        // LDC - WVL : 08/09/2003 : TR.000358
-        // HTI5250j overpaints superimposed components
-        // as swing doesn't support overlay detection when painting a component
-        // we have to adhere to swing's paint request and use dirty rectangle
-        // marking
-        // instead of off-thread painting
-        // So we replaced the complete block underneath by 1 repaint request
-
-        // fix for jdk1.4 - found this while testing under jdk1.4
-        //   if the height and or the width are equal to zero we skip the
-        //   the updating of the image.
-        //      if (gui.isVisible() && height > 0 && width > 0) {
-        //         bi.drawImageBuffer(gg2d,x,y,width,height);
-        //      }
-        //         if (gui.isVisible()) {
-        //            if (height > 0 && width > 0) {
-
-        // We now redraw the selected area rectangle.
+        // Redraw the selected area rectangle.
         if (gui.rubberband != null && gui.rubberband.isAreaSelected()) {
             gui.rubberband.draw();
         }
 
-        if (x == 0)
+        if (x == 0) {
             width += offLeft;
-        else
+        } else {
             x += offLeft;
-        if (y == 0)
+        }
+        if (y == 0) {
             height += offTop;
-        else
+        } else {
             y += offTop;
+        }
 
         final int heightf = height;
         final int widthf = width;
@@ -1301,21 +1234,12 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     public synchronized void drawImageBuffer(Graphics2D gg2d) {
 
-        /**
-         * @todo this is a hack and should be fixed at the root of the problem
-         */
         if (gg2d == null) {
             log.debug(" we got a null graphic object ");
             return;
         }
 
-        //      synchronized (lock) {
-
         gg2d.drawImage(bi, null, offLeft, offTop);
-        // tell waiting threads to wake up
-        //         lock.notifyAll();
-        //      }
-
 
     }
 
@@ -1325,25 +1249,14 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     public Graphics2D getWritingArea(Font font) {
 
         Graphics2D g2;
-        // we could be in the middle of creating the graphics because of the
-        //    threads, resizing etc....   so lets wait until we have one.
-        //    If this causes problems we should implement a thresh-hold of sorts
-        //    to keep an infinate loop from occurring.  So far not problems
-        //      try {
-        //         synchronized (lock) {
-        // wait until there is something to read
-        //            while (bi == null) {
-        //               log.debug( " bi = null wa ");
-        //               lock.wait();
-        //            }
-        // we have the lock and state we're seeking
 
         g2 = bi.createGraphics();
 
         if (g2 != null) {
-            if (antialiased)
+            if (antialiased) {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
+            }
             g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
                     RenderingHints.VALUE_COLOR_RENDER_SPEED);
             g2.setRenderingHint(RenderingHints.KEY_RENDERING,
@@ -1351,16 +1264,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             g2.setFont(font);
         }
 
-        // tell waiting threads to wake up
-        //            lock.notifyAll();
         return g2;
-
-        //         }
-        //      }
-        //      catch (InterruptedException ie) {
-        //         log.warn("getWritingarea : " + ie.getMessage());
-        //         return null;
-        //      }
     }
 
     public void setUseAntialias(boolean antialiased) {
@@ -1373,9 +1277,9 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         int value = oia.getInputInhibited();
         String inhibitedText = oia.getInhibitedText();
         Graphics2D g2d = getWritingArea(font);
-        //      log.info(attr + ", " + value + ", " + s);
-        if (g2d == null)
+        if (g2d == null) {
             return;
+        }
 
         try {
             g2d.setColor(colorBg);
@@ -1389,24 +1293,28 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                     if (value == ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT) {
                         g2d.setColor(colorWhite);
 
-                        if (inhibitedText != null)
+                        if (inhibitedText != null) {
                             g2d.drawString(inhibitedText, (float) sArea.getX(), baselineY);
-                        else
+                        } else {
                             g2d.drawString(xSystem, (float) sArea.getX(), baselineY);
+                        }
                     }
                     break;
                 case ScreenOIA.OIA_LEVEL_INPUT_ERROR:
                     if (value == ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT) {
                         g2d.setColor(colorRed);
 
-                        if (inhibitedText != null)
+                        if (inhibitedText != null) {
                             g2d.drawString(inhibitedText, (float) sArea.getX(), baselineY);
-                        else
+                        } else {
                             g2d.drawString(xError, (float) sArea.getX(), baselineY);
+                        }
 
                     }
                     break;
 
+                default:
+                    break;
             }
             updateImage(sArea.getBounds());
             g2d.dispose();
@@ -1423,9 +1331,9 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
         int attr = updateRect.attr[pos];
         sChar[0] = updateRect.text[pos];
         setDrawAttr(pos);
-        boolean attributePlace = updateRect.isAttr[pos] == 0 ? false : true;
+        boolean attributePlace = updateRect.isAttr[pos] != 0;
         int whichGui = updateRect.graphic[pos];
-        boolean useGui = whichGui == 0 ? false : true;
+        boolean useGui = whichGui != 0;
 
         csArea = modelToView(row, col, csArea);
 
@@ -1453,10 +1361,11 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 graphics.fill(csArea);
             } else {
 
-                if (bg == colorBg && whichGui >= HTI5250jConstants.FIELD_LEFT && whichGui <= HTI5250jConstants.FIELD_ONE)
+                if (bg == colorBg && whichGui >= HTI5250jConstants.FIELD_LEFT && whichGui <= HTI5250jConstants.FIELD_ONE) {
                     graphics.setColor(colorGUIField);
-                else
+                } else {
                     graphics.setColor(bg);
+                }
 
                 graphics.fill(csArea);
 
@@ -1628,27 +1537,32 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                         }
                         break;
 
+                    default:
+                        break;
                 }
             } else {
                 if (sChar[0] != 0x0) {
                     // use this until we define colors for gui stuff
-                    if ((useGui && whichGui < HTI5250jConstants.BUTTON_LEFT) && (fg == colorGUIField))
+                    if ((useGui && whichGui < HTI5250jConstants.BUTTON_LEFT) && (fg == colorGUIField)) {
 
                         graphics.setColor(Color.black);
-                    else
+                    } else {
                         graphics.setColor(fg);
+                    }
 
                     try {
-                        if (useGui)
+                        if (useGui) {
 
-                            if (sChar[0] == 0x1C)
+                            if (sChar[0] == 0x1C) {
                                 graphics.drawChars(dupChar, 0, 1, x + 1, cy - 2);
-                            else
+                            } else {
                                 graphics.drawChars(sChar, 0, 1, x + 1, cy - 2);
-                        else if (sChar[0] == 0x1C)
+                            }
+                        } else if (sChar[0] == 0x1C) {
                             graphics.drawChars(dupChar, 0, 1, x, cy - 2);
-                        else
+                        } else {
                             graphics.drawChars(sChar, 0, 1, x, cy - 2);
+                        }
                     } catch (IllegalArgumentException iae) {
                         System.out.println(" drawChar iae " + iae.getMessage());
 
@@ -1679,6 +1593,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                             graphics.drawLine(x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 3, x + columnWidth - 1, y + rowHeight - (int) lm.getLeading() - 4);
                             break;
                         case Hide:  // hide
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -1774,6 +1690,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
                     break;
 
+                default:
+                    break;
             }
         }
 
@@ -1790,7 +1708,9 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
             return;
         }
 
-        if (hotSpots) screen.checkHotSpots();
+        if (hotSpots) {
+            screen.checkHotSpots();
+        }
 
         updateRect = new Data(sr, sc, er, ec);
 
@@ -1900,6 +1820,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 }
                 break;
 
+            default:
+                break;
         }
     }
 
@@ -2061,12 +1983,13 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     protected Color getColor(char color, boolean background) {
         int colorValue = 0;
-        if (background)
+        if (background) {
             // background
             colorValue = (color & 0xff00) >> 8;
-        else
+        } else {
             // foreground
             colorValue = color & 0x00ff;
+        }
 
         switch (colorValue) {
             case HTI5250jConstants.COLOR_FG_BLACK:
@@ -2126,7 +2049,6 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     /**
      * Get the background color from the color palette.
-     * Phase 1: ColorPalette integration - public accessor for background color
      * @return the current background color
      */
     public Color getBackgroundColor() {

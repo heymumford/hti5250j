@@ -31,7 +31,6 @@ public record ArgumentParser(
         String dataFile = null;
         String environment = null;
 
-        // Parse optional arguments
         for (int i = 2; i < args.length; i++) {
             if ("--data".equals(args[i]) && i + 1 < args.length) {
                 dataFile = args[++i];

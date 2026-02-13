@@ -16,7 +16,6 @@ import java.awt.font.LineMetrics;
  * Encapsulates all font-related measurements including character width and height,
  * font scaling, and line metrics caching.
  *
- * Phase 2 extraction from GuiGraphicBuffer refactoring.
  * (Named CharacterMetrics to avoid collision with java.awt.FontMetrics)
  */
 public class CharacterMetrics {
@@ -49,16 +48,9 @@ public class CharacterMetrics {
             return;
         }
 
-        // Create a FontRenderContext for accurate measurements
         renderContext = new FontRenderContext(currentFont.getTransform(), true, true);
-
-        // Get line metrics for descent and leading calculations
         lineMetrics = currentFont.getLineMetrics("Wy", renderContext);
-
-        // Calculate character width using a standard monospace test character
         charWidth = (int) currentFont.getStringBounds("W", renderContext).getWidth() + 1;
-
-        // Calculate character height using descent and leading
         charHeight = (int) (currentFont.getStringBounds("g", renderContext).getHeight()
                 + lineMetrics.getDescent() + lineMetrics.getLeading());
     }

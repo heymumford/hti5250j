@@ -7,7 +7,7 @@
 package org.hti5250j.workflow;
 
 /**
- * Performance baselines for Phase 13 virtual thread batch execution.
+ * Performance baselines for virtual thread batch execution.
  * Validates actual performance meets or exceeds targets.
  *
  * Baselines established from initial virtual thread profiling:
@@ -27,8 +27,12 @@ public class PerformanceBaseline {
      * - 1000 workflows: <2000ms (mild contention)
      */
     public long p99Threshold(int workflowCount) {
-        if (workflowCount <= 100) return 500;
-        if (workflowCount <= 500) return 1000;
+        if (workflowCount <= 100) {
+            return 500;
+        }
+        if (workflowCount <= 500) {
+            return 1000;
+        }
         return 2000;
     }
 
@@ -41,8 +45,12 @@ public class PerformanceBaseline {
      * - 1000 workflows: >300/sec (high concurrency sweet spot)
      */
     public double throughputThreshold(int workflowCount) {
-        if (workflowCount <= 100) return 50.0;
-        if (workflowCount <= 500) return 200.0;
+        if (workflowCount <= 100) {
+            return 50.0;
+        }
+        if (workflowCount <= 500) {
+            return 200.0;
+        }
         return 300.0;
     }
 
@@ -56,8 +64,12 @@ public class PerformanceBaseline {
      * - 1000 workflows: <150MB
      */
     public long memoryThreshold(int workflowCount) {
-        if (workflowCount <= 100) return 50;
-        if (workflowCount <= 500) return 100;
+        if (workflowCount <= 100) {
+            return 50;
+        }
+        if (workflowCount <= 500) {
+            return 100;
+        }
         return 150;
     }
 
@@ -83,7 +95,7 @@ public class PerformanceBaseline {
      */
     public String summary() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\nPERFORMANCE BASELINES - Phase 13 Virtual Threads\n");
+        sb.append("\nPERFORMANCE BASELINES - Virtual Threads\n");
         sb.append("═".repeat(70)).append("\n");
         sb.append(String.format("%-15s | %-12s | %-15s | %-10s%n",
             "Scale", "P99 Latency", "Throughput", "Memory"));

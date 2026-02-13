@@ -177,10 +177,8 @@ public class FixedCenterLayout implements LayoutManager2, Serializable {
         synchronized (target.getTreeLock()) {
             Insets insets = target.getInsets();
             int top = insets.top;
-            //	int bottom = target.getHeight() - insets.bottom;
             int bottom = target.getBounds().height - insets.bottom;
             int left = insets.left;
-            //	int right = target.getWidth() - insets.right;
             int right = target.getBounds().width - insets.right;
 
             int leftCenter = (right - left) / 2;
@@ -226,4 +224,4 @@ public class FixedCenterLayout implements LayoutManager2, Serializable {
 
     }
 
-} // FixedCenterLayout
+}

@@ -68,8 +68,9 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         this.sessionName = sessionName;
         sesProps = props;
 
-        if (sesProps.containsKey(HTI5250jConstants.SESSION_HEART_BEAT))
+        if (sesProps.containsKey(HTI5250jConstants.SESSION_HEART_BEAT)) {
             heartBeat = true;
+        }
 
         screen = new Screen5250();
 
@@ -80,8 +81,6 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         // This allows Session5250 to provide both SessionInterface (backward compatible)
         // and HeadlessSession (new programmatic API) via the same underlying session
         this.headlessDelegate = new DefaultHeadlessSession(this, requestHandler);
-
-        //screen.setVT(vt);
 
     }
 
@@ -201,17 +200,10 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.interfaces.SessionInterface#displaySystemRequest()
-     */
     @Override
     public String showSystemRequest() {
-        // Phase 15B: Use RequestHandler abstraction for extensibility (Robot Framework)
-        // If GUI component present, upgrade to GuiRequestHandler (interactive dialog)
-        // Otherwise, use injected requestHandler (NullRequestHandler for headless, custom for Robot Framework)
 
         if (guiComponent != null) {
-            // GUI mode: show interactive dialog
             try {
                 RequestHandler guiHandler = new GuiRequestHandler(guiComponent);
                 String screenText = new String(screen.getScreenAsChars());
@@ -223,7 +215,6 @@ public class Session5250 implements SessionInterface, ScreenProvider {
             }
         }
 
-        // Headless mode: use injected RequestHandler (extensible for Robot Framework)
         String screenText = new String(screen.getScreenAsChars());
         return requestHandler.handleSystemRequest(screenText);
     }
@@ -238,21 +229,23 @@ public class Session5250 implements SessionInterface, ScreenProvider {
 
         enhanced = sesProps.containsKey(HTI5250jConstants.SESSION_TN_ENHANCED);
 
-        if (sesProps.containsKey(HTI5250jConstants.SESSION_SCREEN_SIZE))
-            if ((sesProps.getProperty(HTI5250jConstants.SESSION_SCREEN_SIZE)).equals(HTI5250jConstants.SCREEN_SIZE_27X132_STR))
+        if (sesProps.containsKey(HTI5250jConstants.SESSION_SCREEN_SIZE)) {
+            if ((sesProps.getProperty(HTI5250jConstants.SESSION_SCREEN_SIZE)).equals(HTI5250jConstants.SCREEN_SIZE_27X132_STR)) {
                 support132 = true;
+            }
+        }
 
         final tnvt vt = new tnvt(this, screen, enhanced, support132);
         setVT(vt);
 
-        //      vt.setController(this);
-
-        if (sesProps.containsKey(HTI5250jConstants.SESSION_PROXY_PORT))
+        if (sesProps.containsKey(HTI5250jConstants.SESSION_PROXY_PORT)) {
             proxyPort = sesProps.getProperty(HTI5250jConstants.SESSION_PROXY_PORT);
+        }
 
-        if (sesProps.containsKey(HTI5250jConstants.SESSION_PROXY_HOST))
+        if (sesProps.containsKey(HTI5250jConstants.SESSION_PROXY_HOST)) {
             vt.setProxy(sesProps.getProperty(HTI5250jConstants.SESSION_PROXY_HOST),
                     proxyPort);
+        }
 
         final String sslType;
         if (sesProps.containsKey(HTI5250jConstants.SSL_TYPE)) {
@@ -263,11 +256,13 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         }
         vt.setSSLType(sslType);
 
-        if (sesProps.containsKey(HTI5250jConstants.SESSION_CODE_PAGE))
+        if (sesProps.containsKey(HTI5250jConstants.SESSION_CODE_PAGE)) {
             vt.setCodePage(sesProps.getProperty(HTI5250jConstants.SESSION_CODE_PAGE));
+        }
 
-        if (sesProps.containsKey(HTI5250jConstants.SESSION_DEVICE_NAME))
+        if (sesProps.containsKey(HTI5250jConstants.SESSION_DEVICE_NAME)) {
             vt.setDeviceName(sesProps.getProperty(HTI5250jConstants.SESSION_DEVICE_NAME));
+        }
 
         if (sesProps.containsKey(HTI5250jConstants.SESSION_HOST_PORT)) {
             port = Integer.parseInt(sesProps.getProperty(HTI5250jConstants.SESSION_HOST_PORT));
@@ -302,19 +297,17 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         vt.disconnect();
     }
 
-    // WVL - LDC : TR.000300 : Callback scenario from 5250
     protected void setVT(tnvt v) {
         vt = v;
         screen.setVT(vt);
-        if (vt != null)
+        if (vt != null) {
             vt.setScanningEnabled(this.scan);
+        }
     }
 
     public tnvt getVT() {
         return vt;
     }
-
-    // WVL - LDC : TR.000300 : Callback scenario from 5250
 
     /**
      * Enables or disables scanning.
@@ -329,11 +322,10 @@ public class Session5250 implements SessionInterface, ScreenProvider {
     public void setScanningEnabled(boolean scan) {
         this.scan = scan;
 
-        if (this.vt != null)
+        if (this.vt != null) {
             this.vt.setScanningEnabled(scan);
+        }
     }
-
-    // WVL - LDC : TR.000300 : Callback scenario from 5250
 
     /**
      * Checks whether scanning is enabled.
@@ -346,13 +338,12 @@ public class Session5250 implements SessionInterface, ScreenProvider {
      * @see scanned(String,String)
      */
     public boolean isScanningEnabled() {
-        if (this.vt != null)
+        if (this.vt != null) {
             return this.vt.isScanningEnabled();
+        }
 
         return this.scan;
     }
-
-    // WVL - LDC : TR.000300 : Callback scenario from 5250
 
     /**
      * This is the callback method for the TNVT when sensing the action cmd
@@ -468,14 +459,10 @@ public class Session5250 implements SessionInterface, ScreenProvider {
     /**
      * Get the HeadlessSession interface for programmatic automation.
      * <p>
-     * Phase 15B: Enables Robot Framework, Jython adapters, and other programmatic
-     * clients to interact with the session through a clean, GUI-independent API.
-     * <p>
-     * This is the same underlying session as the SessionInterface, but accessed
-     * through a modern, fully headless interface designed for automation.
+     * Enables programmatic clients (e.g., Robot Framework, Jython adapters)
+     * to interact with the session through a clean, GUI-independent API.
      *
      * @return HeadlessSession interface wrapping this Session5250 instance
-     * @since Phase 15B
      */
     public HeadlessSession asHeadlessSession() {
         return headlessDelegate;
@@ -484,15 +471,14 @@ public class Session5250 implements SessionInterface, ScreenProvider {
     /**
      * Set custom RequestHandler for SYSREQ (F3 key) handling.
      * <p>
-     * Enables Robot Framework and custom automation logic to intercept and handle
-     * system request dialogs (SYSREQ) programmatically.
+     * Enables custom automation logic to intercept and handle system request
+     * dialogs (SYSREQ) programmatically.
      * <p>
      * Default: NullRequestHandler (returns to menu)
      * GUI mode: Automatically upgraded to GuiRequestHandler (interactive dialog)
      *
-     * @param handler custom RequestHandler implementation (e.g., Robot Framework adapter)
+     * @param handler custom RequestHandler implementation
      * @throws NullPointerException if handler is null
-     * @since Phase 15B
      */
     public void setRequestHandler(RequestHandler handler) {
         if (handler == null) {

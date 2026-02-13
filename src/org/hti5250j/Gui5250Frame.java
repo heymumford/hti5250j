@@ -56,7 +56,6 @@ public class Gui5250Frame extends GUIViewInterface implements
     private HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
 
 
-    //Construct the frame
     public Gui5250Frame(My5250 my5250) {
         super(my5250);
         enableEvents(AWTEvent.WINDOW_EVENT_MASK);
@@ -67,12 +66,10 @@ public class Gui5250Frame extends GUIViewInterface implements
         }
     }
 
-    //Component initialization
     private void jbInit() throws Exception {
 
         this.getContentPane().setLayout(new BorderLayout());
 
-        // update the frame sequences
         frameSeq = sequence++;
 
         sessTabbedPane.setBorder(BorderFactory.createEtchedBorder());
@@ -86,22 +83,23 @@ public class Gui5250Frame extends GUIViewInterface implements
         Properties props = ConfigureFactory.getInstance().
                 getProperties(ConfigureFactory.SESSIONS);
 
-        if (props.getProperty("emul.hideTabBar", "no").equals("yes"))
+        if (props.getProperty("emul.hideTabBar", "no").equals("yes")) {
             hideTabBar = true;
+        }
 
         if (!hideTabBar) {
             this.getContentPane().add(sessTabbedPane, BorderLayout.CENTER);
         }
 
-        if (packFrame)
+        if (packFrame) {
             pack();
-        else
+        } else {
             validate();
+        }
 
 
     }
 
-    //Overridden so we can exit on System Close
     @Override
     protected void processWindowEvent(WindowEvent windowEvent) {
         if (windowEvent.getID() == WindowEvent.WINDOW_CLOSING) {
@@ -124,12 +122,10 @@ public class Gui5250Frame extends GUIViewInterface implements
                 close &= sesspanel.confirmCloseSession(false);
             }
             if (!close) {
-                // restore old selected index
                 sessTabbedPane.setSelectedIndex(oldidx);
                 updateSessionTitle();
                 return;
             }
-            // process regular window closing ...
             super.processWindowEvent(windowEvent);
             me.closingDown(this);
         }
@@ -151,6 +147,8 @@ public class Gui5250Frame extends GUIViewInterface implements
                 break;
             case HTI5250jConstants.JUMP_NEXT:
                 nextSession();
+                break;
+            default:
                 break;
         }
     }
@@ -192,9 +190,6 @@ public class Gui5250Frame extends GUIViewInterface implements
         });
     }
 
-    /* (non-Javadoc)
-     * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
-     */
     @Override
     public void stateChanged(ChangeEvent changeEvent) {
         JTabbedPane tabbedPane = (JTabbedPane) changeEvent.getSource();
@@ -209,15 +204,17 @@ public class Gui5250Frame extends GUIViewInterface implements
     private void setSessionTitle(final SessionPanel session) {
         if (session != null && session.isConnected()) {
             final String name = determineTabName(session);
-            if (sequence - 1 > 0)
+            if (sequence - 1 > 0) {
                 setTitle(name + " - tn5250j <" + sequence + ">");
-            else
+            } else {
                 setTitle(name + " - tn5250j");
+            }
         } else {
-            if (sequence - 1 > 0)
+            if (sequence - 1 > 0) {
                 setTitle("tn5250j <" + sequence + ">");
-            else
+            } else {
                 setTitle("tn5250j");
+            }
         }
     }
 
@@ -252,9 +249,6 @@ public class Gui5250Frame extends GUIViewInterface implements
         setSessionTitle(selectedComponent);
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.interfaces.GUIViewInterface#addSessionView(java.lang.String, org.hti5250j.SessionGUI)
-     */
     @Override
     public void addSessionView(final String tabText, final SessionPanel sesspanel) {
 
@@ -266,10 +260,11 @@ public class Gui5250Frame extends GUIViewInterface implements
 
             sesspanel.resizeMe();
             repaint();
-            if (packFrame)
+            if (packFrame) {
                 pack();
-            else
+            } else {
                 validate();
+            }
             embedded = true;
             sesspanel.requestFocusInWindow();
             setSessionTitle(sesspanel);
@@ -311,7 +306,7 @@ public class Gui5250Frame extends GUIViewInterface implements
      * @param sesgui
      * @param focus TRUE is the new tab should be focused, otherwise FALSE
      */
-    private final void createTabWithSessionContent(final String tabText, final SessionPanel sesgui, final boolean focus) {
+    private void createTabWithSessionContent(final String tabText, final SessionPanel sesgui, final boolean focus) {
 
         sessTabbedPane.addTab(tabText, determineIconForSession(sesgui.session), sesgui);
         final int idx = sessTabbedPane.indexOfComponent(sesgui);
@@ -339,9 +334,6 @@ public class Gui5250Frame extends GUIViewInterface implements
         });
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.event.TabClosedListener#onTabClosed(int)
-     */
     @Override
     public void onTabClosed(int tabToBeClosed) {
         final SessionPanel sesspanel = this.getSessionAt(tabToBeClosed);
@@ -349,9 +341,6 @@ public class Gui5250Frame extends GUIViewInterface implements
     }
 
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.interfaces.GUIViewInterface#removeSessionView(org.hti5250j.SessionGUI)
-     */
     @Override
     public void removeSessionView(SessionPanel targetSession) {
         if (hideTabBar && sessTabbedPane.getTabCount() == 0) {
@@ -369,9 +358,6 @@ public class Gui5250Frame extends GUIViewInterface implements
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.interfaces.GUIViewInterface#getSessionViewCount()
-     */
     @Override
     public int getSessionViewCount() {
 
@@ -387,9 +373,6 @@ public class Gui5250Frame extends GUIViewInterface implements
         return sessTabbedPane.getTabCount();
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.interfaces.GUIViewInterface#getSessionAt(int)
-     */
     @Override
     public SessionPanel getSessionAt(int index) {
 
@@ -402,13 +385,12 @@ public class Gui5250Frame extends GUIViewInterface implements
             }
             return null;
         }
-        if (sessTabbedPane.getTabCount() <= 0) return null;
+        if (sessTabbedPane.getTabCount() <= 0) {
+            return null;
+        }
         return (SessionPanel) sessTabbedPane.getComponentAt(index);
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.interfaces.GUIViewInterface#onSessionChanged(org.hti5250j.event.SessionChangeEvent)
-     */
     @Override
     public void onSessionChanged(SessionChangeEvent changeEvent) {
 
@@ -439,6 +421,8 @@ public class Gui5250Frame extends GUIViewInterface implements
                     updateSessionTitle();
                 }
                 break;
+            default:
+                break;
         }
     }
 
@@ -446,7 +430,7 @@ public class Gui5250Frame extends GUIViewInterface implements
      * @param ses5250
      * @return Icon or NULL depending on session State
      */
-    private static final Icon determineIconForSession(Session5250 ses5250) {
+    private static Icon determineIconForSession(Session5250 ses5250) {
         if (ses5250 != null && ses5250.isSslConfigured()) {
             if (ses5250.isSslSocket()) {
                 return GUIGraphicsUtils.getClosedLockIcon();
@@ -457,9 +441,6 @@ public class Gui5250Frame extends GUIViewInterface implements
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.hti5250j.interfaces.GUIViewInterface#containsSession(org.hti5250j.SessionGUI)
-     */
     @Override
     public boolean containsSession(SessionPanel session) {
 

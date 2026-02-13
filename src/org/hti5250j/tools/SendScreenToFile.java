@@ -40,7 +40,6 @@ public class SendScreenToFile {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setFileFilter(new HTI5250jFileFilter("txt", "Text files"));
 
-        // int ret = pcFileChooser.showSaveDialog(new JFrame());
         int ret = fileChooser.showSaveDialog(parent);
 
         // check to see if something was actually chosen
@@ -69,7 +68,7 @@ public class SendScreenToFile {
         }
     }
 
-    private static final void writeToFile(String sc, File file) {
+    private static void writeToFile(String sc, File file) {
 
         FileOutputStream out = null;
         try {
@@ -83,12 +82,13 @@ public class SendScreenToFile {
         } catch (IOException ioe) {
             LOG.warn("ioe: " + ioe.getMessage());
         } finally {
-            if (out != null)
+            if (out != null) {
                 try {
                     out.close();
                 } catch (IOException exc) {
                     LOG.warn("ioe finally: " + exc.getMessage());
                 }
+            }
 
         }
 

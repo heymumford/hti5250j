@@ -18,7 +18,6 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Properties;
 
 /**
  * Base class for all attribute panels
@@ -35,15 +34,15 @@ abstract class AttributesPanel extends JPanel {
     // content pane to be used if needed by subclasses
     JPanel contentPane;
 
-    public AttributesPanel(SessionConfig config) {
+    AttributesPanel(SessionConfig config) {
         this(config, "", nodePrefix);
     }
 
-    public AttributesPanel(SessionConfig config, String name) {
+    AttributesPanel(SessionConfig config, String name) {
         this(config, name, nodePrefix);
     }
 
-    public AttributesPanel(SessionConfig config, String name, String prefix) {
+    AttributesPanel(SessionConfig config, String name, String prefix) {
         super();
         changes = config;
         this.name = LangTool.getString(prefix + name);
@@ -62,10 +61,11 @@ abstract class AttributesPanel extends JPanel {
 
     protected final String getStringProperty(String prop) {
 
-        if (changes.isPropertyExists(prop))
+        if (changes.isPropertyExists(prop)) {
             return changes.getStringProperty(prop);
-        else
+        } else {
             return "";
+        }
 
     }
 
@@ -73,12 +73,14 @@ abstract class AttributesPanel extends JPanel {
 
         if (changes.isPropertyExists(prop)) {
             String p = changes.getStringProperty(prop);
-            if (p.length() > 0)
+            if (p.length() > 0) {
                 return p;
-            else
+            } else {
                 return defaultValue;
-        } else
+            }
+        } else {
             return defaultValue;
+        }
 
     }
 
@@ -87,8 +89,9 @@ abstract class AttributesPanel extends JPanel {
         if (changes.isPropertyExists(prop)) {
             Color c = new Color(changes.getIntegerProperty(prop));
             return c;
-        } else
+        } else {
             return null;
+        }
 
     }
 
@@ -97,8 +100,9 @@ abstract class AttributesPanel extends JPanel {
         if (changes.isPropertyExists(prop)) {
             Color c = new Color(changes.getIntegerProperty(prop));
             return c;
-        } else
+        } else {
             return defColor;
+        }
 
     }
 
@@ -106,12 +110,10 @@ abstract class AttributesPanel extends JPanel {
 
         if (changes.isPropertyExists(prop)) {
             String b = changes.getStringProperty(prop).toLowerCase();
-            if (b.equals("yes") || b.equals("true"))
-                return true;
-            else
-                return false;
-        } else
+            return b.equals("yes") || b.equals("true");
+        } else {
             return dflt;
+        }
 
     }
 

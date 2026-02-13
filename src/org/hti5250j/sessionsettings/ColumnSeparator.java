@@ -28,7 +28,9 @@ public enum ColumnSeparator {
      */
     public static ColumnSeparator getFromName(String name) {
         ColumnSeparator result = DEFAULT;
-        if (name == null) return result;
+        if (name == null) {
+            return result;
+        }
         for (ColumnSeparator sep : ColumnSeparator.values()) {
             if (name.equalsIgnoreCase(sep.toString())) {
                 return sep;

@@ -1,8 +1,8 @@
-# HTI5250J — Robot Framework Integration Guide
+# HTI5250J -- Robot Framework Integration Guide
 
 ## Overview
 
-HTI5250J (Phase 15B) provides clean headless abstractions enabling seamless Robot Framework integration for IBM i (AS/400) test automation.
+HTI5250J provides headless abstractions enabling seamless Robot Framework integration for IBM i (AS/400) test automation.
 
 **Key Advantage:** No GUI coupling. Tests run in Docker, CI/CD pipelines, and headless servers without X11 or display system.
 
@@ -30,7 +30,7 @@ HTI5250J (Phase 15B) provides clean headless abstractions enabling seamless Robo
              │
              ▼
 ┌─────────────────────────────────┐
-│ HeadlessSession (Phase 15B)      │
+│ HeadlessSession                 │
 │ (Pure data API, no GUI)         │
 └────────────┬────────────────────┘
              │
@@ -60,10 +60,7 @@ HTI5250J (Phase 15B) provides clean headless abstractions enabling seamless Robo
 - **Docker** (for containerized tests)
 - **Docker Compose** (for multi-session workflows)
 
-### System Requirements
-- **No X11 display system required** ✓ (headless)
-- **No GUI libraries** ✓ (pure data APIs)
-- **~500KB per session** ✓ (vs 2MB+ with GUI)
+No X11 display system required. ~500KB per session (vs 2MB+ with GUI).
 
 ---
 
@@ -127,16 +124,8 @@ class HTI5250J:
         self.headless_session = None
 
     def connect_to_ibm_i(self, host, port='23', screen_size='24x80', code_page='37'):
-        """
-        Connect to IBM i system via 5250 protocol.
+        """Connect to IBM i system via 5250 protocol.
 
-        Arguments:
-        - host: Hostname or IP address of IBM i system
-        - port: Telnet port (default: 23)
-        - screen_size: Screen dimensions (default: 24x80, also supports 27x132)
-        - code_page: EBCDIC code page (default: 37 = US)
-
-        Example:
         | Connect To IBM i | ibm-i.example.com | port=23 |
         """
         props = Properties()
@@ -149,202 +138,87 @@ class HTI5250J:
         self.session = Session5250(props, 'robot-session', 'robot-session', config)
         self.headless_session = self.session.asHeadlessSession()
 
-        # Connect in background thread
         self.session.connect()
 
-        # Wait for connection
         import time
         time.sleep(2)
 
         if not self.headless_session.isConnected():
             raise Exception("Failed to connect to IBM i system: " + host)
 
-        print("Connected to IBM i: " + host)
-
     def disconnect_from_ibm_i(self):
-        """
-        Disconnect from IBM i system.
-
-        Example:
-        | Disconnect From IBM i |
-        """
+        """Disconnect from IBM i system."""
         if self.session:
             self.session.disconnect()
-            print("Disconnected from IBM i")
 
     def send_keys(self, keys):
-        """
-        Send keystrokes to 5250 screen.
+        """Send keystrokes to 5250 screen.
 
-        Arguments:
-        - keys: Key sequence (e.g., "CALL MYPGM[enter]")
+        Special keys: [enter], [tab], [home], [f1]-[f24], [esc], [pf1]-[pf24]
 
-        Special keys:
-        - [enter]: Enter key
-        - [tab]: Tab key
-        - [home]: Home key
-        - [f1]-[f24]: Function keys
-        - [esc]: Escape key
-        - [pf1]-[pf24]: Program Function keys (PA1-PA3, PF1-PF24)
-
-        Example:
-        | Send Keys | [home] |
-        | Send Keys | MYUSER |
-        | Send Keys | [tab] |
-        | Send Keys | MYPASS[enter] |
+        | Send Keys | MYUSER[tab]MYPASS[enter] |
         """
         if not self.headless_session or not self.headless_session.isConnected():
             raise Exception("Not connected to IBM i")
-
         self.headless_session.sendKeys(keys)
 
     def wait_for_keyboard_unlock(self, timeout_ms=30000):
-        """
-        Wait for server to unlock keyboard (response received).
-
-        Arguments:
-        - timeout_ms: Maximum wait time in milliseconds (default: 30000 = 30s)
-
-        Raises exception if timeout exceeded.
-
-        Example:
-        | Send Keys | MYCOMMAND[enter] |
-        | Wait For Keyboard Unlock | timeout_ms=5000 |
-        """
+        """Wait for server to unlock keyboard. Raises on timeout."""
         if not self.headless_session or not self.headless_session.isConnected():
             raise Exception("Not connected to IBM i")
-
         self.headless_session.waitForKeyboardUnlock(int(timeout_ms))
 
     def wait_for_keyboard_lock_cycle(self, timeout_ms=5000):
-        """
-        Wait for complete keyboard lock cycle (submission + refresh).
-
-        Waits for:
-        1. Keyboard to lock (server accepted submission)
-        2. Keyboard to unlock (screen refreshed with response)
-
-        Arguments:
-        - timeout_ms: Maximum wait time in milliseconds (default: 5000 = 5s)
-
-        Example:
-        | Send Keys | [enter] |
-        | Wait For Keyboard Lock Cycle |
-        """
+        """Wait for complete lock/unlock cycle (submission + screen refresh)."""
         if not self.headless_session or not self.headless_session.isConnected():
             raise Exception("Not connected to IBM i")
-
         self.headless_session.waitForKeyboardLockCycle(int(timeout_ms))
 
     def capture_screenshot(self, name='screenshot'):
-        """
-        Capture 5250 screen as PNG image.
-
-        Arguments:
-        - name: Screenshot name (saved as artifacts/{name}.png)
-
-        Returns: Path to PNG file
-
-        Note: Screenshot generation requires NO GUI components (headless).
-        Uses HeadlessScreenRenderer for on-demand rendering.
-
-        Example:
-        | Capture Screenshot | name=login_screen |
-        | Capture Screenshot | name=transaction_complete |
-        """
+        """Capture 5250 screen as PNG to artifacts/{name}.png. Returns file path."""
         if not self.headless_session or not self.headless_session.isConnected():
             raise Exception("Not connected to IBM i")
 
-        # Generate screenshot
         image = self.headless_session.captureScreenshot()
 
-        # Save to artifacts directory
         artifact_dir = File('artifacts')
         if not artifact_dir.exists():
             artifact_dir.mkdirs()
 
         file_path = File(artifact_dir, name + '.png')
         ImageIO.write(image, 'PNG', file_path)
-
-        print("Screenshot saved: " + str(file_path))
         return str(file_path)
 
     def get_screen_as_text(self):
-        """
-        Get 5250 screen content as plain text.
-
-        Returns: Screen content (80×24 or 132×27 characters)
-
-        Example:
-        | ${content}= | Get Screen As Text |
-        | Should Contain | ${content} | WELCOME |
-        """
+        """Get 5250 screen content as plain text (80x24 or 132x27)."""
         if not self.headless_session or not self.headless_session.isConnected():
             raise Exception("Not connected to IBM i")
-
-        content = self.headless_session.getScreenAsText()
-        return content
+        return self.headless_session.getScreenAsText()
 
     def screen_should_contain(self, text):
-        """
-        Assert that 5250 screen contains specified text.
-
-        Arguments:
-        - text: Text to search for
-
-        Raises exception if text not found.
-
-        Example:
-        | Screen Should Contain | MENU COMPLETED |
-        | Screen Should Contain | TRANSACTION ACCEPTED |
-        """
+        """Assert that 5250 screen contains specified text."""
         content = self.get_screen_as_text()
         if text not in content:
             raise AssertionError("Screen does not contain: " + text)
 
     def screen_should_not_contain(self, text):
-        """
-        Assert that 5250 screen does NOT contain specified text.
-
-        Example:
-        | Screen Should Not Contain | ERROR |
-        """
+        """Assert that 5250 screen does NOT contain specified text."""
         content = self.get_screen_as_text()
         if text in content:
             raise AssertionError("Screen contains unexpected text: " + text)
 
     def set_system_request_handler(self, handler_class_name):
-        """
-        Set custom RequestHandler for F3 (SYSREQ) key handling.
+        """Set custom RequestHandler for F3 (SYSREQ) key handling.
 
-        Enables workflow-specific logic to intercept and handle system
-        request dialogs programmatically.
-
-        Arguments:
-        - handler_class_name: Fully qualified Java class name implementing RequestHandler
-
-        Example:
-        | Set System Request Handler | com.example.RobotFrameworkRequestHandler |
-
-        Custom Handler Implementation (Java):
-        | public class RobotFrameworkRequestHandler implements RequestHandler {
-        |     @Override
-        |     public String handleSystemRequest(String screenContent) {
-        |         // Custom logic: parse screen, return menu option
-        |         return "1";  // Select menu option 1
-        |     }
-        | }
+        | Set System Request Handler | com.example.MyHandler |
         """
         if not self.session:
             raise Exception("Not connected to IBM i")
 
-        # Load custom handler class
         from java.lang import Class
         handler_class = Class.forName(handler_class_name)
         handler = handler_class.newInstance()
-
         self.session.setRequestHandler(handler)
-        print("Set custom RequestHandler: " + handler_class_name)
 ```
 
 ### Step 5: Create Test Suite
@@ -379,26 +253,6 @@ Login To IBM i Successfully
     # Verify successful login
     Screen Should Contain    MAIN MENU
     Screen Should Not Contain    INVALID
-
-    [Teardown]    Disconnect From IBM i
-
-Test Screen Navigation
-    [Documentation]    Test navigation between screens
-    [Setup]            Connect To IBM i    ibm-i.example.com    port=23
-
-    # Navigate to subsystem
-    Send Keys    CALL MYPGM[enter]
-    Wait For Keyboard Lock Cycle
-    Capture Screenshot    subsystem_screen
-
-    # Send command
-    Send Keys    [home]
-    Wait For Keyboard Unlock
-    Send Keys    COMMAND1[enter]
-    Wait For Keyboard Lock Cycle
-
-    # Verify navigation
-    Screen Should Contain    SUBSYSTEM READY
 
     [Teardown]    Disconnect From IBM i
 ```
@@ -478,50 +332,7 @@ Workflow With Custom SYSREQ Handler
     Screen Should Contain    INQUIRY SUBSYSTEM
 ```
 
-### Batch Processing (Multiple Sessions)
-
-```python
-# File: lib/BatchProcessor.py
-
-from org.hti5250j.interfaces import HeadlessSession
-from org.hti5250j.session import DefaultHeadlessSessionFactory
-from java.util.concurrent import Executors, TimeUnit
-
-class BatchProcessor:
-    """Process multiple IBM i sessions in parallel via virtual threads."""
-
-    @staticmethod
-    def process_batch(data_file, threads=100):
-        """
-        Process batch of records in parallel.
-
-        Each record triggers a new virtual thread session.
-        """
-        executor = Executors.newVirtualThreadPerTaskExecutor()
-        factory = DefaultHeadlessSessionFactory()
-
-        with open(data_file) as f:
-            for line in f:
-                record = line.strip().split(',')
-                executor.submit(lambda r: BatchProcessor.process_record(factory, r), record)
-
-        executor.shutdown()
-        executor.awaitTermination(1, TimeUnit.HOURS)
-
-    @staticmethod
-    def process_record(factory, record):
-        """Process single record in virtual thread."""
-        session = factory.createSession('batch-' + record[0], 'batch.properties', {})
-        session.connect()
-
-        try:
-            # Process record
-            session.sendKeys(record[1])
-            session.waitForKeyboardUnlock(5000)
-            # ... more processing
-        finally:
-            session.disconnect()
-```
+For batch processing with multiple concurrent sessions, see [Virtual Thread Integration](./VIRTUAL_THREADS.md).
 
 ---
 
@@ -534,7 +345,7 @@ class BatchProcessor:
 | 100 concurrent sessions (platform threads) | 1GB+ | Same | 100+ ops/sec |
 | Screenshot generation | +50KB | 50-100ms | 20-30 imgs/sec |
 
-**Key Finding (Phase 13):** Virtual threads reduce overhead from 1MB to 1KB per session, enabling 10× higher concurrency.
+Virtual threads reduce overhead from 1MB to 1KB per session, enabling 10x higher concurrency.
 
 ---
 
@@ -568,85 +379,15 @@ ERROR: WorkflowRunner on platform thread
 
 ## Best Practices
 
-### 1. Use HeadlessSession Interface
-```python
-# ✓ Good: Use modern headless API
-session_5250 = Session5250(props, config_resource, session_name, config)
-headless = session_5250.asHeadlessSession()
-headless.connect()
-
-# ✗ Old: SessionInterface (still works but less flexible)
-session = session_5250  # As SessionInterface
-```
-
-### 2. Custom RequestHandlers for Automation
-```python
-# ✓ Good: Intercept F3 (SYSREQ) for workflow logic
-class MyHandler(RequestHandler):
-    def handleSystemRequest(self, screenContent):
-        # Parse screen, decide response
-        return "1"  # Select option
-
-session.setRequestHandler(MyHandler())
-
-# ✗ Avoid: Hardcoded key sequences for every scenario
-```
-
-### 3. Screenshots for Debugging
-```python
-# ✓ Good: Capture on error or assertion failure
-try:
-    # ... automation ...
-except Exception as e:
-    capture_screenshot('error_state')
-    raise
-
-# ✗ Avoid: Capturing every step (I/O overhead)
-```
-
-### 4. Virtual Threads for Batch Processing
-```python
-# ✓ Good: Use virtual threads (Phase 13)
-executor = Executors.newVirtualThreadPerTaskExecutor()
-for item in large_dataset:
-    executor.submit(process_item, item)
-
-# ✗ Avoid: Platform threads (1MB overhead per thread)
-```
+1. **Use HeadlessSession interface** for all new automation code. SessionInterface still works but is less flexible.
+2. **Use custom RequestHandlers** to intercept F3 (SYSREQ) for workflow logic instead of hardcoded key sequences.
+3. **Capture screenshots on error** for debugging, not on every step (I/O overhead).
+4. **Use virtual threads** for batch processing (1KB overhead vs 1MB for platform threads).
 
 ---
 
-## Architecture Decision Record
-
-**ADR-015: Headless-First Architecture**
-
-**Status:** Accepted (Phase 15B)
-
-**Context:** HTI5250J positioned as programmatic automation tool (REST APIs, batch processing, Robot Framework) but GUI components were eagerly initialized even in headless mode.
-
-**Decision:** Implement four-layer headless abstraction:
-1. HeadlessSession interface (pure data API)
-2. RequestHandler abstraction (extensible F3 handling)
-3. DefaultHeadlessSession wrapper (composition pattern)
-4. Session5250 facade (backward compatible)
-
-**Benefits:**
-- No GUI coupling (Docker, CI/CD, headless servers)
-- ~500KB per session vs 2MB+ with GUI
-- Extensible SYSREQ handling (Robot Framework, custom logic)
-- Virtual thread compatible (Phase 13 integration)
-
-**Constraints:**
-- Breaks no existing code (SessionInterface still works)
-- HeadlessSession is optional (new code use it)
-- Screenshot generation still requires Screen5250 data model
-
-**Related:** Phase 13 (Virtual Threads), Phase 15A (Lazy GUI Initialization)
-
----
+For the full architecture decision, see [ADR-015: Headless-First Architecture](./ADR-015-Headless-Abstractions.md).
 
 ## License
 
 HTI5250J is licensed under GPL-2.0-or-later. See COPYING file for details.
-
-This example code is provided AS-IS for educational and automation purposes.

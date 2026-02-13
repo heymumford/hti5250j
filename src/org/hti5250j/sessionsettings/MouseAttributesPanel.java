@@ -27,9 +27,6 @@ class MouseAttributesPanel extends AttributesPanel {
         super(config, "Mouse");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         setLayout(new BorderLayout());
@@ -37,24 +34,18 @@ class MouseAttributesPanel extends AttributesPanel {
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         add(contentPane, BorderLayout.NORTH);
 
-        // define double click as enter
         JPanel dcep = new JPanel();
         dcep.setBorder(BorderFactory.createTitledBorder(LangTool.getString("sa.doubleClick")));
 
         dceCheck = new JCheckBox(LangTool.getString("sa.sendEnter"));
-
-        // check if double click sends enter
         dceCheck.setSelected(getStringProperty("doubleClick").equals("Yes"));
 
         dcep.add(dceCheck);
 
-        // define double click as enter
         JPanel mwp = new JPanel();
         mwp.setBorder(BorderFactory.createTitledBorder(LangTool.getString("sa.mouseWheel")));
 
         mwCheck = new JCheckBox(LangTool.getString("sa.activateMW"));
-
-        // check if mouse wheel active
         mwCheck.setSelected(getStringProperty("mouseWheel").equals("Yes"));
 
         mwp.add(mwCheck);
@@ -66,7 +57,6 @@ class MouseAttributesPanel extends AttributesPanel {
 
     public void applyAttributes() {
 
-        //  double click enter
         if (dceCheck.isSelected()) {
             changes.firePropertyChange(this, "doubleClick",
                     getStringProperty("doubleClick"),

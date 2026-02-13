@@ -74,13 +74,15 @@ public class FixedWidthOutputFilter implements OutputFilterInterface {
             case 'S':
                 sb.append(f.parseData(cByte));
                 formatNumeric(sb);
-                while (sb.length() < f.getFieldLength())
+                while (sb.length() < f.getFieldLength()) {
                     sb.insert(0, ' ');
+                }
                 break;
             default:
                 sb.append(f.parseData(cByte));
-                while (sb.length() < f.getFieldLength())
+                while (sb.length() < f.getFieldLength()) {
                     sb.append(' ');
+                }
                 break;
 
         }
@@ -120,15 +122,18 @@ public class FixedWidthOutputFilter implements OutputFilterInterface {
                     break;
             }
 
-            if (!done)
+            if (!done) {
                 counter++;
+            }
         }
 
-        if (counter > 0)
+        if (counter > 0) {
             counter--;
+        }
 
-        if (neg)
+        if (neg) {
             sb.setCharAt(counter, '-');
+        }
 
         if (sb.length() == 0) {
             sb.append('0');

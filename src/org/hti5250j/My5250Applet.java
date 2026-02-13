@@ -24,8 +24,6 @@ import org.hti5250j.tools.LangTool;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
 import org.hti5250j.tools.logging.HTI5250jLogger;
 
-//import org.hti5250j.swing.JTerminal;
-
 /**
  * Legacy JApplet-based interface. Deprecated: Java applets were removed in Java 9.
  * This class exists for historical compatibility only. HTI5250j is headless;
@@ -66,10 +64,11 @@ public class My5250Applet extends JApplet {
         try {
             jbInit();
         } catch (Exception exception) {
-            if (log == null)
+            if (log == null) {
                 System.out.println(exception.getMessage());
-            else
+            } else {
                 log.warn("In constructor: ", exception);
+            }
         }
     }
 
@@ -79,10 +78,11 @@ public class My5250Applet extends JApplet {
     private void jbInit() throws Exception {
         this.setSize(new Dimension(400, 300));
 
-        if (isSpecified("-L"))
+        if (isSpecified("-L")) {
             LangTool.init(parseLocale(getParameter("-L")));
-        else
+        } else {
             LangTool.init();
+        }
 
         //Let's check some permissions
         try {
@@ -100,29 +100,31 @@ public class My5250Applet extends JApplet {
         // Start loading properties - Host must exist
         sesProps.put(HTI5250jConstants.SESSION_HOST, getParameter("host"));
 
-        if (isSpecified("-e"))
+        if (isSpecified("-e")) {
             sesProps.put(HTI5250jConstants.SESSION_TN_ENHANCED, "1");
+        }
 
         if (isSpecified("-p")) {
             sesProps.put(HTI5250jConstants.SESSION_HOST_PORT, getParameter("-p"));
         }
 
-//      if (isSpecified("-f",args))
-//         propFileName = getParm("-f",args);
-
-        if (isSpecified("-cp"))
+        if (isSpecified("-cp")) {
             sesProps.put(HTI5250jConstants.SESSION_CODE_PAGE, getParameter("-cp"));
+        }
 
-        if (isSpecified("-gui"))
+        if (isSpecified("-gui")) {
             sesProps.put(HTI5250jConstants.SESSION_USE_GUI, "1");
+        }
 
-        if (isSpecified("-t"))
+        if (isSpecified("-t")) {
             sesProps.put(HTI5250jConstants.SESSION_TERM_NAME_SYSTEM, "1");
+        }
 
-        if (isSpecified("-132"))
+        if (isSpecified("-132")) {
             sesProps.put(HTI5250jConstants.SESSION_SCREEN_SIZE, HTI5250jConstants.SCREEN_SIZE_27X132_STR);
-        else
+        } else {
             sesProps.put(HTI5250jConstants.SESSION_SCREEN_SIZE, HTI5250jConstants.SCREEN_SIZE_24X80_STR);
+        }
 
         // socks proxy host argument
         if (isSpecified("-sph")) {
@@ -130,12 +132,14 @@ public class My5250Applet extends JApplet {
         }
 
         // socks proxy port argument
-        if (isSpecified("-spp"))
+        if (isSpecified("-spp")) {
             sesProps.put(HTI5250jConstants.SESSION_PROXY_PORT, getParameter("-spp"));
+        }
 
         // check if device name is specified
-        if (isSpecified("-dn"))
+        if (isSpecified("-dn")) {
             sesProps.put(HTI5250jConstants.SESSION_DEVICE_NAME, getParameter("-dn"));
+        }
         // are we to use a ssl and if we are what type
 
         if (isSpecified("-sslType")) {
@@ -152,14 +156,12 @@ public class My5250Applet extends JApplet {
         manager = SessionManager.instance();
         final Session5250 session = manager.openSession(sesProps, "", "Test Applet");
         final SessionPanel sessionPanel = new SessionPanel(session);
-//      final JTerminal jt = new JTerminal(s);
 
         this.getContentPane().add(sessionPanel);
 
         session.connect();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-//            jt.grabFocus();
                 sessionPanel.grabFocus();
             }
         });
@@ -168,8 +170,9 @@ public class My5250Applet extends JApplet {
 
     private void loadSystemProperty(String param) {
 
-        if (isSpecified(param))
+        if (isSpecified(param)) {
             System.getProperties().put(param, getParameter(param));
+        }
 
     }
 
@@ -212,12 +215,4 @@ public class My5250Applet extends JApplet {
         return new Locale(localeParts[0], localeParts[1], localeParts[2]);
     }
 
-    //static initializer for setting look & feel
-    static {
-        try {
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (Exception exception) {
-        }
-    }
 }

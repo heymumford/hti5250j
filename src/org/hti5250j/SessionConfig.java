@@ -184,8 +184,9 @@ public class SessionConfig {
 
                 FileInputStream in = new FileInputStream(configPath.toFile());
                 sesProps.load(in);
-                if (sesProps.size() == 0)
+                if (sesProps.size() == 0) {
                     loadDefaults();
+                }
             } catch (IOException ioe) {
                 System.out.println("Information Message: Properties file is being "
                         + "created for first time use:  File name "
@@ -319,14 +320,18 @@ public class SessionConfig {
         if (sesProps.containsKey(key)) {
             String rect = sesProps.getProperty(key);
             StringTokenizer stringtokenizer = new StringTokenizer(rect, ",");
-            if (stringtokenizer.hasMoreTokens())
+            if (stringtokenizer.hasMoreTokens()) {
                 rectProp.x = Integer.parseInt(stringtokenizer.nextToken());
-            if (stringtokenizer.hasMoreTokens())
+            }
+            if (stringtokenizer.hasMoreTokens()) {
                 rectProp.y = Integer.parseInt(stringtokenizer.nextToken());
-            if (stringtokenizer.hasMoreTokens())
+            }
+            if (stringtokenizer.hasMoreTokens()) {
                 rectProp.width = Integer.parseInt(stringtokenizer.nextToken());
-            if (stringtokenizer.hasMoreTokens())
+            }
+            if (stringtokenizer.hasMoreTokens()) {
                 rectProp.height = Integer.parseInt(stringtokenizer.nextToken());
+            }
 
         }
 
@@ -421,7 +426,8 @@ public class SessionConfig {
      * This is the new intended way to access configuration.
      * Only Getters are allowed here!
      * <p>
-     * TODO: refactor all former usages which access properties directly
+     * Preferred configuration access point. Callers should migrate from the @Deprecated
+     * property accessors on the outer class to the getters defined here.
      */
     public class SessionConfiguration {
         public float getKeypadFontSize() {

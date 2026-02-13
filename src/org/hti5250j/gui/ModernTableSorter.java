@@ -7,10 +7,8 @@
 package org.hti5250j.gui;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import java.util.Vector;
 
 /**
  * Modern replacement for JSortTable using standard Java Swing components.

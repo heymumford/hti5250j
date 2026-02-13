@@ -25,8 +25,8 @@ import org.hti5250j.encoding.CCSIDFactory;
 @Deprecated(since = "Phase 3", forRemoval = true)
 public final class CCSID37 extends CodepageConverterAdapter {
 
-    public final static String NAME = "37";
-    public final static String DESCR = "CECP: USA, Canada (ESA*), Netherlands, Portugal, Brazil, Australia, New Zealand";
+    public static final String NAME = "37";
+    public static final String DESCR = "CECP: USA, Canada (ESA*), Netherlands, Portugal, Brazil, Australia, New Zealand";
 
     private final CodepageConverterAdapter delegate;
 

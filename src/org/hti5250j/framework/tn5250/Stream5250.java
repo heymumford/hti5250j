@@ -59,10 +59,6 @@ public class Stream5250 {
         return opCode;
     }
 
-    /**
-     * @throws IllegalStateException
-     * @return
-     */
     public final byte getNextByte() {
         if (buffer == null) {
             throw new IllegalStateException("Buffer is null");
@@ -119,7 +115,6 @@ public class Stream5250 {
      */
     public final boolean hasNext() {
 
-//      return pos >= buffer.length;
         return pos < streamSize;
     }
 
@@ -166,16 +161,18 @@ public class Stream5250 {
         if (buffer == null) {
             throw new Exception("Buffer is null");
         }
-        if (pos < 0 || (pos + length) > buffer.length)
+        if (pos < 0 || (pos + length) > buffer.length) {
             throw new Exception("Buffer length exceeded: start " + pos
                     + " length " + length);
+        }
         // use the system array copy to move the bytes from the buffer
         //    to the allocated byte array
         System.arraycopy(buffer, pos, segment, 0, length);
 
         // update the offset to be after the segment so the next byte can be read
-        if (adjustPos)
+        if (adjustPos) {
             pos += length;
+        }
 
     }
 

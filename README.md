@@ -1,17 +1,11 @@
 # TN5250J Headless Edition
 
-Headless-first fork of TN5250J, a 5250 terminal emulator for IBM i (AS/400). This fork prioritizes headless execution, deterministic session management, test automation, and protocol extensions.
-
-Note: This is a maintained fork of [TN5250J](https://github.com/tn5250j/tn5250j). See [FORK.md](./FORK.md) for attribution and differences.
-
-## Overview
-
-TN5250J Headless is a Java library and toolkit for communicating with IBM i (AS/400) systems via the 5250 terminal protocol. Unlike the upstream GUI-based project, this fork removes all Swing/AWT dependencies and provides a pure library for server-side automation, test automation, and scripted terminal operations.
+Headless-first fork of [TN5250J](https://github.com/tn5250j/tn5250j), a 5250 terminal emulator for IBM i (AS/400). This fork removes all Swing/AWT dependencies and provides a pure Java library for headless execution, session management, test automation, and protocol extensions.
 
 **Use cases**:
 - Automated regression testing of 5250 applications
 - Server-side terminal session pooling and reuse
-- Integration testing of legacy AS/400 business logic
+- Integration testing of AS/400 business logic
 - Protocol-level testing and validation
 - Terminal session recording and playback
 
@@ -49,11 +43,10 @@ Add to your `build.gradle`:
 ```gradle
 repositories {
   mavenLocal()
-  // Or add Maven Central once published
 }
 
 dependencies {
-  implementation 'com.heymumford:tn5250j-headless:1.0.0'
+  implementation 'com.heymumford:tn5250j-headless:0.12.0'
 }
 ```
 
@@ -67,22 +60,20 @@ String screen = session.getScreenText();
 session.disconnect();
 ```
 
-## Workflow Execution (Phase 11)
+## Workflow Execution
 
-HTI5250J supports YAML-based workflow automation for terminal operations. Workflows combine workflow validation with six execution handlers (LOGIN, NAVIGATE, FILL, SUBMIT, ASSERT, CAPTURE) for complete end-to-end automation.
+YAML-based workflow automation with six execution handlers for end-to-end terminal operations.
 
 ### Execution Handlers
 
-Six handlers execute terminal operations in sequence:
-
-| Handler | Purpose | Example |
-|---------|---------|---------|
-| **LOGIN** | Connect to IBM i + authenticate | Host connection, keyboard unlock wait |
-| **NAVIGATE** | Keystroke-based screen transitions | Send menu selection (e.g., "WRKSYSVAL<ENTER>") |
-| **FILL** | Form field population with CSV parameters | Enter data using Tab-based navigation |
-| **SUBMIT** | AID key submission + await screen refresh | Send ENTER, wait for lock→unlock cycle |
-| **ASSERT** | Content verification with exceptions | Verify expected text on screen |
-| **CAPTURE** | Headless screenshots (text dumps, 80-column) | Save screen state for artifacts |
+| Handler | Purpose |
+|---------|---------|
+| **LOGIN** | Connect and authenticate, wait for keyboard unlock |
+| **NAVIGATE** | Send keystrokes, poll until target screen appears |
+| **FILL** | Populate form fields from CSV parameters |
+| **SUBMIT** | Send AID key, wait for screen refresh |
+| **ASSERT** | Verify expected text on screen |
+| **CAPTURE** | Save screen dump (80-column text) to artifacts |
 
 ### Example: Payment Processing Workflow
 
@@ -129,95 +120,26 @@ ACC001,150.00,Invoice-2026-001
 ACC002,275.50,Invoice-2026-002
 ```
 
-### Keyboard State Machine
-
-Handlers implement a polling-based state machine:
-
-```
-LOGIN
-  → Wait for keyboard unlock (OIA polling, 30s timeout, 100ms intervals)
-
-NAVIGATE
-  → Send keystroke
-  → Poll screen until changed
-  → Verify target screen content
-
-FILL
-  → For each field: HOME + type value + TAB
-  → Wait for keyboard availability
-
-SUBMIT
-  → Send AID key (e.g., ENTER)
-  → Wait for keyboard lock→unlock cycle (screen refresh)
-
-ASSERT
-  → Get screen text
-  → Verify contains expected text (throw exception + dump if missing)
-
-CAPTURE
-  → Format screen dump (80-column text)
-  → Write to artifacts/screenshots/
-```
-
 ### Artifacts
 
-Successful execution produces:
+Execution produces a timestamped `ledger.txt` and screen dumps in `artifacts/screenshots/`:
 
 ```
 artifacts/
-├── ledger.txt (execution timeline)
-│   └─ Timestamped log of each step
+├── ledger.txt            # Timestamped execution log
 └── screenshots/
     ├── step_0_login.txt
     ├── step_1_navigate.txt
     └── step_5_capture.txt
 ```
 
-**Example ledger.txt:**
-```
-2026-02-08 14:30:15.123 [LOGIN] Connecting to ibmi.example.com:23
-2026-02-08 14:30:15.456 [LOGIN] Keyboard unlocked, ready for input
-2026-02-08 14:30:15.478 [NAVIGATE] Sending: CALL PGM(PMTENT)<ENTER>
-2026-02-08 14:30:16.234 [NAVIGATE] Screen verified: Payment Entry
-2026-02-08 14:30:16.245 [FILL] HOME + Account + Tab
-2026-02-08 14:30:16.456 [SUBMIT] Sending: [ENTER]
-2026-02-08 14:30:17.123 [SUBMIT] Keyboard lock→unlock detected, screen refreshed
-2026-02-08 14:30:17.145 [ASSERT] Verified: "Transaction accepted"
-2026-02-08 14:30:17.234 [CAPTURE] Screenshot saved: step_5_capture.txt
-```
-
 ### Error Handling
 
-If a step fails, execution stops with error context:
-
-```
-✗ Step 2: NAVIGATE - Failed to reach target screen
-  Current screen: MAIN MENU
-  Expected: PAYMENT ENTRY
-  Timeout: 10000ms
-
-Artifacts for debugging:
-  - screenshots/step_2_failure.txt (includes full screen dump)
-  - ledger.txt (all completed steps)
-```
-
-Exceptions provide debugging context:
-- `NavigationException`: Could not navigate to target screen
-- `AssertionException`: Content verification failed (includes screen dump)
-- `TimeoutException`: Keyboard or screen operation timed out
+Execution stops on failure with context including the current screen state, expected state, and a screen dump saved to `artifacts/screenshots/`. Exception types: `NavigationException`, `AssertionException`, `TimeoutException`.
 
 ### Parameter Substitution
 
-YAML workflows support parameter binding from CSV:
-
-```yaml
-- action: FILL
-  fields:
-    account: "${data.account_id}"      # ← Replaced with CSV value
-    amount: "${data.amount}"           # ← Replaced with CSV value
-```
-
-At runtime, `${data.account_id}` is replaced with the actual column value from payment_data.csv.
+YAML fields support `${data.<column>}` placeholders, replaced at runtime with values from the CSV data file.
 
 ## Features
 
@@ -239,8 +161,6 @@ At runtime, `${data.account_id}` is replaced with the actual column value from p
 | API | Desktop controls | Programmable session object |
 | Testing | Manual | Comprehensive unit tests |
 | Session management | Single-user | Pool & lifecycle |
-
-See [FORK.md](./FORK.md) for full comparison and migration notes.
 
 ## Usage Examples
 
@@ -303,8 +223,6 @@ assertTrue(protocol.validateMessage(message));
 
 ## Architecture
 
-See [TEST_ARCHITECTURE.md](./TEST_ARCHITECTURE.md) for detailed test model and coverage strategy.
-
 ```
 src/main/java/com/heymumford/tn5250j/
 ├── core/           # Core 5250 protocol handling
@@ -337,7 +255,7 @@ Run specific tier:
 ### Quality Metrics
 - **Coverage**: 80%+ for core protocol
 - **Test count**: 499 tests across all tiers
-- **Performance**: All unit tests complete in <30 seconds
+- **Performance**: All unit tests complete in under 30 seconds
 - **Compatibility**: Java 11-21, GraalVM native-image compatible
 
 ## Configuration
@@ -364,11 +282,10 @@ session.connect();
 
 ## Documentation
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — C1-C4 system models, containers, components, workflow pipeline
-- [TESTING.md](./TESTING.md) — Four-domain test framework (Unit, Continuous Contracts, Surface, Scenario)
-- [CODING_STANDARDS.md](./CODING_STANDARDS.md) — Development conventions, Java 21 features, Phase 11 patterns
-- [FORK.md](./FORK.md) — Fork differences and migration guide
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — System models, containers, components, workflow pipeline
+- [TESTING.md](./TESTING.md) — Test framework (Unit, Continuous Contracts, Surface, Scenario)
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — Contributing guidelines
+- [CHANGELOG.md](./CHANGELOG.md) — Release history
 
 ## Performance Characteristics
 
@@ -389,11 +306,7 @@ GPL-2.0-or-later (GPL v2 or later). See [LICENSE](./LICENSE).
 
 Original TN5250J community; headless extensions by Eric C. Mumford (@heymumford).
 
-## Upstream History
-
-TN5250J was created to provide a Linux 5250 emulator with advanced features such as edit-field continuation, GUI windows, and cursor progression. It was open-sourced for cross-platform use and community adoption. The project originated on SourceForge and migrated to GitHub in 2016.
-
-## Support & Contribution
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/heymumford/hti5250j/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/heymumford/hti5250j/discussions)

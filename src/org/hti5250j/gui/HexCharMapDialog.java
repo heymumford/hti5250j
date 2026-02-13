@@ -44,7 +44,6 @@ public class HexCharMapDialog {
 
         this.parent = parent;
 
-        // we will use a collator here so that we can take advantage of the locales
         Collator collator = Collator.getInstance();
         CollationKey key = null;
 
@@ -99,14 +98,14 @@ public class HexCharMapDialog {
         final String[] options = {LangTool.getString("hm.optInsert"), LangTool.getString("hm.optCancel")};
 
         int result = JOptionPane.showOptionDialog(
-                parent,   // the parent that the dialog blocks
-                new Object[]{srp},                // the dialog message array
-                LangTool.getString("hm.title"),    // the title of the dialog window
-                JOptionPane.DEFAULT_OPTION,        // option type
-                JOptionPane.INFORMATION_MESSAGE,      // message type
-                null,                              // optional icon, use null to use the default icon
-                options,                           // options string array, will be made into buttons//
-                options[0]                         // option that should be made into a default button
+                parent,
+                new Object[]{srp},
+                LangTool.getString("hm.title"),
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                options[0]
         );
 
         if (result == 0) {

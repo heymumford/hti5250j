@@ -5,7 +5,6 @@
 
 package org.hti5250j.interfaces;
 
-import org.hti5250j.SessionConfig;
 
 import java.util.Properties;
 
@@ -20,7 +19,6 @@ import java.util.Properties;
  * - MockHeadlessSessionFactory: Creates mock sessions for testing
  * - RemoteHeadlessSessionFactory: Creates sessions backed by REST API
  *
- * @since Phase 15B
  */
 public interface HeadlessSessionFactory {
 

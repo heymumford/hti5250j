@@ -19,16 +19,18 @@ public class KeyMnemonicResolver {
 
     public int findMnemonicValue(String mnemonicStr) {
         for (KeyMnemonic mnemonic : KeyMnemonic.values()) {
-            if (mnemonic.mnemonic.equals(mnemonicStr))
+            if (mnemonic.mnemonic.equals(mnemonicStr)) {
                 return mnemonic.value;
+            }
         }
         return 0;
     }
 
     public KeyMnemonic findMnemonic(String mnemonicStr) {
         for (KeyMnemonic mnemonic : KeyMnemonic.values()) {
-            if (mnemonic.mnemonic.equals(mnemonicStr))
+            if (mnemonic.mnemonic.equals(mnemonicStr)) {
                 return mnemonic;
+            }
         }
         return null;
     }

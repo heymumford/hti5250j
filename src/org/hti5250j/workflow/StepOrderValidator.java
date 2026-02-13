@@ -1,6 +1,5 @@
 package org.hti5250j.workflow;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,7 +7,7 @@ import java.util.List;
  * - LOGIN must be the first step
  * - SUBMIT must be preceded by data entry (FILL or other action)
  *
- * @since Phase 11
+ * @since 0.12.0
  */
 public class StepOrderValidator {
 
@@ -25,7 +24,6 @@ public class StepOrderValidator {
             return result;
         }
 
-        // LOGIN must be first step
         StepDef firstStep = steps.get(0);
         if (firstStep.getAction() != ActionType.LOGIN) {
             result.addError(
@@ -36,11 +34,9 @@ public class StepOrderValidator {
             );
         }
 
-        // Check for SUBMIT without preceding data actions
         for (int i = 0; i < steps.size(); i++) {
             StepDef step = steps.get(i);
             if (step.getAction() == ActionType.SUBMIT) {
-                // SUBMIT at step 0 has no preceding action
                 if (i == 0) {
                     result.addWarning(
                         i,

@@ -30,7 +30,6 @@ public interface RubberBandCanvasIF {
 
     Color getBackground();
 
-    //   Graphics getGraphics();
     Graphics getDrawingGraphics();
 
 }

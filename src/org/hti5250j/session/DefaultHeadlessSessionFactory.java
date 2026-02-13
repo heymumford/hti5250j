@@ -19,7 +19,7 @@ import java.util.Properties;
  * Creates DefaultHeadlessSessionImpl wrapping Session5250.
  * Supports custom RequestHandler injection for Robot Framework integration.
  *
- * @since Phase 15B
+ * @since 0.12.0
  */
 public class DefaultHeadlessSessionFactory implements HeadlessSessionFactory {
 
@@ -50,11 +50,8 @@ public class DefaultHeadlessSessionFactory implements HeadlessSessionFactory {
             throw new IllegalArgumentException("Connection properties cannot be null");
         }
 
-        // Create underlying Session5250
         SessionConfig config = new SessionConfig(configResource, sessionName);
         Session5250 session5250 = new Session5250(connectionProps, configResource, sessionName, config);
-
-        // Wrap in headless interface
         return new DefaultHeadlessSession(session5250, requestHandler);
     }
 

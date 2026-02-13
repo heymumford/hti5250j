@@ -24,8 +24,8 @@ import org.hti5250j.encoding.CCSIDFactory;
 @Deprecated(since = "Phase 3", forRemoval = true)
 public final class CCSID1026 extends CodepageConverterAdapter {
 
-    public final static String NAME = "1026";
-    public final static String DESCR = "CECP: Turkish";
+    public static final String NAME = "1026";
+    public static final String DESCR = "CECP: Turkish";
 
     private final CodepageConverterAdapter delegate;
 

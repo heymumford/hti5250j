@@ -31,7 +31,7 @@ package org.hti5250j.headless;
  *
  * @see ISession
  * @see HeadlessSessionManager
- * @since Wave 3A Track 3
+ * @since 0.12.0
  */
 public interface ISessionManager {
 

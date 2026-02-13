@@ -19,7 +19,7 @@ import java.awt.*;
  * Note: Requires display system and GUI component.
  * Do not use in headless environments (use NullRequestHandler instead).
  *
- * @since Phase 15B
+ * @since 0.12.0
  */
 public class GuiRequestHandler implements RequestHandler {
 

@@ -84,10 +84,12 @@ public class XTFRFileFilter extends FileFilter {
      */
     public XTFRFileFilter(String extension, String description) {
         this();
-        if (extension != null)
+        if (extension != null) {
             addExtension(extension);
-        if (description != null)
+        }
+        if (description != null) {
             setDescription(description);
+        }
     }
 
     /**
@@ -117,8 +119,9 @@ public class XTFRFileFilter extends FileFilter {
             // add filters one by one
             addExtension(filters[i]);
         }
-        if (description != null)
+        if (description != null) {
             setDescription(description);
+        }
     }
 
     /**
@@ -276,8 +279,9 @@ public class XTFRFileFilter extends FileFilter {
             Enumeration e = filters.keys();
             String ext = (String) e.nextElement();
             // just a little extra check for html documents
-            if (ext.equals("htm"))
+            if (ext.equals("htm")) {
                 ext = "html";
+            }
             f += "." + ext.toLowerCase();
         }
         return f;
@@ -289,17 +293,19 @@ public class XTFRFileFilter extends FileFilter {
     public boolean isExtensionInList(String filename) {
 
         String ext = null;
-        if (filename == null)
+        if (filename == null) {
             return false;
+        }
         int i = filename.lastIndexOf('.');
         if (i > 0 && i < filename.length() - 1) {
             ext = filename.substring(i + 1).toLowerCase();
         }
-        if (ext == null)
+        if (ext == null) {
             return false;
-        else
+        } else {
             // check if extension is within this filter list
             return filters.containsKey(ext);
+        }
     }
 
     public void setOutputFilterName(String className) {

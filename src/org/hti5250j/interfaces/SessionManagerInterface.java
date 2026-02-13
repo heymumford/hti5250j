@@ -21,12 +21,12 @@ public interface SessionManagerInterface {
     /**
      * @return
      */
-    public abstract Sessions getSessions();
+    Sessions getSessions();
 
     /**
      * @param sessionObject
      */
-    public abstract void closeSession(SessionPanel sessionObject);
+    void closeSession(SessionPanel sessionObject);
 
     /**
      * @param props
@@ -34,6 +34,6 @@ public interface SessionManagerInterface {
      * @param sessionName
      * @return
      */
-    public abstract Session5250 openSession(Properties props, String configurationResource, String sessionName);
+    Session5250 openSession(Properties props, String configurationResource, String sessionName);
 
 }

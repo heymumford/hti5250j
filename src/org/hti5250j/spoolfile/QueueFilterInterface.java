@@ -14,6 +14,6 @@ package org.hti5250j.spoolfile;
 
 public interface QueueFilterInterface {
 
-    public abstract void reset();
+    void reset();
 
 }

@@ -4,10 +4,12 @@
 
 plugins {
     id 'java'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '6.0.27'
 }
 
 group = 'org.hti5250j'
-version = findProperty('version') ?: '0.8.1'
+version = findProperty('version') ?: '0.12.0'
 
 def runtimeLibs = fileTree(dir: 'lib/runtime', include: ['*.jar', '*.zip'])
 def devLibs = fileTree(dir: 'lib/development', include: ['*.jar', '*.zip'])
@@ -74,5 +76,25 @@ test {
 
     testLogging {
         events 'failed', 'skipped'
+    }
+}
+
+checkstyle {
+    toolVersion = '10.21.4'
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+    ignoreFailures = true
+}
+
+spotbugs {
+    toolVersion = '4.8.6'
+    effort = 'default'
+    reportLevel = 'high'
+    ignoreFailures = true
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        html.required = true
+        xml.required = false
     }
 }

@@ -27,9 +27,6 @@ class ErrorResetAttributesPanel extends AttributesPanel {
         super(config, "ErrorReset");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         setLayout(new BorderLayout());
@@ -37,26 +34,20 @@ class ErrorResetAttributesPanel extends AttributesPanel {
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         add(contentPane, BorderLayout.NORTH);
 
-        // define error reset
         JPanel reset = new JPanel();
         reset.setBorder(BorderFactory.createTitledBorder(
                 LangTool.getString("sa.titleErrorReset")));
 
         resetRequired = new JCheckBox(LangTool.getString("sa.errorReset"));
-
-        // check if reset required is set or not
         resetRequired.setSelected(getStringProperty("resetRequired").equals("Yes"));
 
         reset.add(resetRequired);
 
-        // define backspace error
         JPanel backspace = new JPanel();
         backspace.setBorder(BorderFactory.createTitledBorder(
                 LangTool.getString("sa.titleBackspace")));
 
         backspaceError = new JCheckBox(LangTool.getString("sa.errorBackspace"));
-
-        // check if backspace error is set or not
         backspaceError.setSelected(getStringProperty("backspaceError", "Yes").equals("Yes"));
 
         backspace.add(backspaceError);

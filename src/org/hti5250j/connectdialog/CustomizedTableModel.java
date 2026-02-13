@@ -55,7 +55,9 @@ class CustomizedTableModel extends AbstractTableModel implements SortTableModel 
     }
 
     public boolean isSortable(int col) {
-        if (col == 0) return true;
+        if (col == 0) {
+            return true;
+        }
         return false;
     }
 
@@ -90,10 +92,12 @@ class CustomizedTableModel extends AbstractTableModel implements SortTableModel 
 
     public Object getValueAt(int row, int col) {
         CustomizedExternalProgram c = externalPrograms.get(row);
-        if (col == 0)
+        if (col == 0) {
             return c.getName();
-        if (col == 1)
+        }
+        if (col == 1) {
             return c.getWCommand();
+        }
         if (col == 2) {
             return c.getUCommand();
         }

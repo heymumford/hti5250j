@@ -108,7 +108,9 @@ public class OperatingSystem {
      */
     public static void displayURL(String url) {
         // Check Customized External Program first
-        if (launchExternalProgram(url)) return;
+        if (launchExternalProgram(url)) {
+            return;
+        }
 
         // first let's check if we have an external protocol program defined
         String command = null;
@@ -118,8 +120,9 @@ public class OperatingSystem {
         try {
             urlUrl = new java.net.URL(url);
             protocol = urlUrl.getProtocol();
-            if (protocol.startsWith("http"))
+            if (protocol.startsWith("http")) {
                 protocol = "http";
+            }
         } catch (MalformedURLException e) {
             LOG.warn(e.getMessage());
         }
@@ -133,8 +136,9 @@ public class OperatingSystem {
 
             Object[] urlParm = new Object[1];
             urlParm[0] = url;
-            if (commandTemplate.lastIndexOf("{0}") == -1)
+            if (commandTemplate.lastIndexOf("{0}") == -1) {
                 commandTemplate += " {0}";
+            }
             java.text.MessageFormat format = new java.text.MessageFormat(commandTemplate);
             try {
                 command = format.format(urlParm);
@@ -237,12 +241,11 @@ public class OperatingSystem {
 //         if (exitCode != 0) {
 //            log.warn("Error processing command, command='" + command + "'");
 //         }
-        }
-//      catch (InterruptedException exc) {
-//         log.warn("Error processing command, command='" + command + "'");
-//         log.warn("Caught: " + exc.getMessage());
 //      }
-        catch (IOException ioe) {
+//         log.warn("Caught: " + exc.getMessage());
+//         log.warn("Error processing command, command='" + command + "'");
+//      catch (InterruptedException exc) {
+        } catch (IOException ioe) {
             LOG.warn("Error processing command, command='" + command + "'");
             LOG.warn("Caught: " + ioe.getMessage());
         }
@@ -293,8 +296,9 @@ public class OperatingSystem {
             }
         }
 
-        if (System.getProperty("java.version").compareTo("1.4") >= 0)
+        if (System.getProperty("java.version").compareTo("1.4") >= 0) {
             java14 = true;
+        }
 
     } //}}}
 

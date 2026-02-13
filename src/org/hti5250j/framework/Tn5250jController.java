@@ -46,7 +46,6 @@ import org.hti5250j.framework.common.Sessions;
 public class Tn5250jController extends Thread {
     private File extensionDir;
     private HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
-    //private URLClassLoader loader = new URLClassLoader(null, this.getClass().getClassLoader());
     private List<Tn5250jEvent> eventList;
     private List<Tn5250jListener> listeners;
     private SessionManager manager;
@@ -151,9 +150,6 @@ public class Tn5250jController extends Thread {
         return config;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
     public void run() {
         log.info("Tn5250j plugin manager started");
         loadExt();
@@ -171,7 +167,6 @@ public class Tn5250jController extends Thread {
                 }
             }
         }
-        //log.info("Tn5250j plugin manager stopped");
     }
 
     private void broadcastEvent(final Tn5250jEvent event) {
@@ -215,7 +210,7 @@ public class Tn5250jController extends Thread {
         Tn5250jListener mod;
         Properties config;
 
-        public ModuleThread(
+        ModuleThread(
                 File directory,
                 Tn5250jListener module,
                 Properties config) {
@@ -260,8 +255,6 @@ public class Tn5250jController extends Thread {
         Enumeration<Object> e = sesprops.keys();
         ArrayList<String> list = new ArrayList<String>();
         String ses = null;
-        //This has the nasty tendency to grab data it isn't suposed to grab.
-        //please fix
         while (e.hasMoreElements()) {
             ses = (String) e.nextElement();
             if (!ses.startsWith("emul.")) {
@@ -285,33 +278,33 @@ public class Tn5250jController extends Thread {
 
         String session = args[0];
 
-        // Start loading properties
         sesProps.put(HTI5250jConstants.SESSION_HOST, session);
 
-        if (isSpecified("-e", args))
+        if (isSpecified("-e", args)) {
             sesProps.put(HTI5250jConstants.SESSION_TN_ENHANCED, "1");
+        }
 
         if (isSpecified("-p", args)) {
             sesProps.put(HTI5250jConstants.SESSION_HOST_PORT, getParm("-p", args));
         }
 
-//		if (isSpecified("-f", args)) {
-//			String propFileName = getParm("-f", args);
-//		}
-
-        if (isSpecified("-cp", args))
+        if (isSpecified("-cp", args)) {
             sesProps.put(HTI5250jConstants.SESSION_CODE_PAGE, getParm("-cp", args));
+        }
 
-        if (isSpecified("-gui", args))
+        if (isSpecified("-gui", args)) {
             sesProps.put(HTI5250jConstants.SESSION_USE_GUI, "1");
+        }
 
-        if (isSpecified("-t", args))
+        if (isSpecified("-t", args)) {
             sesProps.put(HTI5250jConstants.SESSION_TERM_NAME_SYSTEM, "1");
+        }
 
-        if (isSpecified("-132", args))
+        if (isSpecified("-132", args)) {
             sesProps.put(HTI5250jConstants.SESSION_SCREEN_SIZE, HTI5250jConstants.SCREEN_SIZE_27X132_STR);
-        else
+        } else {
             sesProps.put(HTI5250jConstants.SESSION_SCREEN_SIZE, HTI5250jConstants.SCREEN_SIZE_24X80_STR);
+        }
 
         // are we to use a socks proxy
         if (isSpecified("-usp", args)) {
@@ -322,8 +315,9 @@ public class Tn5250jController extends Thread {
             }
 
             // socks proxy port argument
-            if (isSpecified("-spp", args))
+            if (isSpecified("-spp", args)) {
                 sesProps.put(HTI5250jConstants.SESSION_PROXY_PORT, getParm("-spp", args));
+            }
         }
 
         // are we to use a ssl and if we are what type
@@ -349,21 +343,24 @@ public class Tn5250jController extends Thread {
             sesProps.put(HTI5250jConstants.SESSION_DEVICE_NAME, getParm("-dn", args));
         }
 
-        if (isSpecified("-hb", args))
+        if (isSpecified("-hb", args)) {
             sesProps.put(HTI5250jConstants.SESSION_HEART_BEAT, "1");
+        }
 
         return sesProps;
     }
 
     boolean isSpecified(String parm, String[] args) {
 
-        if (args == null)
+        if (args == null) {
             return false;
+        }
 
         for (int x = 0; x < args.length; x++) {
 
-            if (args[x] != null && args[x].equals(parm))
+            if (args[x] != null && args[x].equals(parm)) {
                 return true;
+            }
 
         }
         return false;
@@ -373,8 +370,9 @@ public class Tn5250jController extends Thread {
 
         for (int x = 0; x < args.length; x++) {
 
-            if (args[x].equals(parm))
+            if (args[x].equals(parm)) {
                 return args[x + 1];
+            }
 
         }
         return null;

@@ -25,7 +25,6 @@ public class UserTabPanel extends JPanel implements QueueFilterInterface,
     JRadioButton all;
     JRadioButton select;
     JTextField user;
-    ;
 
     public UserTabPanel() {
         try {
@@ -75,17 +74,12 @@ public class UserTabPanel extends JPanel implements QueueFilterInterface,
      */
     public void reset() {
 
-//      user.setEnabled(true);
         user.setText("*CURRENT");
         select.setSelected(true);
 
     }
 
     void select_itemStateChanged(ItemEvent e) {
-//      if (select.isSelected())
-//         user.setEnabled(true);
-//      else
-//         user.setEnabled(false);
     }
 
     public void toggleNotEmpty() {
@@ -99,10 +93,11 @@ public class UserTabPanel extends JPanel implements QueueFilterInterface,
     }
 
     public String getUser() {
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "*ALL";
-        else
+        } else {
             return user.getText().trim();
+        }
     }
 
     public void setUser(String filter) {

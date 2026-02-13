@@ -8,7 +8,7 @@ package org.hti5250j.workflow;
  * Immutable submit action with AID key (Attention Identifier).
  * Constructor validates non-null, non-empty key.
  */
-public final record SubmitAction(String key) implements Action {
+public record SubmitAction(String key) implements Action {
     public SubmitAction {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("key required");

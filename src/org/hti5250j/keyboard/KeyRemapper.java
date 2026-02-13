@@ -95,8 +95,12 @@ public class KeyRemapper {
     }
 
     private Map<String, RemappingAction> getMapForScope(String scope) {
-        if ("session".equals(scope)) return sessionMappings;
-        if ("application".equals(scope)) return applicationMappings;
+        if ("session".equals(scope)) {
+            return sessionMappings;
+        }
+        if ("application".equals(scope)) {
+            return applicationMappings;
+        }
         return globalMappings;
     }
 
@@ -112,8 +116,12 @@ public class KeyRemapper {
                      source.isControlDown() + ":" + source.isAltDown() + ":" +
                      source.getLocation();
 
-        if (sessionMappings.containsKey(key)) return "session";
-        if (applicationMappings.containsKey(key)) return "application";
+        if (sessionMappings.containsKey(key)) {
+            return "session";
+        }
+        if (applicationMappings.containsKey(key)) {
+            return "application";
+        }
         return "global";
     }
 
@@ -151,7 +159,9 @@ public class KeyRemapper {
 
     public boolean hasSelfReferentialMapping(KeyStroker source) {
         RemappingAction action = resolveMapping(source);
-        if (action == null) return false;
+        if (action == null) {
+            return false;
+        }
         String targetName = action.getTargetName();
         String sourceName = "[pf" + (source.getKeyCode() - 111) + "]";
         return targetName != null && targetName.equals(sourceName);

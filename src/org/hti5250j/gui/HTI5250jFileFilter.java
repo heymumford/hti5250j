@@ -15,9 +15,6 @@ import java.util.*;
 
 public class HTI5250jFileFilter extends FileFilter {
 
-//   private String TYPE_UNKNOWN = "Type Unknown";
-//   private String HIDDEN_FILE = "Hidden File";
-
     private Hashtable filters = null;
     private String description = null;
     private String fullDescription = null;
@@ -54,10 +51,12 @@ public class HTI5250jFileFilter extends FileFilter {
      */
     public HTI5250jFileFilter(String extension, String description) {
         this();
-        if (extension != null)
+        if (extension != null) {
             addExtension(extension);
-        if (description != null)
+        }
+        if (description != null) {
             setDescription(description);
+        }
     }
 
     /**
@@ -84,11 +83,11 @@ public class HTI5250jFileFilter extends FileFilter {
     public HTI5250jFileFilter(String[] filters, String description) {
         this();
         for (int i = 0; i < filters.length; i++) {
-            // add filters one by one
             addExtension(filters[i]);
         }
-        if (description != null)
+        if (description != null) {
             setDescription(description);
+        }
     }
 
     /**
@@ -171,7 +170,6 @@ public class HTI5250jFileFilter extends FileFilter {
         if (fullDescription == null) {
             if (description == null || isExtensionListInDescription()) {
                 fullDescription = description == null ? "(" : description + " (";
-                // build the description from the extension list
                 Enumeration extensions = filters.keys();
                 if (extensions != null) {
                     fullDescription += "." + (String) extensions.nextElement();
@@ -245,9 +243,9 @@ public class HTI5250jFileFilter extends FileFilter {
         if (f != null & getExtension(f) == null) {
             Enumeration e = filters.keys();
             String ext = (String) e.nextElement();
-            // just a little extra check for html documents
-            if (ext.equals("htm"))
+            if (ext.equals("htm")) {
                 ext = "html";
+            }
             f += "." + ext.toLowerCase();
         }
         return f;

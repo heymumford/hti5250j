@@ -36,9 +36,6 @@ class CursorAttributesPanel extends AttributesPanel {
         super(config, "Cursor");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         setLayout(new BorderLayout());
@@ -61,10 +58,12 @@ class CursorAttributesPanel extends AttributesPanel {
 
         int cursorSize = 0;
 
-        if (getStringProperty("cursorSize").equals("Full"))
+        if (getStringProperty("cursorSize").equals("Full")) {
             cursorSize = 2;
-        if (getStringProperty("cursorSize").equals("Half"))
+        }
+        if (getStringProperty("cursorSize").equals("Half")) {
             cursorSize = 1;
+        }
 
         switch (cursorSize) {
 
@@ -79,6 +78,8 @@ class CursorAttributesPanel extends AttributesPanel {
                 break;
 
 
+            default:
+                break;
         }
         crp.add(cFull);
         crp.add(cHalf);
@@ -101,12 +102,15 @@ class CursorAttributesPanel extends AttributesPanel {
 
         int crossHair = 0;
 
-        if (getStringProperty("crossHair").equals("Horz"))
+        if (getStringProperty("crossHair").equals("Horz")) {
             crossHair = 1;
-        if (getStringProperty("crossHair").equals("Vert"))
+        }
+        if (getStringProperty("crossHair").equals("Vert")) {
             crossHair = 2;
-        if (getStringProperty("crossHair").equals("Both"))
+        }
+        if (getStringProperty("crossHair").equals("Both")) {
             crossHair = 3;
+        }
 
         switch (crossHair) {
 
@@ -124,6 +128,8 @@ class CursorAttributesPanel extends AttributesPanel {
                 break;
 
 
+            default:
+                break;
         }
         chp.add(chNone);
         chp.add(chHorz);
@@ -137,8 +143,9 @@ class CursorAttributesPanel extends AttributesPanel {
 
         rulerFixed = new JCheckBox(LangTool.getString("sa.rulerFixed"));
         rulerFixed.setSelected(true);
-        if (getStringProperty("rulerFixed").equals("Yes"))
+        if (getStringProperty("rulerFixed").equals("Yes")) {
             rulerFixed.setSelected(false);
+        }
 
         rulerFPanel.add(rulerFixed);
 
@@ -156,10 +163,11 @@ class CursorAttributesPanel extends AttributesPanel {
 
         blink.setSelected(false);
 
-        if (getStringProperty("cursorBlink").equals("Yes"))
+        if (getStringProperty("cursorBlink").equals("Yes")) {
             blink.setSelected(true);
-        else
+        } else {
             noBlink.setSelected(true);
+        }
 
         blinkPanel.add(blink);
         blinkPanel.add(noBlink);

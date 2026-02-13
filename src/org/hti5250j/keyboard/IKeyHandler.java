@@ -18,7 +18,6 @@ import org.hti5250j.interfaces.IKeyEvent;
  * This interface enables KeyboardHandler to operate without
  * dependencies on java.awt.event.KeyEvent or Swing components.
  *
- * @since Wave 3A Track 3 (KeyboardHandler Extraction)
  */
 public interface IKeyHandler {
 

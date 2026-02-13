@@ -35,8 +35,9 @@ public class DataStreamDumper {
 
     public void toggleDebug(ICodePage cp) {
 
-        if (codePage == null)
+        if (codePage == null) {
             codePage = cp;
+        }
 
         dumpActive = !dumpActive;
         if (dumpActive) {
@@ -54,10 +55,12 @@ public class DataStreamDumper {
 
             try {
 
-                if (dw != null)
+                if (dw != null) {
                     dw.close();
-                if (fw != null)
+                }
+                if (fw != null) {
                     fw.close();
+                }
                 dw = null;
                 fw = null;
                 codePage = null;
@@ -97,10 +100,11 @@ public class DataStreamDumper {
                     h.setLength(0);
                 }
                 char ac = codePage.ebcdic2uni(abyte0[x]);
-                if (ac < ' ')
+                if (ac < ' ') {
                     h.append('.');
-                else
+                } else {
                     h.append(ac);
+                }
                 if (x % 4 == 0) {
                     System.out.print(" ");
                     dw.write((" ").getBytes());

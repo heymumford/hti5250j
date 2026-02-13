@@ -63,58 +63,34 @@ public final class SessionConnection implements AutoCloseable {
         }
     }
 
-    /**
-     * Get the underlying socket.
-     */
     public Socket getSocket() {
         return socket;
     }
 
-    /**
-     * Get buffered input stream for reading data.
-     */
     public BufferedInputStream getInput() {
         return input;
     }
 
-    /**
-     * Get buffered output stream for writing data.
-     */
     public BufferedOutputStream getOutput() {
         return output;
     }
 
-    /**
-     * Get the unique connection ID.
-     */
     public String getConnectionId() {
         return connectionId;
     }
 
-    /**
-     * Get connected host.
-     */
     public String getHost() {
         return host;
     }
 
-    /**
-     * Get connected port.
-     */
     public int getPort() {
         return port;
     }
 
-    /**
-     * Check if this connection is still open.
-     */
     public boolean isOpen() {
         return !closed && socket != null && socket.isConnected() && !socket.isClosed();
     }
 
-    /**
-     * Close the connection and all streams.
-     */
     @Override
     public void close() throws IOException {
         if (closed) {

@@ -28,7 +28,7 @@ import org.hti5250j.tools.LangTool;
  */
 public class ConfirmTabCloseDialog {
 
-    private final static String[] OPTIONS = new String[]{LangTool.getString("key.labelClose"), LangTool.getString("ss.optCancel")};
+    private static final String[] OPTIONS = new String[]{LangTool.getString("key.labelClose"), LangTool.getString("ss.optCancel")};
 
     private final Component parent;
 
@@ -47,19 +47,17 @@ public class ConfirmTabCloseDialog {
 
     private void initLayout() {
         Object[] messages = new Object[1];
-        {
             JPanel srp = new JPanel();
             srp.setLayout(new BorderLayout());
             JLabel jl = new JLabel("Are you sure you want to close this tab?");
             srp.add(jl, BorderLayout.NORTH);
             messages[0] = srp;
-        }
 
-        pane = new JOptionPane(messages, // the dialog message array
-                JOptionPane.QUESTION_MESSAGE, // message type
-                JOptionPane.DEFAULT_OPTION, // option type
-                null, // optional icon, use null to use the default icon
-                OPTIONS, // options string array, will be made into buttons
+        pane = new JOptionPane(messages,
+                JOptionPane.QUESTION_MESSAGE,
+                JOptionPane.DEFAULT_OPTION,
+                null,
+                OPTIONS,
                 OPTIONS[0]);
 
         dialog = pane.createDialog(parent, LangTool.getString("sa.confirmTabClose"));

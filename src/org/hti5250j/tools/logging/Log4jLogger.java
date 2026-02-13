@@ -102,6 +102,7 @@ public final class Log4jLogger implements HTI5250jLogger {
             case WARN -> log.setLevel(Level.WARN);
             case ERROR -> log.setLevel(Level.ERROR);
             case FATAL -> log.setLevel(Level.FATAL);
+            default -> { }
         }
     }
 

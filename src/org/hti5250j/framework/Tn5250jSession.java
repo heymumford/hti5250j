@@ -12,7 +12,6 @@
 package org.hti5250j.framework;
 
 import org.hti5250j.framework.tn5250.Screen5250;
-//import org.hti5250j.Screen5250;
 import org.hti5250j.SessionPanel;
 import org.hti5250j.framework.tn5250.tnvt;
 
@@ -27,23 +26,14 @@ public class Tn5250jSession {
         session = ses;
     }
 
-    /**
-     * @return
-     */
     public SessionPanel getSession() {
         return session;
     }
 
-    /**
-     * @return
-     */
     public Screen5250 getSessionScreen() {
         return sessionScreen;
     }
 
-    /**
-     * @return
-     */
     public tnvt getSessionTNVT() {
         return SessionTNVT;
     }

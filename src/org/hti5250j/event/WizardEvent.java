@@ -14,53 +14,29 @@ import java.awt.Component;
 import java.util.Objects;
 
 /**
- * The event object for Wizard pages.
- *
- * Modernized for Java 21 with enhanced null-safety and improved documentation.
- * While WizardEvent cannot be a Record due to mutable fields required by
- * WizardListener implementations, it follows Record-like semantics:
- *
- * Immutable record-like fields (set in constructor, then read-only):
- * - source: The source of the event
- * - currentPage: The current wizard page
- * - isLastPage: Whether this is the last page in the sequence
- *
- * Mutable fields (can be modified by listeners to alter wizard flow):
- * - newPage: The page to navigate to (can be changed by setNewPage)
- * - allowChange: Whether navigation is allowed (can be changed by setAllowChange)
- *
- * DESIGN PATTERN: This is a "mutable event object" pattern used in Swing,
- * where event listeners can modify event state to affect event processing.
- * Examples: javax.swing.event.HyperlinkEvent, javax.swing.JComponent.repaint()
+ * Event object for Wizard pages.
+ * <p>
+ * Uses the "mutable event object" pattern: listeners can modify
+ * {@code newPage} and {@code allowChange} to alter wizard navigation flow.
  *
  * @see WizardListener
- * @see java.util.EventObject
  */
 public class WizardEvent extends java.util.EventObject {
 
     private static final long serialVersionUID = 1L;
 
-    // Immutable record-like fields
     private final Component currentPage;
     private final boolean isLastPage;
 
-    // Mutable fields (modifiable by listeners to alter wizard flow)
     private Component newPage;
     private boolean allowChange;
 
     /**
-     * Constructs a WizardEvent with the specified parameters.
-     *
-     * Validates that source is non-null as required by EventObject.
-     * Other parameters may be null to support various wizard navigation flows.
-     *
      * @param source The source of the event (wizard component); must not be null
      * @param currentPage The wizard page currently displayed; may be null
      * @param newPage The wizard page to navigate to; may be null
      * @param isLastPage Whether the current page is the last page in the wizard
-     * @param allowChange Whether the page change should be processed; true allows navigation
-     *
-     * @throws NullPointerException if source is null (EventObject requirement)
+     * @param allowChange Whether the page change should be processed
      */
     public WizardEvent(Object source, Component currentPage, Component newPage,
                        boolean isLastPage, boolean allowChange) {
@@ -142,13 +118,6 @@ public class WizardEvent extends java.util.EventObject {
         return currentPage;
     }
 
-    /**
-     * Returns a string representation of this event.
-     *
-     * Generated automatically with field values for debugging purposes.
-     *
-     * @return a string representation of this WizardEvent
-     */
     @Override
     public String toString() {
         return "WizardEvent{" +
@@ -160,19 +129,14 @@ public class WizardEvent extends java.util.EventObject {
                 '}';
     }
 
-    /**
-     * Indicates whether some other object is "equal to" this one.
-     *
-     * Two WizardEvent objects are equal if they have the same source, currentPage,
-     * newPage, isLastPage, and allowChange values.
-     *
-     * @param obj the reference object with which to compare
-     * @return true if this object is the same as the obj argument; false otherwise
-     */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         WizardEvent other = (WizardEvent) obj;
         return isLastPage == other.isLastPage &&
                allowChange == other.allowChange &&
@@ -181,14 +145,6 @@ public class WizardEvent extends java.util.EventObject {
                Objects.equals(newPage, other.newPage);
     }
 
-    /**
-     * Returns a hash code value for this object.
-     *
-     * Computed from the same fields used in equals() to maintain the
-     * equals-hashCode contract.
-     *
-     * @return a hash code value for this object
-     */
     @Override
     public int hashCode() {
         return Objects.hash(source, currentPage, newPage, isLastPage, allowChange);

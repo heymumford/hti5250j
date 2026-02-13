@@ -19,5 +19,5 @@ public interface SessionConfigListener {
      *
      * @param sessionConfigEvent sessionConfigEvent
      */
-    public void onConfigChanged(SessionConfigEvent sessionConfigEvent);
+    void onConfigChanged(SessionConfigEvent sessionConfigEvent);
 }

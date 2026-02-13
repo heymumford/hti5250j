@@ -104,8 +104,9 @@ public class ScreenOIA {
         level = OIA_LEVEL_KEYS_BUFFERED;
         boolean oldKB = keysBuffered;
         keysBuffered = kb;
-        if (keysBuffered != oldKB)
+        if (keysBuffered != oldKB) {
             fireOIAChanged(ScreenOIAListener.OIA_CHANGED_KEYS_BUFFERED);
+        }
     }
 
     protected void setKeyBoardLocked(boolean lockIt) {
@@ -119,8 +120,9 @@ public class ScreenOIA {
             }
         }
 
-        if (locked != oldLocked)
+        if (locked != oldLocked) {
             fireOIAChanged(ScreenOIAListener.OIA_CHANGED_KEYBOARD_LOCKED);
+        }
     }
 
     public boolean isMessageWait() {
@@ -186,7 +188,6 @@ public class ScreenOIA {
         listeners.removeElement(listener);
     }
 
-    // object methods
     public Screen5250 getSource() {
 
         return source;
@@ -224,14 +225,12 @@ public class ScreenOIA {
         level = OIA_LEVEL_INPUT_INHIBITED;
         inhibitedText = message;
 
-//      if (saveInhibit != inhibit || saveInhibitLevel != whatCode) {
         switch (inhibit) {
 
             case INPUTINHIBITED_COMMCHECK:
                 commCheck = whatCode;
                 break;
             case INPUTINHIBITED_PROGCHECK:
-//               progCheck = whatCode; // never used
                 break;
             case INPUTINHIBITED_MACHINECHECK:
                 machineCheck = whatCode;
@@ -242,10 +241,11 @@ public class ScreenOIA {
             case INPUTINHIBITED_NOTINHIBITED:
                 level = whatCode;
                 break;
+            default:
+                break;
         }
 
         fireOIAChanged(ScreenOIAListener.OIA_CHANGED_INPUTINHIBITED);
-//      }
     }
 
     /**

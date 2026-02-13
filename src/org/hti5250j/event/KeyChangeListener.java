@@ -14,5 +14,5 @@ package org.hti5250j.event;
 
 public interface KeyChangeListener {
 
-    public void onKeyChanged();
+    void onKeyChanged();
 }

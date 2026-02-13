@@ -55,7 +55,6 @@ public class SMTPConfig extends JDialog {
     JLabel labelFileName = new JLabel();
     JTextField fieldFileName = new JTextField();
     Properties SMTPProperties;
-    //   String fileName;
 
     private static final String smtpFileName = "SMTPProperties.cfg";
 
@@ -109,7 +108,6 @@ public class SMTPConfig extends JDialog {
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        //gbc.gridwidth = 1;
         gbc.insets = new Insets(10, 10, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
         configPanel.add(labelHost, gbc);
@@ -196,13 +194,14 @@ public class SMTPConfig extends JDialog {
     private void centerMe() {
         pack();
 
-        //Center the window
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = getSize();
-        if (frameSize.height > screenSize.height)
+        if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
-        if (frameSize.width > screenSize.width)
+        }
+        if (frameSize.width > screenSize.width) {
             frameSize.width = screenSize.width;
+        }
 
         setLocation(
                 (screenSize.width - frameSize.width) / 2,
@@ -212,22 +211,10 @@ public class SMTPConfig extends JDialog {
 
     private void setProperties() {
 
-        //   mail.smtp.host=            Fill in the host name or ip address of your SMTP
-        //                              mail server.
-        //
-        //   mail.smtp.port=            Fill in the port to use to connect
-        //
-        //   mail.smtp.from=            This is the e-mail address from.  For example I would
-        //                              place kjpou@hotmail.com here as follows:
-        //
-        //                              mail.smtp.from=kjpou@hotmail.com
-
         fieldHost.setText(SMTPProperties.getProperty("mail.smtp.host"));
         fieldPort.setText(SMTPProperties.getProperty("mail.smtp.port"));
         fieldFrom.setText(SMTPProperties.getProperty("mail.smtp.from"));
         fieldName.setText(SMTPProperties.getProperty("mail.smtp.realname"));
-
-        // file name
         fieldFileName.setText(SMTPProperties.getProperty("fileName"));
 
     }
@@ -243,10 +230,7 @@ public class SMTPConfig extends JDialog {
         SMTPProperties =
                 ConfigureFactory.getInstance().getProperties("smtp", smtpFileName);
 
-        if (SMTPProperties.size() > 0)
-            return true;
-        else
-            return false;
+        return SMTPProperties.size() > 0;
     }
 
     private void optDone_actionPerformed(ActionEvent e) {
@@ -255,14 +239,13 @@ public class SMTPConfig extends JDialog {
         SMTPProperties.setProperty("mail.smtp.port", fieldPort.getText());
         SMTPProperties.setProperty("mail.smtp.from", fieldFrom.getText());
         SMTPProperties.setProperty("mail.smtp.realname", fieldName.getText());
-
-        // file name
         SMTPProperties.setProperty("fileName", fieldFileName.getText());
 
         for (Enumeration<?> x = SMTPProperties.propertyNames();
              x.hasMoreElements();
-        )
+        ) {
             System.out.println(SMTPProperties.get(x.nextElement()));
+        }
 
         ConfigureFactory.getInstance().saveSettings(
                 "smtp",

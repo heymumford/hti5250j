@@ -7,17 +7,12 @@
 
 package org.hti5250j.framework.transport;
 
-import org.hti5250j.Session5250;
-import org.hti5250j.SessionConfig;
-import org.hti5250j.framework.tn5250.Screen5250;
-import org.hti5250j.framework.tn5250.tnvt;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
 import org.hti5250j.tools.logging.HTI5250jLogger;
 
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;

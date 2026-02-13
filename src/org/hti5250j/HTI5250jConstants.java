@@ -17,9 +17,9 @@ public interface HTI5250jConstants {
     String VERSION_INFO = "0.8.1";
 
     // STATE
-    static final int STATE_DISCONNECTED = 0;
-    static final int STATE_CONNECTED = 1;
-    static final int STATE_REMOVE = 2;
+    int STATE_DISCONNECTED = 0;
+    int STATE_CONNECTED = 1;
+    int STATE_REMOVE = 2;
 
     // SESSION Level key value pairs
     String SESSION_HOST = "SESSION_HOST";
@@ -41,14 +41,12 @@ public interface HTI5250jConstants {
     String SESSION_IS_APPLET = "SESSION_IS_APPLET";
     String SESSION_HEART_BEAT = "SESSION_KEEP_ALIVE_ENABLED";
 
-    //    String GUI_MDI_TYPE = "GUI_MDI_TYPE";
     String GUI_FRAME_WIDTH = "GUI_FRAME_WIDTH";
     String GUI_FRAME_HEIGHT = "GUI_FRAME_HEIGHT";
     String GUI_NO_TAB = "GUI_NO_TAB";
     String NO_CHECK_RUNNING = "NO_CHECK_RUNNING";
     String START_MONITOR_THREAD = "START_MONITOR_THREAD";
 
-    //    String SSL_TYPE = "TN5250J_SSL_TYPE";
     String SSL_TYPE = "-sslType";
     String SSL_TYPE_NONE = "NONE";
     String SSL_TYPE_SSLv2 = "SSLv2";
@@ -61,11 +59,8 @@ public interface HTI5250jConstants {
             SSL_TYPE_TLS};
 
     // Session JUMP Directions
-    static final int JUMP_PREVIOUS = 0;
-    static final int JUMP_NEXT = 1;
-
-//   // OS_OHIO_SESSION_TYPE type of sessions
-//    String OS_OHIO_SESSION_TYPE_5250_STR   = "2";
+    int JUMP_PREVIOUS = 0;
+    int JUMP_NEXT = 1;
 
     // SCREEN_SIZE Size of screen string
     String SCREEN_SIZE_24X80_STR = "0";
@@ -219,8 +214,6 @@ public interface HTI5250jConstants {
     byte CMD_READ_INPUT_FIELDS = 0x42; // 66
     byte CMD_READ_MDT_FIELDS = 0x52; // 82
     byte CMD_READ_MDT_IMMEDIATE_ALT = (byte) 0x83; // 131
-    //    byte CMD_READ_MDT_FIELDS_ALT = (byte)0x82; // 130
-//    byte CMD_READ_IMMEDIATE = 0x72; // 114
     byte CMD_READ_SCREEN_IMMEDIATE = 0x62; // 98
     byte CMD_WRITE_STRUCTURED_FIELD = (byte) 243;  // (byte)0xF3 -13
     byte CMD_SAVE_SCREEN = 0x02; // 02

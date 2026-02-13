@@ -63,7 +63,7 @@ class MultiSelectListComponent extends JComponent {
      * Constructs a <code>MultiSelectListComponent</code> that displays the elements in the specified non-null model.
      * All <code>MultiSelectListComponent</code> constructors delegate to this one.
      */
-    public MultiSelectListComponent(ListModel dataModel) {
+    MultiSelectListComponent(ListModel dataModel) {
         this();
         mainList.setModel(dataModel);
         init();
@@ -73,7 +73,7 @@ class MultiSelectListComponent extends JComponent {
      * Constructs a <code>MultiSelectListComponent</code> that displays the elements in the specified array.
      * This constructor just delegates to the <code>ListModel</code> constructor.
      */
-    public MultiSelectListComponent(Object[] listData) {
+    MultiSelectListComponent(Object[] listData) {
         this();
         mainList.setListData(listData);
         init();
@@ -83,7 +83,7 @@ class MultiSelectListComponent extends JComponent {
      * Constructs a <code>MultiSelectListComponent</code> that displays the elements in the specified Vector.
      * This constructor just delegates to the ListModel constructor.
      */
-    public MultiSelectListComponent(Vector listData) {
+    MultiSelectListComponent(Vector listData) {
         this();
         mainList.setListData(listData);
         init();
@@ -92,7 +92,7 @@ class MultiSelectListComponent extends JComponent {
     /**
      * Creates a new <code>MultiSelectListComponent</code> component with an empty model.
      */
-    public MultiSelectListComponent() {
+    MultiSelectListComponent() {
         this(4);
     }
 
@@ -100,7 +100,7 @@ class MultiSelectListComponent extends JComponent {
      * Creates a new <code>MultiSelectListComponent</code> component with an empty model and
      * the specified horizontal gap between components.
      */
-    public MultiSelectListComponent(int hgap) {
+    MultiSelectListComponent(int hgap) {
         super();
 
         mainList = new JList();
@@ -896,7 +896,7 @@ class MultiSelectListComponent extends JComponent {
     } // SelectionButton
 
 
-    // dummy class to handle Look and Feel and proper serialization
+    // Required for Look and Feel support and proper serialization
     private static class MultiSelectListUI extends ComponentUI {
 
     }

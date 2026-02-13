@@ -55,14 +55,6 @@ class PrinterThread extends Thread implements Printable {
     }
 
     public void run() {
-// Toolkit tk = Toolkit.getDefaultToolkit();
-//int [][] range = new int[][] {
-//new int[] { 1, 1 }
-//};
-// JobAttributes jobAttributes = new JobAttributes(1, JobAttributes.DefaultSelectionType.ALL, JobAttributes.DestinationType.PRINTER, JobAttributes.DialogType.NONE, "file", 1, 1, JobAttributes.MultipleDocumentHandlingType.SEPARATE_DOCUMENTS_COLLATED_COPIES, range, "HP LaserJet", JobAttributes.SidesType.ONE_SIDED);
-//PrintJob job = tk.getPrintJob(null, "Print", jobAttributes, null);
-//if (job != null) {
-        //--- Create a printerJob object
         PrinterJob printJob = PrinterJob.getPrinterJob();
         printJob.setJobName("tn5250j");
 
@@ -70,10 +62,11 @@ class PrinterThread extends Thread implements Printable {
         //   Always set a page format before call setPrintable to
         //   set the orientation.
         PageFormat pf = printJob.defaultPage();
-        if (numCols == 132)
+        if (numCols == 132) {
             pf.setOrientation(PageFormat.LANDSCAPE);
-        else
+        } else {
             pf.setOrientation(PageFormat.PORTRAIT);
+        }
 
 
         // Get properties from sesProps
@@ -136,17 +129,12 @@ class PrinterThread extends Thread implements Printable {
             font = new Font(printFont, Font.PLAIN, 8);
         }
 
-        //--- Set the printable class to this one since we
-        //--- are implementing the Printable interface
         printJob.setPrintable(this, pf);
 
         // set the cursor back
         session.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
 
-        //--- Show a print dialog to the user. If the user
-        //--- clicks the print button, then print, otherwise
-        //--- cancel the print job
         if (printJob.printDialog()) {
             try {
                 // we do this because of loosing focus with jdk 1.4.0
@@ -183,14 +171,11 @@ class PrinterThread extends Thread implements Printable {
 
         Graphics2D graphics2D;
 
-        //--- Validate the page number, we only print the first page
         if (page == 0) {
 
-            //--- Create a graphic2D object and set the default parameters
             graphics2D = (Graphics2D) graphics;
             graphics2D.setColor(Color.black);
 
-            //--- Translate the origin to be (0,0)
             graphics2D.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
             int proposedWidth = (int) pageFormat.getImageableWidth() / numCols;     // proposed width
@@ -215,8 +200,9 @@ class PrinterThread extends Thread implements Printable {
                                 proposedHeight < (int) (derivedFont.getStringBounds("y", fontRenderContext).getHeight() +
                                         lineMetrics.getDescent() + lineMetrics.getLeading())
 
-                )
+                ) {
                     break;
+                }
             }
 
             // since we were looking for an overrun of the width or height we need
@@ -235,10 +221,8 @@ class PrinterThread extends Thread implements Printable {
             int xPosition;
             int yPosition;
 
-//         int pos = 0;
-
             // loop through all the screen characters and print them out.
-            for (int m = 0; m < numRows; m++)
+            for (int m = 0; m < numRows; m++) {
                 for (int i = 0; i < numCols; i++) {
                     xPosition = charWidth * i;
                     yPosition = charHeight * (m + 1);
@@ -256,22 +240,23 @@ class PrinterThread extends Thread implements Printable {
 
                     }
 
-                    // if it is underlined then underline the character
-//               if (screen[getPos(m,i)].underLine && !screen[getPos(m,i)].attributePlace)
                     if ((screenExtendedAttr[getPos(m, i)] & HTI5250jConstants.EXTENDED_5250_UNDERLINE) != 0 &&
-                            screenAttrPlace[getPos(m, i)] != 1)
+                            screenAttrPlace[getPos(m, i)] != 1) {
                         graphics.drawLine(
                                 xPosition,
                                 (int) (yPosition + (charHeight - lineMetrics.getLeading() - 3)),
                                 (xPosition + charWidth),
                                 (int) (yPosition + (charHeight - lineMetrics.getLeading()) - 3)
                         );
+                    }
 
                 }
+            }
 
             return (PAGE_EXISTS);
-        } else
+        } else {
             return (NO_SUCH_PAGE);
+        }
     }
 
     private int getPos(int row, int col) {

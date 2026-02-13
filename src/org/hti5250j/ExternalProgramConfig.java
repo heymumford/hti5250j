@@ -71,7 +71,7 @@ public class ExternalProgramConfig {
         return this.etnPgmProps;
     }
 
-    private final Properties loadExternalProgramSettings() {
+    private Properties loadExternalProgramSettings() {
         Properties etnProps = null;
         try {
             etnProps = ConfigureFactory.getInstance().getProperties(
@@ -83,12 +83,12 @@ public class ExternalProgramConfig {
                 Properties defaultProps = new Properties();
                 java.net.URL file = null;
                 ClassLoader cl = this.getClass().getClassLoader();
-                if (cl == null)
+                if (cl == null) {
                     cl = ClassLoader.getSystemClassLoader();
+                }
                 file = cl.getResource(EXTERNAL_PROGRAM_PROPERTIES_FILE_NAME);
                 defaultProps.load(file.openStream());
 
-                // we will now load the default settings
                 for (Enumeration propertyKeys = defaultProps.keys(); propertyKeys.hasMoreElements(); ) {
                     String key = (String) propertyKeys.nextElement();
                     etnProps.setProperty(key, defaultProps.getProperty(key));
@@ -129,7 +129,6 @@ public class ExternalProgramConfig {
 
         }
 
-        //External Program settings panel
         JPanel etnp = new JPanel();
         AlignLayout snpLayout = new AlignLayout(2, 5, 5);
         etnp.setLayout(snpLayout);
@@ -199,7 +198,7 @@ public class ExternalProgramConfig {
         Component parentComponent = parent;
         pane.setInitialValue(options[0]);
         pane.setComponentOrientation(parentComponent.getComponentOrientation());
-        dialog = pane.createDialog(parentComponent, title); //, JRootPane.PLAIN_DIALOG);
+        dialog = pane.createDialog(parentComponent, title);
 
         dialog.setVisible(true);
 
@@ -249,14 +248,16 @@ public class ExternalProgramConfig {
                 throws BadLocationException {
 
             super.insertString(offset, value, attributes);
-            if (getText(0, getLength()).length() > 0)
+            if (getText(0, getLength()).length() > 0) {
                 doSomethingEntered();
+            }
         }
 
         public void remove(int offset, int length) throws BadLocationException {
             super.remove(offset, length);
-            if (getText(0, getLength()).length() == 0)
+            if (getText(0, getLength()).length() == 0) {
                 doNothingEntered();
+            }
         }
     }
 

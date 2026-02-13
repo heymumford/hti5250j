@@ -26,11 +26,6 @@ public class JPythonInterpreterDriver implements InterpreterDriver {
 
     static {
 
-        // the inizialization is being done in the startup program
-        //      Properties props = new Properties();
-        //      props.setProperty("python.path", ".;jt400.jar");
-        //      PythonInterpreter.initialize(System.getProperties(), props,
-        //                        new String[] {""});
         System.setProperty("python.cachedir",
                 System.getProperty("user.home") + File.separator + GlobalConfigure.TN5250J_FOLDER +
                         File.separator);
@@ -86,8 +81,6 @@ public class JPythonInterpreterDriver implements InterpreterDriver {
             s1.setMacroRunning(true);
             Runnable interpretIt = new Runnable() {
                 public void run() {
-//               PySystemState.initialize(System.getProperties(),null, new String[] {""},this.getClass().getClassLoader());
-
                     _interpreter = new PythonInterpreter();
                     _interpreter.set("_session", s1);
                     try {
@@ -103,7 +96,6 @@ public class JPythonInterpreterDriver implements InterpreterDriver {
 
             };
 
-            // lets start interpreting it.
             Thread interpThread = new Thread(interpretIt);
             interpThread.setDaemon(true);
             interpThread.start();

@@ -52,11 +52,10 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
     private static final long serialVersionUID = 1L;
 
-    volatile private static HTI5250jLogger LOG = HTI5250jLogFactory.getLogger(ConnectDialog.class);
+    private static volatile HTI5250jLogger LOG = HTI5250jLogFactory.getLogger(ConnectDialog.class);
 
     private final KeyMnemonicResolver keyMnemonicResolver = new KeyMnemonicResolver();
 
-    // panels to be displayed
     private JPanel configOptions = new JPanel();
     private JPanel sessionPanel = new JPanel();
     private JPanel options = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
@@ -74,7 +73,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
     private JTable externals = null;
     private GridBagConstraints gbc;
 
-    // LoggingPanel Components
     private JRadioButton intOFF = null;
     private JRadioButton intDEBUG = null;
     private JRadioButton intINFO = null;
@@ -82,7 +80,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
     private JRadioButton intERROR = null;
     private JRadioButton intFATAL = null;
 
-    // button needing global access
     private JButton editButton = null;
     private JButton removeButton = null;
     private JButton connectButton = null;
@@ -92,15 +89,12 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
     private JButton cRemoveButton = null;
 
 
-    // custom table model
     private SessionsTableModel ctm = null;
 
     private CustomizedTableModel etm = null;
 
-    // ListSelectionModel of our custom table.
     private ListSelectionModel rowSM = null;
     private ListSelectionModel rowSM2 = null;
-    // Properties
     private Properties properties = null;
     private Properties externalProgramConfig = null;
 
@@ -108,15 +102,12 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
     private JCheckBox showMe = null;
     private JCheckBox lastView = null;
 
-    // create some reusable borders and layouts
     private BorderLayout borderLayout = new BorderLayout();
 
     private MultiSelectListComponent accessOptions;
-    // password protection field for access to options list
     private JPasswordField password;
     private JButton setPassButton;
 
-    // Selection value for connection
     private String connectKey = null;
     private JRadioButton intConsole;
     private JRadioButton intFile;
@@ -135,18 +126,20 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         try {
             jbInit();
-            // center on top of main window/frame
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             Dimension frameSize = getSize();
-            if (frameSize.height > screenSize.height) frameSize.height = screenSize.height;
-            if (frameSize.width > screenSize.width) frameSize.width = screenSize.width;
+            if (frameSize.height > screenSize.height) {
+                frameSize.height = screenSize.height;
+            }
+            if (frameSize.width > screenSize.width) {
+                frameSize.width = screenSize.width;
+            }
             int w2 = frame.getWidth();
             int h2 = frame.getHeight();
             int x2 = frame.getX();
             int y2 = frame.getY();
             setLocation((x2 + w2 / 2) - frameSize.width / 2, (y2 + h2 / 2) - frameSize.height / 2);
 
-            // now show the world what we and they can do
             this.setVisible(true);
         } catch (Exception ex) {
             LOG.warn("Error while initializing!", ex);
@@ -155,18 +148,12 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
     private void jbInit() throws Exception {
 
-        // make it non resizable
         setResizable(false);
 
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        // create sessions panel
         createSessionsPanel();
-
-        // create emulator options panel
         createEmulatorOptionsPanel();
-
-        // create the button options
         createButtonOptions();
 
         JTabbedPane optionTabs = new JTabbedPane();
@@ -180,30 +167,24 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         createAccessPanel();
         optionTabs.addTab(LangTool.getString("ss.labelOptions2"), accessPanel);
 
-        // create external programs panel
         createExternalProgramsPanel();
         optionTabs.addTab(LangTool.getString("ss.labelExternal"), externalPanel);
 
         createAboutPanel();
         optionTabs.addTab("About", aboutPanel);
 
-        // add the panels to our dialog
         getContentPane().add(optionTabs, BorderLayout.CENTER);
         getContentPane().add(options, BorderLayout.SOUTH);
-
-        // pack it
         pack();
 
         if (sessions.getRowCount() > 0) {
             int selInterval = -1;
-            // set default selection value as the first row or default session
             for (int x = 0; x < sessions.getRowCount(); x++) {
                 if (TRUE.equals(ctm.getValueAt(x, 2))) {
                     selInterval = x;
                     break;
                 }
             }
-            // if no default selected, use last selection
             if (selInterval < 0) {
                 final String lastConKey = loadSelectedSessionPreference();
                 if (lastConKey != null) {
@@ -215,18 +196,18 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
                     }
                 }
             }
-            if (selInterval < 0) selInterval = 0;
+            if (selInterval < 0) {
+                selInterval = 0;
+            }
             sessions.getSelectionModel().setSelectionInterval(selInterval, selInterval);
-            // Calculate visible row bounds using Math.max/min to prevent index out of bounds
-            int visibleStartRow = Math.max(0, selInterval - 3);  // Ensure non-negative start row
-            int targetrow = Math.min(sessions.getRowCount() - 1, selInterval + 3); // show additional 3 more lines
+            int visibleStartRow = Math.max(0, selInterval - 3);
+            int targetrow = Math.min(sessions.getRowCount() - 1, selInterval + 3);
             Rectangle cellRect = sessions.getCellRect(targetrow, 0, true);
             sessions.scrollRectToVisible(cellRect);
         } else {
             connectButton.setEnabled(false);
         }
-        // Oh man what a pain in the ass. Had to add a window listener to request
-        // focus of the sessions list.
+        // WindowListener needed to ensure sessions list receives focus on dialog open
         addWindowListener(new WindowAdapter() {
             public void windowOpened(WindowEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -259,18 +240,13 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
     private void createSessionsPanel() {
 
-        // get an instance of our table model
         ctm = new SessionsTableModel(properties);
-
-        // create a table using our custom table model
         sessions = new JSortTable(ctm);
 
-        // prefered sizes ...
         sessions.getColumnModel().getColumn(0).setPreferredWidth(250);
         sessions.getColumnModel().getColumn(1).setPreferredWidth(250);
         sessions.getColumnModel().getColumn(2).setPreferredWidth(65);
 
-        // Add enter as default key for connect with this session
         Action connect = new AbstractAction("connect") {
             private static final long serialVersionUID = 1L;
 
@@ -287,15 +263,13 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         sessions.setPreferredScrollableViewportSize(new Dimension(500, 200));
         sessions.setShowGrid(false);
 
-        // Create the scroll pane and add the table to it.
         JScrollPane scrollPane = new JScrollPane(sessions);
         scrollPane
                 .setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane
                 .setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        // This will make the connect dialog react to two clicks instead of having
-        // to click on the selection and then clicking twice
+        // Double-click to connect
         sessions.addMouseListener(new MouseAdapter() {
 
             public void mouseClicked(MouseEvent event) {
@@ -306,25 +280,21 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         });
 
-        // Setup our selection model listener
         rowSM = sessions.getSelectionModel();
         rowSM.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
 
-                // Ignore extra messages.
-                if (e.getValueIsAdjusting())
+                if (e.getValueIsAdjusting()) {
                     return;
+                }
 
                 ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
                 if (lsm.isSelectionEmpty()) {
-                    // no rows are selected
                     editButton.setEnabled(false);
                     removeButton.setEnabled(false);
                     connectButton.setEnabled(false);
                 } else {
-
-                    // selectedRow is selected
                     editButton.setEnabled(true);
                     removeButton.setEnabled(true);
                     connectButton.setEnabled(true);
@@ -332,23 +302,18 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             }
         });
 
-        // Setup panels
         configOptions.setLayout(borderLayout);
 
         sessionPanel.setLayout(borderLayout);
 
         configOptions.add(sessionPanel, BorderLayout.CENTER);
 
-        // emptyPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        // emptyPane.setPreferredSize(new Dimension(200, 10));
         sessionOpts.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         sessionOpts.add(scrollPane, BorderLayout.CENTER);
 
         sessionPanel.add(sessionOpts, BorderLayout.NORTH);
         sessionPanel.add(sessionOptPanel, BorderLayout.SOUTH);
-        // sessionPanel.setBorder(BorderFactory.createRaisedBevelBorder());
 
-        // add the option buttons
         addOptButton(LangTool.getString("ss.optAdd"), "ADD", sessionOptPanel);
 
         removeButton = addOptButton(LangTool.getString("ss.optDelete"), "REMOVE",
@@ -361,7 +326,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
     private void createEmulatorOptionsPanel() {
 
-        // create emulator options panel
         emulOptPanel.setLayout(new BorderLayout());
 
         JPanel contentPane = new JPanel();
@@ -369,7 +333,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         emulOptPanel.add(contentPane, BorderLayout.NORTH);
 
-        // setup the frame interface panel
         JPanel interfacePanel = new JPanel(new GridBagLayout());
 
         TitledBorder tb = BorderFactory.createTitledBorder(LangTool
@@ -380,13 +343,13 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         ButtonGroup intGroup = new ButtonGroup();
 
-        // create the checkbox for hiding the tab bar when only one tab exists
         hideTabBar = new JCheckBox(LangTool.getString("conf.labelHideTabBar"));
 
         hideTabBar.setSelected(false);
         if (properties.containsKey("emul.hideTabBar")) {
-            if (properties.getProperty("emul.hideTabBar").equals("yes"))
+            if (properties.getProperty("emul.hideTabBar").equals("yes")) {
                 hideTabBar.setSelected(true);
+            }
         }
 
         hideTabBar.addItemListener(new java.awt.event.ItemListener() {
@@ -399,12 +362,9 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         intTABS.setSelected(true);
         intTABS.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                // intTABS_itemStateChanged(e);
-                // nothing to do because there is only one option
             }
         });
 
-        // add the interface options to the group control
         intGroup.add(intTABS);
 
         gbc = new GridBagConstraints();
@@ -420,7 +380,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         gbc.insets = new Insets(5, 27, 5, 10);
         interfacePanel.add(hideTabBar, gbc);
 
-        // create startup panel
         JPanel startupPanel = new JPanel();
         startupPanel.setLayout(new AlignLayout(1, 5, 5));
         TitledBorder smb = BorderFactory.createTitledBorder(LangTool
@@ -430,8 +389,9 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         startupPanel.setBorder(smb);
 
         showMe = new JCheckBox(LangTool.getString("ss.labelShowMe"));
-        if (properties.containsKey("emul.showConnectDialog"))
+        if (properties.containsKey("emul.showConnectDialog")) {
             showMe.setSelected(true);
+        }
 
         showMe.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -440,8 +400,9 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         });
 
         lastView = new JCheckBox(LangTool.getString("ss.labelLastView"));
-        if (properties.containsKey("emul.startLastView"))
+        if (properties.containsKey("emul.startLastView")) {
             lastView.setSelected(true);
+        }
 
         lastView.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -454,23 +415,17 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         contentPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         contentPane.add(interfacePanel);
-        // contentPane.add(Box.createHorizontalStrut(10));
         contentPane.add(Box.createVerticalStrut(10));
         contentPane.add(startupPanel);
     }
 
     private void createLoggingPanel() {
         loggingPanel.setLayout(new GridBagLayout());
-        // levelPanel
         JPanel levelPanel = new JPanel(new GridBagLayout());
         TitledBorder tb = BorderFactory.createTitledBorder(LangTool
                 .getString("logscr.Level"));
         tb.setTitleJustification(TitledBorder.CENTER);
         levelPanel.setBorder(tb);
-        // Create the Checkboxes
-        // The translation section is called ...
-        // #Logging Literals
-        // Search and translate into the message property-files
         int logLevel = Integer.parseInt(properties.getProperty("emul.logLevel",
                 Integer.toString(HTI5250jLogger.INFO)));
 
@@ -517,7 +472,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             }
         });
 
-        // add the interface options to the group control
         levelGroup.add(intOFF);
         levelGroup.add(intDEBUG);
         levelGroup.add(intINFO);
@@ -525,7 +479,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         levelGroup.add(intERROR);
         levelGroup.add(intFATAL);
 
-        // add the levelPanel components
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -570,7 +523,7 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         intConsole.setEnabled(false);
         intConsole.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                // TODO: Provide the itemstatechanged for the intConsole checkbox
+                // No action needed; console is the only supported appender
             }
         });
         intFile = new JRadioButton(LangTool.getString("logscr.File"));
@@ -621,7 +574,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         gbc.insets = new Insets(5, 20, 20, 20);
         appenderPanel.add(intBoth, gbc);
 
-        // add the pannels to the mainpanel
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
@@ -638,12 +590,12 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         accessOptions = new MultiSelectListComponent();
 
-        if (properties.getProperty("emul.accessDigest") != null)
+        if (properties.getProperty("emul.accessDigest") != null) {
             accessOptions.setEnabled(false);
+        }
 
         String[] options = keyMnemonicResolver.getMnemonicsSorted();
 
-        // set up a hashtable of option descriptions to options
         Hashtable<String, String> ht = new Hashtable<String, String>(options.length);
         for (String option : options) {
             ht.put(LangTool.getString("key." + option), option);
@@ -652,17 +604,16 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         String[] descriptions = keyMnemonicResolver.getMnemonicDescriptions();
         Arrays.sort(descriptions);
 
-        // set the option descriptions
         accessOptions.setListData(descriptions);
 
-        // we now mark the invalid options
         int num = OptionAccessFactory.getInstance().getNumberOfRestrictedOptions();
         int[] si = new int[num];
         int i = 0;
         for (int x = 0; x < descriptions.length; x++) {
             if (!OptionAccessFactory.getInstance().isValidOption(
-                    ht.get(descriptions[x])))
+                    ht.get(descriptions[x]))) {
                 si[i++] = x;
+            }
         }
 
         accessOptions.setSelectedIndices(si);
@@ -672,7 +623,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         accessOptions.setSelectionHeader(
                 LangTool.getString("ss.labelRestricted"), JLabel.CENTER);
 
-        // create emulator options panel
         accessPanel.setLayout(new BorderLayout());
         accessPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 5));
 
@@ -699,8 +649,9 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         setPassButton = new JButton(action);
 
-        if (properties.getProperty("emul.accessDigest") != null)
+        if (properties.getProperty("emul.accessDigest") != null) {
             setPassButton.setEnabled(false);
+        }
 
         passPanel.add(setPassButton);
 
@@ -715,11 +666,8 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
     private void createExternalProgramsPanel() {
 
-        // create external options panel
-
         JPanel externalPrograms = new JPanel();
 
-        // define layout
         externalPanel.setLayout(new BorderLayout());
         externalPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 5));
 
@@ -745,20 +693,15 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         externalPanel.add(externalPrograms, BorderLayout.NORTH);
 
-        //For Customized External Program
         etm = new CustomizedTableModel(externalProgramConfig);
-        // create a table using our custom table model
         externals = new JSortTable(etm);
         externals.setSelectionMode(SINGLE_SELECTION);
         externals.setPreferredScrollableViewportSize(new Dimension(500, 100));
         externals.setShowGrid(false);
-        // Create the scroll pane and add the table to it.
         JScrollPane scrollPane2 = new JScrollPane(externals);
         scrollPane2.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane2.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        // This will make the connect dialog react to two clicks instead of having
-        // to click on the selection and then clicking twice
         externals.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent event) {
                 if (event.getClickCount() == 2) {
@@ -767,21 +710,18 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             }
         });
 
-        // Setup our selection model listener
         rowSM2 = externals.getSelectionModel();
         rowSM2.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                // Ignore extra messages.
-                if (e.getValueIsAdjusting())
+                if (e.getValueIsAdjusting()) {
                     return;
+                }
                 ListSelectionModel lsm = (ListSelectionModel) e.getSource();
                 if (lsm.isSelectionEmpty()) {
-                    // no rows are selected
                     cEditButton.setEnabled(false);
                     cRemoveButton.setEnabled(false);
                     cAddButton.setEnabled(false);
                 } else {
-                    // selectedRow is selected
                     cEditButton.setEnabled(true);
                     cRemoveButton.setEnabled(true);
                     cAddButton.setEnabled(true);
@@ -789,7 +729,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             }
         });
 
-        // Setup panels
         JPanel cExternalPrograms = new JPanel();
         cExternalPrograms.setLayout(new BorderLayout());
         cExternalPrograms.setBorder(BorderFactory.createTitledBorder(LangTool.getString("customized.title")));
@@ -798,9 +737,7 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         cExternalPrograms.add(externalOpts, BorderLayout.NORTH);
         cExternalPrograms.add(externalOptPanel, BorderLayout.SOUTH);
-        // sessionPanel.setBorder(BorderFactory.createRaisedBevelBorder());
 
-        // add the option buttons
         cAddButton = addOptButton(LangTool.getString("ss.optAdd"), "cADD", externalOptPanel);
 
         cRemoveButton = addOptButton(LangTool.getString("ss.optDelete"), "cREMOVE",
@@ -872,8 +809,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         button.setActionCommand(ac);
         button.setPreferredSize(new Dimension(140, 28));
 
-        // we check if there was mnemonic specified and if there was then we
-        // set it.
         int mnemIdx = text.indexOf("&");
         if (mnemIdx >= 0) {
             StringBuilder sb = new StringBuilder(text);
@@ -888,7 +823,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
         return button;
     }
 
-    // Process out button actions
     public void actionPerformed(ActionEvent e) {
 
         if (e.getActionCommand().equals("DONE")) {
@@ -900,16 +834,14 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             String systemName = Configure.doEntry((JFrame) getParent(), null,
                     properties);
             ctm.addSession();
-            // I we have only one row then select the first one so that
-            // we do not get a selection index out of range problem.
             if (ctm.getRowCount() == 1) {
                 sessions.getSelectionModel().setSelectionInterval(0, 0);
             } else {
-                // Here we will select the entry that we just added.
                 int selInterval = 0;
                 for (int x = 0; x < sessions.getRowCount(); x++) {
-                    if (((String) ctm.getValueAt(x, 0)).equals(systemName))
+                    if (((String) ctm.getValueAt(x, 0)).equals(systemName)) {
                         selInterval = x;
+                    }
                 }
                 sessions.getSelectionModel().setSelectionInterval(selInterval,
                         selInterval);
@@ -936,16 +868,14 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
                     externalProgramConfig);
 
             etm.addSession();
-            // I we have only one row then select the first one so that
-            // we do not get a selection index out of range problem.
             if (etm.getRowCount() == 1) {
                 externals.getSelectionModel().setSelectionInterval(0, 0);
             } else {
-                // Here we will select the entry that we just added.
                 int selInterval = 0;
                 for (int x = 0; x < externals.getRowCount(); x++) {
-                    if (((String) etm.getValueAt(x, 0)).equals(name))
+                    if (((String) etm.getValueAt(x, 0)).equals(name)) {
                         selInterval = x;
+                    }
                 }
                 externals.getSelectionModel().setSelectionInterval(selInterval,
                         selInterval);
@@ -979,20 +909,15 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
     private void doActionConnect() {
 
-        if (!connectButton.isEnabled())
+        if (!connectButton.isEnabled()) {
             return;
+        }
 
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         int selectedRow = rowSM.getMinSelectionIndex();
         connectKey = (String) ctm.getValueAt(selectedRow, 0);
         saveProps();
-
-        // this thread.sleep will get rid of those extra keystrokes that keep
-        // propogating to other peers. This is a very annoying bug that
-        // should be fixed. This seems to work through 1.4.0 but in 1.4.1
-        // beta seems to be broken again. WHY!!!!!
-        // try {Thread.sleep(500);}catch(java.lang.InterruptedException ie) {}
 
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
@@ -1040,7 +965,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
      */
     private void setExternalPrograms() {
 
-        // set the external browser program to use
         if (browser.getText().trim().length() > 0) {
 
             properties.setProperty("emul.protocol.http", browser.getText().trim());
@@ -1049,7 +973,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             properties.remove("emul.protocol.http");
         }
 
-        // set the external mailer program to use
         if (mailer.getText().trim().length() > 0) {
 
             properties.setProperty("emul.protocol.mailto", mailer.getText().trim());
@@ -1105,7 +1028,6 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
         String[] options = keyMnemonicResolver.getMnemonicsSorted();
 
-        // set up a hashtable of option descriptions to options
         Hashtable<String, String> ht = new Hashtable<String, String>(options.length);
         for (int x = 0; x < options.length; x++) {
             ht.put(LangTool.getString("key." + options[x]), options[x]);
@@ -1145,7 +1067,9 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
             int total = Integer.parseInt(count);
             for (int i = 1; i <= total; i++) {
                 int order = i;
-                if (i > num) order = i - 1;
+                if (i > num) {
+                    order = i - 1;
+                }
                 if (i != num) {
                     String program = externalProgramConfig.getProperty("etn.pgm." + i + ".command.name");
                     String wCommand = externalProgramConfig.getProperty("etn.pgm." + i + ".command.window");
@@ -1165,10 +1089,11 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
 
     private void hideTabBar_itemStateChanged(ItemEvent e) {
 
-        if (hideTabBar.isSelected())
+        if (hideTabBar.isSelected()) {
             properties.setProperty("emul.hideTabBar", "yes");
-        else
+        } else {
             properties.remove("emul.hideTabBar");
+        }
 
     }
 
@@ -1274,14 +1199,16 @@ public class ConnectDialog extends JDialog implements ActionListener, ChangeList
                 throws BadLocationException {
 
             super.insertString(offs, str, a);
-            if (getText(0, getLength()).length() > 0)
+            if (getText(0, getLength()).length() > 0) {
                 doSomethingEntered();
+            }
         }
 
         public void remove(int offs, int len) throws BadLocationException {
             super.remove(offs, len);
-            if (getText(0, getLength()).length() == 0)
+            if (getText(0, getLength()).length() == 0) {
                 doNothingEntered();
+            }
         }
     }
 

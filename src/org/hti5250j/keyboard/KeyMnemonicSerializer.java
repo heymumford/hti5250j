@@ -22,7 +22,9 @@ public class KeyMnemonicSerializer {
         StringBuilder sb = new StringBuilder();
         if (keyMnemonics != null) {
             for (int i = 0; i < keyMnemonics.length; i++) {
-                if (i > 0) sb.append(',');
+                if (i > 0) {
+                    sb.append(',');
+                }
                 sb.append(keyMnemonics[i].mnemonic);
             }
         }
@@ -30,7 +32,9 @@ public class KeyMnemonicSerializer {
     }
 
     public KeyMnemonic[] deserialize(String keypadMnemonics) {
-        if (keypadMnemonics == null) return new KeyMnemonic[0];
+        if (keypadMnemonics == null) {
+            return new KeyMnemonic[0];
+        }
         String[] parts = keypadMnemonics.split(",");
         List<KeyMnemonic> result = new ArrayList<KeyMnemonic>();
         for (String part : parts) {

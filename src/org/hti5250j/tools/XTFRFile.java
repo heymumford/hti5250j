@@ -77,9 +77,7 @@ public class XTFRFile
     XTFRFileFilter ExcelFilter;
     XTFRFileFilter DelimitedFilter;
     XTFRFileFilter FixedWidthFilter;
-    //   XTFRFileFilter ExcelWorkbookFilter;
 
-    // default file filter used.
     XTFRFileFilter fileFilter;
 
     ProgressMonitor pm;
@@ -99,28 +97,6 @@ public class XTFRFile
     public XTFRFile(Frame parent, tnvt pvt, SessionPanel session) {
 
         this(parent, pvt, session, null);
-//		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//		this.session = session;
-//		vt = pvt;
-//		ftpProtocol = new FTP5250Prot(vt);
-//		ftpProtocol.addFTPStatusListener(this);
-//		axtfr = new AS400Xtfr(vt);
-//		axtfr.addFTPStatusListener(this);
-//		createProgressMonitor();
-//		initFileFilters();
-//		initXTFRInfo(null);
-//
-//		addWindowListener(new WindowAdapter() {
-//
-//			public void windowClosing(WindowEvent we) {
-//				if (ftpProtocol.isConnected())
-//					ftpProtocol.disconnect();
-//			}
-//
-//		});
-//
-//		messageProgress = LangTool.getString("xtfr.messageProgress");
-//		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
     public XTFRFile(Frame parent, tnvt pvt, SessionPanel session, Properties XTFRProps) {
@@ -139,8 +115,9 @@ public class XTFRFile
         addWindowListener(new WindowAdapter() {
 
             public void windowClosing(WindowEvent we) {
-                if (ftpProtocol != null && ftpProtocol.isConnected())
+                if (ftpProtocol != null && ftpProtocol.isConnected()) {
                     ftpProtocol.disconnect();
+                }
             }
 
         });
@@ -172,8 +149,6 @@ public class XTFRFile
         FixedWidthFilter = new XTFRFileFilter("txt", "Fixed Width");
         FixedWidthFilter.setOutputFilterName(
                 "org.hti5250j.tools.filters.FixedWidthOutputFilter");
-        //      ExcelWorkbookFilter = new XTFRFileFilter("xls", "Excel 95 97 XP 2000");
-        //      ExcelWorkbookFilter.setOutputFilterName("org.hti5250j.tools.filters.ExcelWorkbookOutputFilter");
     }
 
     public void statusReceived(FTPStatusEvent statusevent) {
@@ -192,8 +167,9 @@ public class XTFRFile
                         label.setText(LangTool.getString("xtfr.labelComplete"));
                         note.setText(getTransferredNote(len));
                         monitor.setDone();
-                        if (emailIt)
+                        if (emailIt) {
                             emailMe();
+                        }
 
                     } else {
                         progressBar.setValue(prog);
@@ -265,14 +241,12 @@ public class XTFRFile
 
     public void actionPerformed(ActionEvent e) {
 
-        // process the save transfer information button
         if (e.getActionCommand().equals("SAVE")) {
 
             saveXTFRInfo();
 
         }
 
-        // process the save transfer information button
         if (e.getActionCommand().equals("LOAD")) {
 
             loadXTFRInfo();
@@ -284,10 +258,11 @@ public class XTFRFile
 
             saveXTFRFields();
 
-            if (e.getActionCommand().equals("EMAIL"))
+            if (e.getActionCommand().equals("EMAIL")) {
                 emailIt = true;
-            else
+            } else {
                 emailIt = false;
+            }
 
             initializeMonitor();
             dialog.setVisible(true);
@@ -387,47 +362,25 @@ public class XTFRFile
         }
     }
 
-    /* *** NEVER USED LOCALLY ************************************************** */
-//	private XTFRFileFilter getFilterByExtension() {
-//
-//		if (filter != null && filter.isExtensionInList(localFile.getText()))
-//			return filter;
-//
-//		if (KSpreadFilter.isExtensionInList(localFile.getText()))
-//			return KSpreadFilter;
-//		if (OOFilter.isExtensionInList(localFile.getText()))
-//			return OOFilter;
-//		if (ExcelFilter.isExtensionInList(localFile.getText()))
-//			return ExcelFilter;
-//		if (DelimitedFilter.isExtensionInList(localFile.getText()))
-//			return DelimitedFilter;
-//		if (FixedWidthFilter.isExtensionInList(localFile.getText()))
-//			return FixedWidthFilter;
-//		//      if (ExcelWorkbookFilter.isExtensionInList(localFile.getText()))
-//		//         return ExcelWorkbookFilter;
-//
-//		return htmlFilter;
-//	}
-
     private XTFRFileFilter getFilterByDescription() {
 
         String desc = (String) fileFormat.getSelectedItem();
 
-        //      if (filter.getDescription().equals(desc))
-        //         return filter;
-
-        if (KSpreadFilter.getDescription().equals(desc))
+        if (KSpreadFilter.getDescription().equals(desc)) {
             return KSpreadFilter;
-        if (OOFilter.getDescription().equals(desc))
+        }
+        if (OOFilter.getDescription().equals(desc)) {
             return OOFilter;
-        if (ExcelFilter.getDescription().equals(desc))
+        }
+        if (ExcelFilter.getDescription().equals(desc)) {
             return ExcelFilter;
-        if (DelimitedFilter.getDescription().equals(desc))
+        }
+        if (DelimitedFilter.getDescription().equals(desc)) {
             return DelimitedFilter;
-        if (FixedWidthFilter.getDescription().equals(desc))
+        }
+        if (FixedWidthFilter.getDescription().equals(desc)) {
             return FixedWidthFilter;
-        //      if (ExcelWorkbookFilter.isExtensionInList(localFile.getText()))
-        //         return ExcelWorkbookFilter;
+        }
 
         return htmlFilter;
     }
@@ -497,21 +450,20 @@ public class XTFRFile
         String workingDir = System.getProperty("user.dir");
         HTI5250jFileChooser pcFileChooser = new HTI5250jFileChooser(workingDir);
 
-        // set the file filters for the file chooser
         filter = getFilterByDescription();
 
         pcFileChooser.addChoosableFileFilter(filter);
 
         int ret = pcFileChooser.showSaveDialog(this);
 
-        // check to see if something was actually chosen
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file = pcFileChooser.getSelectedFile();
             filter = null;
-            if (pcFileChooser.getFileFilter() instanceof XTFRFileFilter)
+            if (pcFileChooser.getFileFilter() instanceof XTFRFileFilter) {
                 filter = (XTFRFileFilter) pcFileChooser.getFileFilter();
-            else
+            } else {
                 filter = htmlFilter;
+            }
 
             localFile.setText(filter.setExtension(file));
 
@@ -525,7 +477,6 @@ public class XTFRFile
      */
     private void initXTFRInfo(Properties XTFRProps) {
 
-        // create some reusable borders and layouts
         BorderLayout borderLayout = new BorderLayout();
         Border emptyBorder = BorderFactory.createEmptyBorder(10, 10, 0, 10);
 
@@ -596,7 +547,6 @@ public class XTFRFile
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(5, 5, 5, 5);
         as400p.add(user, gbc);
-        // password panel
         JLabel pwpLabel = new JLabel(LangTool.getString("xtfr.labelPassword"));
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -617,7 +567,6 @@ public class XTFRFile
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(5, 5, 5, 5);
         as400p.add(password, gbc);
-        // Query Wizard
         useQuery = new JCheckBox(LangTool.getString("xtfr.labelUseQuery"));
         useQuery.addItemListener(this);
 
@@ -627,7 +576,6 @@ public class XTFRFile
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(5, 10, 5, 5);
         as400p.add(useQuery, gbc);
-        //query button
         queryWizard = new JButton(LangTool.getString("xtfr.labelQueryWizard"));
         queryWizard.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -642,7 +590,6 @@ public class XTFRFile
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(0, 5, 0, 5);
         as400p.add(queryWizard, gbc);
-        // Field Selection panel
         fieldsLabel = new JLabel(LangTool.getString("xtfr.labelFields"));
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -669,7 +616,6 @@ public class XTFRFile
         ButtonGroup fieldGroup = new ButtonGroup();
         fieldGroup.add(allFields);
         fieldGroup.add(selectedFields);
-        // Field Text Description panel
         textDescLabel =
                 new JLabel(LangTool.getString("xtfr.labelTxtDesc"));
         gbc = new GridBagConstraints();
@@ -697,7 +643,6 @@ public class XTFRFile
         txtDescGroup.add(txtDesc);
         txtDescGroup.add(intDesc);
 
-        // pc panel for pc information
         JPanel pcp = new JPanel(new GridBagLayout());
         pcp.setBorder(
                 BorderFactory.createTitledBorder(
@@ -722,10 +667,11 @@ public class XTFRFile
         fileFormat.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 filter = getFilterByDescription();
-                if (filter.getOutputFilterInstance().isCustomizable())
+                if (filter.getOutputFilterInstance().isCustomizable()) {
                     customize.setEnabled(true);
-                else
+                } else {
                     customize.setEnabled(false);
+                }
             }
         });
         gbc = new GridBagConstraints();
@@ -744,8 +690,6 @@ public class XTFRFile
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(0, 5, 0, 10);
         pcp.add(customize, gbc);
-        // now make sure we set the customizable button enabled or not
-        // depending on the filter.
         fileFormat.setSelectedIndex(0);
 
         JLabel pcpLabel = new JLabel(LangTool.getString("xtfr.labelPCFile"));
@@ -786,10 +730,11 @@ public class XTFRFile
         DecimalFormat formatter =
                 (DecimalFormat) NumberFormat.getInstance(Locale.getDefault());
 
-        if (formatter.getDecimalFormatSymbols().getDecimalSeparator() == '.')
+        if (formatter.getDecimalFormatSymbols().getDecimalSeparator() == '.') {
             decimalSeparator.setSelectedIndex(0);
-        else
+        } else {
             decimalSeparator.setSelectedIndex(1);
+        }
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -807,7 +752,6 @@ public class XTFRFile
         sp.add(as400p, BorderLayout.NORTH);
         sp.add(pcp, BorderLayout.SOUTH);
 
-        // options panel
         JPanel op = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         xtfrButton = new JButton(LangTool.getString("xtfr.labelXTFR"));
         xtfrButton.addActionListener(this);
@@ -820,14 +764,12 @@ public class XTFRFile
         emailButton.setActionCommand("EMAIL");
         op.add(emailButton);
 
-        // add transfer save information button
         JButton saveButton =
                 new JButton(LangTool.getString("xtfr.labelXTFRSave"));
         saveButton.addActionListener(this);
         saveButton.setActionCommand("SAVE");
         op.add(saveButton);
 
-        // add transfer load information button
         JButton loadButton =
                 new JButton(LangTool.getString("xtfr.labelXTFRLoad"));
         loadButton.addActionListener(this);
@@ -839,11 +781,8 @@ public class XTFRFile
 
         this.getContentPane().add(mp, BorderLayout.CENTER);
 
-        //      this.setModal(false);
-        //      this.setModal(true);
         this.setTitle(LangTool.getString("xtfr.title"));
 
-        //QueryPanel when Use Query selected
         as400QueryP = new JPanel();
         as400QueryP.setLayout(new BorderLayout());
 
@@ -854,19 +793,19 @@ public class XTFRFile
 
         initXTFRFields(XTFRProps);
 
-        // pack it and center it on the screen
         pack();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = getSize();
-        if (frameSize.height > screenSize.height)
+        if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
-        if (frameSize.width > screenSize.width)
+        }
+        if (frameSize.width > screenSize.width) {
             frameSize.width = screenSize.width;
+        }
         setLocation(
                 (screenSize.width - frameSize.width) / 2,
                 (screenSize.height - frameSize.height) / 2);
 
-        // now show the world what we can do
         setVisible(true);
 
     }
@@ -884,17 +823,20 @@ public class XTFRFile
             props = config.getProperties();
         }
 
-        if (props.containsKey("xtfr.fileName"))
+        if (props.containsKey("xtfr.fileName")) {
             hostFile.setText(props.getProperty("xtfr.fileName"));
+        }
 
-        if (props.containsKey("xtfr.user"))
+        if (props.containsKey("xtfr.user")) {
             user.setText(props.getProperty("xtfr.user"));
+        }
 
         if (props.containsKey("xtfr.useQuery")) {
-            if (props.getProperty("xtfr.useQuery").equals("true"))
+            if (props.getProperty("xtfr.useQuery").equals("true")) {
                 useQuery.setSelected(true);
-            else
+            } else {
                 useQuery.setSelected(false);
+            }
         }
 
         if (props.containsKey("xtfr.queryStatement")) {
@@ -902,17 +844,19 @@ public class XTFRFile
         }
 
         if (props.containsKey("xtfr.allFields")) {
-            if (props.getProperty("xtfr.allFields").equals("true"))
+            if (props.getProperty("xtfr.allFields").equals("true")) {
                 allFields.setSelected(true);
-            else
+            } else {
                 allFields.setSelected(false);
+            }
         }
 
         if (props.containsKey("xtfr.txtDesc")) {
-            if (props.getProperty("xtfr.txtDesc").equals("true"))
+            if (props.getProperty("xtfr.txtDesc").equals("true")) {
                 txtDesc.setSelected(true);
-            else
+            } else {
                 txtDesc.setSelected(false);
+            }
         }
 
         if (props.containsKey("xtfr.intDesc")) {
@@ -923,15 +867,18 @@ public class XTFRFile
             }
         }
 
-        if (props.containsKey("xtfr.fileFormat"))
+        if (props.containsKey("xtfr.fileFormat")) {
             fileFormat.setSelectedItem(props.getProperty("xtfr.fileFormat"));
+        }
 
-        if (props.containsKey("xtfr.localFile"))
+        if (props.containsKey("xtfr.localFile")) {
             localFile.setText(props.getProperty("xtfr.localFile"));
+        }
 
-        if (props.containsKey("xtfr.decimalSeparator"))
+        if (props.containsKey("xtfr.decimalSeparator")) {
             decimalSeparator.setSelectedItem(
                     props.get("xtfr.decimalSeparator"));
+        }
 
     }
 
@@ -948,51 +895,58 @@ public class XTFRFile
 
     private void saveXTFRFields(Properties props) {
 
-        if (hostFile.getText().trim().length() > 0)
+        if (hostFile.getText().trim().length() > 0) {
             props.setProperty("xtfr.fileName", hostFile.getText().trim());
-        else
+        } else {
             props.remove("xtfr.fileName");
+        }
 
-        if (user.getText().trim().length() > 0)
+        if (user.getText().trim().length() > 0) {
             props.setProperty("xtfr.user", user.getText().trim());
-        else
+        } else {
             props.remove("xtfr.user");
+        }
 
-        if (useQuery.isSelected())
+        if (useQuery.isSelected()) {
             props.setProperty("xtfr.useQuery", "true");
-        else
+        } else {
             props.remove("xtfr.useQuery");
+        }
 
-        if (queryStatement.getText().trim().length() > 0)
+        if (queryStatement.getText().trim().length() > 0) {
             props.setProperty(
                     "xtfr.queryStatement",
                     queryStatement.getText().trim());
-        else
+        } else {
             props.remove("xtfr.queryStatement");
+        }
 
-        if (allFields.isSelected())
+        if (allFields.isSelected()) {
             props.setProperty("xtfr.allFields", "true");
-        else
+        } else {
             props.remove("xtfr.allFields");
+        }
 
-        // TODO: save Fielddesc state as one propertyvalue (xtfr.fieldDesc=txt|int)
-        if (txtDesc.isSelected())
+        if (txtDesc.isSelected()) {
             props.setProperty("xtfr.txtDesc", "true");
-        else
+        } else {
             props.remove("xtfr.txtDesc");
-        if (intDesc.isSelected())
+        }
+        if (intDesc.isSelected()) {
             props.setProperty("xtfr.intDesc", "true");
-        else
+        } else {
             props.remove("xtfr.intDesc");
+        }
 
         props.setProperty(
                 "xtfr.fileFormat",
                 (String) fileFormat.getSelectedItem());
 
-        if (localFile.getText().trim().length() > 0)
+        if (localFile.getText().trim().length() > 0) {
             props.setProperty("xtfr.localFile", localFile.getText().trim());
-        else
+        } else {
             props.remove("xtfr.localFile");
+        }
 
         props.setProperty(
                 "xtfr.decimalSeparator",
@@ -1008,14 +962,12 @@ public class XTFRFile
         String workingDir = System.getProperty("user.dir");
         HTI5250jFileChooser pcFileChooser = new HTI5250jFileChooser(workingDir);
 
-        // set the file filters for the file chooser
         HTI5250jFileFilter filter = new HTI5250jFileFilter("dtf", "Transfer from AS/400");
 
         pcFileChooser.addChoosableFileFilter(filter);
 
         int ret = pcFileChooser.showSaveDialog(this);
 
-        // check to see if something was actually chosen
         if (ret == JFileChooser.APPROVE_OPTION) {
 
             File file = pcFileChooser.getSelectedFile();
@@ -1024,7 +976,6 @@ public class XTFRFile
 
             try {
                 FileOutputStream out = new FileOutputStream(file);
-                // save off the width and height to be restored later
                 xtfrProps.store(out, "------ Transfer Details --------");
 
                 out.flush();
@@ -1041,26 +992,21 @@ public class XTFRFile
     private void loadXTFRInfo() {
 
         Properties xtfrProps = new Properties();
-//      xtfrProps.setProperty("xtfr.destination","FROM");
-//      this.saveXTFRFields(xtfrProps);
         String workingDir = System.getProperty("user.dir");
         HTI5250jFileChooser pcFileChooser = new HTI5250jFileChooser(workingDir);
 
-        // set the file filters for the file chooser
         HTI5250jFileFilter filter = new HTI5250jFileFilter("dtf", "Transfer from AS/400");
 
         pcFileChooser.addChoosableFileFilter(filter);
 
         int ret = pcFileChooser.showOpenDialog(this);
 
-        // check to see if something was actually chosen
         if (ret == JFileChooser.APPROVE_OPTION) {
 
             File file = pcFileChooser.getSelectedFile();
 
             try {
                 FileInputStream in = new FileInputStream(file);
-                // save off the width and height to be restored later
                 xtfrProps.load(in);
 
                 in.close();
@@ -1079,7 +1025,6 @@ public class XTFRFile
 
     }
 
-    /** Listens to the use query check boxe */
     public void itemStateChanged(ItemEvent e) {
         Object source = e.getItemSelectable();
         if (source == useQuery) {
@@ -1152,12 +1097,10 @@ public class XTFRFile
 
         FFDTableModel ffdtm = new FFDTableModel();
 
-        //Create table to hold field data
         JTable fields = new JTable(ffdtm);
         fields.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fields.setPreferredScrollableViewportSize(new Dimension(500, 200));
 
-        //Create the scroll pane and add the table to it.
         JScrollPane scrollPane = new JScrollPane(fields);
         scrollPane.setVerticalScrollBarPolicy(
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -1199,8 +1142,9 @@ public class XTFRFile
                     break;
                 default:
                     fieldsSelected = ftpProtocol.isFieldsSelected();
-                    if (ftpProtocol.isFieldsSelected())
+                    if (ftpProtocol.isFieldsSelected()) {
                         doTransfer();
+                    }
                     break;
             }
         }
@@ -1217,7 +1161,7 @@ public class XTFRFile
                         LangTool.getString("xtfr.tableColA"),
                         LangTool.getString("xtfr.tableColB")};
 
-        public FFDTableModel() {
+        FFDTableModel() {
             super();
 
         }
@@ -1243,8 +1187,9 @@ public class XTFRFile
                 return Boolean.valueOf(ftpProtocol.isFieldSelected(row));
 
             }
-            if (col == 1)
+            if (col == 1) {
                 return ftpProtocol.getFieldName(row);
+            }
 
             return null;
 
@@ -1256,10 +1201,7 @@ public class XTFRFile
         }
 
         public boolean isCellEditable(int row, int col) {
-            if (col == 0)
-                return true;
-            else
-                return false;
+            return col == 0;
 
         }
 
@@ -1318,16 +1260,14 @@ public class XTFRFile
          * @return whether or not dialog was cancelled
          */
         public boolean isCanceled() {
-            if (this == null)
+            if (this == null) {
                 return false;
+            }
             Object v = this.getValue();
             return (v != null);
         }
 
-        // Equivalent to JOptionPane.createDialog,
-        // but create a modeless dialog.
-        // This is necessary because the Solaris implementation doesn't
-        // support Dialog.setModal yet.
+        /** Creates a modeless dialog (unlike JOptionPane.createDialog which is modal). */
         public JDialog createDialog(Component parentComponent, String title) {
 
             Frame frame = JOptionPane.getFrameForComponent(parentComponent);

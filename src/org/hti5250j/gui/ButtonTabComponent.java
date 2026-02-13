@@ -67,21 +67,18 @@ public final class ButtonTabComponent extends JPanel implements SessionListener 
         this.pane = pane;
         setOpaque(false);
 
-        this.label = new TabLabel(); // {
+        this.label = new TabLabel();
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setVerticalAlignment(SwingConstants.CENTER);
         add(label, BorderLayout.CENTER);
-        // add more space between the label and the button
         label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-        // tab button
         JButton button = new TabButton();
         button.setHorizontalAlignment(SwingConstants.TRAILING);
         add(button, BorderLayout.EAST);
-        // add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 
+        // Trigger repaint when tab title text changes so size is recalculated
         pane.addPropertyChangeListener(new PropertyChangeListener() {
-            // triggers repaint, so size is recalculated, when title text changes
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("indexForTitle".equals(evt.getPropertyName())) {
@@ -144,8 +141,6 @@ public final class ButtonTabComponent extends JPanel implements SessionListener 
         }
     }
 
-    // =======================================================================
-
     /**
      * Label delegating icon and text to the corresponding tab.
      * Implementing MouseListener is a workaround, cause when applying
@@ -155,7 +150,7 @@ public final class ButtonTabComponent extends JPanel implements SessionListener 
     private final class TabLabel extends JLabel implements MouseListener {
         private static final long serialVersionUID = 1L;
 
-        public TabLabel() {
+        TabLabel() {
             addMouseListener(this);
         }
 
@@ -175,44 +170,26 @@ public final class ButtonTabComponent extends JPanel implements SessionListener 
             return null;
         }
 
-        /* (non-Javadoc)
-         * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-         */
         @Override
         public void mouseClicked(MouseEvent e) {
             actionSelectTab();
         }
 
-        /* (non-Javadoc)
-         * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-         */
         @Override
         public void mousePressed(MouseEvent e) {
-            // not needed
         }
 
-        /* (non-Javadoc)
-         * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-         */
         @Override
         public void mouseReleased(MouseEvent e) {
             actionSelectTab();
         }
 
-        /* (non-Javadoc)
-         * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-         */
         @Override
         public void mouseEntered(MouseEvent e) {
-            // not needed
         }
 
-        /* (non-Javadoc)
-         * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-         */
         @Override
         public void mouseExited(MouseEvent e) {
-            // not needed
         }
 
         private void actionSelectTab() {
@@ -230,23 +207,17 @@ public final class ButtonTabComponent extends JPanel implements SessionListener 
     private final class TabButton extends JButton implements ActionListener {
         private static final long serialVersionUID = 1L;
 
-        public TabButton() {
+        TabButton() {
             int size = 17;
             setPreferredSize(new Dimension(size, size));
             setToolTipText(LangTool.getString("popup.close"));
-            // Make the button looks the same for all Laf's
             setUI(new BasicButtonUI());
-            // Make it transparent
             setContentAreaFilled(false);
-            // No need to be focusable
             setFocusable(false);
             setBorder(BorderFactory.createEtchedBorder());
             setBorderPainted(false);
-            // Making nice rollover effect
-            // we use the same listener for all buttons
             addMouseListener(buttonMouseListener);
             setRolloverEnabled(true);
-            // Close the proper tab by clicking the button
             addActionListener(this);
         }
 
@@ -254,20 +225,16 @@ public final class ButtonTabComponent extends JPanel implements SessionListener 
             int i = pane.indexOfTabComponent(ButtonTabComponent.this);
             if (i != -1) {
                 fireTabClosed(i);
-                // hint: the actual close will be done within the TabbedPane Container
             }
         }
 
-        // we don't want to update UI for this button
         public void updateUI() {
 
         }
 
-        // paint the cross
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g.create();
-            // shift the image for pressed buttons
             if (getModel().isPressed()) {
                 g2.translate(1, 1);
             }
@@ -283,7 +250,7 @@ public final class ButtonTabComponent extends JPanel implements SessionListener 
         }
     }
 
-    private final static MouseListener buttonMouseListener = new MouseAdapter() {
+    private static final MouseListener buttonMouseListener = new MouseAdapter() {
         public void mouseEntered(MouseEvent e) {
             Component component = e.getComponent();
             if (component instanceof AbstractButton) {

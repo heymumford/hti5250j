@@ -36,8 +36,9 @@ public class Macronizer {
 
     public static void init() {
 
-        if (macros != null)
+        if (macros != null) {
             return;
+        }
 
         macrosExist = loadMacros();
 
@@ -46,29 +47,30 @@ public class Macronizer {
     private static boolean loadMacros() {
 
         macros = ConfigureFactory.getInstance().getProperties(ConfigureFactory.MACROS);
-        if (macros != null && macros.size() > 0)
+        if (macros != null && macros.size() > 0) {
             return true;
+        }
 
         return checkScripts();
     }
 
-    private final static void saveMacros() {
+    private static void saveMacros() {
 
         ConfigureFactory.getInstance().saveSettings(
                 ConfigureFactory.MACROS, "------ Macros --------");
     }
 
-    public final static boolean isMacrosExist() {
+    public static final boolean isMacrosExist() {
         return macrosExist;
     }
 
-    public final static int getNumOfMacros() {
+    public static final int getNumOfMacros() {
 
         return macros.size();
 
     }
 
-    public final static String[] getMacroList() {
+    public static final String[] getMacroList() {
 
         String[] macroList = new String[macros.size()];
         Set<Object> macroSet = macros.keySet();
@@ -84,7 +86,7 @@ public class Macronizer {
         return macroList;
     }
 
-    public final static String getMacroByNumber(int num) {
+    public static final String getMacroByNumber(int num) {
         String mac = "macro" + num + ".";
 
         Set<Object> macroSet = macros.keySet();
@@ -99,7 +101,7 @@ public class Macronizer {
         return null;
     }
 
-    public final static String getMacroByName(String name) {
+    public static final String getMacroByName(String name) {
 
         Set<Object> macroSet = macros.keySet();
         Iterator<Object> macroIterator = macroSet.iterator();
@@ -113,7 +115,7 @@ public class Macronizer {
         return null;
     }
 
-    public final static void removeMacroByName(String name) {
+    public static final void removeMacroByName(String name) {
 
         Set<Object> macroSet = macros.keySet();
         Iterator<Object> macroIterator = macroSet.iterator();
@@ -137,7 +139,7 @@ public class Macronizer {
      * @param name
      * @param keyStrokes
      */
-    public final static void setMacro(String name, String keyStrokes) {
+    public static final void setMacro(String name, String keyStrokes) {
 
         int index = 0;
 
@@ -162,6 +164,7 @@ public class Macronizer {
             // If it did not exist and get replaced then we need to find the next
             //  available slot to place the macro in.
             while (getMacroByNumber(++index) != null) {
+                // no-op
             }
 
             macros.put("macro" + index + "." + name, keyStrokes);
@@ -192,13 +195,10 @@ public class Macronizer {
                 options[0]);                       // option that should be made into a default button
 
 
-        // create a dialog wrapping the pane
         final JDialog dialog = pane.createDialog(session, // parent frame
                 "Run Script"  // dialog title
         );
 
-        // add the listener that will set the focus to
-        // the desired option
         dialog.addWindowListener(new WindowAdapter() {
             public void windowOpened(WindowEvent windowEvent) {
                 super.windowOpened(windowEvent);
@@ -215,15 +215,12 @@ public class Macronizer {
         });
         dialog.setVisible(true);
 
-        // now we can process the value selected
-        // now we can process the value selected
-        // if its Integer, the user most likely hit escape
         Object myValue = pane.getValue();
+        // If Integer, the user most likely hit escape
         if (!(myValue instanceof Integer)) {
             String value = (String) myValue;
 
             if (value.equals(options[0])) {
-                // send option along with system request
                 if (rst.getText().length() > 0) {
                     invoke(rst.getText(), session);
                 }
@@ -233,15 +230,16 @@ public class Macronizer {
 
     }
 
-    public final static void invoke(String macro, SessionPanel session) {
+    public static final void invoke(String macro, SessionPanel session) {
 
         String keys = getMacroByName(macro);
-        if (keys != null)
+        if (keys != null) {
             session.getScreen().sendKeys(keys);
-        else {
+        } else {
             try {
-                if (!macro.endsWith(".py"))
+                if (!macro.endsWith(".py")) {
                     macro = macro + ".py";
+                }
                 InterpreterDriverManager.executeScriptFile(session, "scripts" +
                         File.separatorChar + macro);
             } catch (Exception ex) {

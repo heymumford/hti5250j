@@ -31,13 +31,11 @@ public final class EmulatorActionEvent extends EventObject {
 
     private static final long serialVersionUID = 1L;
 
-    // Action type constants
     public static final int CLOSE_SESSION = 1;
     public static final int START_NEW_SESSION = 2;
     public static final int CLOSE_EMULATOR = 3;
     public static final int START_DUPLICATE = 4;
 
-    // Instance fields (using non-final for backward compatibility with setters)
     private String message;
     private int action;
 
@@ -117,11 +115,6 @@ public final class EmulatorActionEvent extends EventObject {
         this.action = action;
     }
 
-    /**
-     * Returns a string representation of this event.
-     *
-     * @return string representation including class name and field values
-     */
     @Override
     public String toString() {
         return String.format(
@@ -133,28 +126,19 @@ public final class EmulatorActionEvent extends EventObject {
         );
     }
 
-    /**
-     * Returns the hash code for this event.
-     * Based on source, message, and action.
-     *
-     * @return hash code
-     */
     @Override
     public int hashCode() {
         return java.util.Objects.hash(getSource(), message, action);
     }
 
-    /**
-     * Compares this event to another object for equality.
-     * Two events are equal if they have the same source, message, and action.
-     *
-     * @param obj the object to compare with
-     * @return true if equal, false otherwise
-     */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         EmulatorActionEvent other = (EmulatorActionEvent) obj;
         return java.util.Objects.equals(getSource(), other.getSource())
             && java.util.Objects.equals(message, other.message)

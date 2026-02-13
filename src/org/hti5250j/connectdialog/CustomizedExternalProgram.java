@@ -47,8 +47,12 @@ class CustomizedExternalProgram implements Comparable<CustomizedExternalProgram>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         CustomizedExternalProgram that = (CustomizedExternalProgram) o;
 

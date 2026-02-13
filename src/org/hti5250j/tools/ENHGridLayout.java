@@ -58,7 +58,7 @@ public class ENHGridLayout extends GridLayout {
      */
     protected int[] colWidths = new int[0];
 
-    public final static int VARIABLE = 0;
+    public static final int VARIABLE = 0;
 
     /**
      * Creates a grid layout with the specified number of rows and columns.
@@ -95,12 +95,15 @@ public class ENHGridLayout extends GridLayout {
      */
     protected void getGridSizes(Container parent, boolean useMinimum) {
         int componentCount = parent.getComponentCount();
-        if (componentCount == 0) return;
+        if (componentCount == 0) {
+            return;
+        }
         int rowCount = rows, columnCount = cols;
-        if (rowCount > 0)
+        if (rowCount > 0) {
             columnCount = (componentCount + rowCount - 1) / rowCount;
-        else
+        } else {
             rowCount = (componentCount + columnCount - 1) / columnCount;
+        }
 
         rowHeights = new int[rowCount];
         colWidths = new int[columnCount];
@@ -111,12 +114,14 @@ public class ENHGridLayout extends GridLayout {
                     component.getPreferredSize();
 
             int row = index / columnCount;
-            if (size.height > rowHeights[row])
+            if (size.height > rowHeights[row]) {
                 rowHeights[row] = size.height;
+            }
 
             int col = index % columnCount;
-            if (size.width > colWidths[col])
+            if (size.width > colWidths[col]) {
                 colWidths[col] = size.width;
+            }
         }
     }
 
@@ -124,10 +129,13 @@ public class ENHGridLayout extends GridLayout {
      * Sums the items of an array
      */
     final int sum(int[] array) {
-        if (array == null) return 0;
+        if (array == null) {
+            return 0;
+        }
         int total = 0;
-        for (int i = 0; i < array.length; i++)
+        for (int i = 0; i < array.length; i++) {
             total += array[i];
+        }
         return total;
     }
 
@@ -190,10 +198,11 @@ public class ENHGridLayout extends GridLayout {
         getGridSizes(parent, false);
         int rowCount = rows, columnCount = cols;
 
-        if (rowCount > 0)
+        if (rowCount > 0) {
             columnCount = (componentCount + rowCount - 1) / rowCount;
-        else
+        } else {
             rowCount = (componentCount + columnCount - 1) / columnCount;
+        }
 
         Dimension parentSize = parent.getSize();
         for (int col = 0, x = insets.left + hgap; col < columnCount; col++) {

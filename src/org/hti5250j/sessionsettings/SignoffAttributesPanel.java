@@ -32,9 +32,6 @@ class SignoffAttributesPanel extends AttributesPanel {
         super(config, "Signoff");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         setLayout(new BorderLayout());
@@ -94,25 +91,29 @@ class SignoffAttributesPanel extends AttributesPanel {
 
         Rectangle region = getRectangleProperty("signOnRegion");
 
-        if (region.x == 0)
+        if (region.x == 0) {
             fromRow.setText("1");
-        else
+        } else {
             fromRow.setText(Integer.toString(region.x));
+        }
 
-        if (region.y == 0)
+        if (region.y == 0) {
             fromCol.setText("1");
-        else
+        } else {
             fromCol.setText(Integer.toString(region.y));
+        }
 
-        if (region.width == 0)
+        if (region.width == 0) {
             toRow.setText("24");
-        else
+        } else {
             toRow.setText(Integer.toString(region.width));
+        }
 
-        if (region.height == 0)
+        if (region.height == 0) {
             toCol.setText("80");
-        else
+        } else {
             toCol.setText(Integer.toString(region.height));
+        }
 
     }
 
@@ -159,14 +160,18 @@ class SignoffAttributesPanel extends AttributesPanel {
                 Integer.parseInt(fromCol.getText()),
                 Integer.parseInt(toRow.getText()),
                 Integer.parseInt(toCol.getText()));
-        if (region.x < 0)
+        if (region.x < 0) {
             region.x = 1;
-        if (region.y < 0)
+        }
+        if (region.y < 0) {
             region.y = 1;
-        if (region.width > 24)
+        }
+        if (region.width > 24) {
             region.width = 24;
-        if (region.height > 80)
+        }
+        if (region.height > 80) {
             region.height = 80;
+        }
 
         setRectangleProperty("signOnRegion", region);
     }

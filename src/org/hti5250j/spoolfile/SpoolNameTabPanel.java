@@ -56,8 +56,6 @@ public class SpoolNameTabPanel extends JPanel implements QueueFilterInterface,
         td.addToggleDocumentListener(this);
         spoolName.setDocument(td);
 
-//      spoolName.setEnabled(false);
-
         ButtonGroup bg = new ButtonGroup();
         bg.add(all);
         bg.add(select);
@@ -76,17 +74,12 @@ public class SpoolNameTabPanel extends JPanel implements QueueFilterInterface,
      */
     public void reset() {
 
-//      spoolName.setEnabled(false);
         spoolName.setText("");
         all.setSelected(true);
 
     }
 
     void select_itemStateChanged(ItemEvent e) {
-//      if (select.isSelected())
-//         spoolName.setEnabled(true);
-//      else
-//         spoolName.setEnabled(false);
     }
 
     public void toggleNotEmpty() {
@@ -100,10 +93,11 @@ public class SpoolNameTabPanel extends JPanel implements QueueFilterInterface,
     }
 
     public String getSpoolName() {
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "";
-        else
+        } else {
             return spoolName.getText().trim();
+        }
     }
 
     public void setSpoolName(String filter) {

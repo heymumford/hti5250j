@@ -97,10 +97,11 @@ public class ScreenFields {
     }
 
     public boolean isCurrentFieldHighlightedEntry() {
-        if (currentField != null)
+        if (currentField != null) {
             return currentField.isHiglightedEntry();
-        else
+        } else {
             return false;
+        }
     }
 
     public boolean isCurrentFieldAutoEnter() {
@@ -150,14 +151,7 @@ public class ScreenFields {
     public boolean isCanSendAid() {
 
         // We also have to check if we are still in the field.
-        if (currentField != null &&
-                (currentField.getAdjustment() > 0 || currentField.isSignedNumeric())
-                && currentModified && isInField()
-                && !currentField.isCanSend())
-
-            return false;
-        else
-            return true;
+        return !(currentField != null && (currentField.getAdjustment() > 0 || currentField.isSignedNumeric()) && currentModified && isInField() && !currentField.isCanSend());
 
     }
 
@@ -197,17 +191,11 @@ public class ScreenFields {
         sizeFields++;
 
 
-        // set the field id if it is not a bypass field
-        // this is used for cursor progression
-        //  changed this because of problems not allocating field id's for
-        //  all fields.  kjp 2002/10/21
-//      if (!sf.isBypassField())
         sf.setFieldId(++fieldIds);
 
-        // check if the cursor progression field flag should be set.
-//      if ((fcw1 & 0x88) == 0x88)
-        if (fcw1 == 0x88)
+        if (fcw1 == 0x88) {
             cpfExists = true;
+        }
 
         if (currentField != null) {
             currentField.next = sf;
@@ -217,8 +205,9 @@ public class ScreenFields {
         currentField = sf;
 
         // check if the Modified Data Tag was set while creating the field
-        if (!masterMDT)
+        if (!masterMDT) {
             masterMDT = currentField.mdt;
+        }
 
         currentModified = false;
 
@@ -280,8 +269,9 @@ public class ScreenFields {
             if (sf.withinField(pos)) {
 
                 if (chgToField) {
-                    if (!currentField.equals(sf))
+                    if (!currentField.equals(sf)) {
                         currentModified = false;
+                    }
                     currentField = sf;
                 }
                 return true;
@@ -325,17 +315,7 @@ public class ScreenFields {
                                     int dir,
                                     boolean ignoreCase) {
 
-        // first lets check if the string exists in the screen space
-//      iOhioPosition pos = screen.findString(targetString, startPos, length,
-//                                             dir, ignoreCase);
-
-        // if it does exist then lets search the fields by the position that
-        //  was found and return the results of that search.
-//      if (pos != null) {
         return findByPosition(startPos);
-//      }
-
-        //return null;
 
     }
 
@@ -394,8 +374,9 @@ public class ScreenFields {
 
     public ScreenField getFirstInputField() {
 
-        if (sizeFields <= 0)
+        if (sizeFields <= 0) {
             return null;
+        }
 
         int f = 0;
         ScreenField sf = screenFields[f];
@@ -404,10 +385,11 @@ public class ScreenFields {
             sf = screenFields[f];
         }
 
-        if (sf.isBypassField())
+        if (sf.isBypassField()) {
             return null;
-        else
+        } else {
             return sf;
+        }
 
     }
 
@@ -431,8 +413,9 @@ public class ScreenFields {
         }
 
         // if we are still null do nothing
-        if (currentField == null)
+        if (currentField == null) {
             return;
+        }
 
         ScreenField sf = currentField;
 
@@ -486,12 +469,13 @@ public class ScreenFields {
                     while (!found && f < sizeFields) {
 
                         sf1 = screenFields[f++];
-                        if (sf1.getFieldId() == cp)
+                        if (sf1.getFieldId() == cp) {
                             found = true;
+                        }
                     }
-                    if (found)
+                    if (found) {
                         sf = sf1;
-                    else {
+                    } else {
                         do {
                             sf = sf.next;
                         }
@@ -501,9 +485,9 @@ public class ScreenFields {
                     sf1 = null;
                 }
             }
-            if (sf == null)
+            if (sf == null) {
                 screen.gotoField(1);
-            else {
+            } else {
                 currentField = sf;
                 screen.gotoField(currentField);
             }
@@ -562,12 +546,13 @@ public class ScreenFields {
                     while (!found && f < sizeFields) {
 
                         sf1 = screenFields[f++];
-                        if (sf1.getCursorProgression() == cp)
+                        if (sf1.getCursorProgression() == cp) {
                             found = true;
+                        }
                     }
-                    if (found)
+                    if (found) {
                         sf = sf1;
-                    else {
+                    } else {
                         do {
                             sf = sf.prev;
                         }
@@ -616,24 +601,21 @@ public class ScreenFields {
                             readType == CMD_READ_MDT_IMMEDIATE_ALT) {
                         int len = sb.length() - 1;
 
-                        // we strip out all '\u0020' and less
+                        // Strip trailing whitespace and attribute-offset characters
                         while (len >= 0 &&
-//                     (sb.charAt(len) <= ' ' || sb.charAt(len) >= '\uff20' )) {
                                 (sb.charAt(len) < ' ' || sb.charAt(len) >= '\uff20')) {
 
                             // if we have the dup character and dup is enabled then we
                             //    stop here
-                            if (sb.charAt(len) == 0x1C && sf.isDupEnabled())
+                            if (sb.charAt(len) == 0x1C && sf.isDupEnabled()) {
                                 break;
+                            }
 
                             sb.deleteCharAt(len--);
                         }
 
                     }
 
-//               System.out.println("field " + sf.toString());
-//               System.out.println(">" + sb.toString() + "<");
-//               System.out.println(" field is all nulls");
                     if (sf.isSignedNumeric() && sb.length() > 0 && sb.charAt(sb.length() - 1) == '-') {
                         isSigned = true;
                         sb.setLength(sb.length() - 1);
@@ -657,7 +639,6 @@ public class ScreenFields {
                             }
 
                         }
-//                  int len = sb.length();
                         if (sf.isSelectionField()) {
                             baosp.write(0);
                             baosp.write(sf.selectionIndex + 0x1F);
@@ -678,15 +659,17 @@ public class ScreenFields {
                                         baosp.write(c - '\uff00');
                                     } else
                                         // check for dup character
-                                        if (c == 0x1C)
+                                        if (c == 0x1C) {
                                             baosp.write(c);
-                                        else
+                                        } else {
                                             baosp.write(codePage.uni2ebcdic(' '));
+                                        }
                                 } else {
                                     if (isSigned && k == len3 - 1) {
                                         baosp.write(0xd0 | (0x0f & c));
-                                    } else
+                                    } else {
                                         baosp.write(codePage.uni2ebcdic(c));
+                                    }
 
                                 }
                             }

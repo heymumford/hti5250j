@@ -169,10 +169,12 @@ public class KeyConfigure extends JDialog implements ActionListener {
         pack();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = getSize();
-        if (frameSize.height > screenSize.height)
+        if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
-        if (frameSize.width > screenSize.width)
+        }
+        if (frameSize.width > screenSize.width) {
             frameSize.width = screenSize.width;
+        }
         setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
 
         // now show the world what we can do
@@ -378,6 +380,8 @@ public class KeyConfigure extends JDialog implements ActionListener {
                     locStr = LangTool.getString("key.labelLocNumPad");
                     break;
 
+                default:
+                    break;
             }
         }
 
@@ -418,10 +422,11 @@ public class KeyConfigure extends JDialog implements ActionListener {
         } else {
             if (which.equals(LangTool.getString("key.labelMacros"))) {
                 Vector<String> macrosVector = new Vector<String>();
-                if (macrosList != null)
+                if (macrosList != null) {
                     for (int x = 0; x < macrosList.length; x++) {
                         macrosVector.add(macrosList[x]);
                     }
+                }
                 scriptDir("scripts", macrosVector);
                 loadListModel(lm, macrosVector, null, 0);
                 macros = true;
@@ -466,8 +471,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
 
             }
         }
-        if (!lm.isEmpty())
+        if (!lm.isEmpty()) {
             functions.setSelectedIndex(0);
+        }
     }
 
     private void supportAplColorCodesInSEU(Collator collator, StringBuffer sb, Set<CollationKey> set) {
@@ -567,12 +573,13 @@ public class KeyConfigure extends JDialog implements ActionListener {
 
         String function;
 
-        if (functions.getSelectedValue() instanceof String str)
+        if (functions.getSelectedValue() instanceof String str) {
             function = str;
-        else if (functions.getSelectedValue() instanceof Macro m) {
+        } else if (functions.getSelectedValue() instanceof Macro m) {
             function = m.toString();
-        } else
+        } else {
             function = ((KeyDescription) functions.getSelectedValue()).toString();
+        }
 
         kg.setText(LangTool.getString("key.labelMessage") +
                 function);
@@ -600,8 +607,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
             boolean gotFocus = false;
 
             public void windowClosed(WindowEvent we) {
-                if (isAvailable(kg.keyevent))
+                if (isAvailable(kg.keyevent)) {
                     setNewKeyStrokes(kg.keyevent);
+                }
             }
 
             public void windowActivated(WindowEvent we) {
@@ -638,10 +646,7 @@ public class KeyConfigure extends JDialog implements ActionListener {
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE);
 
-            if (result == JOptionPane.YES_OPTION)
-                return true;
-            else
-                return false;
+            return result == JOptionPane.YES_OPTION;
         }
         return !exists;
     }
@@ -650,13 +655,15 @@ public class KeyConfigure extends JDialog implements ActionListener {
 
         String desc;
 
-        if (isLinux)
+        if (isLinux) {
             desc = KeyMapper.getKeyStrokeMnemonic(ke, isAltGr);
-        else
+        } else {
             desc = KeyMapper.getKeyStrokeMnemonic(ke, isAltGr);
+        }
 
-        if (desc != null && desc.length() > 1 && desc.startsWith("["))
+        if (desc != null && desc.length() > 1 && desc.startsWith("[")) {
             desc = LangTool.getString("key." + desc);
+        }
 
         return desc;
     }
@@ -671,8 +678,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
 
             String function = keyMnemonicResolver.getMnemonics()[index];
 
-            if (altKey)
+            if (altKey) {
                 function += KeyStroker.altSuffix;
+            }
 
             KeyMapper.removeKeyStroke(function);
             setKeyInformation(function);
@@ -689,8 +697,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
                     name = (String) o;
                 }
 
-                if (altKey)
+                if (altKey) {
                     name += KeyStroker.altSuffix;
+                }
 
                 KeyMapper.removeKeyStroke(name);
                 setKeyInformation(name);
@@ -698,8 +707,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
             if (special) {
                 String k = "";
                 k += ((String) functions.getSelectedValue()).charAt(7);
-                if (altKey)
+                if (altKey) {
                     k += KeyStroker.altSuffix;
+                }
 
                 KeyMapper.removeKeyStroke(k);
                 setKeyInformation(k);
@@ -715,8 +725,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
             int index = ((KeyDescription) functions.getSelectedValue()).getIndex();
             String stroke = keyMnemonicResolver.getMnemonics()[index];
 
-            if (altKey)
+            if (altKey) {
                 stroke += KeyStroker.altSuffix;
+            }
 
             if (isLinux) {
                 KeyMapper.setKeyStroke(stroke, ke, isAltGr);
@@ -730,19 +741,22 @@ public class KeyConfigure extends JDialog implements ActionListener {
             if (macros) {
                 Object o = functions.getSelectedValue();
                 String macro;
-                if (o instanceof Macro m)
+                if (o instanceof Macro m) {
                     macro = m.getFullName();
-                else
+                } else {
                     macro = (String) o;
+                }
 
-                if (altKey)
+                if (altKey) {
                     macro += KeyStroker.altSuffix;
+                }
 
                 System.out.println(macro);
-                if (isLinux)
+                if (isLinux) {
                     KeyMapper.setKeyStroke(macro, ke, isAltGr);
-                else
+                } else {
                     KeyMapper.setKeyStroke(macro, ke);
+                }
 
                 setKeyInformation(macro);
 
@@ -752,8 +766,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
                 System.out.println((String) functions.getSelectedValue());
                 String k = parseSpecialCharacter((String) functions.getSelectedValue());
 
-                if (altKey)
+                if (altKey) {
                     k += KeyStroker.altSuffix;
+                }
 
                 KeyMapper.removeKeyStroke(k);
 
@@ -787,7 +802,7 @@ public class KeyConfigure extends JDialog implements ActionListener {
         private int index;
         private String text;
 
-        public KeyDescription(String text, int index) {
+        KeyDescription(String text, int index) {
 
             this.text = text;
             this.index = index;
@@ -836,8 +851,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
         Macro macro;
 
         File[] macroFiles = directory.listFiles();
-        if (macroFiles == null || macroFiles.length == 0)
+        if (macroFiles == null || macroFiles.length == 0) {
             return;
+        }
 
         Arrays.sort(macroFiles, new MacroCompare());
 
@@ -853,8 +869,9 @@ public class KeyConfigure extends JDialog implements ActionListener {
                 loadScripts(subvector, path + fileName + '/', file);
                 // if we do not want empty directories to show up uncomment this
                 //    line.  It is uncommented here.
-                if (subvector.size() != 1)
+                if (subvector.size() != 1) {
                     vector.addElement(subvector);
+                }
             } else {
                 if (InterpreterDriverManager.isScriptSupported(fileName)) {
                     String fn = fileName.replace('_', ' ');
@@ -890,10 +907,11 @@ public class KeyConfigure extends JDialog implements ActionListener {
                 lm.addElement(m);
             } else if (obj instanceof Vector subvector) {
                 String name = (String) subvector.elementAt(0);
-                if (prefix != null)
+                if (prefix != null) {
                     loadListModel(lm, subvector, prefix + '/' + name + '/', 1);
-                else
+                } else {
                     loadListModel(lm, subvector, name + '/', 1);
+                }
             } else if (obj instanceof String str) {
                 lm.addElement(str);
             }
@@ -930,10 +948,11 @@ public class KeyConfigure extends JDialog implements ActionListener {
          * @return the full name non prettied up
          */
         public String getFullName() {
-            if (prefix != null)
+            if (prefix != null) {
                 return prefix + fileName;
-            else
+            } else {
                 return fileName;
+            }
         }
 
         /**
@@ -943,10 +962,11 @@ public class KeyConfigure extends JDialog implements ActionListener {
          */
         public String toString() {
 
-            if (prefix != null)
+            if (prefix != null) {
                 return prefix + name;
-            else
+            } else {
                 return name;
+            }
         }
     }
 

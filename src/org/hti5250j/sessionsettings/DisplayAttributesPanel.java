@@ -39,9 +39,6 @@ class DisplayAttributesPanel extends AttributesPanel {
         super(config, "Display");
     }
 
-    /**
-     * Component initialization
-     */
     @Override
     public void initPanel() throws Exception {
 
@@ -98,10 +95,11 @@ class DisplayAttributesPanel extends AttributesPanel {
         saGroup.add(saNormal);
         saGroup.add(saHex);
 
-        if (getStringProperty("showAttr").equals("Hex"))
+        if (getStringProperty("showAttr").equals("Hex")) {
             saHex.setSelected(true);
-        else
+        } else {
             saNormal.setSelected(true);
+        }
 
         sap.add(saNormal);
         sap.add(saHex);
@@ -115,8 +113,6 @@ class DisplayAttributesPanel extends AttributesPanel {
         guiCheck.setSelected(YES.equals(getStringProperty("guiInterface")));
         cgp.add(guiCheck);
 
-        // since this is a new property added then it might not exist in existing
-        //    profiles and it should be defaulted to yes.
         guiShowUnderline = new JCheckBox(LangTool.getString("sa.guiShowUnderline"));
         guiShowUnderline.setSelected(YES.equals(getStringProperty("guiShowUnderline")));
         cgp.add(guiShowUnderline);

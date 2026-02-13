@@ -26,14 +26,16 @@ public class ToggleDocument extends PlainDocument {
             throws BadLocationException {
 
         super.insertString(offs, str, a);
-        if (getText(0, getLength()).length() > 0)
+        if (getText(0, getLength()).length() > 0) {
             fireNotEmpty();
+        }
     }
 
     public void remove(int offs, int len) throws BadLocationException {
         super.remove(offs, len);
-        if (getText(0, getLength()).length() == 0)
+        if (getText(0, getLength()).length() == 0) {
             fireEmpty();
+        }
     }
 
     /**

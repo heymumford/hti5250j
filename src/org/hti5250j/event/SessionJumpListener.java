@@ -14,5 +14,5 @@ package org.hti5250j.event;
 
 public interface SessionJumpListener {
 
-    public void onSessionJump(SessionJumpEvent changeEvent);
+    void onSessionJump(SessionJumpEvent changeEvent);
 }

@@ -40,9 +40,6 @@ import java.util.*;
 
 public class ExportFileFilter extends FileFilter {
 
-//   private String TYPE_UNKNOWN = "Type Unknown";
-//   private String HIDDEN_FILE = "Hidden File";
-
     private Hashtable filters = null;
     private String description = null;
     private String fullDescription = null;
@@ -79,10 +76,12 @@ public class ExportFileFilter extends FileFilter {
      */
     public ExportFileFilter(String extension, String description) {
         this();
-        if (extension != null)
+        if (extension != null) {
             addExtension(extension);
-        if (description != null)
+        }
+        if (description != null) {
             setDescription(description);
+        }
     }
 
     /**
@@ -112,8 +111,9 @@ public class ExportFileFilter extends FileFilter {
             // add filters one by one
             addExtension(filters[i]);
         }
-        if (description != null)
+        if (description != null) {
             setDescription(description);
+        }
     }
 
     /**
@@ -271,49 +271,11 @@ public class ExportFileFilter extends FileFilter {
             Enumeration e = filters.keys();
             String ext = (String) e.nextElement();
             // just a little extra check for html documents
-            if (ext.equals("htm"))
+            if (ext.equals("htm")) {
                 ext = "html";
+            }
             f += "." + ext.toLowerCase();
         }
         return f;
     }
-
-//   /**
-//    *
-//    */
-//   public boolean isExtensionInList(String filename) {
-//
-//      String ext = null;
-//      if (filename == null)
-//         return false;
-//      int i = filename.lastIndexOf('.');
-//      if(i>0 && i<filename.length()-1) {
-//         ext = filename.substring(i+1).toLowerCase();
-//      }
-//      if (ext == null)
-//         return false;
-//      else
-//         // check if extension is within this filter list
-//         return filters.containsKey(ext);
-//   }
-//
-//   public void setOutputFilterName(String className) {
-//
-//      outputFilterClassName = className;
-//   }
-//
-//   public OutputFilterInterface getOutputFilterInstance() {
-//
-//      try {
-//         if (o == null) {
-//            Class c = Class.forName(outputFilterClassName);
-//            o = c.newInstance();
-//         }
-//      }
-//      catch (Exception e) {
-//         System.err.println(e);
-//      }
-//
-//      return (OutputFilterInterface) o;
-//   }
 }

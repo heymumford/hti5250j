@@ -89,7 +89,6 @@ public class WTDSFParser {
 
         Window(byte[] seg, int pos) {
 
-            //log.info("window created at " + pos);
             window = seg;
             this.pos = pos;
             guiStructsExist = true;
@@ -115,8 +114,9 @@ public class WTDSFParser {
         int len = guiStructs.size();
         for (int x = 0; x < len; x++) {
             Window w = guiStructs.get(x);
-            if (w.pos == pos)
+            if (w.pos == pos) {
                 return w.window;
+            }
         }
 
         return null;
@@ -130,16 +130,12 @@ public class WTDSFParser {
 
     protected boolean parseWriteToDisplayStructuredField(byte[] seg) {
 
-//      bk = vt.bk;
-
         error = false;
         boolean done = false;
         boolean windowDefined = false;
-//      int nextone;
         pos = 0;
         segment = seg;
 
-//      try {
         length = ((segment[pos++] & 0xff) << 8 | (segment[pos++] & 0xff));
 
         while (!done) {
@@ -162,8 +158,9 @@ public class WTDSFParser {
                             int rows = 0;
                             int cols = 0;
                             // pull down not supported yet
-                            if ((segment[pos++] & 0x80) == 0x80)
+                            if ((segment[pos++] & 0x80) == 0x80) {
                                 cr = true;  // restrict cursor
+                            }
                             pos++; // get reserved field pos 6
                             pos++; // get reserved field pos 7
                             rows = segment[pos++]; // get window depth rows pos 8
@@ -171,10 +168,6 @@ public class WTDSFParser {
                             length -= 9;
                             if (length == 0) {
                                 done = true;
-//                           System.out.println("Create Window");
-//                           System.out.println("   restrict cursor " + cr);
-//                           System.out.println(" Depth = " + rows + " Width = " + cols);
-//                           screen52.createWindow(rows,cols,1,true,32,58,
                                 createWindow(rows, cols, 1, true, 32, 58,
                                         '.',
                                         '.',
@@ -192,10 +185,6 @@ public class WTDSFParser {
                             int ml = 0;
                             int type = 0;
                             int lastPos = screen52.getLastPos();
-//                        if (cr)
-//                           screen52.setPendingInsert(true,
-//                                          screen52.getCurrentRow(),
-//                                          screen52.getCurrentCol());
                             int mAttr = 0;
                             int cAttr = 0;
 
@@ -212,8 +201,9 @@ public class WTDSFParser {
 
                                     case 0x01: // Border presentation
                                         boolean gui = false;
-                                        if ((segment[pos++] & 0x80) == 0x80)
+                                        if ((segment[pos++] & 0x80) == 0x80) {
                                             gui = true;
+                                        }
                                         mAttr = segment[pos++];
                                         cAttr = segment[pos++];
 
@@ -230,60 +220,46 @@ public class WTDSFParser {
                                         //    the border characters are specified
                                         if (ml > 5) {
                                             ul = codePage.ebcdic2uni(segment[pos++]);
-//                                    ul = getASCIIChar(segment[pos++]);
-                                            if (ul == 0)
+                                            if (ul == 0) {
                                                 ul = '.';
+                                            }
 
                                             upper = codePage.ebcdic2uni(segment[pos++]);
-//                                    upper = getASCIIChar(segment[pos++]);
-                                            if (upper == 0)
+                                            if (upper == 0) {
                                                 upper = '.';
+                                            }
 
                                             ur = codePage.ebcdic2uni(segment[pos++]);
-//                                    ur = getASCIIChar(segment[pos++]);
-                                            if (ur == 0)
+                                            if (ur == 0) {
                                                 ur = '.';
+                                            }
 
                                             left = codePage.ebcdic2uni(segment[pos++]);
-//                                    left = getASCIIChar(segment[pos++]);
-                                            if (left == 0)
+                                            if (left == 0) {
                                                 left = ':';
+                                            }
 
                                             right = codePage.ebcdic2uni(segment[pos++]);
-//                                    right = getASCIIChar(segment[pos++]);
-                                            if (right == 0)
+                                            if (right == 0) {
                                                 right = ':';
+                                            }
 
                                             ll = codePage.ebcdic2uni(segment[pos++]);
-//                                    ll = getASCIIChar(segment[pos++]);
-                                            if (ll == 0)
+                                            if (ll == 0) {
                                                 ll = ':';
+                                            }
 
                                             bottom = codePage.ebcdic2uni(segment[pos++]);
-//                                    bottom = getASCIIChar(segment[pos++]);
-                                            if (bottom == 0)
+                                            if (bottom == 0) {
                                                 bottom = '.';
+                                            }
 
                                             lr = codePage.ebcdic2uni(segment[pos++]);
-//                                    lr = getASCIIChar(segment[pos++]);
-                                            if (lr == 0)
+                                            if (lr == 0) {
                                                 lr = ':';
+                                            }
                                         }
 
-//                                 System.out.println("Create Window");
-//                                 System.out.println("   restrict cursor " + cr);
-//                                 System.out.println("   Depth = " + rows + " Width = " + cols);
-//                                 System.out.println("   type = " + type + " gui = " + gui);
-//                                 System.out.println("   mono attr = " + mAttr + " color attr = " + cAttr);
-//                                 System.out.println("   ul = " + ul + " upper = " + upper +
-//                                                         " ur = " + ur +
-//                                                         " left = " + left +
-//                                                         " right = " + right +
-//                                                         " ll = " + ll +
-//                                                         " bottom = " + bottom +
-//                                                         " lr = " + lr
-//                                                         );
-//                                 screen52.createWindow(rows,cols,type,gui,mAttr,cAttr,
                                         createWindow(rows, cols, type, gui, mAttr, cAttr,
                                                 ul,
                                                 upper,
@@ -317,7 +293,6 @@ public class WTDSFParser {
 
                                     case 0x10: // Window title/footer
                                         if (!windowDefined) {
-//                                    screen52.createWindow(rows,cols,1,true,32,58,
                                             guiStructs.add(new Window(segment, screen52.getLastPos()));
                                             createWindow(rows, cols, 1, true, 32, 58,
                                                     '.',
@@ -341,10 +316,7 @@ public class WTDSFParser {
 
                                         StringBuffer hfBuffer = new StringBuffer(ml);
                                         while (ml-- > 0) {
-                                            //LDC - 13/02/2003 - Convert it to unicode
                                             hfBuffer.append(codePage.ebcdic2uni(segment[pos++]));
-//                                    hfBuffer.append(getASCIIChar(segment[pos++]));
-
                                         }
 
                                         log.debug(
@@ -423,15 +395,9 @@ public class WTDSFParser {
                             int len = 4;
                             int d = 0;
                             length -= s;
-                            while (--len > 0)
+                            while (--len > 0) {
                                 d = segment[pos++];
-//                        if (length > 0) {
-//                           len = (segment[pos++] & 0xff )<< 8;
-//
-//                           while (--len > 0)
-//                              d = segment[pos++];
-//                        }
-
+                            }
                             screen52.clearGuiStuff();
                             // per 14.6.13.4 documentation we should clear the
                             //    format table after this command
@@ -448,12 +414,12 @@ public class WTDSFParser {
                             // as of 03/11/2002 we should not be getting
                             // this anymore but I will leave it here
                             //  just in case.
-//                        System.out.println("erase/draw grid lines " + length);
                             len = 6;
                             d = 0;
                             length -= 9;
-                            while (--len > 0)
+                            while (--len > 0) {
                                 d = segment[pos++];
+                            }
                             if (length > 0) {
                                 len = (segment[pos++] & 0xff) << 8;
 
@@ -466,7 +432,6 @@ public class WTDSFParser {
                         default:
                             vt.sendNegResponse(NR_REQUEST_ERROR, 0x03, 0x01, 0x01, "invalid wtd structured field sub command "
                                     + (pos - 1));
-//                                                   + bk.getByteOffset(-1));
                             error = true;
                             break;
                     }
@@ -476,17 +441,15 @@ public class WTDSFParser {
                     vt.sendNegResponse(NR_REQUEST_ERROR, 0x03, 0x01, 0x01,
                             "invalid wtd structured field command "
                                     + (pos - 1));
-//                               + bk.getByteOffset(-1));
                     error = true;
                     break;
             }
 
-            if (error)
+            if (error) {
                 done = true;
+            }
 
         }
-//      }
-//      catch (Exception e) {};
 
         return error;
 
@@ -575,7 +538,6 @@ public class WTDSFParser {
             screen52.setScreenCharAndAttr(initChar, initAttr, NO_GUI, true);
             // fill it in
             while (w-- >= 0) {
-//			   if (!planes.isUseGui(screen52.getLastPos()))
                 screen52.setScreenCharAndAttr(initChar, initAttr, NO_GUI, false);
             }
             screen52.setScreenCharAndAttr(initChar, initAttr, NO_GUI, true);
@@ -627,76 +589,6 @@ public class WTDSFParser {
         screen52.setScreenCharAndAttr(initChar, initAttr, true);
 
     }
-
-    /* *** NEVER USED LOCALLY ************************************************** */
-//	private void clearWindowBody(ScreenPlanes planes, int startPos, int depth, int width) {
-//
-//	   int lastPos = startPos;
-//		char initChar = Screen5250.initChar;
-//		int initAttr = Screen5250.initAttr;
-//
-//		// now handle body of window
-//		while (depth-- > 0) {
-//
-//			// set leading attribute byte
-////				planes.setScreenCharAndAttr(lastPos,initChar, initAttr, true);
-////				setDirty(lastPos);
-////				advancePos();
-////
-////				// set left
-////				planes.setScreenCharAndAttr(lastPos, (char) left, colorAttr, false);
-////
-////				if (gui) {
-////					planes.setUseGUI(lastPos,GUI_LEFT);
-////				}
-////				setDirty(lastPos);
-////				advancePos();
-//
-//			int w = width;
-//			// fill it in
-//			while (w-- >= 0) {
-////				screen[lastPos].setCharAndAttr(initChar, initAttr, true);
-//				planes.setScreenCharAndAttr(lastPos,initChar, initAttr, true);
-////				screen[lastPos].setUseGUI(NO_GUI);
-//				planes.setUseGUI(lastPos,NO_GUI);
-////				setDirty(lastPos);
-//				lastPos++;
-//				advancePos();
-//			}
-//
-////				// set right
-////	//			screen[lastPos].setCharAndAttr((char) right, colorAttr, false);
-////				planes.setScreenCharAndAttr(lastPos,(char) right, colorAttr, false);
-////				if (gui) {
-////	//				screen[lastPos].setUseGUI(RIGHT);
-////					planes.setUseGUI(lastPos,GUI_RIGHT);
-////				}
-////
-////				setDirty(lastPos);
-////				advancePos();
-////
-////				// set ending attribute byte
-////	//			screen[lastPos].setCharAndAttr(initChar, initAttr, true);
-////				planes.setScreenCharAndAttr(lastPos,initChar, initAttr, true);
-////				setDirty(lastPos);
-//
-//			lastPos = startPos;
-//		}
-//
-//	}
-
-    /* *** NEVER USED LOCALLY ************************************************** */
-//	private void setDirty(int pos) {
-//
-//	   screen52.setDirty(pos);
-//
-//	}
-
-    /* *** NEVER USED LOCALLY ************************************************** */
-//	private void advancePos() {
-//
-//	   screen52.advancePos();
-//	}
 
     private void defineSelectionField(int majLen) {
 
@@ -821,7 +713,6 @@ public class WTDSFParser {
                             selected = true;
                         }
 
-                        //System.out.println(Integer.toBinaryString((flagCT1 & 0xf0)));
                         // is mnemonic offset specified
                         if ((flagCT1 & 0x08) == 8) {
                             log.debug(" mnemOffset " + mnemOffset);
@@ -834,7 +725,6 @@ public class WTDSFParser {
 
                             aid = true;
                             log.debug(" aidKey " + aid);
-//                     cnt++;
                         }
 
                         // is single digit number specified
@@ -878,13 +768,8 @@ public class WTDSFParser {
                             addChoiceField(chcRowStart, chcColStart, chcRow, chcCol, s);
                         }
 
-//         screen52.getScreenFields().getCurrentField().setMDT();
-
                         log.debug(s + " selected " + selected);
-//                  chcRowStart;
-                        //maxColChoice
                         colCtr++;
-//                  rowCtr++;
                         if (colCtr >= maxColChoice) {
 
                             rowCtr++;
@@ -898,7 +783,6 @@ public class WTDSFParser {
                             }
                         } else {
                             chcColStart = chcColStart + padding + cols + 3;
-//
                         }
 
                         break;
@@ -918,35 +802,5 @@ public class WTDSFParser {
             exc.printStackTrace();
         }
     }
-
-    // negotiating commands
-//   private static final byte IAC = (byte)-1; // 255  FF
-//   private static final byte DONT = (byte)-2; //254  FE
-//   private static final byte DO = (byte)-3; //253    FD
-//   private static final byte WONT = (byte)-4; //252  FC
-//   private static final byte WILL = (byte)-5; //251  FB
-//   private static final byte SB = (byte)-6; //250 Sub Begin  FA
-//   private static final byte SE = (byte)-16; //240 Sub End   F0
-//   private static final byte EOR = (byte)-17; //239 End of Record  EF
-//   private static final byte TERMINAL_TYPE = (byte)24;     // 18
-//   private static final byte OPT_END_OF_RECORD = (byte)25;  // 19
-//   private static final byte TRANSMIT_BINARY = (byte)0;     // 0
-//   private static final byte QUAL_IS = (byte)0;             // 0
-//   private static final byte TIMING_MARK = (byte)6;         // 6
-//   private static final byte NEW_ENVIRONMENT = (byte)39;         // 27
-//   private static final byte IS = (byte)0;         // 0
-//   private static final byte SEND = (byte)1;         // 1
-//   private static final byte INFO = (byte)2;         // 2
-//   private static final byte VAR = (byte)0;         // 0
-//   private static final byte VALUE = (byte)1;         // 1
-//   private static final byte NEGOTIATE_ESC = (byte)2;         // 2
-//   private static final byte USERVAR = (byte)3;         // 3
-
-    // miscellaneous
-//   private static final byte ESC = 0x04; // 04
-//   private static final char char0 = 0;
-
-//   private static final byte CMD_READ_IMMEDIATE_ALT = (byte)0x83; // 131
-
 
 }

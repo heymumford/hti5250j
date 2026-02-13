@@ -19,7 +19,6 @@ public class SpoolFilterPane extends JTabbedPane {
     private static final long serialVersionUID = 1L;
     private UserTabPanel user;
     private OutputQueueTabPanel queue;
-    //   private JobTabPanel job;
     private SpoolNameTabPanel spoolName;
     private UserDataTabPanel userData;
 
@@ -34,13 +33,11 @@ public class SpoolFilterPane extends JTabbedPane {
     private void jbInit() throws Exception {
         user = new UserTabPanel();
         queue = new OutputQueueTabPanel();
-//      job = new JobTabPanel();
         spoolName = new SpoolNameTabPanel();
         userData = new UserDataTabPanel();
 
         this.addTab("User", user);
         this.addTab("Output Queue", queue);
-//      this.addTab("Job",job);
         this.addTab("Spool Name", spoolName);
         this.addTab("User Data", userData);
 

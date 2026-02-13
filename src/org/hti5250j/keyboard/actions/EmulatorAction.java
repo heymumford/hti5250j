@@ -43,8 +43,9 @@ public abstract class EmulatorAction extends AbstractAction {
 
     protected void setKeyStroke(String action, KeyStroke ks, KeyMapper keyMap) {
 
-        if (OptionAccessFactory.getInstance().isRestrictedOption(action))
+        if (OptionAccessFactory.getInstance().isRestrictedOption(action)) {
             return;
+        }
 
         if (KeyMapper.isKeyStrokeDefined(action)) {
             ks = KeyMapper.getKeyStroke(action);
@@ -62,5 +63,5 @@ public abstract class EmulatorAction extends AbstractAction {
 
     }
 
-    abstract public void actionPerformed(ActionEvent e);
+    public abstract void actionPerformed(ActionEvent e);
 }

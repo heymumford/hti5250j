@@ -45,18 +45,20 @@ public class GenericTn5250JFrame extends JFrame {
 
     public void centerFrame() {
 
-        if (packFrame)
+        if (packFrame) {
             pack();
-        else
+        } else {
             validate();
+        }
 
-        //Center the window
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = getSize();
-        if (frameSize.height > screenSize.height)
+        if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
-        if (frameSize.width > screenSize.width)
+        }
+        if (frameSize.width > screenSize.width) {
             frameSize.width = screenSize.width;
+        }
 
         setLocation((screenSize.width - frameSize.width) / 2,
                 (screenSize.height - frameSize.height) / 2);

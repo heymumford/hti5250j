@@ -12,8 +12,8 @@ package org.hti5250j.event;
 
 public interface ToggleDocumentListener {
 
-    public void toggleNotEmpty();
+    void toggleNotEmpty();
 
-    public void toggleEmpty();
+    void toggleEmpty();
 
 }

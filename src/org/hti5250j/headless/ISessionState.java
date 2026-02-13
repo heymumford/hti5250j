@@ -26,7 +26,7 @@ package org.hti5250j.headless;
  * - Any → ERROR: Connection failure, unexpected shutdown, etc.
  * - ERROR → DISCONNECTED: Manual cleanup
  *
- * @since Wave 3A Track 3
+ * @since 0.12.0
  */
 public class ISessionState {
 
@@ -53,8 +53,12 @@ public class ISessionState {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof ISessionState)) return false;
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof ISessionState)) {
+            return false;
+        }
         return state.equals(((ISessionState) obj).state);
     }
 

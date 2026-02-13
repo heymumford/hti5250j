@@ -27,9 +27,6 @@ class OnConnectAttributesPanel extends AttributesPanel {
         super(config, "OnConnect");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         setLayout(new BorderLayout());
@@ -37,14 +34,11 @@ class OnConnectAttributesPanel extends AttributesPanel {
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         add(contentPane, BorderLayout.NORTH);
 
-        // define onConnect macro to run
         JPanel ocMacrop = new JPanel();
         ocMacrop.setBorder(BorderFactory.createTitledBorder(LangTool.getString("sa.connectMacro")));
 
         connectMacro = new JTextField();
         connectMacro.setColumns(30);
-
-        // sets the connect macro
         connectMacro.setText(getStringProperty("connectMacro"));
 
         ocMacrop.add(connectMacro);

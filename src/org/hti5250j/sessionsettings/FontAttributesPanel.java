@@ -32,9 +32,6 @@ class FontAttributesPanel extends AttributesPanel {
         super(config, "Fonts");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         setLayout(new BorderLayout());
@@ -55,8 +52,9 @@ class FontAttributesPanel extends AttributesPanel {
         String font = getStringProperty("font");
 
         for (int x = 0; x < fonts.length; x++) {
-            if (fonts[x].getFontName().indexOf('.') < 0)
+            if (fonts[x].getFontName().indexOf('.') < 0) {
                 fontsList.addItem(fonts[x].getFontName());
+            }
         }
 
         fontsList.setSelectedItem(font);
@@ -76,12 +74,15 @@ class FontAttributesPanel extends AttributesPanel {
         verticalScale = new JTextField("1.2", 5);
         horizontalScale = new JTextField("1.0", 5);
         pointSize = new JTextField("0", 5);
-        if (getStringProperty("fontScaleWidth").length() != 0)
+        if (getStringProperty("fontScaleWidth").length() != 0) {
             horizontalScale.setText(getStringProperty("fontScaleWidth"));
-        if (getStringProperty("fontScaleHeight").length() != 0)
+        }
+        if (getStringProperty("fontScaleHeight").length() != 0) {
             verticalScale.setText(getStringProperty("fontScaleHeight"));
-        if (getStringProperty("fontPointSize").length() != 0)
+        }
+        if (getStringProperty("fontPointSize").length() != 0) {
             pointSize.setText(getStringProperty("fontPointSize"));
+        }
         fsp.add(new JLabel(LangTool.getString("sa.fixedPointSize")));
         fsp.add(pointSize);
         fsp.add(new JLabel(LangTool.getString("sa.horScaleLabel")));

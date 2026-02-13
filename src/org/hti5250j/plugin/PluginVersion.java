@@ -32,9 +32,15 @@ public final class PluginVersion implements Comparable<PluginVersion> {
         this.patch = patch;
     }
 
-    public int getMajor() { return major; }
-    public int getMinor() { return minor; }
-    public int getPatch() { return patch; }
+    public int getMajor() {
+        return major;
+    }
+    public int getMinor() {
+        return minor;
+    }
+    public int getPatch() {
+        return patch;
+    }
 
     public boolean isCompatibleWith(PluginVersion other) {
         return this.major == other.major;
@@ -42,8 +48,12 @@ public final class PluginVersion implements Comparable<PluginVersion> {
 
     @Override
     public int compareTo(PluginVersion o) {
-        if (this.major != o.major) return this.major - o.major;
-        if (this.minor != o.minor) return this.minor - o.minor;
+        if (this.major != o.major) {
+            return this.major - o.major;
+        }
+        if (this.minor != o.minor) {
+            return this.minor - o.minor;
+        }
         return this.patch - o.patch;
     }
 
@@ -54,7 +64,9 @@ public final class PluginVersion implements Comparable<PluginVersion> {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof PluginVersion)) return false;
+        if (!(o instanceof PluginVersion)) {
+            return false;
+        }
         PluginVersion v = (PluginVersion) o;
         return this.major == v.major && this.minor == v.minor && this.patch == v.patch;
     }

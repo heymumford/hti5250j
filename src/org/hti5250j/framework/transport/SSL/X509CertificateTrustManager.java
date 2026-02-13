@@ -57,8 +57,9 @@ public class X509CertificateTrustManager implements X509TrustManager {
             throws CertificateException {
         try {
             for (int i = 0; i < trustManagers.length; i++) {
-                if (trustManagers[i] instanceof X509TrustManager)
+                if (trustManagers[i] instanceof X509TrustManager) {
                     ((X509TrustManager) trustManagers[i]).checkServerTrusted(chain, type);
+                }
             }
             return;
         } catch (CertificateException ce) {
@@ -83,8 +84,9 @@ public class X509CertificateTrustManager implements X509TrustManager {
     public X509Certificate[] getAcceptedIssuers() {
         ArrayList<X509Certificate> list = new ArrayList<X509Certificate>(10);
         for (int i = 0; i < trustManagers.length; i++) {
-            if (trustManagers[i] instanceof X509TrustManager)
+            if (trustManagers[i] instanceof X509TrustManager) {
                 list.addAll(Arrays.asList(((X509TrustManager) trustManagers[i]).getAcceptedIssuers()));
+            }
         }
         X509Certificate[] acceptedIssuers = new X509Certificate[list.size()];
         acceptedIssuers = list.toArray(acceptedIssuers);

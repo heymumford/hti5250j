@@ -25,10 +25,6 @@ import org.hti5250j.tools.LangTool;
 import org.hti5250j.tools.GUIGraphicsUtils;
 import org.hti5250j.tools.system.OperatingSystem;
 
-/**
- *
- */
-
 public class SqlWizard extends JFrame {
 
     private static final long serialVersionUID = 1L;
@@ -66,23 +62,13 @@ public class SqlWizard extends JFrame {
             // set title
             setTitle(LangTool.getString("xtfr.wizardTitle"));
 
-            // Load the JDBC driver.
             Driver driver2 = (Driver) Class.forName("com.ibm.as400.access.AS400JDBCDriver").newInstance();
             DriverManager.registerDriver(driver2);
 
-            // Get a connection to the database.  Since we do not
-            // provide a user id or password, a prompt will appear.
             connection = new SQLConnection("jdbc:as400://" + host, name, password);
 
-            // Create an SQLQueryBuilderPane
-            // object. Assume that "connection"
-            // is an SQLConnection object that is
-            // created and initialized elsewhere.
             queryBuilder = new SQLQueryBuilderPane(connection);
             queryBuilder.setTableSchemas(new String[]{"*USRLIBL"});
-
-            // Load the data needed for the query
-            // builder.
             queryBuilder.load();
 
             JButton done = new JButton(LangTool.getString("xtfr.tableDone"));
@@ -102,19 +88,23 @@ public class SqlWizard extends JFrame {
 
             pack();
 
-            if (getSize().width > max.width)
+            if (getSize().width > max.width) {
                 setSize(max.width, getSize().height);
+            }
 
-            if (getSize().height > max.height)
+            if (getSize().height > max.height) {
                 setSize(getSize().width, max.height);
+            }
 
             //Center the window
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             Dimension frameSize = getSize();
-            if (frameSize.height > screenSize.height)
+            if (frameSize.height > screenSize.height) {
                 frameSize.height = screenSize.height;
-            if (frameSize.width > screenSize.width)
+            }
+            if (frameSize.width > screenSize.width) {
                 frameSize.width = screenSize.width;
+            }
 
             setLocation((screenSize.width - frameSize.width) / 2,
                     (screenSize.height - frameSize.height) / 2);

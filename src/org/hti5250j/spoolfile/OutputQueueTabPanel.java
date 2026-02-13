@@ -86,14 +86,6 @@ public class OutputQueueTabPanel extends JPanel implements QueueFilterInterface,
     }
 
     void select_itemStateChanged(ItemEvent e) {
-//      if (select.isSelected()) {
-//         queue.setEnabled(true);
-//         library.setEnabled(true);
-//      }
-//      else {
-//         queue.setEnabled(false);
-//         library.setEnabled(false);
-//      }
     }
 
     public void toggleNotEmpty() {
@@ -107,18 +99,20 @@ public class OutputQueueTabPanel extends JPanel implements QueueFilterInterface,
     }
 
     public String getQueue() {
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "%ALL%";
-        else
+        } else {
             return queue.getText().trim();
+        }
     }
 
     public String getLibrary() {
 
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "%ALL%";
-        else
+        } else {
             return library.getText().trim();
+        }
 
     }
 }

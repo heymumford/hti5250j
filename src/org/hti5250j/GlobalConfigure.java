@@ -17,7 +17,6 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
 
 import javax.swing.*;
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Hashtable;
@@ -36,23 +35,19 @@ public class GlobalConfigure extends ConfigureFactory {
     /**
      * A handle to the unique GlobalConfigure class
      */
-    static private GlobalConfigure _instance;
+    private static GlobalConfigure _instance;
 
     /**
      * A handle to the the Global Properties
      */
-    static private Properties settings;
+    private static Properties settings;
 
-    static private Hashtable registry = new Hashtable();
-    static private Hashtable headers = new Hashtable();  //LUC GORRENS
+    private static Hashtable registry = new Hashtable();
+    private static Hashtable headers = new Hashtable();
 
-    // Moved to ConfigureFactory
-    //   static final public String SESSIONS = "sessions";
-    static final public File ses = new File(SESSIONS);
-    //   static final public String MACROS = "macros";
-    //   static final public String KEYMAP = "keymap";
+    public static final File ses = new File(SESSIONS);
 
-    static final private String settingsFile = "tn5250jstartup.cfg";
+    private static final String settingsFile = "tn5250jstartup.cfg";
     private final HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
 
     /**
@@ -60,9 +55,7 @@ public class GlobalConfigure extends ConfigureFactory {
      */
     public GlobalConfigure() {
         if (_instance == null) {
-            // initialize the settings information
             initialize();
-            // set our instance to this one.
             _instance = this;
         }
     }
@@ -70,7 +63,7 @@ public class GlobalConfigure extends ConfigureFactory {
     /**
      * @return The unique instance of this class.
      */
-    static public GlobalConfigure instance() {
+    public static GlobalConfigure instance() {
 
         if (_instance == null) {
             _instance = new GlobalConfigure();
@@ -160,7 +153,6 @@ public class GlobalConfigure extends ConfigureFactory {
 
         settings = new Properties();
 
-        // here we will check for a system property is provided first.
         if (System.getProperties().containsKey("emulator.settingsDirectory")) {
             settings.setProperty("emulator.settingsDirectory",
                     System.getProperty("emulator.settingsDirectory") +
@@ -207,17 +199,13 @@ public class GlobalConfigure extends ConfigureFactory {
     }
 
     private void checkDirs() {
-        // we now check to see if the settings directory is a directory.  If not then we create it
         File sd = new File(settings.getProperty("emulator.settingsDirectory"));
-        if (!sd.isDirectory())
+        if (!sd.isDirectory()) {
             sd.mkdirs();
+        }
     }
 
     private void checkLegacy() {
-        // we check if the sessions file already exists in the directory
-        // if it does exist we are working with an old install so we
-        // need to set the settings directory to the users directory
-        // SESSIONS is declared as a string, so we just can use the keyword here.
         if (ses.exists()) {
             int cfc;
             cfc = JOptionPane.showConfirmDialog(null,
@@ -233,7 +221,6 @@ public class GlobalConfigure extends ConfigureFactory {
                     "Old install detected", JOptionPane.WARNING_MESSAGE,
                     JOptionPane.YES_NO_OPTION);
             if (cfc == 0) {
-                // Here we do a checkdir so we know the destination-dir exists
                 checkDirs();
                 copyConfigs(SESSIONS);
                 copyConfigs(MACROS);
@@ -253,7 +240,6 @@ public class GlobalConfigure extends ConfigureFactory {
     }
 
     private void copyConfigs(String sesFile) {
-        /** Copy the config-files to the user's home-dir */
         String srcFile = System.getProperty("user.dir") + File.separator + sesFile;
         String dest = System.getProperty("user.home") +
                 File.separator + TN5250J_FOLDER + File.separator + sesFile;
@@ -410,7 +396,7 @@ public class GlobalConfigure extends ConfigureFactory {
      * @param header
      */
     @Override
-    public void setProperties(String regKey, String fileName, String header) {  //LG NEW
+    public void setProperties(String regKey, String fileName, String header) {
         setProperties(regKey, fileName, header, false);
     }
 
@@ -506,11 +492,9 @@ public class GlobalConfigure extends ConfigureFactory {
             headers.put(regKey, header);
 
             try {
-                // Construct path safely - use Path.resolve() instead of string concatenation
                 Path settingsPath = Paths.get(settingsDirectory()).normalize().toAbsolutePath();
                 Path filePath = settingsPath.resolve(fileName).normalize();
 
-                // Verify path stays within settings directory (prevent directory traversal)
                 if (!filePath.startsWith(settingsPath)) {
                     throw new SecurityException("Path traversal attempt detected: " + fileName);
                 }
@@ -565,10 +549,11 @@ public class GlobalConfigure extends ConfigureFactory {
      */
     @Override
     public String getProperty(String key, String def) {
-        if (settings.containsKey(key))
+        if (settings.containsKey(key)) {
             return settings.getProperty(key);
-        else
+        } else {
             return def;
+        }
     }
 
     /**
@@ -588,7 +573,6 @@ public class GlobalConfigure extends ConfigureFactory {
      * @return
      */
     private String settingsDirectory() {
-        //System.out.println(settings.getProperty("emulator.settingsDirectory"));
         return settings.getProperty("emulator.settingsDirectory");
 
     }
@@ -601,8 +585,9 @@ public class GlobalConfigure extends ConfigureFactory {
     public ClassLoader getClassLoader() {
 
         ClassLoader loader = GlobalConfigure.class.getClassLoader();
-        if (loader == null)
+        if (loader == null) {
             loader = ClassLoader.getSystemClassLoader();
+        }
 
         return loader;
     }

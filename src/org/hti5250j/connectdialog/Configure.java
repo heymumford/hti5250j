@@ -47,7 +47,6 @@ class Configure {
 
     private static Properties props = null;
 
-    // property input structures
     private static JTextField systemName = null;
     private static JTextField systemId = null;
     private static JTextField port = null;
@@ -148,47 +147,56 @@ class Configure {
                 port = new JTextField("23", 5);
             }
 
-            if (isSpecified("-sslType", args))
+            if (isSpecified("-sslType", args)) {
                 sslType.setSelectedItem(getParm("-sslType", args));
+            }
 
-            if (isSpecified("-sph", args))
+            if (isSpecified("-sph", args)) {
                 proxyHost = new JTextField(getParm("-sph", args), 20);
-            else
+            } else {
                 proxyHost = new JTextField(20);
+            }
 
-            if (isSpecified("-f", args))
+            if (isSpecified("-f", args)) {
                 fpn = new JTextField(getParm("-f", args), 20);
-            else
+            } else {
                 fpn = new JTextField(20);
+            }
             if (isSpecified("-cp", args)) {
                 String codepage = getParm("-cp", args);
                 String[] acps = CharMappings.getAvailableCodePages();
                 jtb.setSelected(true);
                 for (String acp : acps) {
-                    if (acp.equals(codepage)) jtb.setSelected(false);
+                    if (acp.equals(codepage)) {
+                        jtb.setSelected(false);
+                    }
                 }
                 cpb.setSelectedItem(codepage);
 
             }
 
-            if (isSpecified("-e", args))
+            if (isSpecified("-e", args)) {
                 ec.setSelected(true);
-            else
+            } else {
                 ec.setSelected(false);
-            if (isSpecified("-t", args))
+            }
+            if (isSpecified("-t", args)) {
                 tc.setSelected(true);
-            else
+            } else {
                 tc.setSelected(false);
+            }
 
-            if (isSpecified("-132", args))
+            if (isSpecified("-132", args)) {
                 sdBig.setSelected(true);
-            else
+            } else {
                 sdNormal.setSelected(true);
+            }
 
-            if (isSpecified("-dn", args))
+            if (isSpecified("-dn", args)) {
                 deviceName = new JTextField(getParm("-dn", args), 20);
-            else
+            } else {
                 deviceName = new JTextField(20);
+            }
 
             if (isSpecified("-dn=hostname", args)) {
                 sdn.setSelected(true);
@@ -204,45 +212,49 @@ class Configure {
                 proxyPort = new JTextField("1080", 5);
             }
 
-            if (isSpecified("-usp", args))
+            if (isSpecified("-usp", args)) {
                 useProxy.setSelected(true);
-            else
+            } else {
                 useProxy.setSelected(false);
+            }
 
-            if (isSpecified("-noembed", args))
+            if (isSpecified("-noembed", args)) {
                 noEmbed.setSelected(true);
-            else
+            } else {
                 noEmbed.setSelected(false);
+            }
 
-            if (isSpecified("-d", args))
+            if (isSpecified("-d", args)) {
                 deamon.setSelected(true);
-            else
+            } else {
                 deamon.setSelected(false);
+            }
 
-            if (isSpecified("-nc", args))
+            if (isSpecified("-nc", args)) {
                 newJVM.setSelected(true);
-            else
+            } else {
                 newJVM.setSelected(false);
+            }
 
-            if (isSpecified("-hb", args))
+            if (isSpecified("-hb", args)) {
                 heartBeat.setSelected(true);
-            else
+            } else {
                 heartBeat.setSelected(false);
+            }
 
-            if (isSpecified("-hb", args))
+            if (isSpecified("-hb", args)) {
                 heartBeat.setSelected(true);
-            else
+            } else {
                 heartBeat.setSelected(false);
+            }
 
         }
 
-        //Create main attributes panel
         JPanel mp = new JPanel();
         BoxLayout mpLayout = new BoxLayout(mp, BoxLayout.Y_AXIS);
 
         mp.setLayout(mpLayout);
 
-        //System Name panel
         JPanel snp = new JPanel();
         AlignLayout snpLayout = new AlignLayout(2, 5, 5);
         snp.setLayout(snpLayout);
@@ -264,7 +276,6 @@ class Configure {
                 newJVM,
                 snp);
 
-        //System Id panel
         JPanel sip = new JPanel();
 
         AlignLayout al = new AlignLayout(2, 5, 5);
@@ -304,14 +315,12 @@ class Configure {
                 heartBeat,
                 sip);
 
-        // options panel
         JPanel op = new JPanel();
         BoxLayout opLayout = new BoxLayout(op, BoxLayout.Y_AXIS);
         op.setLayout(opLayout);
         op.setBorder(BorderFactory.createTitledBorder(
                 LangTool.getString("conf.labelOptionsTitle")));
 
-        // file name panel
         JPanel fp = new JPanel();
         BoxLayout fpLayout = new BoxLayout(fp, BoxLayout.Y_AXIS);
         fp.setLayout(fpLayout);
@@ -320,14 +329,12 @@ class Configure {
 
         fp.add(fpn);
 
-        // screen dimensions panel
         JPanel sdp = new JPanel();
         BoxLayout sdpLayout = new BoxLayout(sdp, BoxLayout.X_AXIS);
         sdp.setLayout(sdpLayout);
         sdp.setBorder(BorderFactory.createTitledBorder(
                 LangTool.getString("conf.labelDimensions")));
 
-        // Group the radio buttons.
         ButtonGroup sdGroup = new ButtonGroup();
         sdGroup.add(sdNormal);
         sdGroup.add(sdBig);
@@ -335,7 +342,6 @@ class Configure {
         sdp.add(sdNormal);
         sdp.add(sdBig);
 
-        // code page panel
         JPanel cp = new JPanel();
         BoxLayout cpLayout = new BoxLayout(cp, BoxLayout.X_AXIS);
         cp.setLayout(cpLayout);
@@ -344,7 +350,6 @@ class Configure {
         cp.add(cpb);
         cp.add(jtb);
 
-        // emulation mode panel
         JPanel ep = new JPanel();
         BoxLayout epLayout = new BoxLayout(ep, BoxLayout.X_AXIS);
         ep.setLayout(epLayout);
@@ -353,7 +358,6 @@ class Configure {
 
         ep.add(ec);
 
-        // title to be use panel
         JPanel tp = new JPanel();
         BoxLayout tpLayout = new BoxLayout(tp, BoxLayout.X_AXIS);
         tp.setLayout(tpLayout);
@@ -364,14 +368,12 @@ class Configure {
                 tc,
                 tp);
 
-        // add all options to Options panel
         op.add(fp);
         op.add(sdp);
         op.add(cp);
         op.add(ep);
         op.add(tp);
 
-        //System Id panel
         JPanel sprox = new JPanel();
 
         AlignLayout spal = new AlignLayout(2, 5, 5);
@@ -456,7 +458,7 @@ class Configure {
 
         pane.setInitialValue(options[0]);
         pane.setComponentOrientation(parent.getComponentOrientation());
-        dialog = pane.createDialog(parent, title); //, JRootPane.PLAIN_DIALOG);
+        dialog = pane.createDialog(parent, title);
 
         dialog.setVisible(true);
 
@@ -538,8 +540,9 @@ class Configure {
 
         for (int x = 0; x < args.length; x++) {
 
-            if (args[x].equals(parm))
+            if (args[x].equals(parm)) {
                 return args[x + 1];
+            }
 
         }
         return null;
@@ -549,8 +552,9 @@ class Configure {
 
         for (int x = 0; x < args.length; x++) {
 
-            if (args[x] != null && args[x].equals(parm))
+            if (args[x] != null && args[x].equals(parm)) {
                 return true;
+            }
 
         }
         return false;
@@ -584,62 +588,83 @@ class Configure {
         StringBuilder sb = new StringBuilder();
         sb.append(systemId.getText());
 
-        // port
-        if (port.getText() != null)
-            if (port.getText().trim().length() > 0)
+        if (port.getText() != null) {
+            if (port.getText().trim().length() > 0) {
                 sb.append(" -p " + port.getText().trim());
+            }
+        }
 
-        if (fpn.getText() != null)
-            if (fpn.getText().length() > 0)
+        if (fpn.getText() != null) {
+            if (fpn.getText().length() > 0) {
                 sb.append(" -f " + fpn.getText());
+            }
+        }
         if (!LangTool.getString("conf.labelDefault").equals(
-                cpb.getSelectedItem()))
+                cpb.getSelectedItem())) {
             sb.append(" -cp " + (String) cpb.getSelectedItem());
+        }
 
-        if (!HTI5250jConstants.SSL_TYPE_NONE.equals(sslType.getSelectedItem()))
+        if (!HTI5250jConstants.SSL_TYPE_NONE.equals(sslType.getSelectedItem())) {
             sb.append(" -sslType " + (String) sslType.getSelectedItem());
+        }
 
-        if (ec.isSelected())
+        if (ec.isSelected()) {
             sb.append(" -e");
+        }
 
-        if (tc.isSelected())
+        if (tc.isSelected()) {
             sb.append(" -t");
+        }
 
-        if (!sdNormal.isSelected())
+        if (!sdNormal.isSelected()) {
             sb.append(" -132");
+        }
 
-        if (deviceName.getText() != null && !sdn.isSelected())
-            if (deviceName.getText().trim().length() > 0)
-                if (deviceName.getText().trim().length() > 10)
+        if (deviceName.getText() != null && !sdn.isSelected()) {
+            if (deviceName.getText().trim().length() > 0) {
+                if (deviceName.getText().trim().length() > 10) {
                     sb.append(" -dn " + deviceName.getText().trim().substring(0, 10).toUpperCase());
-                else
+                } else {
                     sb.append(" -dn " + deviceName.getText().trim().toUpperCase());
+                }
+            }
+        }
 
-        if (sdn.isSelected())
+        if (sdn.isSelected()) {
             sb.append(" -dn=hostname");
+        }
 
-        if (useProxy.isSelected())
+        if (useProxy.isSelected()) {
             sb.append(" -usp");
+        }
 
-        if (proxyHost.getText() != null)
-            if (proxyHost.getText().length() > 0)
+        if (proxyHost.getText() != null) {
+            if (proxyHost.getText().length() > 0) {
                 sb.append(" -sph " + proxyHost.getText());
+            }
+        }
 
-        if (proxyPort.getText() != null)
-            if (proxyPort.getText().length() > 0)
+        if (proxyPort.getText() != null) {
+            if (proxyPort.getText().length() > 0) {
                 sb.append(" -spp " + proxyPort.getText());
+            }
+        }
 
-        if (noEmbed.isSelected())
+        if (noEmbed.isSelected()) {
             sb.append(" -noembed ");
+        }
 
-        if (deamon.isSelected())
+        if (deamon.isSelected()) {
             sb.append(" -d ");
+        }
 
-        if (newJVM.isSelected())
+        if (newJVM.isSelected()) {
             sb.append(" -nc ");
+        }
 
-        if (heartBeat.isSelected())
+        if (heartBeat.isSelected()) {
             sb.append(" -hb ");
+        }
 
         return sb.toString();
     }
@@ -660,14 +685,16 @@ class Configure {
                 throws BadLocationException {
 
             super.insertString(offs, str, a);
-            if (getText(0, getLength()).length() > 0)
+            if (getText(0, getLength()).length() > 0) {
                 doSomethingEntered();
+            }
         }
 
         public void remove(int offs, int len) throws BadLocationException {
             super.remove(offs, len);
-            if (getText(0, getLength()).length() == 0)
+            if (getText(0, getLength()).length() == 0) {
                 doNothingEntered();
+            }
         }
     }
 }

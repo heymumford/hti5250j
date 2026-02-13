@@ -52,14 +52,30 @@ public abstract class AbstractImageEncoder implements Encoder {
 
     public byte createByte(int b7, int b6, int b5, int b4, int b3, int b2, int b1, int b0) {
         byte bits = 0;
-        if (b0 == 1) bits = (byte) (bits | 1);
-        if (b1 == 1) bits = (byte) (bits | 2);
-        if (b2 == 1) bits = (byte) (bits | 4);
-        if (b3 == 1) bits = (byte) (bits | 8);
-        if (b4 == 1) bits = (byte) (bits | 16);
-        if (b5 == 1) bits = (byte) (bits | 32);
-        if (b6 == 1) bits = (byte) (bits | 64);
-        if (b7 == 1) bits = (byte) (bits | 128);
+        if (b0 == 1) {
+            bits = (byte) (bits | 1);
+        }
+        if (b1 == 1) {
+            bits = (byte) (bits | 2);
+        }
+        if (b2 == 1) {
+            bits = (byte) (bits | 4);
+        }
+        if (b3 == 1) {
+            bits = (byte) (bits | 8);
+        }
+        if (b4 == 1) {
+            bits = (byte) (bits | 16);
+        }
+        if (b5 == 1) {
+            bits = (byte) (bits | 32);
+        }
+        if (b6 == 1) {
+            bits = (byte) (bits | 64);
+        }
+        if (b7 == 1) {
+            bits = (byte) (bits | 128);
+        }
         return bits;
     }
 

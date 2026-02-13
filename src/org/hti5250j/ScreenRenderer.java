@@ -6,22 +6,15 @@
 package org.hti5250j;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.font.LineMetrics;
-import java.awt.geom.Rectangle2D;
 
 import org.hti5250j.gui.DrawingContext;
-import org.hti5250j.sessionsettings.ColumnSeparator;
-import org.hti5250j.tools.GUIGraphicsUtils;
 
 /**
  * Screen and character rendering logic.
  *
  * Extracted from GuiGraphicBuffer to follow Single Responsibility Principle.
- * This is the FINAL extraction phase (Phase 5) - consolidates all character/screen
- * rendering operations into a dedicated class.
  *
  * Responsibilities:
  * - Character drawing with attribute handling (colors, bold, underline)
@@ -127,7 +120,6 @@ public class ScreenRenderer {
         // Draw character
         g.setColor(fg);
 
-        // Draw the character (simplified for Phase 5)
         g.drawString(String.valueOf(ch), x, y + (rowHeight / 2));
 
         // Apply underline if needed

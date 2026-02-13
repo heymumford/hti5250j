@@ -35,9 +35,6 @@ class PrinterAttributesPanel extends AttributesPanel {
         super(config, "Printer");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
 
@@ -51,8 +48,9 @@ class PrinterAttributesPanel extends AttributesPanel {
         ppp.setBorder(BorderFactory.createTitledBorder(LangTool.getString("sa.print")));
         defaultPrinter = new JCheckBox(LangTool.getString("sa.defaultPrinter"));
 
-        if (getStringProperty("defaultPrinter").equals("Yes"))
+        if (getStringProperty("defaultPrinter").equals("Yes")) {
             defaultPrinter.setSelected(true);
+        }
 
         ppp.add(defaultPrinter);
 

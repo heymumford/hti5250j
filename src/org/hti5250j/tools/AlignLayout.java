@@ -68,7 +68,9 @@ public class AlignLayout extends ENHGridLayout {
      * @exception IllegalArgumentException If an invalid value is set
      */
     public void setLabelVerticalAlignment(Component child, int align) {
-        if (alignment == null) alignment = new Hashtable(5);
+        if (alignment == null) {
+            alignment = new Hashtable(5);
+        }
         alignment.put("" + child.hashCode(), Integer.valueOf(align));
     }
 
@@ -83,7 +85,9 @@ public class AlignLayout extends ENHGridLayout {
      * right edge if it is in the last column (default: false).
      */
     public void setResizeWidth(Component child, boolean shouldResize) {
-        if (resize_width == null) resize_width = new Hashtable(5);
+        if (resize_width == null) {
+            resize_width = new Hashtable(5);
+        }
         resize_width.put("" + child.hashCode(), Boolean.valueOf(shouldResize));
     }
 
@@ -99,7 +103,9 @@ public class AlignLayout extends ENHGridLayout {
      * labels (the components in odd columns).
      */
     public void setResizeHeight(Component child, boolean shouldResize) {
-        if (resize_height == null) resize_height = new Hashtable(5);
+        if (resize_height == null) {
+            resize_height = new Hashtable(5);
+        }
         resize_height.put("" + child.hashCode(), Boolean.valueOf(shouldResize));
     }
 
@@ -126,6 +132,7 @@ public class AlignLayout extends ENHGridLayout {
          */
         if (!isLabel(col)) {
             if (col < colWidths.length - 1) {
+                // no-op
             } else if (getResizeWidth(component)) {
                 Container parent = component.getParent();
                 comp_w = parent.getSize().width - parent.getInsets().right - x;

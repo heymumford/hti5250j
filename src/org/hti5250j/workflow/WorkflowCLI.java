@@ -25,30 +25,25 @@ public class WorkflowCLI {
             ArgumentParser parsed = ArgumentParser.parse(args);
             parsed.validate();
 
-            // Load workflow
             WorkflowSchema workflow = WorkflowLoader.load(parsed.workflowFile());
             TerminalAdapter.printWorkflowLoaded(workflow.getName(), workflow.getSteps().size());
 
-            // Handle validate action
             if ("validate".equals(parsed.action())) {
                 validateWorkflow(workflow, parsed.dataFile());
                 return;
             }
 
-            // Handle simulate action (dry-run without i5 connection)
             if ("simulate".equals(parsed.action())) {
                 simulateWorkflow(workflow, parsed.dataFile());
                 return;
             }
 
-            // Handle run action
             if ("run".equals(parsed.action())) {
                 if (parsed.dataFile() != null) {
                     DatasetLoader loader = new DatasetLoader();
                     Map<String, Map<String, String>> allRows = loader.loadCSV(new File(parsed.dataFile()));
 
                     if (allRows.size() > 1) {
-                        // Batch mode: multiple rows, execute in parallel with virtual threads
                         TerminalAdapter.printBatchMode(allRows.size());
                         BatchMetrics metrics = WorkflowExecutor.executeBatch(workflow, parsed.dataFile(), parsed.environment());
                         metrics.print();
@@ -57,11 +52,9 @@ public class WorkflowCLI {
                             System.exit(1);
                         }
                     } else {
-                        // Single-row mode: existing sequential execution
                         WorkflowExecutor.execute(workflow, parsed.dataFile(), parsed.environment());
                     }
                 } else {
-                    // No data file: existing execution
                     WorkflowExecutor.execute(workflow, null, parsed.environment());
                 }
             }
@@ -79,7 +72,6 @@ public class WorkflowCLI {
         WorkflowValidator validator = new WorkflowValidator();
         ValidationResult result = validator.validate(workflow);
 
-        // Validate parameters if dataset provided
         if (dataFile != null) {
             Map<String, Object> dataset = loadDataset(dataFile);
             ParameterValidator paramValidator = new ParameterValidator();
@@ -87,7 +79,6 @@ public class WorkflowCLI {
             result.merge(paramResult);
         }
 
-        // Print validation results
         if (result.isValid()) {
             TerminalAdapter.printValidationSuccess();
         } else {
@@ -103,14 +94,12 @@ public class WorkflowCLI {
      * Provides approval gate recommendation before real execution.
      */
     private static void simulateWorkflow(WorkflowSchema workflow, String dataFile) {
-        // Load tolerance settings (use defaults if not set in workflow)
         WorkflowTolerance tolerance = workflow.getTolerances() != null ?
             workflow.getTolerances() :
             WorkflowTolerance.defaults(workflow.getName());
 
         TerminalAdapter.printSimulationStarted(tolerance);
 
-        // If no data file, run single simulation
         if (dataFile == null) {
             WorkflowSimulator simulator = new WorkflowSimulator();
             WorkflowSimulation result = simulator.simulate(workflow, new HashMap<>(), tolerance);
@@ -118,13 +107,11 @@ public class WorkflowCLI {
             return;
         }
 
-        // Load dataset and run simulations for each row
         try {
             DatasetLoader loader = new DatasetLoader();
             Map<String, Map<String, String>> allRows = loader.loadCSV(new File(dataFile));
             TerminalAdapter.printDatasetLoaded(allRows.size());
 
-            // Run simulations for all rows and collect results
             WorkflowSimulator simulator = new WorkflowSimulator();
             List<WorkflowSimulation> simulations = new java.util.ArrayList<>();
             int successCount = 0;
@@ -144,10 +131,8 @@ public class WorkflowCLI {
                 }
             }
 
-            // Print summary
             printBatchSimulationSummary(successCount, timeoutCount, errorCount, allRows.size());
 
-            // Print detailed results
             for (int i = 0; i < simulations.size(); i++) {
                 System.out.printf("Row %d: %s%n", i + 1, simulations.get(i).predictedOutcome());
                 if (!simulations.get(i).warnings().isEmpty()) {
@@ -157,7 +142,6 @@ public class WorkflowCLI {
                 }
             }
 
-            // Approval gate recommendation
             if (errorCount > 0 || timeoutCount > 0) {
                 System.out.println("\n⛔ SIMULATION BLOCKED FOR EXECUTION");
                 System.out.println("  Fix issues before running: eliminate timeouts and validation errors");
@@ -191,7 +175,6 @@ public class WorkflowCLI {
 
         System.out.println("═".repeat(70));
 
-        // Approval gate
         if ("success".equals(result.predictedOutcome())) {
             System.out.println("\n✅ APPROVED FOR EXECUTION");
             System.out.println("  Simulation successful. Ready to run on real i5.");
@@ -225,7 +208,6 @@ public class WorkflowCLI {
             DatasetLoader loader = new DatasetLoader();
             Map<String, Map<String, String>> allRows = loader.loadCSV(new File(dataFile));
             if (!allRows.isEmpty()) {
-                // Get first row from CSV and convert to Object map
                 Map<String, String> firstRow = allRows.values().iterator().next();
                 result.putAll(firstRow);
             }

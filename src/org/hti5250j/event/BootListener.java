@@ -14,6 +14,6 @@ import java.util.EventListener;
 
 public interface BootListener extends EventListener {
 
-    public abstract void bootOptionsReceived(BootEvent bootevent);
+    void bootOptionsReceived(BootEvent bootevent);
 
 }

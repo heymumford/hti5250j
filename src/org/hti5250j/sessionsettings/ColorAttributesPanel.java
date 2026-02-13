@@ -35,9 +35,6 @@ class ColorAttributesPanel extends AttributesPanel {
         super(config, "Colors");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         JPanel cp = new JPanel();
@@ -93,86 +90,98 @@ class ColorAttributesPanel extends AttributesPanel {
                 JComboBox cb = (JComboBox) e.getSource();
                 String newSelection = (String) cb.getSelectedItem();
                 if (newSelection.equals(LangTool.getString("sa.bg"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorBg());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorBg"));
+                    }
                 }
                 if (newSelection.equals(LangTool.getString("sa.blue"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorBlue());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorBlue"));
+                    }
                 }
                 if (newSelection.equals(LangTool.getString("sa.red"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorRed());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorRed"));
+                    }
 
                 }
                 if (newSelection.equals(LangTool.getString("sa.pink"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorPink());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorPink"));
+                    }
 
                 }
                 if (newSelection.equals(LangTool.getString("sa.green"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorGreen());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorGreen"));
+                    }
 
                 }
                 if (newSelection.equals(LangTool.getString("sa.turq"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorTurq());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorTurq"));
+                    }
 
                 }
                 if (newSelection.equals(LangTool.getString("sa.yellow"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorYellow());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorYellow"));
+                    }
 
                 }
                 if (newSelection.equals(LangTool.getString("sa.white"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorWhite());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorWhite"));
+                    }
                 }
 
                 if (newSelection.equals(LangTool.getString("sa.guiField"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorGuiField());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorGUIField", Color.white));
+                    }
                 }
                 if (newSelection.equals(LangTool.getString("sa.cursorColor"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorBg());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorCursor",
                                 getColorProperty("colorBg")));
+                    }
                 }
                 if (newSelection.equals(LangTool.getString("sa.columnSep"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorSeparator());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorSep",
                                 getColorProperty("colorWhite")));
+                    }
                 }
 
                 if (newSelection.equals(LangTool.getString("sa.hexAttrColor"))) {
-                    if (colorSchema != null)
+                    if (colorSchema != null) {
                         jcc.setColor(colorSchema.getColorHexAttr());
-                    else
+                    } else {
                         jcc.setColor(getColorProperty("colorHexAttr",
                                 getColorProperty("colorWhite")));
+                    }
                 }
             }
         });
@@ -435,8 +444,9 @@ class ColorAttributesPanel extends AttributesPanel {
 
         try {
             ClassLoader cl = this.getClass().getClassLoader();
-            if (cl == null)
+            if (cl == null) {
                 cl = ClassLoader.getSystemClassLoader();
+            }
             file = cl.getResource("tn5250jSchemas.properties");
             schemaProps.load(file.openStream());
         } catch (Exception e) {

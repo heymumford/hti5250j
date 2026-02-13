@@ -58,9 +58,6 @@ public class SessionSettings extends JDialog {
         }
     }
 
-    /**
-     * Component initialization
-     */
     private void jbInit() throws Exception {
 
         // define default
@@ -97,8 +94,9 @@ public class SessionSettings extends JDialog {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode)
                         tree.getLastSelectedPathComponent();
 
-                if (node == null)
+                if (node == null) {
                     return;
+                }
                 showPanel(node.getUserObject());
             }
         });
@@ -147,10 +145,11 @@ public class SessionSettings extends JDialog {
 
     protected final String getStringProperty(String prop) {
 
-        if (props.containsKey(prop))
+        if (props.containsKey(prop)) {
             return (String) props.get(prop);
-        else
+        } else {
             return "";
+        }
 
     }
 
@@ -158,12 +157,14 @@ public class SessionSettings extends JDialog {
 
         if (props.containsKey(prop)) {
             String p = (String) props.get(prop);
-            if (p.length() > 0)
+            if (p.length() > 0) {
                 return p;
-            else
+            } else {
                 return defaultValue;
-        } else
+            }
+        } else {
             return defaultValue;
+        }
 
     }
 
@@ -229,10 +230,12 @@ public class SessionSettings extends JDialog {
         //Center the dialog
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension dialogSize = getSize();
-        if (dialogSize.height > screenSize.height)
+        if (dialogSize.height > screenSize.height) {
             dialogSize.height = screenSize.height;
-        if (dialogSize.width > screenSize.width)
+        }
+        if (dialogSize.width > screenSize.width) {
             dialogSize.width = screenSize.width;
+        }
         setLocation((screenSize.width - dialogSize.width) / 2,
                 (screenSize.height - dialogSize.height) / 2);
 

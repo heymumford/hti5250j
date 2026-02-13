@@ -58,24 +58,36 @@ class SessionsTableModel extends AbstractTableModel implements SortTableModel {
     }
 
     public boolean isSortable(int col) {
-        if (col == 0) return true;
-        if (col == 1) return true;
+        if (col == 0) {
+            return true;
+        }
+        if (col == 1) {
+            return true;
+        }
         return false;
     }
 
     public void sortColumn(final int col, final boolean ascending) {
-        if (col == 0) Collections.sort(sortedItems, new Comparator<SessionsDataModel>() {
+        if (col == 0) {
+            Collections.sort(sortedItems, new Comparator<SessionsDataModel>() {
             public int compare(SessionsDataModel sdm1, SessionsDataModel sdm2) {
-                if (ascending) return sdm1.name.compareToIgnoreCase(sdm2.name);
+                if (ascending) {
+                    return sdm1.name.compareToIgnoreCase(sdm2.name);
+                }
                 return sdm2.name.compareToIgnoreCase(sdm1.name);
             }
         });
-        if (col == 1) Collections.sort(sortedItems, new Comparator<SessionsDataModel>() {
+        }
+        if (col == 1) {
+            Collections.sort(sortedItems, new Comparator<SessionsDataModel>() {
             public int compare(SessionsDataModel sdm1, SessionsDataModel sdm2) {
-                if (ascending) return sdm1.host.compareToIgnoreCase(sdm2.host);
+                if (ascending) {
+                    return sdm1.host.compareToIgnoreCase(sdm2.host);
+                }
                 return sdm2.host.compareToIgnoreCase(sdm1.host);
             }
         });
+        }
     }
 
     public int getColumnCount() {

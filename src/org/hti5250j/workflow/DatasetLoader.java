@@ -34,11 +34,9 @@ public class DatasetLoader {
 
             for (CSVRecord record : parser) {
                 try {
-                    // Use first column value as row key
                     String rowKey = record.get(0);
                     Map<String, String> row = new LinkedHashMap<>();
 
-                    // Populate all columns for this row
                     for (String header : parser.getHeaderNames()) {
                         row.put(header, record.get(header));
                     }
@@ -54,7 +52,6 @@ public class DatasetLoader {
             throw new IllegalArgumentException(
                 "Failed to read CSV file: " + csvFile.getAbsolutePath(), ioEx);
         } catch (IllegalArgumentException argEx) {
-            // Re-throw our custom argument exceptions
             throw argEx;
         } catch (Exception parseEx) {
             throw new IllegalArgumentException(
@@ -87,7 +84,6 @@ public class DatasetLoader {
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String placeholder = "${data." + entry.getKey() + "}";
             String value = entry.getValue();
-            // Handle null values safely - replace with "null" string
             if (value == null) {
                 result = result.replace(placeholder, "null");
             } else {

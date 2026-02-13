@@ -69,7 +69,6 @@ public class ParameterValidator {
             return references;
         }
 
-        // Check all string fields
         checkField(step.getHost(), references);
         checkField(step.getUser(), references);
         checkField(step.getPassword(), references);
@@ -78,7 +77,6 @@ public class ParameterValidator {
         checkField(step.getText(), references);
         checkField(step.getName(), references);
 
-        // Check fields map
         if (step.getFields() != null) {
             for (String value : step.getFields().values()) {
                 checkField(value, references);

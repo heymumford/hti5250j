@@ -8,7 +8,6 @@
 
 
 
-// InterpreterDriverManager.java
 package org.hti5250j.scripting;
 
 import java.util.HashMap;

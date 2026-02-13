@@ -86,8 +86,6 @@ public class AS400Xtfr {
 
             // Get a connection to the database.  Since we do not
             // provide a user id or password, a prompt will appear.
-            // modified the connection string to add the translate binary = true
-            //   as suggested from Luca
             connection = DriverManager.getConnection("jdbc:as400://" + hostName +
                             ";decimal separator=" +
                             decChar +
@@ -106,14 +104,6 @@ public class AS400Xtfr {
             printFTPInfo("Error: JDBC Driver not found.  Please check classpath.");
 
         } catch (Exception e) {
-//         JOptionPane.showMessageDialog(this,
-//                           "Error: " + e.getMessage() + "\n\n" +
-//                           "There was an error connecting to host "
-//                           + system.toUpperCase() +
-//                           "\n\nPlease make sure that you run " +
-//                           "the command STRHOSTSVR",
-//                           "Host connection error",
-//                           JOptionPane.ERROR_MESSAGE);
             printFTPInfo("Error: " + e.getMessage() + "\n\n" +
                     "There was an error connecting to host "
                     + host.toUpperCase() +
@@ -125,20 +115,7 @@ public class AS400Xtfr {
         return false;
     }
 
-    /**
-     * Send quit command to ftp server and close connections
-     */
     public void disconnect() {
-//      try {
-//         if (isConnected()) {
-//            executeCommand("QUIT");
-//            ftpOutputStream.close();
-//            ftpInputStream.close();
-//            ftpConnectionSocket.close();
-//            connected = false;
-//         }
-//      }
-//      catch(Exception _ex) { }
     }
 
     /**
@@ -286,8 +263,9 @@ public class AS400Xtfr {
         FileFieldDef f;
         for (int x = 0; x < ffd.size(); x++) {
             f = (FileFieldDef) ffd.get(x);
-            if (f.isWriteField())
+            if (f.isWriteField()) {
                 return true;
+            }
         }
         return false;
     }
@@ -386,12 +364,13 @@ public class AS400Xtfr {
 
                         FileFieldDef ffDesc = new FileFieldDef(vt, decChar);
 
-                        if (internal)
+                        if (internal) {
                             // WHFLDI  Field name internal
                             ffDesc.setFieldName(rsmd.getColumnName(x));
-                        else
+                        } else {
                             // WHFLD  Field name text description
                             ffDesc.setFieldName(rsmd.getColumnLabel(x));
+                        }
 
                         ffDesc.setNeedsTranslation(false);
                         // WHFOBO  Field starting offset
@@ -439,7 +418,6 @@ public class AS400Xtfr {
                         rb.setLength(0);
                         ofi.parseFields(null, ffd, rb);
                         fireStatusEvent();
-//                     System.out.println(" record > " + processed);
                     }
 
                     printFTPInfo("Transfer Successful ");
@@ -450,24 +428,15 @@ public class AS400Xtfr {
                     writeFooter();
                 } catch (SQLException sqle) {
                     printFTPInfo("SQL Exception ! " + sqle.getMessage());
-                }
-//               catch(InterruptedException iioe) {
-//                  printFTPInfo("Interrupted! " + iioe.getMessage());
-//               }
-                catch (FileNotFoundException fnfe) {
+                } catch (FileNotFoundException fnfe) {
                     printFTPInfo("File Not found Exception ! " + fnfe.getMessage());
-                }
-
-//               catch(Exception _ex) {
-//                  printFTPInfo("Error! " + _ex);
-//                  System.out.println(_ex.printStackTrace());
-//               }
-                finally {
+                } finally {
 
                     // Clean up.
                     try {
-                        if (connection != null)
+                        if (connection != null) {
                             connection.close();
+                        }
                     } catch (SQLException e) {
                         // Ignore.
                     }
@@ -490,164 +459,6 @@ public class AS400Xtfr {
         return flag;
 
     }
-
-    /* *** NEVER USED ********************************************************** */
-//   private void loadFields() {
-//
-//
-//        ResultSet resultSet = null;
-//        try
-//        {
-//            // Get database meta data
-//            DatabaseMetaData metaData = connection_.getMetaData();
-//
-//            // Create new array to hold table values.
-//            data_ = new String[ROW_INCREMENT][NUM_COLUMNS_];
-//            types_ = new int[ROW_INCREMENT];
-//
-//            // Loop through each database file.
-//            String library, table, tprefix;
-//            int sepIndex;
-//            int curRow;
-//            for (int i=0; i<tables_.length; ++i)
-//            {
-//                // Get meta data.
-//                sepIndex = tables_[i].indexOf(".");
-//                if (sepIndex == -1)
-//                {
-//                    // Incorrect table specification, send error
-//                    // and continue to next table.
-//                    // Create generic exception to hold error message
-//                    Exception e = new Exception(ResourceLoader.getText("EXC_TABLE_SPEC_NOT_VALID"));
-//                    errorListeners_.fireError(e);
-//                }
-//                else
-//                {
-//                    library = tables_[i].substring(0, sepIndex);
-//                    table = tables_[i].substring(sepIndex+1);
-//                    if (tables_.length > 1)
-//                        tprefix = table + "."; // need to qualify field names
-//                    else
-//                        tprefix = "";  // only 1 table, can just use field names
-//
-//                    resultSet = metaData.getColumns(null, library, table, null);
-//
-//                    // Loop through fields for this database file.
-//                    while (resultSet.next())
-//                    {
-//                        curRow = numRows_; // current row in table
-//
-//                        // make sure we have room in table for this row.
-//                        if (curRow >= data_.length)                         // @D1C
-//                        {
-//                            String[][] newData =
-//                                new String[data_.length + ROW_INCREMENT][NUM_COLUMNS_];
-//                            System.arraycopy(data_, 0, newData, 0, data_.length);
-//                            data_ = newData;
-//                            int[] newTypes =
-//                                new int[types_.length + ROW_INCREMENT];
-//                            System.arraycopy(types_, 0, newTypes, 0, types_.length);
-//                            types_ = newTypes;
-//                        }
-//
-//                        // Store SQL type for use by getSQLType,
-//                        // although this is not externalized in the table.
-//                        types_[curRow] = resultSet.getInt(5);
-//
-//                        // Add field info to table
-//                        data_[curRow][FIELD_NAME_] = tprefix + resultSet.getString(4).trim();
-//                        data_[curRow][FIELD_TYPE_] = resultSet.getString(6);
-//                        // The following code should not be necessary when using
-//                        // most drivers, but makes the length values correct
-//                        // when using the AS400 JDBC driver.
-//                        // These values came from the ODBC description of precision
-//                        // (in 2.0 ref, Appendix D page 624).
-//                        switch (types_[curRow])
-//                        {
-//                            case Types.SMALLINT:
-//                                data_[curRow][FIELD_LENGTH_] = "5";
-//                                break;
-//                            case Types.INTEGER:
-//                                data_[curRow][FIELD_LENGTH_] = "10";
-//                                break;
-//                            case Types.TIME:
-//                                data_[curRow][FIELD_LENGTH_] = "8";
-//                                break;
-//                            case Types.TIMESTAMP:
-//                                // We always give length = 23, even though
-//                                // we should give 19 if there is no decimals.
-//                                // In order to not mess up 'correct' values,
-//                                // only change it if we know the value is bad.
-//                                if (resultSet.getInt(7) == 10)
-//                                    data_[curRow][FIELD_LENGTH_] = "23";
-//                                break;
-//                            case Types.DATE:
-//                                data_[curRow][FIELD_LENGTH_] = "10";
-//                                break;
-//                            case Types.DOUBLE:
-//                                if (resultSet.getInt(7) == 4)
-//                                    // single precision (type REAL)
-//                                    data_[curRow][FIELD_LENGTH_] = "7";
-//                                else
-//                                    // double precison (type FLOAT)
-//                                    data_[curRow][FIELD_LENGTH_] = "15";
-//                                break;
-//                            default:
-//                                // Other types are correct.
-//                                data_[curRow][FIELD_LENGTH_] = resultSet.getString(7);
-//                        }
-//                        data_[curRow][FIELD_DECIMALS_] = resultSet.getString(9);
-//                        data_[curRow][FIELD_NULLS_] = resultSet.getString(18);
-//                        data_[curRow][FIELD_DESC_] = resultSet.getString(12);
-//
-//                        numRows_++;
-//                    }
-//                }
-//            }
-//        }
-//        catch (SQLException e)
-//        {
-//            // In case of error, set fields to init state
-//            data_ = new String[0][0];
-//            types_ = new int[0];
-//            numRows_ = 0;
-//            errorListeners_.fireError(e);
-//            error_ = true;
-//        }
-//        finally
-//        {
-//            if (resultSet != null)
-//            {
-//                try
-//                {
-//                    resultSet.close();
-//                }
-//                catch(SQLException e)
-//                {
-//                    errorListeners_.fireError(e);
-//                }
-//            }
-//        }
-//
-//
-//   }
-//   /**
-//    * Parse the field field definition of the data and return a string buffer of
-//    * the output to be written
-//    */
-//   private void parseFFD(byte[] cByte,StringBuffer rb) {
-//
-//      ofi.parseFields(cByte,ffd,rb);
-//   }
-
-    /* *** NEVER USED ********************************************************** */
-//   /**
-//    * Abort the current file transfer
-//    */
-//
-//   public void setAborted() {
-//      aborted = true;
-//   }
 
     /**
      * Print ftp command events and responses

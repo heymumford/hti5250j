@@ -19,7 +19,7 @@ import org.hti5250j.interfaces.RequestHandler;
  * Default response is null (return to main menu).
  * Can be configured with a fixed option during construction.
  *
- * @since Phase 15B
+ * @since 0.12.0
  */
 public class NullRequestHandler implements RequestHandler {
 

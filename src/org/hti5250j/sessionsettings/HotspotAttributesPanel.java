@@ -30,9 +30,6 @@ class HotspotAttributesPanel extends AttributesPanel {
         super(config, "HS");
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
 
         setLayout(new BorderLayout());
@@ -45,8 +42,9 @@ class HotspotAttributesPanel extends AttributesPanel {
         hsp.setBorder(BorderFactory.createTitledBorder(LangTool.getString("sa.hsp")));
         hsCheck = new JCheckBox(LangTool.getString("sa.hsCheck"));
 
-        if (getStringProperty("hotspots").equals("Yes"))
+        if (getStringProperty("hotspots").equals("Yes")) {
             hsCheck.setSelected(true);
+        }
 
         hsp.add(hsCheck);
 

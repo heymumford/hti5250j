@@ -46,7 +46,6 @@ public class SendEMail {
     private String attachmentName;
     private String fileName;
 
-    // SMTP Properties file
     java.util.Properties SMTPProperties;
 
     public void setTo(String to) {
@@ -136,16 +135,10 @@ public class SendEMail {
         SMTPProperties = ConfigureFactory.getInstance().getProperties("smtp",
                 "SMTPProperties.cfg");
 
-        if (SMTPProperties.size() > 0)
-            return true;
-        else
-            return false;
+        return SMTPProperties.size() > 0;
     }
 
-    // clean-up -- this should be called by the JSP Container...
     public void release() {
-
-        // clean up variables to be used the next time
         to = null;
         from = null;
         cc = null;
@@ -163,13 +156,13 @@ public class SendEMail {
     public boolean send() throws Exception {
 
         try {
-            if (!loadConfig(configFile))
+            if (!loadConfig(configFile)) {
                 return false;
+            }
 
             Session session = Session.getDefaultInstance(SMTPProperties, null);
             session.setDebug(false);
 
-            // create the Multipart and its parts to it
             Multipart mp = new MimeMultipart();
 
             Message msg = new MimeMessage(session);
@@ -183,19 +176,22 @@ public class SendEMail {
                 msg.setRecipients(Message.RecipientType.CC, ccAddrs);
             }
 
-            if (subject != null)
+            if (subject != null) {
                 msg.setSubject(subject.trim());
+            }
 
-            if (from == null)
+            if (from == null) {
                 from = SMTPProperties.getProperty("mail.smtp.from");
+            }
 
             if (from != null && from.length() > 0) {
                 pers = SMTPProperties.getProperty("mail.smtp.realname");
-                if (pers != null) msg.setFrom(new InternetAddress(from, pers));
+                if (pers != null) {
+                    msg.setFrom(new InternetAddress(from, pers));
+                }
             }
 
             if (message != null && message.length() > 0) {
-                // create and fill the attachment message part
                 MimeBodyPart mbp = new MimeBodyPart();
                 mbp.setText(message, "us-ascii");
                 mp.addBodyPart(mbp);
@@ -204,44 +200,38 @@ public class SendEMail {
             msg.setSentDate(new Date());
 
             if (attachment != null && attachment.length() > 0) {
-                // create and fill the attachment message part
                 MimeBodyPart abp = new MimeBodyPart();
 
                 abp.setText(attachment, "us-ascii");
 
-                if (attachmentName == null || attachmentName.length() == 0)
+                if (attachmentName == null || attachmentName.length() == 0) {
                     abp.setFileName("tn5250j.txt");
-                else
+                } else {
                     abp.setFileName(attachmentName);
+                }
                 mp.addBodyPart(abp);
 
             }
 
             if (fileName != null && fileName.length() > 0) {
-                // create and fill the attachment message part
                 MimeBodyPart fbp = new MimeBodyPart();
 
                 fbp.setText("File sent using tn5250j", "us-ascii");
 
                 if (attachmentName == null || attachmentName.length() == 0) {
                     fbp.setFileName("tn5250j.txt");
-                } else
+                } else {
                     fbp.setFileName(attachmentName);
+                }
 
-                // Get the attachment
                 DataSource source = new FileDataSource(fileName);
-
-                // Set the data handler to the attachment
                 fbp.setDataHandler(new DataHandler(source));
 
                 mp.addBodyPart(fbp);
 
             }
 
-            // add the Multipart to the message
             msg.setContent(mp);
-
-            // send the message
             Transport.send(msg);
             return true;
         } catch (SendFailedException sfe) {

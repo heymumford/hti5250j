@@ -69,11 +69,9 @@ public class HTI5250jSplashScreen extends Canvas {
     protected void initialize(ImageIcon iimage) {
 
         image = iimage.getImage();
-        // if no image, return
         if (image == null) {
             throw new IllegalArgumentException("Image specified is invalid.");
         }
-//      System.out.println(" here in splash ");
 
         MediaTracker tracker = new MediaTracker(this);
         tracker.addImage(image, 0);
@@ -84,7 +82,6 @@ public class HTI5250jSplashScreen extends Canvas {
             System.out.println(e.getMessage());
         }
 
-        // create dialog window
         f = new Frame();
         dialog = new Window(f);
         dialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -97,7 +94,6 @@ public class HTI5250jSplashScreen extends Canvas {
         dialog.add(this, BorderLayout.CENTER);
         dialog.pack();
 
-        // position splash screen
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (screen.width - s.width) / 2;
         if (x < 0) {
@@ -127,8 +123,6 @@ public class HTI5250jSplashScreen extends Canvas {
         progress = prog;
         repaint();
 
-        // wait for it to be painted to ensure progress is updated
-        // continuously
         try {
             wait();
         } catch (InterruptedException ie) {
@@ -146,21 +140,16 @@ public class HTI5250jSplashScreen extends Canvas {
         int height = 14;
 
         Dimension size = getSize();
-//      System.out.println(" here in paint ");
-        // create the offscreen buffer if it does not exist
         if (offScreenBuffer == null) {
             offScreenBuffer = createImage(size.width, size.height);
             offScreenBufferGraphics = offScreenBuffer.getGraphics();
         }
 
-        // draw the splash image
         offScreenBufferGraphics.drawImage(image, 1, 1, this);
 
-        // create a raised border around image
         offScreenBufferGraphics.setColor(new Color(204, 204, 255));
         offScreenBufferGraphics.draw3DRect(0, 0, size.width - 1, size.height - 1, true);
 
-        // fill in progress area
         offScreenBufferGraphics.setColor(new Color(204, 204, 255).darker());
         offScreenBufferGraphics.fill3DRect(inset - 1,
                 image.getHeight(this) - (height + 2),
@@ -168,18 +157,15 @@ public class HTI5250jSplashScreen extends Canvas {
                 height + 1,
                 false);
 
-        // draw progress
         offScreenBufferGraphics.setColor(new Color(204, 204, 255));
         offScreenBufferGraphics.fillRect(inset,
                 image.getHeight(this) - (height + 1),
                 ((image.getWidth(this) - (inset * 2)) / steps) * progress,
                 height);
 
-        // now lets show the world
         g.drawImage(offScreenBuffer, 0, 0, this);
 
         notify();
-//      System.out.println(" here after paint ");
     }
 
     /**
@@ -188,7 +174,7 @@ public class HTI5250jSplashScreen extends Canvas {
      * the splash screen cannot become visible again.
      */
     public void setVisible(boolean show) {
-        if (show == true && dialog != null && f != null && !dialog.isVisible()) {
+        if (show && dialog != null && f != null && !dialog.isVisible()) {
             dialog.setVisible(true);
         } else {
 

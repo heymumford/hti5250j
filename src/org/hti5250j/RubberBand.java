@@ -32,15 +32,8 @@ public abstract class RubberBand {
         @Override
         public void mousePressed(MouseEvent mouseEvent) {
             if (!SwingUtilities.isRightMouseButton(mouseEvent)) {
-                if (!isSomethingBounded)
+                if (!isSomethingBounded) {
                     start(canvas.translateStart(mouseEvent.getPoint()));
-                else {
-                    //               if (isSomethingBounded) {
-                    //                  erase();
-                    //                  notifyRubberBandCanvas();
-                    //                  reset();
-                    //                  start(canvas.translateStart(mouseEvent.getPoint()));
-                    //               }
                 }
             }
         }
@@ -194,8 +187,9 @@ public abstract class RubberBand {
 
     protected final void setStartPoint(Point newValue) {
         this.startPoint = newValue;
-        if (startPoint == null)
+        if (startPoint == null) {
             endPoint = null;
+        }
 
     }
 

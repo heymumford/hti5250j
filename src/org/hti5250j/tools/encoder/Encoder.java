@@ -22,6 +22,6 @@ public interface Encoder {
     /**
      * Encode the specified component on the specified stream
      */
-    public void encode(Component component, OutputStream stream) throws IOException, EncoderException;
+    void encode(Component component, OutputStream stream) throws IOException, EncoderException;
 
 }

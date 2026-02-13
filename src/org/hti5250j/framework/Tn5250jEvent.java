@@ -26,9 +26,6 @@ public class Tn5250jEvent {
 
     public Tn5250jEvent(Screen5250 newscreen) {
         screen = newscreen;
-        // changed by Kenneth - This should be replaced with a call to
-        //   getPlane method of screen object when they are implemented.  These
-        //   new methods will also do the array copy.
         char[] original = screen.getCharacters();
         data = new char[original.length];
         System.arraycopy(original, 0, data, 0, original.length);

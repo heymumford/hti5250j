@@ -33,14 +33,8 @@ import org.hti5250j.event.WizardListener;
 public class Wizard extends JPanel {
 
     private static final long serialVersionUID = 1L;
-    /**
-     * layout used
-     */
     protected CardLayout cardLayout;
-    /**
-     * list of wizard listeners registered with the bean
-     */
-    transient protected Vector<WizardListener> listeners;
+    protected transient Vector<WizardListener> listeners;
 
     /**
      * Create a <code>Wizard</code> component.
@@ -112,14 +106,6 @@ public class Wizard extends JPanel {
         WizardEvent event = new WizardEvent(this, current_page, next_page,
                 is_last_page, !is_last_page);
 
-        // in the preceding constructor, by default, we want
-        // to prevent wraparound to first card from the
-        // last card so we set "allow_change" to be the
-        // opposite of "is_last_page"
-
-        //
-        // post nextBegin event
-        //
         Enumeration<WizardListener> e = listeners.elements();
         for (; e.hasMoreElements(); ) {
             WizardListener listener =
@@ -127,22 +113,16 @@ public class Wizard extends JPanel {
             listener.nextBegin(event);
         }
 
-        if (event.getAllowChange() == false) {
+        if (!event.getAllowChange()) {
             return false;
         }
 
-        //
-        // advance to the next page unless a new page has been specified
-        //
         if (next_page != event.getNewPage()) {
             cardLayout.show(this, event.getNewPage().getName());
         } else {
             cardLayout.next(this);
         }
 
-        //
-        // Post nextComplete event
-        //
         e = listeners.elements();
         for (; e.hasMoreElements(); ) {
             WizardListener listener =
@@ -186,15 +166,8 @@ public class Wizard extends JPanel {
 
         WizardEvent event = new WizardEvent(this, current_page, previous_page,
                 is_last_page, !is_first_page);
-        // in the preceding constructor, by default, we want
-        // to prevent wraparound to the last card from the
-        // first card so we set "allow_change" to be the
-        // opposite of "is_first_page"
 
         Enumeration<WizardListener> e;
-        //
-        // post previousBegin event
-        //
         e = listeners.elements();
         for (; e.hasMoreElements(); ) {
             WizardListener listener =
@@ -202,22 +175,16 @@ public class Wizard extends JPanel {
             listener.previousBegin(event);
         }
 
-        if (event.getAllowChange() == false) {
+        if (!event.getAllowChange()) {
             return false;
         }
 
-        //
-        // Advance to previous page unless a new page has been specified
-        //
         if (previous_page != event.getNewPage()) {
             cardLayout.show(this, event.getNewPage().getName());
         } else {
             cardLayout.previous(this);
         }
 
-        //
-        // Post previousComplete event
-        //
         e = listeners.elements();
         for (; e.hasMoreElements(); ) {
             WizardListener listener =
@@ -244,9 +211,6 @@ public class Wizard extends JPanel {
         WizardEvent event = new WizardEvent(this, comp, null,
                 is_last_page, true);
 
-        //
-        // Post finished event
-        //
         Enumeration<WizardListener> e = listeners.elements();
         for (; e.hasMoreElements(); ) {
             WizardListener listener =
@@ -274,9 +238,6 @@ public class Wizard extends JPanel {
         WizardEvent event = new WizardEvent(this, comp, null,
                 is_last_page, true);
 
-        //
-        // Post Canceled event
-        //
         Enumeration<WizardListener> e = listeners.elements();
         for (; e.hasMoreElements(); ) {
             WizardListener listener =
@@ -304,9 +265,6 @@ public class Wizard extends JPanel {
 
         WizardEvent event = new WizardEvent(this, comp, null,
                 is_last_page, true);
-        //
-        // Post Help event
-        //
         Enumeration<WizardListener> e = listeners.elements();
         for (; e.hasMoreElements(); ) {
             WizardListener listener =
@@ -334,8 +292,9 @@ public class Wizard extends JPanel {
      * Adds a new <code>WizardListener</code> to the list.
      */
     public void addWizardListener(WizardListener l) {
-        if (listeners == null)
+        if (listeners == null) {
             listeners = new Vector<WizardListener>(3);
+        }
 
         listeners.add(l);
     }
@@ -365,7 +324,7 @@ public class Wizard extends JPanel {
      *
      * @see #next
      */
-    transient protected ActionListener nextListener = new ActionListener() {
+    protected transient ActionListener nextListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             next();
         }
@@ -378,7 +337,7 @@ public class Wizard extends JPanel {
      *
      * @see #previous
      */
-    transient protected ActionListener previousListener = new ActionListener() {
+    protected transient ActionListener previousListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             previous();
         }
@@ -391,7 +350,7 @@ public class Wizard extends JPanel {
      *
      * @see #finish
      */
-    transient protected ActionListener finishListener = new ActionListener() {
+    protected transient ActionListener finishListener = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
             finish();
         }
@@ -404,7 +363,7 @@ public class Wizard extends JPanel {
      *
      * @see #cancel
      */
-    transient protected ActionListener cancelListener = new ActionListener() {
+    protected transient ActionListener cancelListener = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
             cancel();
         }
@@ -417,7 +376,7 @@ public class Wizard extends JPanel {
      *
      * @see #help
      */
-    transient protected ActionListener helpListener = new ActionListener() {
+    protected transient ActionListener helpListener = new ActionListener() {
         public void actionPerformed(ActionEvent ev) {
             help();
         }
@@ -429,7 +388,7 @@ public class Wizard extends JPanel {
      * listeners to the buttons of the children so that the container knows
      * when to post the proper "Wizard" events.
      */
-    transient protected ContainerListener containerListener
+    protected transient ContainerListener containerListener
             = new ContainerListener() {
         public void componentAdded(ContainerEvent e) {
             if (e.getChild() instanceof WizardPage) {

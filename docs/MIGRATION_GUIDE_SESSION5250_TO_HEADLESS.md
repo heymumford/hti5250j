@@ -1,10 +1,8 @@
-# Migration Guide: Session5250 → HeadlessSession (Phase 15B)
+# Migration Guide: Session5250 to HeadlessSession
 
-**Document Purpose:** Help existing HTI5250J users transition from Session5250 API to the new HeadlessSession abstraction.
+Help existing HTI5250J users transition from Session5250 API to the HeadlessSession abstraction.
 
-**Status:** Backward compatible — existing code continues to work unchanged.
-
-**Timeline:** Phase 15B (February 2026) — New abstractions are opt-in.
+**Status:** Backward compatible -- existing code continues to work unchanged. New abstractions are opt-in.
 
 ---
 
@@ -73,20 +71,13 @@ BufferedImage screenshot = headless.captureScreenshot();
 headless.disconnect();
 ```
 
-#### Step 3: Benefits You Get
-
-✅ Smaller memory footprint (~500KB vs 2MB+ for Session5250 with GUI)
-✅ Works in Docker/containerized environments without GUI
-✅ Compatible with virtual threads for 1000+ concurrent sessions
-✅ Clear, minimal interface (6 methods) vs full Session5250 surface area
+**Benefits:** ~500KB memory (vs 2MB+ with GUI), Docker/CI-ready, virtual thread compatible, minimal 6-method interface.
 
 ---
 
 ### Path 2: Inject Custom RequestHandler (For Automation Frameworks)
 
 **When to use:** Robot Framework, Jython adapters, or custom SYSREQ handling.
-
-**Effort:** 2-3 hours to create adapter + integrate.
 
 #### Step 1: Implement RequestHandler
 
@@ -201,40 +192,7 @@ session.sendKeys("CHECKOUT[enter]");
 
 #### Step 2: Spring Boot Integration
 
-```java
-@Configuration
-public class HTI5250JConfiguration {
-
-    @Bean
-    public HeadlessSessionFactory sessionFactory() {
-        return new DefaultHeadlessSessionFactory();
-    }
-
-    @Bean
-    public RequestHandler requestHandler() {
-        return new MyAutomationRequestHandler(handlerResponses());
-    }
-
-    @Bean
-    public HeadlessSession session(
-        HeadlessSessionFactory factory,
-        RequestHandler handler,
-        @Value("${hti5250j.session.name}") String sessionName,
-        @Value("${hti5250j.host}") String host,
-        @Value("${hti5250j.port}") int port) throws Exception {
-
-        Properties props = new Properties();
-        props.setProperty("host", host);
-        props.setProperty("port", String.valueOf(port));
-
-        HeadlessSession headless = factory.createSession(sessionName, props, handler);
-        headless.connect();
-        return headless;
-    }
-}
-```
-
-#### Step 3: Inject in Service Classes
+Register `HeadlessSessionFactory`, `RequestHandler`, and `HeadlessSession` as beans in a `@Configuration` class. Inject `HeadlessSession` into service classes:
 
 ```java
 @Service
@@ -246,17 +204,10 @@ public class PaymentService {
     }
 
     public PaymentResult processPayment(PaymentRequest req) throws Exception {
-        String keys = String.format(
-            "CALL PMTENT[enter]%s[enter]%s[enter]",
-            req.getCustomerId(),
-            req.getAmount()
-        );
-
-        session.sendKeys(keys);
+        session.sendKeys(String.format("CALL PMTENT[enter]%s[enter]%s[enter]",
+            req.getCustomerId(), req.getAmount()));
         session.waitForKeyboardUnlock();
-
-        String response = session.getScreen().getScreenAsText();
-        return parsePaymentResponse(response);
+        return parsePaymentResponse(session.getScreen().getScreenAsText());
     }
 }
 ```
@@ -306,44 +257,7 @@ executor.shutdown();
 executor.awaitTermination(1, TimeUnit.HOURS);
 ```
 
-#### Step 2: Memory & Performance Expectations
-
-```
-Virtual thread per task:
-- Memory per session: ~500KB (headless, no GUI)
-- Ops per second: 1000+ (depending on IBM i response times)
-- Max concurrent: Limited by IBM i capacity, not by JVM memory
-
-Example: 1000 concurrent sessions
-- Memory: 1000 × 500KB = 500MB (very efficient)
-- Each completes at different rates (no thread pool queuing)
-- Throughput: 10,000 - 50,000 ops/hour (depending on workload)
-```
-
-#### Step 3: Monitoring
-
-```java
-// Track progress
-AtomicInteger processed = new AtomicInteger(0);
-AtomicInteger failed = new AtomicInteger(0);
-
-executor.submit(() -> {
-    // Periodic status log
-    for (int i = 0; i < 60; i++) {
-        Thread.sleep(1000);
-        System.out.printf(
-            "Progress: %d processed, %d failed%n",
-            processed.get(),
-            failed.get()
-        );
-    }
-});
-
-// In task completion:
-processed.incrementAndGet();
-// or
-failed.incrementAndGet();
-```
+**Performance:** ~500KB per session (headless). 1000 concurrent sessions use ~500MB. Throughput limited by IBM i capacity, not JVM memory.
 
 ---
 
@@ -357,80 +271,6 @@ failed.incrementAndGet();
 | **Spring Boot app** | 3 (Factory + DI) | Proper dependency management |
 | **Batch 1000+ records** | 4 (Virtual threads) | Massive scale, minimal memory |
 | **All of above** | 1+2+3+4 (combined) | Compose all patterns |
-
----
-
-## Common Patterns & Examples
-
-### Pattern 1: "Pure Headless" Workflow (No GUI)
-
-```java
-// Use ONLY HeadlessSession interface
-HeadlessSession session = new DefaultHeadlessSessionFactory()
-    .createSession("pure_headless", props);
-
-session.connect();
-session.sendKeys("CALL MYPROGRAM[enter]");
-session.waitForKeyboardUnlock();
-
-// Get data without any GUI objects created
-Screen5250 screen = session.getScreen();
-String field1 = screen.getField(5, 10, 20);  // Row 5, Col 10, 20 chars
-
-session.disconnect();
-```
-
-**Memory:** ~500KB per session
-**GUI**: None — works in Docker, CI/CD, servers
-
----
-
-### Pattern 2: "Interactive" Workflow (With GUI)
-
-```java
-// Create GUI component
-SessionPanel panel = new SessionPanel();
-
-// Create session and assign GUI
-Session5250 session = new Session5250(props, config, "gui_session", sessionConfig);
-session.setGUI(panel);
-
-// User interacts through GUI
-session.connect();
-// ... GUI receives updates ...
-session.disconnect();
-```
-
-**Memory:** ~2.5MB per session (includes GUI)
-**GUI**: Full Swing rendering, user mouse/keyboard
-
----
-
-### Pattern 3: "Hybrid" Workflow (Screenshot + Automation)
-
-```java
-// Create headless session
-HeadlessSession headless = factory.createSession("hybrid", props);
-
-// Inject custom handler for SYSREQ
-headless.// Use requestHandler...
-
-headless.connect();
-headless.sendKeys("CALL MYAPP[enter]");
-headless.waitForKeyboardUnlock();
-
-// Capture screenshot (even though headless)
-BufferedImage screenshot = headless.captureScreenshot();
-ImageIO.write(screenshot, "PNG", new File("screenshot.png"));
-
-// Get text data
-String text = headless.getScreen().getScreenAsText();
-
-headless.disconnect();
-```
-
-**Memory:** ~500KB per session
-**GUI**: No rendering, but can generate PNG screenshots
 
 ---
 
@@ -488,13 +328,13 @@ void testRequestHandlerInjection() {
 
 ### Issue: "Class not found: HeadlessSession"
 
-**Cause:** Using old version of HTI5250J (pre-Phase 15B).
+**Cause:** Using an older version of HTI5250J that predates the headless abstractions.
 
-**Solution:** Update to Phase 15B build or later.
+**Solution:** Update to v0.12.0 or later.
 
 ```gradle
 dependencies {
-    implementation 'org.hti5250j:hti5250j:0.8.0-headless.15b+'
+    implementation 'org.hti5250j:hti5250j:0.12.0'
 }
 ```
 
@@ -520,26 +360,9 @@ session.connect();
 
 ### Issue: Memory not decreasing with HeadlessSession
 
-**Cause:** Session5250 GUI component still initialized.
+**Cause:** `setGUI(sessionPanel)` is still being called, which initializes the GUI component.
 
-**Diagnosis:** Check if SessionPanel is being assigned:
-
-```java
-// If this is called, GUI will be created
-session.setGUI(sessionPanel);
-```
-
-**Solution:** Don't call `setGUI()` for headless sessions:
-
-```java
-// Headless: No GUI
-Session5250 session = new Session5250(props, config, "headless", sessionConfig);
-// Don't call setGUI()
-
-// Interactive: With GUI
-Session5250 session = new Session5250(props, config, "gui", sessionConfig);
-session.setGUI(sessionPanel);  // Now GUI is created
-```
+**Solution:** Do not call `setGUI()` for headless sessions. Only call it when interactive GUI rendering is needed.
 
 ---
 
@@ -566,6 +389,4 @@ session.setGUI(sessionPanel);  // Now GUI is created
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** February 9, 2026
-**Phase:** 15B (Headless Abstractions)
+**Last Updated:** February 2026

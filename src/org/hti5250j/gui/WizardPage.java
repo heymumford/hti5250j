@@ -29,13 +29,13 @@ import org.hti5250j.tools.LangTool;
 public class WizardPage extends JPanel {
 
     private static final long serialVersionUID = 1L;
-    static public final int NO_BUTTONS = 0x00;
-    static public final int PREVIOUS = 0x01;
-    static public final int NEXT = 0x02;
-    static public final int FINISH = 0x04;
-    static public final int CANCEL = 0x08;
-    static public final int HELP = 0x10;
-    static public final int ALL = PREVIOUS | NEXT | FINISH | CANCEL | HELP;
+    public static final int NO_BUTTONS = 0x00;
+    public static final int PREVIOUS = 0x01;
+    public static final int NEXT = 0x02;
+    public static final int FINISH = 0x04;
+    public static final int CANCEL = 0x08;
+    public static final int HELP = 0x10;
+    public static final int ALL = PREVIOUS | NEXT | FINISH | CANCEL | HELP;
 
     protected JButton previousButton;
     protected JButton nextButton;
@@ -53,12 +53,8 @@ public class WizardPage extends JPanel {
     protected static final int MARGIN = 10;
     protected static final int BUTTON_SPACING = 5;
 
-    // Box containing the buttons used
     protected JPanel buttonPanel;
     protected JSeparator separator;
-
-    // Pane returned by getContentPane.  This is the pane the
-    // developer adds his/her code to.
     protected Container contentPane;
 
     public WizardPage() {
@@ -67,26 +63,17 @@ public class WizardPage extends JPanel {
 
     public WizardPage(int button_flags) {
 
-        // set layout as a vertical column
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-//      setLayout(new BorderLayout());
-//      Box pageBox = Box.createVerticalBox();
         contentPane = new JPanel();
 
-        // add the pages contentpane to our wizard page
         add(contentPane);
-
-        // lets add some glue here but it still does not stop the separator from
-        //  moving up and down.
         add(Box.createGlue());
 
-        // create the separator between the panels
         JSeparator js = new JSeparator();
         js.setAlignmentY(Component.BOTTOM_ALIGNMENT);
         add(js);
         add(Box.createRigidArea(new Dimension(10, 10)));
 
-        // create the box for the buttons with an x-axis
         buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         buttonPanel.setName("buttonPanel");
@@ -94,7 +81,6 @@ public class WizardPage extends JPanel {
         add(buttonPanel);
 
         if (button_flags == 0) {
-            // no buttons to add :-(
             return;
         }
 
@@ -185,7 +171,6 @@ public class WizardPage extends JPanel {
         if (new_pane == null) {
             throw new NullPointerException("content pane must be non-null");
         }
-        // rip out all components and rebuild
         removeAll();
         contentPane = new_pane;
         add(contentPane);

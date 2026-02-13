@@ -19,7 +19,7 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
 
 /* package */ class ToolboxCodePageFactory {
 
-    private final static String[] CODEPAGES = {"Big5", "Cp037", "Cp273", "Cp277", "Cp278",
+    private static final String[] CODEPAGES = {"Big5", "Cp037", "Cp273", "Cp277", "Cp278",
             "Cp280", "Cp284", "Cp285", "Cp297", "Cp420", "Cp424", "Cp437",
             "Cp500", "Cp737", "Cp775", "Cp838", "Cp850", "Cp852", "Cp855",
             "Cp856", "Cp857", "Cp858", "Cp860", "Cp861", "Cp862", "Cp863",
@@ -86,7 +86,7 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
         }
     }
 
-    private static final ClassLoader getClassLoader() {
+    private static ClassLoader getClassLoader() {
         ClassLoader loader = ToolboxCodePageFactory.class.getClassLoader();
         if (loader == null) {
             loader = ClassLoader.getSystemClassLoader();
@@ -116,8 +116,9 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
                 result = null;
             }
 
-            if (result == null)
+            if (result == null) {
                 return 0x00;
+            }
 
             return ((String) result).charAt(0);
         }
@@ -131,8 +132,9 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
                 result = null;
             }
 
-            if (result == null)
+            if (result == null) {
                 return 0x00;
+            }
 
             return ((byte[]) result)[0];
         }

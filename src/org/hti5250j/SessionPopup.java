@@ -701,7 +701,6 @@ public class SessionPopup {
     }
 
     private void sendMeToImageFile() {
-        // Change sent by LUC - LDC to add a parent frame to be passed
         new SendScreenImageToFile((Frame) SwingUtilities.getRoot(sessiongui), sessiongui);
     }
 

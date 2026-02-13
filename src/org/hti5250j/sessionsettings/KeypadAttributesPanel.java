@@ -53,9 +53,6 @@ class KeypadAttributesPanel extends AttributesPanel {
         changes.setKeypadMnemonicsAndFireChangeEvent(getConfiguredKeypadMnemonics());
     }
 
-    /**
-     * Component initialization
-     */
     public void initPanel() throws Exception {
         setLayout(new BorderLayout());
         contentPane = new JPanel();
@@ -205,7 +202,9 @@ class KeypadAttributesPanel extends AttributesPanel {
         Set<KeyMnemonic> alreadyConfigured = new HashSet<KeyMnemonic>();
         Collections.addAll(alreadyConfigured, excludedMnemonics);
         for (KeyMnemonic mnemonic : KeyMnemonic.values()) {
-            if (!alreadyConfigured.contains(mnemonic)) result.add(mnemonic);
+            if (!alreadyConfigured.contains(mnemonic)) {
+                result.add(mnemonic);
+            }
         }
         Collections.sort(result, new KeypadMnemonicDescriptionComparator());
         return result.toArray(new KeyMnemonic[result.size()]);

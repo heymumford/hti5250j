@@ -53,8 +53,8 @@ public class GUIGraphicsUtils {
                                   int x, int y,
                                   int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         if (which == RAISED) {
             g.setColor(Color.white);
@@ -142,7 +142,7 @@ public class GUIGraphicsUtils {
                     y + fmHeight - 3);
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -150,8 +150,8 @@ public class GUIGraphicsUtils {
                                     int x, int y,
                                     int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         if (which == RAISED) {
             g.setColor(Color.white);
@@ -215,7 +215,7 @@ public class GUIGraphicsUtils {
                     y + fmHeight - 3);
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
 
     }
@@ -224,8 +224,8 @@ public class GUIGraphicsUtils {
                                    int x, int y,
                                    int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         if (which == RAISED) {
 
@@ -314,7 +314,7 @@ public class GUIGraphicsUtils {
                     y + fmHeight - 3);
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
 
     }
@@ -323,8 +323,8 @@ public class GUIGraphicsUtils {
                                  int x, int y,
                                  int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         if (which == INSET) {
 
@@ -439,7 +439,7 @@ public class GUIGraphicsUtils {
 
         }
 
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
 
     }
@@ -450,63 +450,10 @@ public class GUIGraphicsUtils {
                                      int fmWidth, int fmHeight,
                                      Color fg, Color bg) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         if (which == INSET) {
-
-            //            g.setColor(Color.black);
-            //            // --  horizontal top
-            //            g.drawLine(x,
-            //                        y,
-            //                        x + fmWidth - 2,
-            //                        y);
-            //
-            //            // --  horizontal top
-            //            g.drawLine(x,
-            //                        y + 1,
-            //                        x + fmWidth - 3,
-            //                        y + 1);
-            //
-            //            // | vertical
-            //            g.drawLine(x,
-            //                        y,
-            //                        x,
-            //                        y + fmHeight - 2);
-            //
-            //            // | vertical
-            //            g.drawLine(x + 1,
-            //                        y,
-            //                        x + 1,
-            //                        y + fmHeight - 2);
-            //
-            //            g.setColor(Color.white);
-            //
-            //            // --  horizontal bottom
-            //            g.drawLine(x,
-            //                        y + fmHeight - 2,
-            //                        x + fmWidth - 2,
-            //                        y + fmHeight - 2) ;
-            //
-            //            // | vertical right
-            //            g.drawLine(x + fmWidth - 1,
-            //                        y,
-            //                        x + fmWidth - 1,
-            //                        y + fmHeight - 2);
-            //
-            //            g.setColor(Color.lightGray);
-            //
-            //            // | vertical right
-            //            g.drawLine(x + fmWidth - 2,
-            //                        y + 1,
-            //                        x + fmWidth - 2,
-            //                        y + fmHeight - 3);
-            //
-            //            // --  horizontal bottom
-            //            g.drawLine(x + 1,
-            //                        y + fmHeight - 3,
-            //                        x + fmWidth - 2,
-            //                        y + fmHeight - 3) ;
             g.setColor(bg);
             g.fillRect(x, y, fmWidth, fmHeight);
             g.setColor(fg);
@@ -519,62 +466,8 @@ public class GUIGraphicsUtils {
                     x + fmWidth - 1,
                     y + fmHeight);
 
-            //            g.drawRect(x,y,fmWidth-2,fmHeight);
         }
         if (which == RAISED) {
-
-            //            g.setColor(Color.white);
-            //            // --  horizontal top
-            //            g.drawLine(x,
-            //                        y,
-            //                        x + fmWidth - 2,
-            //                        y);
-            //
-            //            // --  horizontal top
-            //            g.drawLine(x,
-            //                        y + 1,
-            //                        x + fmWidth - 3,
-            //                        y + 1);
-            //
-            //            // | vertical
-            //            g.drawLine(x,
-            //                        y,
-            //                        x,
-            //                        y + fmHeight - 2);
-            //
-            //            // | vertical
-            //            g.drawLine(x + 1,
-            //                        y,
-            //                        x + 1,
-            //                        y + fmHeight - 2);
-            //
-            //            g.setColor(Color.darkGray);
-            //
-            //            // --  horizontal bottom
-            //            g.drawLine(x,
-            //                        y + fmHeight - 2,
-            //                        x + fmWidth - 2,
-            //                        y + fmHeight - 2) ;
-            //
-            //            // | vertical right
-            //            g.drawLine(x + fmWidth - 1,
-            //                        y,
-            //                        x + fmWidth - 1,
-            //                        y + fmHeight - 2);
-            //
-            //            g.setColor(Color.lightGray);
-            //
-            //            // | vertical right
-            //            g.drawLine(x + fmWidth - 2,
-            //                        y + 1,
-            //                        x + fmWidth - 2,
-            //                        y + fmHeight - 3);
-            //
-            //            // --  horizontal bottom
-            //            g.drawLine(x + 1,
-            //                        y + fmHeight - 3,
-            //                        x + fmWidth - 2,
-            //                        y + fmHeight - 3) ;
             g.setColor(bg);
             g.fillRect(x, y, fmWidth, fmHeight);
             g.setColor(fg);
@@ -586,8 +479,6 @@ public class GUIGraphicsUtils {
                     y,
                     x + fmWidth - 1,
                     y + fmHeight);
-
-            //            g.drawRect(x,y,fmWidth-2,fmHeight);
 
         }
 
@@ -659,15 +550,8 @@ public class GUIGraphicsUtils {
 
             g.setColor(fg);
             g.fillRect(x + 2, y, fmWidth - 4, fmHeight);
-
-            //            g.setColor(bg);
-            //            g.fillOval(x + 3,
-            //                        y + 2,
-            //                        fmWidth -4,
-            //                        fmHeight - 4);
-
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
 
     }
@@ -676,8 +560,8 @@ public class GUIGraphicsUtils {
                                         int x, int y,
                                         int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -709,7 +593,7 @@ public class GUIGraphicsUtils {
                     y + fmHeight);
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -717,8 +601,8 @@ public class GUIGraphicsUtils {
                                     int x, int y,
                                     int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -755,7 +639,7 @@ public class GUIGraphicsUtils {
                     y + fmHeight / 2);
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -763,8 +647,8 @@ public class GUIGraphicsUtils {
                                          int x, int y,
                                          int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -813,7 +697,7 @@ public class GUIGraphicsUtils {
             }
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -821,8 +705,8 @@ public class GUIGraphicsUtils {
                                    int x, int y,
                                    int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -860,7 +744,7 @@ public class GUIGraphicsUtils {
 
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -868,8 +752,8 @@ public class GUIGraphicsUtils {
                                     int x, int y,
                                     int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -915,7 +799,7 @@ public class GUIGraphicsUtils {
                     fmHeight);
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -923,8 +807,8 @@ public class GUIGraphicsUtils {
                                         int x, int y,
                                         int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -973,7 +857,7 @@ public class GUIGraphicsUtils {
             }
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -981,8 +865,8 @@ public class GUIGraphicsUtils {
                                      int x, int y,
                                      int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -1028,7 +912,7 @@ public class GUIGraphicsUtils {
                     3);
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -1036,8 +920,8 @@ public class GUIGraphicsUtils {
                                          int x, int y,
                                          int fmWidth, int fmHeight) {
 
-        Color oldColor = g.getColor(); // make sure we leave it as we found it
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
         g.setColor(fill);
 
         if (which == WINDOW_GRAPHIC) {
@@ -1086,7 +970,7 @@ public class GUIGraphicsUtils {
 
 
         }
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -1094,8 +978,8 @@ public class GUIGraphicsUtils {
                                       Color shadow, Color darkShadow,
                                       Color highlight, Color lightHighlight) {
 
-        Color oldColor = g.getColor();  // Make no net change to g
-        //       g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         g.setColor(shadow);
         g.drawLine(0, 0, w - 1, 0);      // outer border, top
@@ -1112,7 +996,7 @@ public class GUIGraphicsUtils {
         g.setColor(highlight);
         g.drawLine(w - 2, 1, w - 2, h - 3);  // inner border, right
         g.drawLine(1, h - 2, w - 2, h - 2);  // inner border, bottom
-        //       g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -1131,8 +1015,8 @@ public class GUIGraphicsUtils {
     public static void drawGroove(Graphics g, int x, int y, int w, int h,
                                   Color shadow, Color highlight) {
 
-        Color oldColor = g.getColor();  // Make no net change to g
-        //      g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         g.setColor(shadow);
         g.drawRect(0, 0, w - 2, h - 2);
@@ -1144,7 +1028,7 @@ public class GUIGraphicsUtils {
         g.drawLine(0, h - 1, w - 1, h - 1);
         g.drawLine(w - 1, h - 1, w - 1, 0);
 
-        //      g.translate(-x, -y);
+
         g.setColor(oldColor);
     }
 
@@ -1164,8 +1048,8 @@ public class GUIGraphicsUtils {
                                  Color shadow, Color darkShadow,
                                  Color highlight, Color lightHighlight) {
 
-        Color oldColor = g.getColor();  // Make no net change to g
-        //     g.translate(x, y);
+        Color oldColor = g.getColor();
+
 
         if (isPressed) {
             if (isDefault) {
@@ -1214,7 +1098,7 @@ public class GUIGraphicsUtils {
                 g.drawLine(w - 1, h - 1, w - 1, 0);
             }
 
-            //         g.translate(-x, -y);
+
             g.setColor(oldColor);
         }
     }
@@ -1246,35 +1130,28 @@ public class GUIGraphicsUtils {
      */
     public static void drawString(Graphics g, String text, int underlinedChar, int x, int y) {
 
-        //        char b[] = new char[1];
-        //      String s;
         char lc, uc;
         int index = -1, lci, uci;
 
         if (underlinedChar != '\0') {
-            //           b[0] = (char)underlinedChar;
-            //           s = new String(b).toUpperCase();
-            //       uc = s.charAt(0);
             uc = Character.toUpperCase((char) underlinedChar);
-
-            //            s = new String(b).toLowerCase();
             lc = Character.toLowerCase((char) underlinedChar);
 
             uci = text.indexOf(uc);
             lci = text.indexOf(lc);
 
-            if (uci == -1)
+            if (uci == -1) {
                 index = lci;
-            else if (lci == -1)
+            } else if (lci == -1) {
                 index = uci;
-            else
+            } else {
                 index = (lci < uci) ? lci : uci;
+            }
         }
 
         g.drawString(text, x, y);
         if (index != -1) {
             FontMetrics fm = g.getFontMetrics();
-            //            Rectangle underlineRect = new Rectangle();
 
             int underlineRectX = x + fm.stringWidth(text.substring(0, index));
             int underlineRectY = y;
@@ -1330,8 +1207,6 @@ public class GUIGraphicsUtils {
             at.setToScale(1.0f, 1.0f);
             pointSize = 0;
         }
-        //         at.setToScale( 1.0f, 1.0f );
-        //         pointSize = 0;
 
         float j = 1;
 
@@ -1348,50 +1223,11 @@ public class GUIGraphicsUtils {
                 f = new FontRenderContext(k.getTransform(), true, true);
 
                 l = k.getLineMetrics("Wy", f);
-                //         float ats = (float)((k.getStringBounds("W",f).getWidth() + 1) /
-                //            (k.getStringBounds("y",f).getHeight()  +
-                //                     l.getDescent() + l.getLeading()));
-                //         System.out.println(ats);
-
 
                 sw = (int) k.getStringBounds("W", f).getWidth() + 2;
                 sh = (int) (k.getStringBounds("y", f).getHeight() +
                         l.getDescent() + l.getLeading());
-                if (
-                        w < sw || h < sh) {
-                    //               (w < (int)k.getStringBounds("W",f).getWidth() + 2) ||
-                    //                  h < (int)(k.getStringBounds("y",f).getHeight() +
-                    //                        l.getDescent() + l.getLeading())
-
-                    //               ) {
-
-                    //                  if (w != sw && h != sh) {
-                    //                     k = font.deriveFont(--j);
-                    //                     k = k.deriveFont( at );
-                    //                     sw = (int)k.getStringBounds("W",f).getWidth() + 2;
-                    //                     sh = (int)(k.getStringBounds("y",f).getHeight() +
-                    //                           l.getDescent() + l.getLeading());
-                    //                  }
-                    //   //               if (h > w) {
-                    //   //                  if (w <= sw) {
-                    //   //                     sch += (float)sw / (float)sh;
-                    //   //
-                    //   //                  }
-                    //   //                  else if (h < sh) {
-                    //   //                     scw = (float)sh / (float)sw;
-                    //   //
-                    //   //                  }
-                    //                  if (sh > sw) {
-                    //
-                    //   //                  sch = 1.0f / (((float)sh * (float)(numRows + 2 )) / (float)height);
-                    //                     sch = (float)((float)sh / (float)sw);
-                    //                  }
-                    //                     // width, height
-                    //                     at.scale( scw, sch );
-                    //                     // now apply the scale to the font
-                    //                     k = k.deriveFont( at );
-                    //     //             }
-
+                if (w < sw || h < sh) {
                     break;
                 }
             }
@@ -1402,12 +1238,11 @@ public class GUIGraphicsUtils {
 
         // since we obtained one that will not fit within the proposed size
         // we need to decrement it so that we obtain the last one that did fit
-        if (j > 1)
+        if (j > 1) {
             k = font.deriveFont(--j);
+        }
 
-        // now apply the scale to the font
         k = k.deriveFont(at);
-        //      System.out.println(k.getSize() + " ");
 
         return k;
     }
@@ -1416,17 +1251,20 @@ public class GUIGraphicsUtils {
                                      int xCoord, int yCoord) {
 
         Dimension popupSize = jpm.getSize();
-        if (popupSize.width == 0)
+        if (popupSize.width == 0) {
             popupSize = jpm.getPreferredSize();
+        }
         Point point = new Point(xCoord + popupSize.width, yCoord + popupSize.height);
         SwingUtilities.convertPointToScreen(point, component);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int x = 0;
         int y = 0;
-        if (point.y > screenSize.height - 25)
+        if (point.y > screenSize.height - 25) {
             y = yCoord - popupSize.height;
-        if (point.x > screenSize.width)
+        }
+        if (point.x > screenSize.width) {
             x = xCoord - popupSize.width;
+        }
         jpm.show(component, x != 0 ? x : xCoord, y != 0 ? y : yCoord);
     }
 
@@ -1491,13 +1329,14 @@ public class GUIGraphicsUtils {
      */
     public static boolean isFontNameExists(String fontString) {
 
-        // fonts from the environment
         Font[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 
         for (int x = 0; x < fonts.length; x++) {
-            if (fonts[x].getFontName().indexOf('.') < 0)
-                if (fonts[x].getFontName().equals(fontString))
+            if (fonts[x].getFontName().indexOf('.') < 0) {
+                if (fonts[x].getFontName().equals(fontString)) {
                     return true;
+                }
+            }
         }
 
         return false;
@@ -1511,8 +1350,9 @@ public class GUIGraphicsUtils {
         URL file = null;
 
         ClassLoader classLoader = GUIGraphicsUtils.class.getClassLoader();
-        if (classLoader == null)
+        if (classLoader == null) {
             classLoader = ClassLoader.getSystemClassLoader();
+        }
 
         try {
             file = classLoader.getResource(image);
@@ -1546,7 +1386,7 @@ public class GUIGraphicsUtils {
     }
 
 
-    public final static List<Image> getApplicationIcons() {
+    public static final List<Image> getApplicationIcons() {
 
         if (tnicon == null) {
             tnicon = new ArrayList<Image>();

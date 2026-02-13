@@ -53,8 +53,9 @@ public class FormattedDocument extends PlainDocument {
         String proposedResult = beforeOffset + afterOffset;
 
         try {
-            if (proposedResult.length() != 0)
+            if (proposedResult.length() != 0) {
                 format.parseObject(proposedResult);
+            }
             super.remove(offs, len);
         } catch (ParseException e) {
             Toolkit.getDefaultToolkit().beep();

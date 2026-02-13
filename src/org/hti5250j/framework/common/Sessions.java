@@ -72,8 +72,9 @@ public class Sessions implements SessionsInterface, ActionListener {
     protected void removeSession(Session5250 session) {
         if (session != null) {
             log.debug("Removing session: " + session.getSessionName());
-            if (session.isConnected())
+            if (session.isConnected()) {
                 session.disconnect();
+            }
             sessions.remove(session);
             --count;
         }
@@ -111,8 +112,9 @@ public class Sessions implements SessionsInterface, ActionListener {
 
             s = sessions.get(x);
 
-            if (s.getSessionName().equals(sessionName))
+            if (s.getSessionName().equals(sessionName)) {
                 return s;
+            }
 
             x++;
         }
@@ -130,8 +132,9 @@ public class Sessions implements SessionsInterface, ActionListener {
 
             s = sessions.get(x);
 
-            if (s.equals(sessionObject))
+            if (s.equals(sessionObject)) {
                 return s;
+            }
 
             x++;
         }
@@ -142,8 +145,9 @@ public class Sessions implements SessionsInterface, ActionListener {
 
     public ArrayList<Session5250> getSessionsList() {
         ArrayList<Session5250> newS = new ArrayList<Session5250>(sessions.size());
-        for (int x = 0; x < sessions.size(); x++)
+        for (int x = 0; x < sessions.size(); x++) {
             newS.add(sessions.get(x));
+        }
         return newS;
     }
 

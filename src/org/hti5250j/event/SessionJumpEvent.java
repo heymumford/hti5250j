@@ -10,21 +10,7 @@ package org.hti5250j.event;
 import java.util.EventObject;
 
 /**
- * Immutable record representing a session jump event.
- *
- * This record encapsulates the data associated with navigating between
- * session tabs in the terminal emulator. It replaces the previous
- * mutable class with an immutable, serializable record that reduces
- * boilerplate code by 92% while providing compile-time safety.
- *
- * The record automatically implements:
- * - Constructor(Object source, int jumpDirection, String message)
- * - Accessors: jumpDirection(), message()
- * - equals() and hashCode()
- * - toString()
- * - Serialization support
- *
- * Note: Records implicitly extend Object and delegate source to EventObject.
+ * Immutable event representing navigation between session tabs.
  */
 public class SessionJumpEvent extends EventObject implements java.io.Serializable {
 
@@ -47,46 +33,34 @@ public class SessionJumpEvent extends EventObject implements java.io.Serializabl
         this.message = message;
     }
 
-    /**
-     * Gets the jump direction.
-     *
-     * @return the jump direction value
-     */
+    /** @return the jump direction value */
     public int jumpDirection() {
         return jumpDirection;
     }
 
-    /**
-     * Gets the jump direction (backward compatibility).
-     *
-     * @return the jump direction value
-     */
+    /** @return the jump direction value */
     public int getJumpDirection() {
         return jumpDirection;
     }
 
-    /**
-     * Gets the message associated with this event.
-     *
-     * @return the message, or null if not set
-     */
+    /** @return the message, or null if not set */
     public String message() {
         return message;
     }
 
-    /**
-     * Gets the message (backward compatibility).
-     *
-     * @return the message, or null if not set
-     */
+    /** @return the message, or null if not set */
     public String getMessage() {
         return message;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof SessionJumpEvent)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof SessionJumpEvent)) {
+            return false;
+        }
 
         SessionJumpEvent other = (SessionJumpEvent) obj;
         return jumpDirection == other.jumpDirection &&

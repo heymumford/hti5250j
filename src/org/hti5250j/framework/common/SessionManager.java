@@ -29,14 +29,14 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
  */
 public class SessionManager implements SessionManagerInterface {
 
-    static private Sessions sessions;
-    static private List<SessionConfig> configs;
+    private static Sessions sessions;
+    private static List<SessionConfig> configs;
 
     private HTI5250jLogger log = HTI5250jLogFactory.getLogger(this.getClass());
     /**
      * A handle to the unique SessionManager class
      */
-    static private SessionManager _instance;
+    private static SessionManager _instance;
 
     /**
      * The constructor is made protected to allow overriding.
@@ -53,7 +53,7 @@ public class SessionManager implements SessionManagerInterface {
     /**
      * @return The unique instance of this class.
      */
-    static public SessionManager instance() {
+    public static SessionManager instance() {
 
         if (_instance == null) {
             _instance = new SessionManager();
@@ -83,15 +83,18 @@ public class SessionManager implements SessionManagerInterface {
     }
 
     @Override
-    public synchronized Session5250 openSession(Properties sesProps, String configurationResource
-            , String sessionName) {
+    public synchronized Session5250 openSession(Properties sesProps, String configurationResource,
+             String sessionName) {
 
-        if (sessionName == null)
+        if (sessionName == null) {
             sesProps.put(HTI5250jConstants.SESSION_TERM_NAME, sesProps.getProperty(HTI5250jConstants.SESSION_HOST));
-        else
+        } else {
             sesProps.put(HTI5250jConstants.SESSION_TERM_NAME, sessionName);
+        }
 
-        if (configurationResource == null) configurationResource = "";
+        if (configurationResource == null) {
+            configurationResource = "";
+        }
 
         sesProps.put(HTI5250jConstants.SESSION_CONFIG_RESOURCE, configurationResource);
 

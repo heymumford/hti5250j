@@ -109,10 +109,11 @@ public final class LoadMacroMenu {
         }
 
         // lets not load the menu again if they point to the same place
-        if (!conPath.equals(conPath2))
+        if (!conPath.equals(conPath2)) {
             scriptDir(ConfigureFactory.getInstance().getProperty(
                     "emulator.settingsDirectory") +
                     "scripts", menu, session);
+        }
     }
 
     private static void doOptionsPopup(MouseEvent e, SessionPanel session) {
@@ -184,27 +185,22 @@ public final class LoadMacroMenu {
         ExecuteScriptAction action;
 
         File[] macroFiles = directory.listFiles();
-        if (macroFiles == null || macroFiles.length == 0)
+        if (macroFiles == null || macroFiles.length == 0) {
             return;
+        }
 
         Arrays.sort(macroFiles, new MacroCompare());
 
-        //KJP - We will wrap this in a try catch block to catch security
-        // exceptions
         for (int i = 0; i < macroFiles.length; i++) {
             try {
                 File file = macroFiles[i];
                 String fileName = file.getName();
                 if (file.isHidden()) {
-                    /* do nothing! */
                     continue;
                 } else if (file.isDirectory()) {
                     Vector submenu = new Vector();
                     submenu.addElement(fileName.replace('_', ' '));
                     loadScripts(submenu, path + fileName + '/', file, session);
-                    // if we do not want empty directories to show up uncomment
-                    // this line.
-                    // if(submenu.size() != 1)
                     vector.addElement(submenu);
                 } else {
                     if (InterpreterDriverManager.isScriptSupported(fileName)) {

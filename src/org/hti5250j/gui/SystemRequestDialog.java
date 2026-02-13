@@ -29,7 +29,7 @@ import javax.swing.JTextField;
  */
 public class SystemRequestDialog {
 
-    private final static String[] OPTIONS = new String[]{"SysReq", "Cancel"};
+    private static final String[] OPTIONS = new String[]{"SysReq", "Cancel"};
 
     private final Component parent;
 
@@ -57,16 +57,15 @@ public class SystemRequestDialog {
         Object[] message = new Object[1];
         message[0] = srp;
 
-        pane = new JOptionPane(message, // the dialog message array
-                JOptionPane.QUESTION_MESSAGE, // message type
-                JOptionPane.DEFAULT_OPTION, // option type
-                null, // optional icon, use null to use the default icon
-                OPTIONS, // options string array, will be made into buttons
+        pane = new JOptionPane(message,
+                JOptionPane.QUESTION_MESSAGE,
+                JOptionPane.DEFAULT_OPTION,
+                null,
+                OPTIONS,
                 OPTIONS[0]);
 
         dialog = pane.createDialog(parent, "System Request");
 
-        // add the listener that will set the focus to the desired option
         dialog.addWindowListener(new WindowAdapter() {
             public void windowOpened(WindowEvent e) {
                 text.requestFocus();

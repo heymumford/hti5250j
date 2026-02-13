@@ -35,8 +35,6 @@ import org.hti5250j.headless.HeadlessKeyEvent;
  * IKeyHandler interface, enabling operation in both GUI and server
  * environments.
  *
- * Wave 3A Track 3: IKeyHandler interface extraction (DEPRECATED wrapper)
- *
  * @deprecated Use IKeyHandler and HeadlessKeyboardHandler directly for
  *             new code. This class is maintained for backward compatibility.
  */
@@ -53,10 +51,7 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
     protected StringBuffer recordBuffer;
     protected boolean recording;
 
-    /**
-     * Headless-compatible delegate for cross-platform operation.
-     * @since Wave 3A Track 3
-     */
+    /** Headless-compatible delegate for cross-platform operation. */
     protected IKeyHandler headlessDelegate;
 
     /**
@@ -69,12 +64,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
         this.screen = session.getScreen();
         sessionGui = session.getGUI();
 
-//      String os = System.getProperty("os.name");
-//      if (os.toLowerCase().indexOf("linux") != -1) {
-//         System.out.println("using os " + os);
-//         isLinux = true;
-//      }
-
         isLinux = OperatingSystem.isUnix();
 
         keyMap = new KeyMapper();
@@ -82,7 +71,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
 
         KeyMapper.addKeyChangeListener(this);
 
-        // initialize the keybingings of the components InputMap
         initKeyBindings();
 
 
@@ -150,8 +138,9 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
 
     protected boolean emulatorAction(KeyStroke ks, KeyEvent e) {
 
-        if (sessionGui == null)
+        if (sessionGui == null) {
             return false;
+        }
 
         InputMap map = getInputMap();
         ActionMap am = getActionMap();
@@ -182,6 +171,8 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
             case KeyEvent.KEY_RELEASED:
                 keyReleased(evt);
                 break;
+            default:
+                break;
         }
     }
 
@@ -193,8 +184,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
      *
      * @param evt the Swing KeyEvent
      * @return true if the event was handled
-     *
-     * @since Wave 3A Track 3
      */
     public boolean processKeyEventHeadless(KeyEvent evt) {
         if (headlessDelegate == null) {
@@ -202,7 +191,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
         }
 
         try {
-            // Convert Swing KeyEvent to platform-independent IKeyEvent
             IKeyEvent keyEvent = new HeadlessKeyEvent(
                 evt.getKeyCode(),
                 evt.isShiftDown(),
@@ -224,8 +212,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
      * Get the headless delegate handler.
      *
      * @return the IKeyHandler delegate, or null if not set
-     *
-     * @since Wave 3A Track 3
      */
     public IKeyHandler getHeadlessDelegate() {
         return headlessDelegate;
@@ -234,11 +220,7 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
     /**
      * Set the headless delegate handler.
      *
-     * Used for dependency injection of custom key handler implementations.
-     *
      * @param delegate the IKeyHandler to use
-     *
-     * @since Wave 3A Track 3
      */
     public void setHeadlessDelegate(IKeyHandler delegate) {
         this.headlessDelegate = delegate;

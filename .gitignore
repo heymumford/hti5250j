@@ -1,35 +1,44 @@
-/dist
+# Build output
 /bin
 /build
+/dist
 /out
+
+# Gradle
 .gradle/
 .gradle-home/
+
+# Java
 *.class
+*.jar
+*.war
+
+# Backup files
+*.bak
+*.orig
+*.old
+
+# Ant (migrated to Gradle)
+build.properties
+build.xml
+
+# Logs
 *.log
-build.*.properties
-*.iml
-.idea
+
+# IDE - Eclipse
 .classpath
 .project
 .pydevproject
-.DS_Store
+.settings/
 
-# Environment and Secrets
-.env
-.env.local
-.env.*.local
-*.pem
-*.key
-*.crt
-*.pfx
-*.jks
-*.p12
-*.keystore
-certs/
-certificates/
+# IDE - IntelliJ
+*.iml
+.idea/
 
-# IDE
+# IDE - VS Code
 .vscode/
+
+# IDE - Vim/Emacs
 *.swp
 *.swo
 *~
@@ -37,4 +46,40 @@ certificates/
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+*.crt
+*.jks
+*.key
+*.keystore
+*.p12
+*.pem
+*.pfx
+certs/
+certificates/
+
+# CI (migrated to GitHub Actions)
+.travis.yml
+
+# Agent/analysis artifacts
+AGENT_*.md
+AGENT_*.txt
+ANALYSIS_*.txt
+CYCLE_*.txt
+MISSION_*.txt
+PROBE_*.txt
+VALIDATION_*.txt
+*_MANIFEST.txt
+*_SUMMARY.txt
+
+# Build artifacts
+*.afp
+
+# CVS/VCS conflict remnants
+.!*
+
+# Archives
 ARCHIVE/

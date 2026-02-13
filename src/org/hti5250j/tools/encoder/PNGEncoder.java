@@ -24,8 +24,9 @@ import java.util.zip.Deflater;
 public class PNGEncoder extends AbstractImageEncoder {
 
     public void saveImage() throws IOException, EncoderException {
-        if (img == null)
+        if (img == null) {
             error("PNG encoding error: Image is NULL.");
+        }
 
         PixelGrabber pg = new PixelGrabber(img, 0, 0, img.getWidth(null), img.getHeight(null), false);
         try {
@@ -81,10 +82,11 @@ public class PNGEncoder extends AbstractImageEncoder {
         crc = update_crc(crc, bytesFromLong(height));
         crc = update_crc(crc, byteFromInt(8));
 
-        if (pixels >= 16)
+        if (pixels >= 16) {
             crc = update_crc(crc, byteFromInt(2));
-        else
+        } else {
             crc = update_crc(crc, byteFromInt(3));
+        }
 
         crc = update_crc(crc, byteFromInt(0));
         crc = update_crc(crc, byteFromInt(0));
@@ -138,20 +140,22 @@ public class PNGEncoder extends AbstractImageEncoder {
 
         // IDAT
         byte[] outarray = null;
-        if (pixels == 8)
+        if (pixels == 8) {
             outarray = new byte[(pixelarray8.length) + height];
-        else
+        } else {
             outarray = new byte[(pixelarray.length * 3) + height];
+        }
 
         for (int i = 0; i < outarray.length; i++) {
             outarray[i] = 0;
         }
 
         int size = 0;
-        if (pixels >= 16)
+        if (pixels >= 16) {
             size = compress(outarray, pixelarray, cmodel, width, height);
-        else
+        } else {
             size = compress(outarray, pixelarray8, width, height);
+        }
 
         crc = start_crc();
 
@@ -264,10 +268,11 @@ public class PNGEncoder extends AbstractImageEncoder {
         for (n = 0; n < 256; n++) {
             c = n;
             for (k = 0; k < 8; k++) {
-                if ((c & 1) != 0)
+                if ((c & 1) != 0) {
                     c = 0xedb88320L ^ (c >> 1);
-                else
+                } else {
                     c = c >> 1;
+                }
 
             }
             crc_table[n] = c;
@@ -275,11 +280,11 @@ public class PNGEncoder extends AbstractImageEncoder {
         }
     }
 
-    private final static long start_crc() {
+    private static long start_crc() {
         return 0xffffffffL;
     }
 
-    private final static long end_crc(final long crc) {
+    private static long end_crc(final long crc) {
         return crc ^ 0xffffffffL;
     }
 

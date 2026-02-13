@@ -51,7 +51,6 @@ public class UserDataTabPanel extends JPanel implements QueueFilterInterface,
         });
 
         userData = new JTextField(15);
-//      userData.setEnabled(false);
         ToggleDocument td = new ToggleDocument();
         td.addToggleDocumentListener(this);
         userData.setDocument(td);
@@ -74,17 +73,12 @@ public class UserDataTabPanel extends JPanel implements QueueFilterInterface,
      */
     public void reset() {
 
-//      userData.setEnabled(false);
         userData.setText("");
         all.setSelected(true);
 
     }
 
     void select_itemStateChanged(ItemEvent e) {
-//      if (select.isSelected())
-//         userData.setEnabled(true);
-//      else
-//         userData.setEnabled(false);
     }
 
     public void toggleNotEmpty() {
@@ -98,10 +92,11 @@ public class UserDataTabPanel extends JPanel implements QueueFilterInterface,
     }
 
     public String getUserData() {
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "";
-        else
+        } else {
             return userData.getText().trim();
+        }
     }
 
     public void setUserData(String filter) {

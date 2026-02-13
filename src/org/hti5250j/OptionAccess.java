@@ -30,12 +30,12 @@ public class OptionAccess extends OptionAccessFactory {
     /**
      * A handle to the unique OptionAccess class
      */
-    static private OptionAccess _instance;
+    private static OptionAccess _instance;
 
     /**
      * A handle to non valid options.
      */
-    static private List<String> restricted = new ArrayList<String>();
+    private static List<String> restricted = new ArrayList<String>();
 
     private final KeyMnemonicResolver keyMnemonicResolver = new KeyMnemonicResolver();
 
@@ -54,7 +54,7 @@ public class OptionAccess extends OptionAccessFactory {
     /**
      * @return The unique instance of this class.
      */
-    static public OptionAccess instance() {
+    public static OptionAccess instance() {
 
         if (_instance == null) {
             _instance = new OptionAccess();

@@ -93,10 +93,11 @@ public class FileFieldDef {
                 // Here we interrogate the the DIGIT portion for the sign
                 //    0x0f = positive   -> 0x0f | 0x0d = 0x0f
                 //    0x0d = negative   -> 0x0d | 0x0d = 0x0d
-                if ((byteD | 0x0d) == 0x0d)
+                if ((byteD | 0x0d) == 0x0d) {
                     sb.insert(0, '-');
-                else
+                } else {
                     sb.insert(0, '+');
+                }
 
                 break;
 
@@ -134,10 +135,11 @@ public class FileFieldDef {
                 // Here we interrogate the the ZONE portion for the sign
                 //    0xf0 = positive   -> 0xf5 & 0xf0 = 0xf0
                 //    0xd0 = negative   -> 0xd5 & 0xf0 = 0xd0
-                if ((cByte[end - 1] & 0xf0) == 0xd0)
+                if ((cByte[end - 1] & 0xf0) == 0xd0) {
                     sb.insert(0, '-');
-                else
+                } else {
                     sb.insert(0, '+');
+                }
                 break;
 
             default:
@@ -160,8 +162,9 @@ public class FileFieldDef {
     }
 
     public void setFieldData(String fd) {
-        if (sbdata == null)
+        if (sbdata == null) {
             sbdata = new StringBuffer(length);
+        }
         sbdata.setLength(0);
         sbdata.append(fd);
     }
@@ -231,10 +234,11 @@ public class FileFieldDef {
 
         type = fType.charAt(0);
 
-        if (type == 'P')
+        if (type == 'P') {
             bufferLength = (length * 2) - 1;
-        else
+        } else {
             bufferLength = length;
+        }
     }
 
     public void setFieldText(String text) {

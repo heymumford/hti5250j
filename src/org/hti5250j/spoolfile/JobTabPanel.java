@@ -97,27 +97,30 @@ public class JobTabPanel extends JPanel implements QueueFilterInterface {
     }
 
     public String getJobName() {
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "%ALL%";
-        else
+        } else {
             return jobName.getText().trim();
+        }
     }
 
     public String getJobUser() {
 
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "%ALL%";
-        else
+        } else {
             return jobUser.getText().trim();
+        }
 
     }
 
     public String getJobNumber() {
 
-        if (all.isSelected())
+        if (all.isSelected()) {
             return "%ALL%";
-        else
+        } else {
             return jobNumber.getText().trim();
+        }
 
     }
 }

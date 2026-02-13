@@ -36,7 +36,7 @@ import java.util.concurrent.TimeoutException;
  * the TN5250E protocol (tnvt layer), but current composition approach
  * provides backward compatibility and lower risk.
  *
- * @since Phase 15B
+ * @since 0.12.0
  */
 public class DefaultHeadlessSession implements HeadlessSession {
 

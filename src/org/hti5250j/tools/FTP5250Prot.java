@@ -230,10 +230,7 @@ public class FTP5250Prot {
         aborted = false;
         loggedIn = true;
 
-        // send user command to server
         executeCommand("USER", user);
-
-        // send password to server
         int resp = executeCommand("PASS", passWord);
 
         if (resp == 230) {
@@ -243,7 +240,6 @@ public class FTP5250Prot {
             return false;
         }
 
-        // check if the connected to server is an as400 or not
         if (!isConnectedToOS400()) {
             printFTPInfo("Remote server is not an OS/400.  Disconnecting!");
             disconnect();
@@ -254,10 +250,7 @@ public class FTP5250Prot {
     }
 
     /**
-     * Print out the remote directory of the
-     *
-     *    not used right now but maybe in the future to obtain a list of
-     *    files to select for download
+     * Print out the remote directory listing.
      */
     protected void printDirListing() {
 
@@ -265,7 +258,6 @@ public class FTP5250Prot {
 
             Socket passSocket;
 
-            // This will create a passive socket and execute the NLST command
             passSocket = createPassiveSocket("NLST");
 
             BufferedReader br = new BufferedReader(new InputStreamReader(passSocket.getInputStream()));
@@ -286,11 +278,10 @@ public class FTP5250Prot {
      */
     private boolean isConnectedToOS400() {
 
-        // get type of system connected to
         executeCommand("SYST");
-
-        // check whether this is an OS/400 system or not
-        if (lastResponse.toUpperCase().indexOf("OS/400") >= 0) return true;
+        if (lastResponse.toUpperCase().indexOf("OS/400") >= 0) {
+            return true;
+        }
         return false;
     }
 
@@ -339,8 +330,9 @@ public class FTP5250Prot {
         FileFieldDef f;
         for (int x = 0; x < ffd.size(); x++) {
             f = (FileFieldDef) ffd.get(x);
-            if (f.isWriteField())
+            if (f.isWriteField()) {
                 return true;
+            }
         }
         return false;
     }
@@ -383,10 +375,11 @@ public class FTP5250Prot {
 
         int i = lastResponse.indexOf("\"");
         int j = lastResponse.lastIndexOf("\"");
-        if (i != -1 && j != -1)
+        if (i != -1 && j != -1) {
             remoteDir = lastResponse.substring(i + 1, j);
-        else
+        } else {
             remoteDir = "Can't parse remote dir!";
+        }
     }
 
     /**
@@ -400,13 +393,8 @@ public class FTP5250Prot {
         try {
             try {
 
-                // The following line does not return the correct address of the
-                //    host.  It is a know bug for linux BUG ID 4269403
-                //    Since it is a know bug we have to hack the damn thing.
-                //    We will use the address from localHost that was obtained
-                //    from the ftpConnection socket.
-
-//            byte abyte0[] = InetAddress.getLocalHost().getAddress();
+                // Use address from ftpConnection socket instead of InetAddress.getLocalHost()
+                // to work around JDK bug 4269403 (incorrect address on Linux).
                 byte abyte0[] = localHost.getAddress();
                 ss = new ServerSocket(0);
                 ss.setSoTimeout(timeout);
@@ -455,8 +443,6 @@ public class FTP5250Prot {
         String member2 = null;
 
         if (memberOffset > 0) {
-
-//         System.out.println(tFile.substring(0,memberOffset));
             file2 = tFile.substring(0, memberOffset);
             member2 = tFile.substring(memberOffset + 1);
         } else {
@@ -469,7 +455,6 @@ public class FTP5250Prot {
 
         Runnable getInfo = new Runnable() {
 
-            // set the thread to run.
             public void run() {
 
                 executeCommand("RCMD", "dspffd FILE(" + file + ") OUTPUT(*OUTFILE) " +
@@ -524,10 +509,10 @@ public class FTP5250Prot {
             while ((data = dis.readLine()) != null) {
                 FileFieldDef ffDesc = new FileFieldDef(vt, decChar);
 
-                if (useInternal)
+                if (useInternal) {
                     // WHFLDI  Field name internal
                     ffDesc.setFieldName(data.substring(129, 129 + 10));
-                else {
+                } else {
 
                     String text = "";
 
@@ -536,17 +521,18 @@ public class FTP5250Prot {
                             data.substring(281, 281 + 20).trim() + " " +
                             data.substring(301, 301 + 20).trim();
 
-                    if (text.length() > 0)
+                    if (text.length() > 0) {
                         ffDesc.setFieldName(text);
-                    else {
+                    } else {
 
                         // WHFLD  Field name text description
                         ffDesc.setFieldName(data.substring(168, 168 + 50).trim());
 
                         // if the text description is blanks then use the field name
-                        if (ffDesc.getFieldName().trim().length() == 0)
+                        if (ffDesc.getFieldName().trim().length() == 0) {
                             // WHFLDI  Field name internal
                             ffDesc.setFieldName(data.substring(129, 129 + 10));
+                        }
                     }
                 }
 
@@ -566,13 +552,13 @@ public class FTP5250Prot {
 
                 // WHNULL Allow NULL Data
                 if (data.substring(503, 503 + 1).equals("Y")) {
-                    if (allowsNullFields == null)
+                    if (allowsNullFields == null) {
                         allowsNullFields = new Vector(3);
+                    }
                     allowsNullFields.add(ffDesc.getFieldName());
                     printFTPInfo("Warning -- File allows null fields!!!");
                 }
 
-                // set selected
                 ffDesc.setWriteField(true);
 
                 recLength = data.substring(124, 124 + 5);
@@ -591,8 +577,9 @@ public class FTP5250Prot {
                 JScrollPane sp = new JScrollPane(jta);
                 String text = new String();
 
-                for (int x = 0; x < allowsNullFields.size(); x++)
+                for (int x = 0; x < allowsNullFields.size(); x++) {
                     text += allowsNullFields.get(x) + "\n";
+                }
 
                 jta.setText(text);
 
@@ -626,7 +613,6 @@ public class FTP5250Prot {
             l += f.getFieldLength();
             o += f.getBufferOutLength();
             printFTPInfo(f.toString());
-//         System.out.println(f);
         }
         recordLength = l;
         recordOutLength = o;
@@ -646,13 +632,16 @@ public class FTP5250Prot {
                 " OUTPUT(*OUTFILE) " +
                 "OUTFILE(QTEMP/FML) ");
 
-        if (!lastResponse.startsWith("2"))
+        if (!lastResponse.startsWith("2")) {
             return false;
+        }
 
-        if (getMbrSize(member))
+        if (getMbrSize(member)) {
 
-            if (!lastResponse.startsWith("2"))
+            if (!lastResponse.startsWith("2")) {
                 return false;
+            }
+        }
 
         return true;
     }
@@ -696,8 +685,9 @@ public class FTP5250Prot {
                 for (int j = 0; j != -1 && !aborted; ) {
 
                     j = datainputstream.read();
-                    if (j == -1)
+                    if (j == -1) {
                         break;
+                    }
                     c++;
                     abyte0[len++] = (byte) j;
 
@@ -721,8 +711,9 @@ public class FTP5250Prot {
                 }
 
                 printFTPInfo("Member list Transfer complete!");
-            } else
+            } else {
                 flag = false;
+            }
 
         } catch (Exception _ex) {
             printFTPInfo("Error! " + _ex);
@@ -777,7 +768,6 @@ public class FTP5250Prot {
                     if (mi.getName().trim().equalsIgnoreCase(member2.trim())) {
                         fileSize = mi.getSize();
                         status.setFileLength(mi.getSize());
-//                  System.out.println(" found member " + mi.getName());
                         break;
                     }
 
@@ -785,7 +775,9 @@ public class FTP5250Prot {
             }
         }
 
-        if (member2 != null) return file2.trim() + "." + member2.trim();
+        if (member2 != null) {
+            return file2.trim() + "." + member2.trim();
+        }
         return file2.trim();
     }
 
@@ -798,11 +790,6 @@ public class FTP5250Prot {
         return fileSize;
     }
 
-    /**
-     * Print output of the help command
-     *
-     *    Not used just a test method for me
-     */
     protected boolean printHelp() {
 
         executeCommand("HELP");
@@ -830,7 +817,6 @@ public class FTP5250Prot {
 
         Runnable getRun = new Runnable() {
 
-            // set the thread to run.
             public void run() {
 
                 Socket socket = null;
@@ -854,8 +840,9 @@ public class FTP5250Prot {
                         for (int j = 0; j != -1 && !aborted; ) {
 
                             j = datainputstream.read();
-                            if (j == -1)
+                            if (j == -1) {
                                 break;
+                            }
                             c++;
                             abyte0[len++] = (byte) j;
                             if (len == recordLength) {
@@ -867,19 +854,17 @@ public class FTP5250Prot {
                                 fireStatusEvent();
                             }
                             Thread.yield();
-                            //            if ((c / recordLength) == 200)
-                            //               aborted = true;
                         }
                         System.out.println(c);
                         if (c == 0) {
                             status.setCurrentRecord(c);
                             fireStatusEvent();
                         } else {
-                            if (!aborted)
+                            if (!aborted) {
                                 parseResponse();
+                            }
                         }
                         writeFooter();
-//                  parseResponse();
                         printFTPInfo("Transfer complete!");
 
                     }
@@ -964,15 +949,17 @@ public class FTP5250Prot {
             return 0;
         }
 
-        if (params != null)
+        if (params != null) {
             ftpOutputStream.print(cmd + " " + params + "\r\n");
-        else
+        } else {
             ftpOutputStream.print(cmd + "\r\n");
+        }
 
-        if (!cmd.equals("PASS"))
+        if (!cmd.equals("PASS")) {
             printFTPInfo("SENT: " + cmd + " " + (params != null ? params : ""));
-        else
+        } else {
             printFTPInfo("SENT: PASS ****************");
+        }
 
         parseResponse();
         return lastIntResponse;
@@ -985,8 +972,9 @@ public class FTP5250Prot {
     private String parseResponse() {
         try {
 
-            if (ftpInputStream == null)
+            if (ftpInputStream == null) {
                 return "0000 Response Invalid";
+            }
 
             String response = ftpInputStream.readLine();
             String response2 = response;
@@ -1007,27 +995,12 @@ public class FTP5250Prot {
                 response += response2 + "\n";
             }
 
-            // convert the numeric response to an int for testing later
             lastIntResponse = Integer.parseInt(response.substring(0, 3));
-            // save off for printing later
             lastResponse = response;
-            // print out the response
             printFTPInfo(lastResponse);
 
             return lastResponse;
-        }
-//      catch (InterruptedIOException iioe) {
-//
-//         try {
-//            ftpInputStream.close();
-//         }
-//         catch (IOException ieo) {
-//
-//         }
-//         return "0000 Response Invalid";
-//
-//      }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             System.out.println(exception);
             exception.printStackTrace();
             return "0000 Response Invalid";

@@ -79,10 +79,6 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
         initScripting();
 
-        // sets the starting frame type.  At this time there are tabs which is
-        //    default and Multiple Document Interface.
-//		startFrameType();
-
         frames = new ArrayList<GUIViewInterface>();
 
         newView();
@@ -118,7 +114,7 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
     /**
      * Check if there are any other instances of tn5250j running
      */
-    static private boolean checkBootStrapper(String[] args) {
+    private static boolean checkBootStrapper(String[] args) {
 
         try {
             Socket boot = new Socket("localhost", 3036);
@@ -129,10 +125,11 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             //    tn5250j
             String opts = null;
             for (int index = 0; index < args.length; index++) {
-                if (opts != null)
+                if (opts != null) {
                     opts += args[index] + " ";
-                else
+                } else {
                     opts = args[index] + " ";
+                }
             }
             out.println(opts);
             out.flush();
@@ -141,11 +138,9 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             return true;
 
         } catch (UnknownHostException unknownHostException) {
-            // TODO: Should be logged @ DEBUG level
-            //         System.err.println("localhost not known.");
+            // Expected when no other instance is listening
         } catch (IOException ioException) {
-            // TODO: Should be logged @ DEBUG level
-            //         System.err.println("No other instances of tn5250j running.");
+            // Expected when no other instance of tn5250j is running
         }
 
         return false;
@@ -217,7 +212,7 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
         }
     }
 
-    static public void main(String[] args) {
+    public static void main(String[] args) {
 
         if (!isSpecified("-nc", args)) {
 
@@ -239,8 +234,9 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
         My5250 application = new My5250();
 
-        if (strapper != null)
+        if (strapper != null) {
             strapper.addBootListener(application);
+        }
 
         if (args.length > 0) {
 
@@ -262,9 +258,6 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
             }
 
-            /**
-             * @todo this crap needs to be rewritten it is a mess
-             */
             if (args[0].startsWith("-")) {
 
                 // check if a session parameter is specified on the command line
@@ -394,12 +387,13 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
     }
 
-    static private String getParm(String parameter, String[] args) {
+    private static String getParm(String parameter, String[] args) {
 
         for (int index = 0; index < args.length; index++) {
 
-            if (args[index].equals(parameter))
+            if (args[index].equals(parameter)) {
                 return args[index + 1];
+            }
 
         }
         return null;
@@ -407,13 +401,15 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
     private static boolean isSpecified(String parameter, String[] args) {
 
-        if (args == null)
+        if (args == null) {
             return false;
+        }
 
         for (int index = 0; index < args.length; index++) {
 
-            if (args[index] != null && args[index].equals(parameter))
+            if (args[index] != null && args[index].equals(parameter)) {
                 return true;
+            }
 
         }
         return false;
@@ -462,8 +458,9 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
             newSession(sel, sessionArgs);
         } else {
-            if (sess.getCount() == 0)
+            if (sess.getCount() == 0) {
                 System.exit(0);
+            }
         }
     }
 
@@ -509,29 +506,35 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
         // Start loading properties
         sesProps.put(HTI5250jConstants.SESSION_HOST, session);
 
-        if (isSpecified("-e", args))
+        if (isSpecified("-e", args)) {
             sesProps.put(HTI5250jConstants.SESSION_TN_ENHANCED, "1");
+        }
 
         if (isSpecified("-p", args)) {
             sesProps.put(HTI5250jConstants.SESSION_HOST_PORT, getParm("-p", args));
         }
 
-        if (isSpecified("-f", args))
+        if (isSpecified("-f", args)) {
             propFileName = getParm("-f", args);
+        }
 
-        if (isSpecified("-cp", args))
+        if (isSpecified("-cp", args)) {
             sesProps.put(HTI5250jConstants.SESSION_CODE_PAGE, getParm("-cp", args));
+        }
 
-        if (isSpecified("-gui", args))
+        if (isSpecified("-gui", args)) {
             sesProps.put(HTI5250jConstants.SESSION_USE_GUI, "1");
+        }
 
-        if (isSpecified("-t", args))
+        if (isSpecified("-t", args)) {
             sesProps.put(HTI5250jConstants.SESSION_TERM_NAME_SYSTEM, "1");
+        }
 
-        if (isSpecified("-132", args))
+        if (isSpecified("-132", args)) {
             sesProps.put(HTI5250jConstants.SESSION_SCREEN_SIZE, HTI5250jConstants.SCREEN_SIZE_27X132_STR);
-        else
+        } else {
             sesProps.put(HTI5250jConstants.SESSION_SCREEN_SIZE, HTI5250jConstants.SCREEN_SIZE_24X80_STR);
+        }
 
         // are we to use a socks proxy
         if (isSpecified("-usp", args)) {
@@ -542,8 +545,9 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             }
 
             // socks proxy port argument
-            if (isSpecified("-spp", args))
+            if (isSpecified("-spp", args)) {
                 sesProps.put(HTI5250jConstants.SESSION_PROXY_PORT, getParm("-spp", args));
+            }
         }
 
         // are we to use a ssl and if we are what type
@@ -570,8 +574,9 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             sesProps.put(HTI5250jConstants.SESSION_DEVICE_NAME, getParm("-dn", args));
         }
 
-        if (isSpecified("-hb", args))
+        if (isSpecified("-hb", args)) {
             sesProps.put(HTI5250jConstants.SESSION_HEART_BEAT, "1");
+        }
 
         int sessionCount = manager.getSessions().getCount();
 
@@ -605,10 +610,11 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             }
         }
 
-        if (isSpecified("-t", args))
+        if (isSpecified("-t", args)) {
             frame1.addSessionView(sel, sessionPanel);
-        else
+        } else {
             frame1.addSessionView(session, sessionPanel);
+        }
 
         sessionPanel.connect();
 
@@ -624,10 +630,12 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
         int width = screenSize.width;
         int height = screenSize.height;
 
-        if (sessions.containsKey("emul.width"))
+        if (sessions.containsKey("emul.width")) {
             width = Integer.parseInt(sessions.getProperty("emul.width"));
-        if (sessions.containsKey("emul.height"))
+        }
+        if (sessions.containsKey("emul.height")) {
             height = Integer.parseInt(sessions.getProperty("emul.height"));
+        }
 
         frame1 = new Gui5250Frame(this);
 
@@ -636,8 +644,7 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
         if (sessions.containsKey("emul.frame" + frame1.getFrameSequence())) {
 
             String location = sessions.getProperty("emul.frame" + frame1.getFrameSequence());
-            //         System.out.println(location + " seq > " + frame1.getFrameSequence() );
-            restoreFrame(frame1, location);
+                restoreFrame(frame1, location);
         } else {
             frame1.setSize(width, height);
             frame1.centerFrame();
@@ -768,6 +775,8 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             case HTI5250jConstants.STATE_REMOVE:
                 closeSessionInternal(sessionPanel);
                 break;
+            default:
+                break;
         }
     }
 
@@ -787,6 +796,8 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
             case EmulatorActionEvent.START_DUPLICATE:
                 startDuplicateSession(sessionPanel);
                 break;
+            default:
+                break;
         }
     }
 
@@ -796,8 +807,9 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
 
         for (int index = 0; index < frames.size(); index++) {
             parentFrame = frames.get(index);
-            if (parentFrame.containsSession(session))
+            if (parentFrame.containsSession(session)) {
                 return parentFrame;
+            }
         }
 
         return null;
@@ -830,9 +842,6 @@ public class My5250 implements BootListener, SessionListener, EmulatorActionList
      * Sets the jar path for the available jars.
      * Sets the python.path system variable to make the jython jar available
      * to scripting process.
-     *
-     * This needs to be rewritten to loop through and obtain all jars in the
-     * user directory.  Maybe also additional paths to search.
      */
     private void initJarPaths() {
 

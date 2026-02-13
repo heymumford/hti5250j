@@ -23,9 +23,15 @@ public record WorkflowResult(
      * Create successful workflow result with latency and artifact path.
      */
     public static WorkflowResult success(String rowKey, long latencyMs, String artifactPath) {
-        if (rowKey == null) throw new IllegalArgumentException("rowKey cannot be null");
-        if (artifactPath == null) throw new IllegalArgumentException("artifactPath cannot be null");
-        if (latencyMs < 0) throw new IllegalArgumentException("latencyMs cannot be negative");
+        if (rowKey == null) {
+            throw new IllegalArgumentException("rowKey cannot be null");
+        }
+        if (artifactPath == null) {
+            throw new IllegalArgumentException("artifactPath cannot be null");
+        }
+        if (latencyMs < 0) {
+            throw new IllegalArgumentException("latencyMs cannot be negative");
+        }
         return new WorkflowResult(rowKey, true, latencyMs, artifactPath, null);
     }
 
@@ -33,9 +39,15 @@ public record WorkflowResult(
      * Create failed workflow result with exception.
      */
     public static WorkflowResult failure(String rowKey, long latencyMs, Throwable error) {
-        if (rowKey == null) throw new IllegalArgumentException("rowKey cannot be null");
-        if (error == null) throw new IllegalArgumentException("error cannot be null");
-        if (latencyMs < 0) throw new IllegalArgumentException("latencyMs cannot be negative");
+        if (rowKey == null) {
+            throw new IllegalArgumentException("rowKey cannot be null");
+        }
+        if (error == null) {
+            throw new IllegalArgumentException("error cannot be null");
+        }
+        if (latencyMs < 0) {
+            throw new IllegalArgumentException("latencyMs cannot be negative");
+        }
         return new WorkflowResult(rowKey, false, latencyMs, null, error);
     }
 
@@ -43,7 +55,9 @@ public record WorkflowResult(
      * Create timeout result when workflow exceeds time limit.
      */
     public static WorkflowResult timeout(String message) {
-        if (message == null) throw new IllegalArgumentException("message cannot be null");
+        if (message == null) {
+            throw new IllegalArgumentException("message cannot be null");
+        }
         return new WorkflowResult(message, false, 0, null, new TimeoutException(message));
     }
 

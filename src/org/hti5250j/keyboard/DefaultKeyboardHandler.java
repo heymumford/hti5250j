@@ -118,8 +118,9 @@ class DefaultKeyboardHandler extends KeyboardHandler {
      */
     void initKeyBindings() {
 
-        if (session.getGUI() == null)
+        if (session.getGUI() == null) {
             return;
+        }
 
         SessionPanel sessionGui = session.getGUI();
 
@@ -153,8 +154,9 @@ class DefaultKeyboardHandler extends KeyboardHandler {
      */
     public void processKeyEvent(KeyEvent evt) {
 
-        if (evt.isConsumed())
+        if (evt.isConsumed()) {
             return;
+        }
 
         switch (evt.getID()) {
             case KeyEvent.KEY_TYPED:
@@ -165,6 +167,8 @@ class DefaultKeyboardHandler extends KeyboardHandler {
                 break;
             case KeyEvent.KEY_RELEASED:
                 processVTKeyReleased(evt);
+                break;
+            default:
                 break;
         }
 
@@ -197,18 +201,20 @@ class DefaultKeyboardHandler extends KeyboardHandler {
             return;
         }
 
-        if (isLinux)
+        if (isLinux) {
             lastKeyStroke = KeyMapper.getKeyStrokeText(e, isAltGr);
-        else
+        } else {
             lastKeyStroke = KeyMapper.getKeyStrokeText(e);
+        }
 
         if (lastKeyStroke != null && !lastKeyStroke.equals("null")) {
 
             if (lastKeyStroke.startsWith("[") || lastKeyStroke.length() == 1) {
 
                 screen.sendKeys(lastKeyStroke);
-                if (recording)
+                if (recording) {
                     recordBuffer.append(lastKeyStroke);
+                }
             } else {
                 session.getGUI().executeMacro(lastKeyStroke);
             }
@@ -220,18 +226,19 @@ class DefaultKeyboardHandler extends KeyboardHandler {
                     session.getGUI().doKeyBoundArea(e, lastKeyStroke);
                 }
             }
-        } else
+        } else {
             keyProcessed = false;
+        }
 
-        if (keyProcessed)
+        if (keyProcessed) {
             e.consume();
+        }
 
     }
 
     private void processVTKeyTyped(KeyEvent e) {
 
         char kc = e.getKeyChar();
-//      displayInfo(e,"Typed processed " + keyProcessed);
         // Hack to make german umlauts work under Linux
         // The problem is that these umlauts don't generate a keyPressed event
         // and so keyProcessed is true (even if is hasn't been processed)
@@ -250,11 +257,13 @@ class DefaultKeyboardHandler extends KeyboardHandler {
                 return;
             }
         }
-        if (!session.isConnected())
+        if (!session.isConnected()) {
             return;
+        }
         screen.sendKeys(Character.toString(kc));
-        if (recording)
+        if (recording) {
             recordBuffer.append(kc);
+        }
         keyProcessed = true;
         e.consume();
     }
@@ -267,8 +276,9 @@ class DefaultKeyboardHandler extends KeyboardHandler {
             isAltGr = false;
         }
 
-        if (Character.isISOControl(e.getKeyChar()) || keyProcessed || e.isConsumed())
+        if (Character.isISOControl(e.getKeyChar()) || keyProcessed || e.isConsumed()) {
             return;
+        }
 
         String s = KeyMapper.getKeyStrokeText(e);
 
@@ -276,16 +286,20 @@ class DefaultKeyboardHandler extends KeyboardHandler {
 
             if (s.startsWith("[")) {
                 screen.sendKeys(s);
-                if (recording)
+                if (recording) {
                     recordBuffer.append(s);
-            } else
+                }
+            } else {
                 session.getGUI().executeMacro(s);
+            }
 
-        } else
+        } else {
             keyProcessed = false;
+        }
 
-        if (keyProcessed)
+        if (keyProcessed) {
             e.consume();
+        }
     }
 
 }

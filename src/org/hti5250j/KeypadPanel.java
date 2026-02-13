@@ -66,7 +66,9 @@ class KeypadPanel extends JPanel {
     }
 
     void updateButtonFontSize(float fontSize) {
-        if (0 == buttons.length) return;
+        if (0 == buttons.length) {
+            return;
+        }
 
         final JButton referenceButton = buttons[0];
         Font buttonFont = referenceButton.getFont();

@@ -104,7 +104,7 @@ public class DelimitedOutputFilter implements OutputFilterInterface {
 
     class DelimitedDialog {
 
-        public DelimitedDialog(JFrame parent) {
+        DelimitedDialog(JFrame parent) {
 
             JPanel opts = new JPanel();
             opts.setBorder(BorderFactory.createTitledBorder(
@@ -123,20 +123,22 @@ public class DelimitedOutputFilter implements OutputFilterInterface {
             fd.addItem(LangTool.getString("delm.labelSpace"));
             fd.addItem(LangTool.getString("delm.labelNone"));
 
-            if (delimiter.length() > 0)
-                if (delimiter.equals("\t"))
+            if (delimiter.length() > 0) {
+                if (delimiter.equals("\t")) {
                     fd.setSelectedItem(LangTool.getString("delm.labelTab"));
-                else if (delimiter.equals(" "))
+                } else if (delimiter.equals(" ")) {
                     fd.setSelectedItem(LangTool.getString("delm.labelSpace"));
-                else {
+                } else {
                     if (!delimiter.equals(",") && !delimiter.equals(";") &&
-                            !delimiter.equals(":") && !delimiter.equals("|"))
+                            !delimiter.equals(":") && !delimiter.equals("|")) {
                         fd.addItem(delimiter);
+                    }
 
                     fd.setSelectedItem(delimiter);
                 }
-            else
+            } else {
                 fd.setSelectedItem(LangTool.getString("delm.labelNone"));
+            }
 
             fd.setEditable(true);
 
@@ -148,11 +150,13 @@ public class DelimitedOutputFilter implements OutputFilterInterface {
             td.addItem(LangTool.getString("delm.labelNone"));
 
             if (stringQualifier.length() > 0) {
-                if (!stringQualifier.equals("'") && !stringQualifier.equals("\""))
+                if (!stringQualifier.equals("'") && !stringQualifier.equals("\"")) {
                     td.addItem(stringQualifier);
+                }
                 td.setSelectedItem(stringQualifier);
-            } else
+            } else {
                 td.setSelectedItem(LangTool.getString("delm.labelNone"));
+            }
 
             td.setEditable(true);
 
@@ -181,18 +185,22 @@ public class DelimitedOutputFilter implements OutputFilterInterface {
             switch (result) {
                 case 0: // change options
                     delimiter = (String) fd.getSelectedItem();
-                    if (delimiter.equals(LangTool.getString("delm.labelSpace")))
+                    if (delimiter.equals(LangTool.getString("delm.labelSpace"))) {
                         delimiter = " ";
-                    if (delimiter.equals(LangTool.getString("delm.labelTab")))
+                    }
+                    if (delimiter.equals(LangTool.getString("delm.labelTab"))) {
                         delimiter = "\t";
-                    if (delimiter.equals(LangTool.getString("delm.labelNone")))
+                    }
+                    if (delimiter.equals(LangTool.getString("delm.labelNone"))) {
                         delimiter = "";
+                    }
                     stringQualifier = (String) td.getSelectedItem();
-                    if (stringQualifier.equals(LangTool.getString("delm.labelNone")))
+                    if (stringQualifier.equals(LangTool.getString("delm.labelNone"))) {
                         stringQualifier = "";
+                    }
                     break;
                 case 1: // Cancel
-                    //		      System.out.println("Cancel");
+                    //              System.out.println("Cancel");
                     break;
                 default:
                     break;
