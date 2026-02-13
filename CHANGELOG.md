@@ -8,19 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Wave 3A: GuiGraphicBuffer extraction (5 classes)
-- Wave 3A: Headless architecture interfaces and implementations
+- GuiGraphicBuffer extraction (5 classes)
+- Headless architecture interfaces and implementations
 - 67 new tests for headless components (SessionsHeadlessTest, KeyMapperHeadlessTest, etc.)
 - Integration tests for extracted components (ColorPaletteIntegrationTest, CursorManagerIntegrationTest, etc.)
 - **CHANGELOG.md**: Created standardized changelog following Keep a Changelog format
 
 ### Fixed
-- **Build System**: Fixed 3 P0 compilation errors in Wave 3A
+- **Build System**: Fixed 3 P0 compilation errors
 - **Character Encoding**: Fixed CharacterConversionException handling in 6 CCSID codepages (37, 273, 280, 284, 297, 500)
 - **Test Assertions**: Updated CharsetConversionPairwiseTest to expect proper exception types (29 tests fixed total)
 - **CCSID870**: Fixed unmappable character handling in 4 tests with proper try-catch and success counting
 - **Copyright Compliance**: Removed all unlicensed JavaPro magazine references from 6 source files
-- **Shell Configuration**: Fixed `alias -- -` causing Claude Code shell snapshot parse errors permanently
+- **Shell Configuration**: Fixed `alias -- -` causing shell snapshot parse errors permanently
   - Root cause: Shell snapshots replaying `alias -- -='cd -'` as `alias -- -- -='cd -'`
   - Fix: Added `unalias -- -` to `.bashrc`, removed corrupted snapshots
   - Alternative: Use `alias back='cd -'` (already in .bashrc line 146)
@@ -40,10 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Wave 3A] - 2026-02-12
+## [1.0.0] - 2026-02-12
 
 ### Summary
-Successfully completed Wave 3A refactoring with TDD approach. Extracted GuiGraphicBuffer responsibilities, implemented headless architecture, and created comprehensive test coverage.
+Successfully completed refactoring with TDD approach. Extracted GuiGraphicBuffer responsibilities, implemented headless architecture, and created comprehensive test coverage.
 
 **Branch**: `refactor/standards-critique-2026-02-12`
 **Commits**: 6 clean commits (squashed from 31 original commits)
