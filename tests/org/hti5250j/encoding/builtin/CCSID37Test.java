@@ -104,7 +104,8 @@ public class CCSID37Test {
         codec.init();
         assertThatThrownBy(() -> codec.uni2ebcdic((char) 0xFFFF))
             .isInstanceOf(CharacterConversionException.class)
-            .hasMessageContaining("0xFFFF");
+            .hasMessageContaining("U+FFFF")  // Error message uses Unicode format U+FFFF
+            .hasMessageContaining("CCSID-37");
     }
 
     /**
@@ -116,7 +117,8 @@ public class CCSID37Test {
         codec.init();
         assertThatThrownBy(() -> codec.uni2ebcdic((char) 0xDEAD))
             .isInstanceOf(CharacterConversionException.class)
-            .hasMessageContaining("0xDEAD");
+            .hasMessageContaining("U+DEAD")  // Error message uses Unicode format U+DEAD
+            .hasMessageContaining("CCSID-37");
     }
 
 }
