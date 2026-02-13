@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Properties;
 
-import org.hti5250j.ExternalProgramConfig;
 import org.hti5250j.interfaces.ConfigureFactory;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
 import org.hti5250j.tools.logging.HTI5250jLogger;
@@ -107,11 +106,6 @@ public class OperatingSystem {
      *            "https://","mailto:" or "file://").
      */
     public static void displayURL(String url) {
-        // Check Customized External Program first
-        if (launchExternalProgram(url)) {
-            return;
-        }
-
         // first let's check if we have an external protocol program defined
         String command = null;
         String protocol = "";
@@ -193,39 +187,6 @@ public class OperatingSystem {
         }
     }
 
-    /**
-     * @param url
-     * @return true when found external program and has been launched; false when not found external program.
-     */
-    private static boolean launchExternalProgram(String url) {
-        // first let's check if we have an external protocol program defined
-        try {
-            Properties properties = ExternalProgramConfig.getInstance().getEtnPgmProps();
-            String count = properties.getProperty("etn.pgm.support.total.num");
-            if (count != null && count.length() > 0) {
-                int total = Integer.parseInt(count);
-                for (int i = 1; i <= total; i++) {
-                    String program = properties.getProperty("etn.pgm." + i + ".command.name");
-                    if (url.toLowerCase().startsWith(program.toLowerCase())) {
-                        String params = url.substring(program.length() + 1);
-                        params = params.replace(',', ' ');
-                        String command;
-                        if (isWindows()) {
-                            command = properties.getProperty("etn.pgm." + i + ".command.window") + " " + params;
-                        } else {
-                            command = properties.getProperty("etn.pgm." + i + ".command.unix") + " " + params;
-                        }
-                        LOG.info("Execute External Program: " + command);
-                        execute(command);
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception exx) {
-            LOG.warn("Unable to run External Program: " + exx.getMessage());
-        }
-        return false;
-    }
 
     public static int execute(String command) {
 

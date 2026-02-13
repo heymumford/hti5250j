@@ -94,10 +94,9 @@ public interface ISessionManager {
      *
      * @param sessionId The session identifier from createSession()
      * @return Current state (CREATED, CONNECTED, DISCONNECTED, ERROR, etc.)
-     * @see ISessionState
      * @throws IllegalArgumentException if sessionId is null or empty
      * @throws IllegalArgumentException if session not found
      */
-    ISessionState getSessionState(String sessionId);
+    String getSessionState(String sessionId);
 
 }

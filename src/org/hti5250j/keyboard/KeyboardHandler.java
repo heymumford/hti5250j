@@ -21,12 +21,9 @@ import javax.swing.InputMap;
 import javax.swing.KeyStroke;
 
 import org.hti5250j.Session5250;
-import org.hti5250j.SessionPanel;
 import org.hti5250j.event.KeyChangeListener;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.tools.system.OperatingSystem;
-import org.hti5250j.interfaces.IKeyEvent;
-import org.hti5250j.headless.HeadlessKeyEvent;
 
 /**
  * Swing-compatible keyboard handler with headless delegation.
@@ -38,10 +35,10 @@ import org.hti5250j.headless.HeadlessKeyEvent;
  * @deprecated Use IKeyHandler and HeadlessKeyboardHandler directly for
  *             new code. This class is maintained for backward compatibility.
  */
+@Deprecated
 public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeListener {
 
     protected Session5250 session;
-    protected SessionPanel sessionGui;
     protected Screen5250 screen;
     protected boolean isLinux;
     protected boolean isAltGr;
@@ -51,9 +48,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
     protected StringBuffer recordBuffer;
     protected boolean recording;
 
-    /** Headless-compatible delegate for cross-platform operation. */
-    protected IKeyHandler headlessDelegate;
-
     /**
      * Creates a new keyboard handler.
      * @param session The session that will be sent the keys
@@ -62,7 +56,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
 
         this.session = session;
         this.screen = session.getScreen();
-        sessionGui = session.getGUI();
 
         isLinux = OperatingSystem.isUnix();
 
@@ -84,21 +77,15 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
     abstract void initKeyBindings();
 
     protected InputMap getInputMap() {
-
-        return sessionGui.getInputMap();
+        return null;
     }
 
     protected ActionMap getActionMap() {
-
-        return sessionGui.getActionMap();
+        return null;
     }
 
     public void onKeyChanged() {
-
-        getInputMap().clear();
-        getActionMap().clear();
         initKeyBindings();
-
     }
 
     public abstract boolean isKeyStrokeDefined(String accelKey);
@@ -132,20 +119,15 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
      *
      *  Added by Luc to fix a memory leak.
      */
-    public void sessionClosed(SessionPanel session) {
+    public void sessionClosed() {
         keyMap.removeKeyChangeListener(this);
     }
 
     protected boolean emulatorAction(KeyStroke ks, KeyEvent e) {
-
-        if (sessionGui == null) {
-            return false;
-        }
-
         InputMap map = getInputMap();
         ActionMap am = getActionMap();
 
-        if (map != null && am != null && sessionGui.isEnabled()) {
+        if (map != null && am != null) {
             Object binding = map.get(ks);
             Action action = (binding == null) ? null : am.get(binding);
             if (action != null) {
@@ -173,59 +155,6 @@ public abstract class KeyboardHandler extends KeyAdapter implements KeyChangeLis
                 break;
             default:
                 break;
-        }
-    }
-
-    /**
-     * Bridge method to support headless operation via IKeyHandler.
-     *
-     * Converts Swing KeyEvent to IKeyEvent and delegates to
-     * headless handler for cross-platform compatibility.
-     *
-     * @param evt the Swing KeyEvent
-     * @return true if the event was handled
-     */
-    public boolean processKeyEventHeadless(KeyEvent evt) {
-        if (headlessDelegate == null) {
-            return false;
-        }
-
-        try {
-            IKeyEvent keyEvent = new HeadlessKeyEvent(
-                evt.getKeyCode(),
-                evt.isShiftDown(),
-                evt.isControlDown(),
-                evt.isAltDown(),
-                evt.isAltGraphDown(),
-                evt.getKeyLocation(),
-                evt.getKeyChar()
-            );
-
-            return headlessDelegate.handleKey(keyEvent);
-        } catch (Exception e) {
-            System.err.println("Error processing key event in headless mode: " + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Get the headless delegate handler.
-     *
-     * @return the IKeyHandler delegate, or null if not set
-     */
-    public IKeyHandler getHeadlessDelegate() {
-        return headlessDelegate;
-    }
-
-    /**
-     * Set the headless delegate handler.
-     *
-     * @param delegate the IKeyHandler to use
-     */
-    public void setHeadlessDelegate(IKeyHandler delegate) {
-        this.headlessDelegate = delegate;
-        if (delegate != null) {
-            delegate.setKeyMapper(keyMap);
         }
     }
 

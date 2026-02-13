@@ -15,7 +15,6 @@ import org.hti5250j.event.SessionConfigListener;
 import org.hti5250j.interfaces.ConfigureFactory;
 import org.hti5250j.keyboard.KeyMnemonic;
 import org.hti5250j.keyboard.KeyMnemonicSerializer;
-import org.hti5250j.tools.GUIGraphicsUtils;
 import org.hti5250j.tools.LangTool;
 
 import javax.swing.*;
@@ -224,7 +223,7 @@ public class SessionConfig {
                 sesProps.setProperty("colorBlue", colorSchemaDefaults.getProperty(prefix + ".colorBlue"));
                 sesProps.setProperty("colorSep", colorSchemaDefaults.getProperty(prefix + ".colorSep"));
                 sesProps.setProperty("colorHexAttr", colorSchemaDefaults.getProperty(prefix + ".colorHexAttr"));
-                sesProps.setProperty("font", GUIGraphicsUtils.getDefaultFont());
+                sesProps.setProperty("font", "Monospaced");
 
                 configureFactory.saveSettings("dfltSessionProps", getConfigurationResource(), "");
             }

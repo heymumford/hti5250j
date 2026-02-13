@@ -13,10 +13,6 @@ package org.hti5250j.framework.tn5250;
 
 import static org.hti5250j.HTI5250jConstants.*;
 
-import java.util.Properties;
-
-import org.hti5250j.ExternalProgramConfig;
-
 public class ScreenPlanes {
 
     private final Screen5250 scr;
@@ -1110,36 +1106,7 @@ public class ScreenPlanes {
                     }
                     screenGUI[--x] = BUTTON_RIGHT_EB;
                 }
-            // now lets check for External Program: .
-            } else if (!hs && x > 0 && x < lenScreen - 7 &&
-                    screen[x - 1] <= ' ' &&
-                    screenGUI[x] == NO_GUI &&
-                    (screenExtended[x] & EXTENDED_5250_NON_DSP) == 0
-            ) {
-                Properties etnProps = ExternalProgramConfig.getInstance().getEtnPgmProps();
-                String count = etnProps.getProperty("etn.pgm.support.total.num");
-                if (count != null && count.length() > 0) {
-                    int total = Integer.parseInt(count);
-                    for (int i = 1; i <= total; i++) {
-                        String program = etnProps.getProperty("etn.pgm." + i + ".command.name");
-                        String key = "";
-                        if (x + program.length() >= screen.length) {
-                            break;
-                        }
-                        for (int j = 0; j <= program.length(); j++) {
-                            key += screen[x + j];
-                        }
-                        if (key.toLowerCase().equals(program.toLowerCase() + ":")) {
-                            hs = true;
-                            screenGUI[x] = BUTTON_LEFT_EB;
-                            while (screen[++x] > ' ') {
-                                screenGUI[x] = BUTTON_MIDDLE_EB;
-                            }
-                            screenGUI[--x] = BUTTON_RIGHT_EB;
-                            break;
-                        }
-                    }
-                }
+            // External Program detection removed (dead code)
             }
 
             if (!retHS && hs) {

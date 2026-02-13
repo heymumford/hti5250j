@@ -17,7 +17,6 @@ import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 
 import org.hti5250j.framework.tn5250.Screen5250;
-import org.hti5250j.tools.GUIGraphicsUtils;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
 import org.hti5250j.tools.logging.HTI5250jLogger;
 
@@ -148,19 +147,14 @@ public class HeadlessScreenRenderer {
      * Extracts logic from GuiGraphicBuffer.java lines 139-164
      */
     private static Font initializeFont(SessionConfig config) {
-        String fontName = null;
+        String fontName = "Monospaced";
 
         // Try to load font from config
         if (config.isPropertyExists("font")) {
-            fontName = config.getStringProperty("font");
-            if (!GUIGraphicsUtils.isFontNameExists(fontName)) {
-                fontName = null;
+            String configFont = config.getStringProperty("font");
+            if (configFont != null && !configFont.isEmpty()) {
+                fontName = configFont;
             }
-        }
-
-        // Use default if not found
-        if (fontName == null) {
-            fontName = GUIGraphicsUtils.getDefaultFont();
         }
 
         return new Font(fontName, Font.PLAIN, 14);

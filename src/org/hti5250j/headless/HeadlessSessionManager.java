@@ -117,7 +117,7 @@ public class HeadlessSessionManager implements ISessionManager {
     }
 
     @Override
-    public ISessionState getSessionState(String sessionId) {
+    public String getSessionState(String sessionId) {
         validateSessionId(sessionId);
 
         ISession session = sessions.get(sessionId);
@@ -126,9 +126,9 @@ public class HeadlessSessionManager implements ISessionManager {
         }
 
         if (session.isConnected()) {
-            return ISessionState.CONNECTED;
+            return "CONNECTED";
         } else {
-            return ISessionState.CREATED;
+            return "CREATED";
         }
     }
 

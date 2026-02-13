@@ -13,8 +13,6 @@
 package org.hti5250j.keyboard;
 
 import org.hti5250j.Session5250;
-import org.hti5250j.SessionPanel;
-import org.hti5250j.keyboard.actions.*;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -117,34 +115,8 @@ class DefaultKeyboardHandler extends KeyboardHandler {
      * way to use the keyboard.
      */
     void initKeyBindings() {
-
-        if (session.getGUI() == null) {
-            return;
-        }
-
-        SessionPanel sessionGui = session.getGUI();
-
-        new NewSessionAction(sessionGui, keyMap);
-        new ToggleConnectionAction(sessionGui, keyMap);
-        new JumpNextAction(sessionGui, keyMap);
-        new JumpPrevAction(sessionGui, keyMap);
-        new HotspotsAction(sessionGui, keyMap);
-        new GuiAction(sessionGui, keyMap);
-        new DispMsgsAction(sessionGui, keyMap);
-        new AttributesAction(sessionGui, keyMap);
-        new PrintAction(sessionGui, keyMap);
-        new RulerAction(sessionGui, keyMap);
-        new CloseAction(sessionGui, keyMap);
-        new TransferAction(sessionGui, keyMap);
-        new EmailAction(sessionGui, keyMap);
-        new RunScriptAction(sessionGui, keyMap);
-        new DebugAction(sessionGui, keyMap);
-        new CopyAction(sessionGui, keyMap);
-        new PasteAction(sessionGui, keyMap);
-        new SpoolWorkAction(sessionGui, keyMap);
-        new QuickEmailAction(sessionGui, keyMap);
-        new OpenSameAction(sessionGui, keyMap);
-
+        // GUI-specific keyboard bindings have been removed (dead code)
+        // This method is kept as a stub for backward compatibility
     }
 
     /**
@@ -215,16 +187,6 @@ class DefaultKeyboardHandler extends KeyboardHandler {
                 if (recording) {
                     recordBuffer.append(lastKeyStroke);
                 }
-            } else {
-                session.getGUI().executeMacro(lastKeyStroke);
-            }
-            if (lastKeyStroke.startsWith("[mark")) {
-                if (lastKeyStroke.equals("[markleft]") ||
-                        lastKeyStroke.equals("[markright]") ||
-                        lastKeyStroke.equals("[markup]") ||
-                        lastKeyStroke.equals("[markdown]")) {
-                    session.getGUI().doKeyBoundArea(e, lastKeyStroke);
-                }
             }
         } else {
             keyProcessed = false;
@@ -289,8 +251,6 @@ class DefaultKeyboardHandler extends KeyboardHandler {
                 if (recording) {
                     recordBuffer.append(s);
                 }
-            } else {
-                session.getGUI().executeMacro(s);
             }
 
         } else {

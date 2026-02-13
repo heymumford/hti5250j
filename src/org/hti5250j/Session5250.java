@@ -19,16 +19,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hti5250j.event.SessionChangeEvent;
 import org.hti5250j.event.SessionListener;
-import org.hti5250j.framework.common.SessionManager;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.framework.tn5250.tnvt;
-import org.hti5250j.gui.SystemRequestDialog;
 import org.hti5250j.interfaces.HeadlessSession;
 import org.hti5250j.interfaces.RequestHandler;
 import org.hti5250j.interfaces.ScanListener;
 import org.hti5250j.interfaces.SessionInterface;
 import org.hti5250j.session.DefaultHeadlessSession;
-import org.hti5250j.session.GuiRequestHandler;
 import org.hti5250j.session.NullRequestHandler;
 import org.hti5250j.workflow.ScreenProvider;
 
@@ -46,7 +43,6 @@ public class Session5250 implements SessionInterface, ScreenProvider {
     private final SessionConfig sesConfig;
     private tnvt vt;
     private final Screen5250 screen;
-    private SessionPanel guiComponent;
     private RequestHandler requestHandler;
     private HeadlessSession headlessDelegate;
 
@@ -94,10 +90,6 @@ public class Session5250 implements SessionInterface, ScreenProvider {
     public SessionConfig getConfiguration() {
 
         return sesConfig;
-    }
-
-    public SessionManager getSessionManager() {
-        return SessionManager.instance();
     }
 
     @Override
@@ -150,14 +142,6 @@ public class Session5250 implements SessionInterface, ScreenProvider {
         return sesProps;
     }
 
-    public void setGUI(SessionPanel gui) {
-        guiComponent = gui;
-    }
-
-    public SessionPanel getGUI() {
-        return guiComponent;
-    }
-
     @Override
     public String getSessionName() {
         return sessionName;
@@ -190,31 +174,15 @@ public class Session5250 implements SessionInterface, ScreenProvider {
     @Override
     public void signalBell() {
         // In headless mode, don't try to beep (no audio system available)
-        // Only attempt beep if GUI component is active
-        if (guiComponent != null) {
-            try {
-                Toolkit.getDefaultToolkit().beep();
-            } catch (Exception e) {
-                // Silently ignore if audio system unavailable (Docker, CI environments)
-            }
+        try {
+            Toolkit.getDefaultToolkit().beep();
+        } catch (Exception e) {
+            // Silently ignore if audio system unavailable (Docker, CI environments)
         }
     }
 
     @Override
     public String showSystemRequest() {
-
-        if (guiComponent != null) {
-            try {
-                RequestHandler guiHandler = new GuiRequestHandler(guiComponent);
-                String screenText = new String(screen.getScreenAsChars());
-                return guiHandler.handleSystemRequest(screenText);
-            } catch (Exception e) {
-                // Fallback to existing dialog for compatibility
-                final SystemRequestDialog sysreqdlg = new SystemRequestDialog(this.guiComponent);
-                return sysreqdlg.show();
-            }
-        }
-
         String screenText = new String(screen.getScreenAsChars());
         return requestHandler.handleSystemRequest(screenText);
     }
