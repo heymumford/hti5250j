@@ -391,6 +391,88 @@ public class DefaultHeadlessSessionPoolTest {
     }
 
     @Test
+    void testReconfigureAfterShutdown() throws Exception {
+        pool.configure(baseConfig().maxSize(5).build());
+        pool.borrowSession();
+        pool.shutdown();
+        assertTrue(pool.isShutdown());
+
+        // Reconfigure should reset the pool to usable state
+        pool.configure(baseConfig().maxSize(5).build());
+        assertFalse(pool.isShutdown());
+
+        HeadlessSession session = pool.borrowSession();
+        assertNotNull(session, "Pool should work after reconfigure");
+        pool.returnSession(session);
+    }
+
+    @Test
+    void testReturnForeignSessionIsIgnored() throws Exception {
+        pool.configure(baseConfig().maxSize(5).build());
+
+        // Create a session outside the pool
+        HeadlessSession foreign = new StubSession("foreign-session");
+
+        // Returning a foreign session should be silently ignored
+        pool.returnSession(foreign);
+        assertEquals(0, pool.getIdleCount(), "Foreign session should not enter idle queue");
+        assertEquals(0, pool.getReturnCount(), "Foreign session should not count as a return");
+    }
+
+    @Test
+    void testNullDurationRejected() {
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().maxIdleTime(null));
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().maxAge(null));
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().validationInterval(null));
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().acquisitionTimeout(null));
+    }
+
+    @Test
+    void testMaxSizeRespectedUnderConcurrency() throws Exception {
+        int maxSize = 3;
+        pool.configure(baseConfig()
+                .maxSize(maxSize)
+                .acquisitionMode(SessionPoolConfig.AcquisitionMode.IMMEDIATE)
+                .build());
+
+        int threadCount = 20;
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger exhaustedCount = new AtomicInteger(0);
+
+        for (int t = 0; t < threadCount; t++) {
+            Thread.ofVirtual().start(() -> {
+                try {
+                    startLatch.await();
+                    HeadlessSession s = pool.borrowSession();
+                    successCount.incrementAndGet();
+                    // Hold briefly
+                    Thread.sleep(50);
+                    pool.returnSession(s);
+                } catch (PoolExhaustedException e) {
+                    exhaustedCount.incrementAndGet();
+                } catch (Exception e) {
+                    // ignore
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+        assertTrue(doneLatch.await(10, TimeUnit.SECONDS));
+
+        // Pool size should never exceed maxSize
+        assertTrue(pool.getPoolSize() <= maxSize,
+                "Pool size " + pool.getPoolSize() + " should never exceed maxSize " + maxSize);
+    }
+
+    @Test
     void testMinIdlePreCreation() throws Exception {
         pool.configure(baseConfig()
                 .maxSize(5)

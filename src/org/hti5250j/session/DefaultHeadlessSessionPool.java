@@ -42,6 +42,9 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     // All sessions → creation instant (idle + borrowed)
     private final ConcurrentHashMap<HeadlessSession, Instant> allSessions = new ConcurrentHashMap<>();
 
+    // Idle sessions → time they were last returned to the pool (for idle-time eviction)
+    private final ConcurrentHashMap<HeadlessSession, Instant> lastReturnedTime = new ConcurrentHashMap<>();
+
     // Metrics
     private final AtomicInteger borrowCount = new AtomicInteger(0);
     private final AtomicInteger returnCount = new AtomicInteger(0);
@@ -67,6 +70,9 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         }
         this.config = config;
 
+        // Reset shutdown state so a pool can be reconfigured after shutdown
+        shutdownFlag.set(false);
+
         // Shut down any existing scheduler
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
@@ -76,6 +82,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         idleQueue.clear();
         borrowedSessions.clear();
         allSessions.clear();
+        lastReturnedTime.clear();
 
         // Pre-create minIdle sessions
         int preCreate = config.getMinIdle();
@@ -84,6 +91,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         }
         for (int i = 0; i < preCreate; i++) {
             HeadlessSession session = createNewSession();
+            lastReturnedTime.put(session, Instant.now());
             idleQueue.offer(session);
         }
 
@@ -138,11 +146,17 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     public void returnSession(HeadlessSession session) {
         if (session == null) return;
 
-        borrowedSessions.remove(session);
+        // Guard: only accept sessions that were borrowed from this pool
+        if (borrowedSessions.remove(session) == null) {
+            LOG.log(Level.WARNING, "Attempted to return a session not borrowed from this pool: {0}",
+                    session.getSessionName());
+            return;
+        }
 
         if (shutdownFlag.get()) {
             disconnectQuietly(session);
             allSessions.remove(session);
+            lastReturnedTime.remove(session);
             return;
         }
 
@@ -150,6 +164,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         if (config.getValidationStrategy() == SessionPoolConfig.ValidationStrategy.ON_RETURN) {
             if (!isSessionValid(session)) {
                 allSessions.remove(session);
+                lastReturnedTime.remove(session);
                 disconnectQuietly(session);
                 evictionCount.incrementAndGet();
                 returnCount.incrementAndGet();
@@ -157,6 +172,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             }
         }
 
+        lastReturnedTime.put(session, Instant.now());
         idleQueue.offer(session);
         returnCount.incrementAndGet();
     }
@@ -176,6 +192,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         while ((session = idleQueue.poll()) != null) {
             disconnectQuietly(session);
             allSessions.remove(session);
+            lastReturnedTime.remove(session);
         }
 
         // Disconnect all borrowed sessions
@@ -184,6 +201,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             allSessions.remove(borrowed);
         }
         borrowedSessions.clear();
+        lastReturnedTime.clear();
     }
 
     @Override
@@ -220,9 +238,9 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             return finalizeBorrow(session);
         }
 
-        // Try to create a new session if under max
-        if (canGrow()) {
-            session = createNewSession();
+        // Atomically check capacity and create under lock
+        session = tryCreateNewSession();
+        if (session != null) {
             return finalizeBorrow(session);
         }
 
@@ -237,9 +255,9 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             return finalizeBorrow(session);
         }
 
-        // Create if we can grow
-        if (canGrow()) {
-            session = createNewSession();
+        // Atomically check capacity and create under lock
+        session = tryCreateNewSession();
+        if (session != null) {
             return finalizeBorrow(session);
         }
 
@@ -255,8 +273,8 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             return finalizeBorrow(session);
         }
 
-        if (canGrow()) {
-            session = createNewSession();
+        session = tryCreateNewSession();
+        if (session != null) {
             return finalizeBorrow(session);
         }
 
@@ -273,6 +291,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         if (config.getValidationStrategy() == SessionPoolConfig.ValidationStrategy.ON_BORROW) {
             if (!isSessionValid(session)) {
                 allSessions.remove(session);
+                lastReturnedTime.remove(session);
                 disconnectQuietly(session);
                 evictionCount.incrementAndGet();
 
@@ -281,14 +300,15 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
                 if (replacement != null) {
                     return finalizeBorrow(replacement);
                 }
-                if (canGrow()) {
-                    replacement = createNewSession();
+                replacement = tryCreateNewSession();
+                if (replacement != null) {
                     return finalizeBorrow(replacement);
                 }
                 throw new PoolExhaustedException("No valid sessions available after validation failure");
             }
         }
 
+        lastReturnedTime.remove(session); // no longer idle
         borrowedSessions.put(session, allSessions.getOrDefault(session, Instant.now()));
         borrowCount.incrementAndGet();
         return session;
@@ -298,6 +318,30 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     // Session lifecycle
     // ========================================================================
 
+    /**
+     * Atomically checks capacity and creates a new session under the pool lock.
+     * Returns null if the pool is at capacity.
+     */
+    private HeadlessSession tryCreateNewSession() {
+        poolLock.lock();
+        try {
+            int max = config.getMaxSize();
+            if (max > 0 && allSessions.size() >= max) {
+                return null; // at capacity
+            }
+            String name = "pool-session-" + sessionCounter.incrementAndGet();
+            HeadlessSession session = config.getSessionFactory()
+                    .createSession(name, config.getConfigResource(), config.getConnectionProps());
+            allSessions.put(session, Instant.now());
+            return session;
+        } finally {
+            poolLock.unlock();
+        }
+    }
+
+    /**
+     * Creates a new session unconditionally (for minIdle pre-creation during configure).
+     */
     private HeadlessSession createNewSession() {
         poolLock.lock();
         try {
@@ -309,11 +353,6 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         } finally {
             poolLock.unlock();
         }
-    }
-
-    private boolean canGrow() {
-        int max = config.getMaxSize();
-        return max == 0 || allSessions.size() < max; // 0 = unlimited
     }
 
     private boolean isSessionValid(HeadlessSession session) {
@@ -344,10 +383,11 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         Instant cutoff = Instant.now().minusMillis(maxIdleMs);
 
         for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
-            Instant created = allSessions.get(session);
-            if (created != null && created.isBefore(cutoff)) {
+            Instant returnedAt = lastReturnedTime.get(session);
+            if (returnedAt != null && returnedAt.isBefore(cutoff)) {
                 if (idleQueue.remove(session)) {
                     allSessions.remove(session);
+                    lastReturnedTime.remove(session);
                     disconnectQuietly(session);
                     evictionCount.incrementAndGet();
                 }
@@ -366,6 +406,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             if (created != null && created.isBefore(cutoff)) {
                 if (idleQueue.remove(session)) {
                     allSessions.remove(session);
+                    lastReturnedTime.remove(session);
                     disconnectQuietly(session);
                     evictionCount.incrementAndGet();
                 }
@@ -380,6 +421,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             if (!isSessionValid(session)) {
                 if (idleQueue.remove(session)) {
                     allSessions.remove(session);
+                    lastReturnedTime.remove(session);
                     disconnectQuietly(session);
                     evictionCount.incrementAndGet();
                 }

@@ -138,21 +138,25 @@ public final class SessionPoolConfig {
         }
 
         public Builder maxIdleTime(Duration maxIdleTime) {
+            if (maxIdleTime == null) throw new IllegalArgumentException("maxIdleTime must not be null");
             this.maxIdleTime = maxIdleTime;
             return this;
         }
 
         public Builder maxAge(Duration maxAge) {
+            if (maxAge == null) throw new IllegalArgumentException("maxAge must not be null");
             this.maxAge = maxAge;
             return this;
         }
 
         public Builder validationInterval(Duration validationInterval) {
+            if (validationInterval == null) throw new IllegalArgumentException("validationInterval must not be null");
             this.validationInterval = validationInterval;
             return this;
         }
 
         public Builder acquisitionTimeout(Duration acquisitionTimeout) {
+            if (acquisitionTimeout == null) throw new IllegalArgumentException("acquisitionTimeout must not be null");
             this.acquisitionTimeout = acquisitionTimeout;
             return this;
         }
