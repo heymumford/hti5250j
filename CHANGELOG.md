@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SessionPoolConfig**: Builder-pattern configuration with null-safe builder (rejects null enums, properties, and config resource)
 - **PoolExhaustedException**: Checked exception for pool exhaustion scenarios
 - 45 unit tests (`DefaultHeadlessSessionPoolTest`) and 7 real-pool pairwise integration tests
-- **TDD GREEN**: Enabled 20 previously @Disabled tests — 18 `ColorPaletteTest` (color defaults, setters, lookups), 2 `CCSIDFactoryRedTest` (factory creates converters)
+- **TDD GREEN**: Enabled 26 previously @Disabled tests — 18 `ColorPaletteTest` (color defaults, setters, lookups), 2 `CCSIDFactoryRedTest` (factory creates converters), 3 `CCSIDMappingLoaderTest` (loader availability, CCSID 37 mapping, descriptions), 3 `WorkflowHandlerTest` (capture text fallback, fill HOME+Tab sequence, fill parameter substitution)
 
 ### Fixed
 - **Thread safety**: Made `SessionPoolConfig` volatile for cross-thread visibility; added `config == null` guard with warning log in `returnSession()`
