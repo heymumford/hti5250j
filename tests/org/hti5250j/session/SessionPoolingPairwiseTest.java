@@ -9,10 +9,20 @@
 
 package org.hti5250j.session;
 
+import org.hti5250j.SessionConfig;
+import org.hti5250j.event.SessionListener;
+import org.hti5250j.framework.tn5250.Screen5250;
+import org.hti5250j.interfaces.HeadlessSession;
+import org.hti5250j.interfaces.HeadlessSessionFactory;
+import org.hti5250j.interfaces.HeadlessSessionPool;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.awt.image.BufferedImage;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -1186,5 +1196,292 @@ public class SessionPoolingPairwiseTest {
         long getLastUsedTime() { return lastUsedTime; }
         void setFailed(boolean failed) { this.failed = failed; }
         boolean isFailed() { return failed; }
+    }
+
+    // ============================================================================
+    // REAL IMPLEMENTATION TESTS: DefaultHeadlessSessionPool
+    // ============================================================================
+
+    /**
+     * Tests that exercise the real DefaultHeadlessSessionPool against
+     * key pairwise combinations, validating that the production implementation
+     * matches the behavior specified by the mock-based pairwise tests above.
+     */
+    @Nested
+    @Timeout(value = 15, unit = TimeUnit.SECONDS)
+    class RealPoolPairwiseTest {
+
+        private DefaultHeadlessSessionPool realPool;
+        private PairwiseStubFactory stubFactory;
+
+        @BeforeEach
+        void setUp() {
+            realPool = new DefaultHeadlessSessionPool();
+            stubFactory = new PairwiseStubFactory();
+        }
+
+        @AfterEach
+        void tearDown() {
+            realPool.shutdown();
+        }
+
+        /**
+         * REAL P1: [size=1] [immediate] — single session reuse
+         */
+        @Test
+        void testRealPoolSingleSessionReuse() throws Exception {
+            realPool.configure(poolConfig()
+                    .maxSize(1)
+                    .acquisitionMode(SessionPoolConfig.AcquisitionMode.IMMEDIATE)
+                    .build());
+
+            HeadlessSession s1 = realPool.borrowSession();
+            assertNotNull(s1);
+            assertEquals(1, realPool.getActiveCount());
+
+            realPool.returnSession(s1);
+
+            HeadlessSession s2 = realPool.borrowSession();
+            assertSame(s1, s2, "Should reuse same session");
+        }
+
+        /**
+         * REAL P2: [size=5] [immediate] [on-borrow validation]
+         */
+        @Test
+        void testRealPoolValidateOnBorrow() throws Exception {
+            realPool.configure(poolConfig()
+                    .maxSize(5)
+                    .acquisitionMode(SessionPoolConfig.AcquisitionMode.IMMEDIATE)
+                    .validationStrategy(SessionPoolConfig.ValidationStrategy.ON_BORROW)
+                    .build());
+
+            HeadlessSession s = realPool.borrowSession();
+            assertNotNull(s);
+            assertTrue(s.isConnected(), "Borrowed session should be connected");
+
+            // Mark disconnected and return
+            s.disconnect();
+            realPool.returnSession(s);
+
+            // Next borrow should detect invalid and replace
+            HeadlessSession s2 = realPool.borrowSession();
+            assertNotNull(s2);
+            assertNotSame(s, s2, "Invalid session should be replaced");
+            assertTrue(s2.isConnected(), "Replacement should be connected");
+        }
+
+        /**
+         * REAL P3: [size=5] [timeout-on-full] — exhaustion with timeout
+         */
+        @Test
+        void testRealPoolExhaustionTimeout() throws Exception {
+            realPool.configure(poolConfig()
+                    .maxSize(POOL_SIZE_MEDIUM)
+                    .acquisitionMode(SessionPoolConfig.AcquisitionMode.TIMEOUT_ON_FULL)
+                    .acquisitionTimeout(Duration.ofMillis(SHORT_TIMEOUT_MS))
+                    .build());
+
+            // Exhaust pool
+            List<HeadlessSession> held = new ArrayList<>();
+            for (int i = 0; i < POOL_SIZE_MEDIUM; i++) {
+                held.add(realPool.borrowSession());
+            }
+
+            // Next should timeout
+            assertThrows(PoolExhaustedException.class, () -> realPool.borrowSession());
+
+            // Release one, should recover
+            realPool.returnSession(held.remove(0));
+            HeadlessSession recovered = realPool.borrowSession();
+            assertNotNull(recovered, "Should recover after release");
+
+            // Cleanup
+            for (HeadlessSession s : held) realPool.returnSession(s);
+            realPool.returnSession(recovered);
+        }
+
+        /**
+         * REAL P4: [size=5] [queued] — concurrent contention
+         */
+        @Test
+        void testRealPoolConcurrentContention() throws Exception {
+            realPool.configure(poolConfig()
+                    .maxSize(POOL_SIZE_MEDIUM)
+                    .acquisitionMode(SessionPoolConfig.AcquisitionMode.QUEUED)
+                    .build());
+
+            int threads = 10;
+            int opsPerThread = 20;
+            CountDownLatch start = new CountDownLatch(1);
+            CountDownLatch done = new CountDownLatch(threads);
+            AtomicInteger ops = new AtomicInteger(0);
+            AtomicInteger errors = new AtomicInteger(0);
+
+            for (int t = 0; t < threads; t++) {
+                executorService.submit(() -> {
+                    try {
+                        start.await();
+                        for (int i = 0; i < opsPerThread; i++) {
+                            HeadlessSession s = realPool.borrowSession();
+                            assertNotNull(s);
+                            Thread.sleep(5);
+                            realPool.returnSession(s);
+                            ops.incrementAndGet();
+                        }
+                    } catch (Exception e) {
+                        errors.incrementAndGet();
+                    } finally {
+                        done.countDown();
+                    }
+                });
+            }
+
+            start.countDown();
+            assertTrue(done.await(12, TimeUnit.SECONDS), "All threads should complete");
+            assertEquals(0, errors.get(), "No errors expected");
+            assertEquals(threads * opsPerThread, ops.get());
+
+            // Pool consistent after stress
+            assertEquals(0, realPool.getActiveCount(), "No active borrows remain");
+            assertTrue(realPool.getIdleCount() > 0, "Idle sessions available");
+        }
+
+        /**
+         * REAL P5: [size=1] [queued] — blocking waiters
+         */
+        @Test
+        void testRealPoolBlockingWaiters() throws Exception {
+            realPool.configure(poolConfig()
+                    .maxSize(1)
+                    .acquisitionMode(SessionPoolConfig.AcquisitionMode.QUEUED)
+                    .build());
+
+            AtomicInteger successCount = new AtomicInteger(0);
+            CountDownLatch latch = new CountDownLatch(5);
+
+            for (int i = 0; i < 5; i++) {
+                executorService.submit(() -> {
+                    try {
+                        HeadlessSession s = realPool.borrowSession();
+                        assertNotNull(s);
+                        successCount.incrementAndGet();
+                        Thread.sleep(50);
+                        realPool.returnSession(s);
+                    } catch (Exception e) {
+                        fail("Thread should not fail: " + e.getMessage());
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+
+            assertTrue(latch.await(10, TimeUnit.SECONDS), "All threads should complete");
+            assertEquals(5, successCount.get(), "All threads should succeed");
+        }
+
+        /**
+         * REAL P6: [on-return validation] — discard invalid on return
+         */
+        @Test
+        void testRealPoolValidateOnReturn() throws Exception {
+            realPool.configure(poolConfig()
+                    .maxSize(5)
+                    .validationStrategy(SessionPoolConfig.ValidationStrategy.ON_RETURN)
+                    .build());
+
+            HeadlessSession s = realPool.borrowSession();
+            s.disconnect(); // invalidate
+
+            realPool.returnSession(s);
+
+            // Invalid session should have been discarded
+            assertEquals(0, realPool.getIdleCount(), "Disconnected session should not return to idle");
+        }
+
+        /**
+         * REAL P7: Pool state consistency after concurrent ops
+         */
+        @Test
+        void testRealPoolMetricsConsistency() throws Exception {
+            realPool.configure(poolConfig()
+                    .maxSize(POOL_SIZE_MEDIUM)
+                    .acquisitionMode(SessionPoolConfig.AcquisitionMode.QUEUED)
+                    .build());
+
+            CountDownLatch latch = new CountDownLatch(10);
+            for (int t = 0; t < 10; t++) {
+                executorService.submit(() -> {
+                    try {
+                        for (int i = 0; i < 10; i++) {
+                            HeadlessSession s = realPool.borrowSession();
+                            assertNotNull(s);
+                            Thread.sleep(2);
+                            realPool.returnSession(s);
+                        }
+                    } catch (Exception e) {
+                        fail("Operation failed: " + e.getMessage());
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+
+            assertTrue(latch.await(10, TimeUnit.SECONDS));
+
+            int total = realPool.getPoolSize();
+            int active = realPool.getActiveCount();
+            int idle = realPool.getIdleCount();
+
+            assertEquals(0, active, "No active after all returned");
+            assertEquals(total, idle, "All sessions idle");
+        }
+
+        // Helpers
+
+        private SessionPoolConfig.Builder poolConfig() {
+            return SessionPoolConfig.builder()
+                    .sessionFactory(stubFactory)
+                    .connectionProps(new Properties());
+        }
+
+        /**
+         * Stub factory for pairwise real-pool tests.
+         */
+        private static class PairwiseStubFactory implements HeadlessSessionFactory {
+            private final AtomicInteger counter = new AtomicInteger(0);
+
+            @Override
+            public HeadlessSession createSession(String sessionName, String configResource, Properties connectionProps) {
+                return new PairwiseStubSession(sessionName + "-" + counter.incrementAndGet());
+            }
+        }
+
+        /**
+         * Minimal HeadlessSession stub.
+         */
+        private static class PairwiseStubSession implements HeadlessSession {
+            private final String name;
+            private volatile boolean connected = true;
+
+            PairwiseStubSession(String name) { this.name = name; }
+
+            @Override public String getSessionName() { return name; }
+            @Override public boolean isConnected() { return connected; }
+            @Override public void connect() { connected = true; }
+            @Override public void disconnect() { connected = false; }
+            @Override public Screen5250 getScreen() { return null; }
+            @Override public SessionConfig getConfiguration() { return null; }
+            @Override public Properties getConnectionProperties() { return new Properties(); }
+            @Override public void sendKeys(String keys) {}
+            @Override public void waitForKeyboardUnlock(int timeoutMs) {}
+            @Override public void waitForKeyboardLockCycle(int timeoutMs) {}
+            @Override public BufferedImage captureScreenshot() { return null; }
+            @Override public String getScreenAsText() { return ""; }
+            @Override public void addSessionListener(SessionListener listener) {}
+            @Override public void removeSessionListener(SessionListener listener) {}
+            @Override public void signalBell() {}
+            @Override public String handleSystemRequest() { return null; }
+        }
     }
 }

@@ -1,0 +1,395 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Eric C. Mumford <ericmumford@outlook.com>
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+package org.hti5250j.session;
+
+import org.hti5250j.interfaces.HeadlessSession;
+import org.hti5250j.interfaces.HeadlessSessionPool;
+
+import java.time.Instant;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Default implementation of {@link HeadlessSessionPool}.
+ * <p>
+ * Uses a {@link BlockingQueue} for idle sessions, a {@link ConcurrentHashMap}
+ * to track borrowed sessions and their creation times, and a
+ * {@link ScheduledExecutorService} for periodic validation and eviction.
+ * <p>
+ * All public methods are thread-safe.
+ *
+ * @since 1.1.0
+ */
+public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
+
+    private static final Logger LOG = Logger.getLogger(DefaultHeadlessSessionPool.class.getName());
+
+    private SessionPoolConfig config;
+
+    // Idle sessions ready to be borrowed
+    private final BlockingQueue<HeadlessSession> idleQueue = new LinkedBlockingQueue<>();
+
+    // Borrowed sessions → creation instant
+    private final ConcurrentHashMap<HeadlessSession, Instant> borrowedSessions = new ConcurrentHashMap<>();
+
+    // All sessions → creation instant (idle + borrowed)
+    private final ConcurrentHashMap<HeadlessSession, Instant> allSessions = new ConcurrentHashMap<>();
+
+    // Metrics
+    private final AtomicInteger borrowCount = new AtomicInteger(0);
+    private final AtomicInteger returnCount = new AtomicInteger(0);
+    private final AtomicInteger evictionCount = new AtomicInteger(0);
+
+    // State
+    private final AtomicBoolean shutdownFlag = new AtomicBoolean(false);
+    private final ReentrantLock poolLock = new ReentrantLock();
+
+    // Background maintenance
+    private ScheduledExecutorService scheduler;
+
+    // Session naming counter
+    private final AtomicInteger sessionCounter = new AtomicInteger(0);
+
+    public DefaultHeadlessSessionPool() {
+    }
+
+    @Override
+    public void configure(SessionPoolConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("config must not be null");
+        }
+        this.config = config;
+
+        // Shut down any existing scheduler
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdownNow();
+        }
+
+        // Clear existing state
+        idleQueue.clear();
+        borrowedSessions.clear();
+        allSessions.clear();
+
+        // Pre-create minIdle sessions
+        int preCreate = config.getMinIdle();
+        if (config.getMaxSize() > 0 && preCreate > config.getMaxSize()) {
+            preCreate = config.getMaxSize();
+        }
+        for (int i = 0; i < preCreate; i++) {
+            HeadlessSession session = createNewSession();
+            idleQueue.offer(session);
+        }
+
+        // Start background maintenance
+        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "session-pool-maintenance");
+            t.setDaemon(true);
+            return t;
+        });
+
+        if (config.getEvictionPolicy() == SessionPoolConfig.EvictionPolicy.IDLE_TIME) {
+            long intervalMs = config.getMaxIdleTime().toMillis() / 2;
+            if (intervalMs < 100) intervalMs = 100;
+            scheduler.scheduleAtFixedRate(this::evictIdleSessions, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
+        } else if (config.getEvictionPolicy() == SessionPoolConfig.EvictionPolicy.MAX_AGE) {
+            long intervalMs = config.getMaxAge().toMillis() / 2;
+            if (intervalMs < 100) intervalMs = 100;
+            scheduler.scheduleAtFixedRate(this::evictAgedSessions, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
+        }
+
+        if (config.getValidationStrategy() == SessionPoolConfig.ValidationStrategy.PERIODIC) {
+            long intervalMs = config.getValidationInterval().toMillis();
+            if (intervalMs < 100) intervalMs = 100;
+            scheduler.scheduleAtFixedRate(this::validateIdleSessions, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    @Override
+    public HeadlessSession borrowSession() throws PoolExhaustedException, InterruptedException {
+        checkNotShutdown();
+
+        switch (config.getAcquisitionMode()) {
+            case IMMEDIATE:
+                return borrowImmediate();
+            case QUEUED:
+                return borrowQueued();
+            case TIMEOUT_ON_FULL:
+                return borrowWithTimeout(config.getAcquisitionTimeout().toMillis(), TimeUnit.MILLISECONDS);
+            default:
+                throw new IllegalStateException("Unknown acquisition mode: " + config.getAcquisitionMode());
+        }
+    }
+
+    @Override
+    public HeadlessSession borrowSession(long timeout, TimeUnit unit)
+            throws PoolExhaustedException, InterruptedException {
+        checkNotShutdown();
+        return borrowWithTimeout(timeout, unit);
+    }
+
+    @Override
+    public void returnSession(HeadlessSession session) {
+        if (session == null) return;
+
+        borrowedSessions.remove(session);
+
+        if (shutdownFlag.get()) {
+            disconnectQuietly(session);
+            allSessions.remove(session);
+            return;
+        }
+
+        // Validate on return
+        if (config.getValidationStrategy() == SessionPoolConfig.ValidationStrategy.ON_RETURN) {
+            if (!isSessionValid(session)) {
+                allSessions.remove(session);
+                disconnectQuietly(session);
+                evictionCount.incrementAndGet();
+                returnCount.incrementAndGet();
+                return;
+            }
+        }
+
+        idleQueue.offer(session);
+        returnCount.incrementAndGet();
+    }
+
+    @Override
+    public void shutdown() {
+        if (!shutdownFlag.compareAndSet(false, true)) {
+            return; // already shut down
+        }
+
+        if (scheduler != null) {
+            scheduler.shutdownNow();
+        }
+
+        // Disconnect all idle sessions
+        HeadlessSession session;
+        while ((session = idleQueue.poll()) != null) {
+            disconnectQuietly(session);
+            allSessions.remove(session);
+        }
+
+        // Disconnect all borrowed sessions
+        for (HeadlessSession borrowed : borrowedSessions.keySet()) {
+            disconnectQuietly(borrowed);
+            allSessions.remove(borrowed);
+        }
+        borrowedSessions.clear();
+    }
+
+    @Override
+    public int getActiveCount() {
+        return borrowedSessions.size();
+    }
+
+    @Override
+    public int getIdleCount() {
+        return idleQueue.size();
+    }
+
+    @Override
+    public int getPoolSize() {
+        return allSessions.size();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return shutdownFlag.get();
+    }
+
+    public int getBorrowCount() { return borrowCount.get(); }
+    public int getReturnCount() { return returnCount.get(); }
+    public int getEvictionCount() { return evictionCount.get(); }
+
+    // ========================================================================
+    // Internal borrow strategies
+    // ========================================================================
+
+    private HeadlessSession borrowImmediate() throws PoolExhaustedException {
+        HeadlessSession session = idleQueue.poll();
+        if (session != null) {
+            return finalizeBorrow(session);
+        }
+
+        // Try to create a new session if under max
+        if (canGrow()) {
+            session = createNewSession();
+            return finalizeBorrow(session);
+        }
+
+        throw new PoolExhaustedException(
+                "Pool exhausted (max=" + config.getMaxSize() + ", active=" + getActiveCount() + ")");
+    }
+
+    private HeadlessSession borrowQueued() throws PoolExhaustedException, InterruptedException {
+        // Try non-blocking first
+        HeadlessSession session = idleQueue.poll();
+        if (session != null) {
+            return finalizeBorrow(session);
+        }
+
+        // Create if we can grow
+        if (canGrow()) {
+            session = createNewSession();
+            return finalizeBorrow(session);
+        }
+
+        // Block waiting for a returned session
+        session = idleQueue.take();
+        return finalizeBorrow(session);
+    }
+
+    private HeadlessSession borrowWithTimeout(long timeout, TimeUnit unit)
+            throws PoolExhaustedException, InterruptedException {
+        HeadlessSession session = idleQueue.poll();
+        if (session != null) {
+            return finalizeBorrow(session);
+        }
+
+        if (canGrow()) {
+            session = createNewSession();
+            return finalizeBorrow(session);
+        }
+
+        session = idleQueue.poll(timeout, unit);
+        if (session == null) {
+            throw new PoolExhaustedException(
+                    "Acquisition timeout after " + unit.toMillis(timeout) + "ms, pool full");
+        }
+        return finalizeBorrow(session);
+    }
+
+    private HeadlessSession finalizeBorrow(HeadlessSession session) throws PoolExhaustedException {
+        // Validate on borrow
+        if (config.getValidationStrategy() == SessionPoolConfig.ValidationStrategy.ON_BORROW) {
+            if (!isSessionValid(session)) {
+                allSessions.remove(session);
+                disconnectQuietly(session);
+                evictionCount.incrementAndGet();
+
+                // Try to get or create a replacement
+                HeadlessSession replacement = idleQueue.poll();
+                if (replacement != null) {
+                    return finalizeBorrow(replacement);
+                }
+                if (canGrow()) {
+                    replacement = createNewSession();
+                    return finalizeBorrow(replacement);
+                }
+                throw new PoolExhaustedException("No valid sessions available after validation failure");
+            }
+        }
+
+        borrowedSessions.put(session, allSessions.getOrDefault(session, Instant.now()));
+        borrowCount.incrementAndGet();
+        return session;
+    }
+
+    // ========================================================================
+    // Session lifecycle
+    // ========================================================================
+
+    private HeadlessSession createNewSession() {
+        poolLock.lock();
+        try {
+            String name = "pool-session-" + sessionCounter.incrementAndGet();
+            HeadlessSession session = config.getSessionFactory()
+                    .createSession(name, config.getConfigResource(), config.getConnectionProps());
+            allSessions.put(session, Instant.now());
+            return session;
+        } finally {
+            poolLock.unlock();
+        }
+    }
+
+    private boolean canGrow() {
+        int max = config.getMaxSize();
+        return max == 0 || allSessions.size() < max; // 0 = unlimited
+    }
+
+    private boolean isSessionValid(HeadlessSession session) {
+        try {
+            return session.isConnected();
+        } catch (Exception e) {
+            LOG.log(Level.FINE, "Session validation failed", e);
+            return false;
+        }
+    }
+
+    private void disconnectQuietly(HeadlessSession session) {
+        try {
+            session.disconnect();
+        } catch (Exception e) {
+            LOG.log(Level.FINE, "Error disconnecting session", e);
+        }
+    }
+
+    // ========================================================================
+    // Background maintenance
+    // ========================================================================
+
+    private void evictIdleSessions() {
+        if (shutdownFlag.get()) return;
+
+        long maxIdleMs = config.getMaxIdleTime().toMillis();
+        Instant cutoff = Instant.now().minusMillis(maxIdleMs);
+
+        for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
+            Instant created = allSessions.get(session);
+            if (created != null && created.isBefore(cutoff)) {
+                if (idleQueue.remove(session)) {
+                    allSessions.remove(session);
+                    disconnectQuietly(session);
+                    evictionCount.incrementAndGet();
+                }
+            }
+        }
+    }
+
+    private void evictAgedSessions() {
+        if (shutdownFlag.get()) return;
+
+        long maxAgeMs = config.getMaxAge().toMillis();
+        Instant cutoff = Instant.now().minusMillis(maxAgeMs);
+
+        for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
+            Instant created = allSessions.get(session);
+            if (created != null && created.isBefore(cutoff)) {
+                if (idleQueue.remove(session)) {
+                    allSessions.remove(session);
+                    disconnectQuietly(session);
+                    evictionCount.incrementAndGet();
+                }
+            }
+        }
+    }
+
+    private void validateIdleSessions() {
+        if (shutdownFlag.get()) return;
+
+        for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
+            if (!isSessionValid(session)) {
+                if (idleQueue.remove(session)) {
+                    allSessions.remove(session);
+                    disconnectQuietly(session);
+                    evictionCount.incrementAndGet();
+                }
+            }
+        }
+    }
+
+    private void checkNotShutdown() throws PoolExhaustedException {
+        if (shutdownFlag.get()) {
+            throw new PoolExhaustedException("Pool has been shut down");
+        }
+    }
+}
