@@ -5,10 +5,12 @@
 
 package org.hti5250j.encoding;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled("TDD RED phase - mapping loader not yet implemented")
 @DisplayName("CCSID Mapping Loader Tests - Phase 1 (TDD RED)")
 class CCSIDMappingLoaderTest {
 

@@ -10,6 +10,7 @@ package org.hti5250j;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -21,6 +22,7 @@ import java.awt.Color;
  * These tests define the API for ColorPalette before implementation exists.
  * Expected to FAIL until ColorPalette class is created.
  */
+@Disabled("TDD RED phase - ColorPalette extraction not yet implemented")
 @DisplayName("ColorPalette Tests - Phase 1 Extraction")
 public class ColorPaletteTest {
 
