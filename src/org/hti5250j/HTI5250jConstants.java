@@ -49,14 +49,15 @@ public interface HTI5250jConstants {
 
     String SSL_TYPE = "-sslType";
     String SSL_TYPE_NONE = "NONE";
+    /** @deprecated SSLv2 is broken and disabled by modern JVMs. Use TLS instead. */
+    @Deprecated(forRemoval = true)
     String SSL_TYPE_SSLv2 = "SSLv2";
+    /** @deprecated SSLv3 has POODLE vulnerability (CVE-2014-3566). Use TLS instead. */
+    @Deprecated(forRemoval = true)
     String SSL_TYPE_SSLv3 = "SSLv3";
     String SSL_TYPE_TLS = "TLS";
 
-    String[] SSL_TYPES = {SSL_TYPE_NONE,
-            SSL_TYPE_SSLv2,
-            SSL_TYPE_SSLv3,
-            SSL_TYPE_TLS};
+    String[] SSL_TYPES = {SSL_TYPE_NONE, SSL_TYPE_TLS};
 
     // Session JUMP Directions
     int JUMP_PREVIOUS = 0;

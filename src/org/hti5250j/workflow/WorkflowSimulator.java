@@ -118,6 +118,7 @@ public class WorkflowSimulator {
                             );
                         }
                     } catch (NumberFormatException e) {
+                        // Non-numeric field value; precision check not applicable
                     }
                 }
             }

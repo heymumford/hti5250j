@@ -15,7 +15,6 @@ group = 'org.hti5250j'
 version = findProperty('version') ?: { throw new GradleException("version not set in gradle.properties") }()
 
 def runtimeLibs = fileTree(dir: 'lib/runtime', include: ['*.jar', '*.zip'])
-def devLibs = fileTree(dir: 'lib/development', include: ['*.jar', '*.zip'])
 
 java {
     toolchain {
@@ -29,11 +28,11 @@ repositories {
 
 dependencies {
     implementation runtimeLibs
-    implementation devLibs
+    // Development JARs removed - all test deps managed via Maven Central
     implementation 'com.google.code.gson:gson:2.10.1'
 
     testImplementation runtimeLibs
-    testImplementation devLibs
+    // Development JARs removed - all test deps managed via Maven Central
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
@@ -42,6 +41,9 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.25.3'
     testImplementation 'org.awaitility:awaitility:4.3.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+
+    // JUnit 4 compatibility (legacy tests not yet migrated to JUnit 5)
+    testImplementation 'junit:junit:4.13.2'
 
     // Property-based testing (Week 5-6)
     testImplementation 'net.jqwik:jqwik:1.8.3'

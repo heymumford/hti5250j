@@ -12,6 +12,8 @@
 package org.hti5250j.interfaces;
 
 import org.hti5250j.GlobalConfigure;
+import org.hti5250j.tools.logging.HTI5250jLogFactory;
+import org.hti5250j.tools.logging.HTI5250jLogger;
 
 import java.util.Properties;
 
@@ -24,6 +26,7 @@ public abstract class ConfigureFactory {
     public static final String SESSIONS = "sessions";
     public static final String MACROS = "macros";
     public static final String KEYMAP = "keymap";
+    private static final HTI5250jLogger log = HTI5250jLogFactory.getLogger(ConfigureFactory.class);
     private static ConfigureFactory factory;
 
     /**
@@ -46,6 +49,7 @@ public abstract class ConfigureFactory {
                     }
                 }
             } catch (Exception ex) {
+                log.warn("Failed to load custom ConfigureFactory", ex);
             }
             if (ConfigureFactory.factory == null) {
                 ConfigureFactory.factory = new GlobalConfigure();

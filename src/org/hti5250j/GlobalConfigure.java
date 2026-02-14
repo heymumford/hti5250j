@@ -263,6 +263,7 @@ public class GlobalConfigure extends ConfigureFactory {
         } catch (IOException ioException) {
             log.warn("Global io-error !");
         } catch (ArrayIndexOutOfBoundsException arrayIndexException) {
+            log.warn("Malformed configuration entry: " + arrayIndexException.getMessage());
         }
     }
 
