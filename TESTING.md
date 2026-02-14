@@ -275,5 +275,6 @@ public void paymentProcessingWorkflowSucceeds() throws Exception {
 
 ## Related Documentation
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) -- System design and workflow execution
-- [README.md](./README.md) -- Quick start and overview
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — System design and workflow execution
+- [README.md](./README.md) — Quick start and overview
+- [V1_DEFINITION.md](./V1_DEFINITION.md) — v1.0 scope and quality gates

@@ -50,11 +50,11 @@ All must pass before tagging v1.0:
 |------|------------|---------|
 | Build | `./gradlew clean build` succeeds | PASS |
 | Tests | All tests pass | PASS |
-| Coverage | ≥ 30% line coverage | 28% (improving) |
+| Coverage | ≥ 30% line coverage | PASS (31%) |
 | README | No fictional classes, all examples use real API | PASS |
 | Empty catches | No critical swallowed exceptions | PASS |
 | Dead code | No dead GUI files in source tree | PASS |
-| Protocol tests | tnvt contract tests cover key methods | In progress |
+| Protocol tests | tnvt contract tests cover key methods | PASS |
 
 ## Current State: v0.13.0 → v1.0
 
@@ -63,17 +63,17 @@ All must pass before tagging v1.0:
 - HeadlessSession API with DefaultHeadlessSession wrapper
 - Workflow engine with 6 handlers and batch execution
 - 23+ EBCDIC code pages with round-trip testing
-- ~194 test classes across 4 domains (unit, surface, scenario, reliability)
+- ~183 test classes across 4 domains (unit, surface, scenario, reliability)
 - Vendored JAR removal (Gradle dependency management)
 - SSLv2/SSLv3 deprecation
 - Empty catch remediation
 - README rewrite with real API classes
 
 ### Remaining for v1.0
-1. **Test coverage to 30%** — currently 28%, need targeted tests for tnvt and Screen5250
-2. **Protocol contract tests** — verify sendAidKey, sendHeartBeat, setCodePage, save/restore
-3. **CHANGELOG update** — document all changes since v0.12.0
-4. **Final documentation pass** — ARCHITECTURE.md and TESTING.md aligned with current code
+1. ~~**Test coverage to 30%**~~ — DONE: 31% instruction coverage (JaCoCo)
+2. ~~**Protocol contract tests**~~ — DONE: `TnvtProtocolContractTest` with 13 tests
+3. ~~**CHANGELOG update**~~ — DONE: documented all changes since v0.12.0
+4. ~~**Final documentation pass**~~ — DONE: ARCHITECTURE.md and TESTING.md aligned
 5. **Tag and release** — `git tag v1.0.0` after all gates pass
 
 ### Not Needed for v1.0

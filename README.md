@@ -307,7 +307,7 @@ open build/reports/jacoco/test/html/index.html
 See **[TESTING.md](./TESTING.md)** for the four-domain testing model and how to run each category.
 
 ### Quality Metrics
-- **Coverage**: 28% baseline (legacy codebase, improving)
+- **Coverage**: 31% (legacy codebase, improving)
 - **Compatibility**: Java 21+
 
 ## Configuration
