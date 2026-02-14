@@ -1,12 +1,12 @@
 # TN5250J Headless Edition
 
-Headless-first fork of [TN5250J](https://github.com/tn5250j/tn5250j), a 5250 terminal emulator for IBM i (AS/400). This fork removes all Swing/AWT dependencies and provides a pure Java library for headless execution, session management, test automation, and protocol extensions.
+Headless-first fork of [TN5250J](https://github.com/tn5250j/tn5250j), a 5250 terminal emulator for IBM i (AS/400). This fork removes all Swing/AWT dependencies and provides a pure Java library for headless 5250 automation, workflow execution, and protocol testing.
 
 **Use cases**:
 - Automated regression testing of 5250 applications
-- Server-side terminal session pooling and reuse
 - Integration testing of AS/400 business logic
 - Protocol-level testing and validation
+- YAML-driven workflow automation with data-driven execution
 - Terminal session recording and playback
 
 ## Quick Start
@@ -31,7 +31,7 @@ cd hti5250j
 ./gradlew test
 
 # Specific test suite
-./gradlew test --tests "*SessionPoolTest"
+./gradlew test --tests "*WorkflowRunnerTest"
 
 # With verbose output
 ./gradlew test --info
@@ -52,11 +52,20 @@ dependencies {
 
 Basic usage:
 ```java
-TN5250Session session = new TN5250Session("192.168.1.100", 23);
+// Configure session
+Properties props = new Properties();
+props.setProperty("host", "ibmi.example.com");
+props.setProperty("port", "23");
+props.setProperty("code-page", "37");
+SessionConfig config = new SessionConfig("session.properties", "my-session");
+
+// Connect and interact via HeadlessSession API
+Session5250 session = new Session5250(props, "session.properties", "my-session", config);
 session.connect();
-session.sendKeys("USER");
-session.sendKeys("PASSWORD");
-String screen = session.getScreenText();
+HeadlessSession headless = session.asHeadlessSession();
+headless.sendKeys("USER[tab]PASSWORD[enter]");
+headless.waitForKeyboardUnlock(5000);
+String screen = headless.getScreenAsText();
 session.disconnect();
 ```
 
@@ -145,11 +154,11 @@ YAML fields support `${data.<column>}` placeholders, replaced at runtime with va
 
 ### Core Capabilities
 - **Headless execution**: No GUI dependencies, pure library
-- **Session pooling**: Reusable session management with lifecycle validation
+- **HeadlessSession API**: Programmatic screen access, keystroke sending, screenshot capture
+- **YAML workflow engine**: 6 action handlers for end-to-end terminal automation
+- **EBCDIC encoding**: 23+ built-in code pages (CCSIDs 37, 273, 277, 278, 280, 284, 285, 297, 500, 870, 871, 875, 930, and Euro variants)
 - **Protocol compliance**: Full TN5250E and attribute-plane operation support
-- **Plugin architecture**: Extensible handlers for custom protocol extensions
 - **Structured logging**: Diagnostic output for debugging and monitoring
-- **Pairwise protocol tests**: 25+ test suites covering protocol edge cases
 
 ### Key Differences from Upstream
 
@@ -158,84 +167,110 @@ YAML fields support `${data.<column>}` placeholders, replaced at runtime with va
 | GUI | Swing/AWT | Removed |
 | Target | Desktop users | Automation & testing |
 | Dependencies | Heavy (Swing) | Minimal (Java runtime) |
-| API | Desktop controls | Programmable session object |
-| Testing | Manual | Comprehensive unit tests |
-| Session management | Single-user | Pool & lifecycle |
+| API | Desktop controls | HeadlessSession + workflow engine |
+| Testing | Manual | ~194 test classes across 4 domains |
 
 ## Usage Examples
 
-### Example 1: Simple Authentication
+### Example 1: Headless Authentication
 
 ```java
-TN5250Session session = new TN5250Session("ibmi.example.com", 23);
-session.connect();
+// Configure connection
+Properties props = new Properties();
+props.setProperty("host", "ibmi.example.com");
+props.setProperty("port", "23");
+props.setProperty("code-page", "37");
+SessionConfig config = new SessionConfig("session.properties", "auth-session");
+Session5250 session = new Session5250(props, "session.properties", "auth-session", config);
 
-// Type credentials
-session.sendString("USER");
-session.sendTab();
-session.sendString("PASSWORD");
-session.sendEnter();
+try {
+    session.connect();
+    HeadlessSession headless = session.asHeadlessSession();
 
-// Wait for prompt
-session.waitForField(5000);
+    // Type credentials using mnemonic syntax
+    headless.sendKeys("MYUSER[tab]MYPASSWORD[enter]");
 
-// Read screen
-String welcome = session.getScreenText();
-System.out.println(welcome);
+    // Wait for main menu
+    headless.waitForKeyboardUnlock(5000);
 
-session.disconnect();
+    // Read screen content
+    String welcome = headless.getScreenAsText();
+    System.out.println(welcome);
+
+    // Capture screenshot as PNG
+    BufferedImage screenshot = headless.captureScreenshot();
+    ImageIO.write(screenshot, "PNG", new File("artifacts/login.png"));
+} finally {
+    session.disconnect();
+}
 ```
 
-### Example 2: Session Pooling
+### Example 2: Workflow Automation
 
-```java
-SessionPool pool = new SessionPool("ibmi.example.com", 23);
-pool.setMinSize(5);
-pool.setMaxSize(20);
-pool.start();
-
-// Borrow session from pool
-TN5250Session session = pool.borrowSession();
-
-// Use session
-session.sendString("WRKSYSVAL");
-session.sendEnter();
-
-// Return to pool
-pool.returnSession(session);
-
-// Cleanup
-pool.shutdown();
+```yaml
+# invoice_entry.yaml - Data-driven invoice entry
+name: Invoice Entry Workflow
+steps:
+  - action: LOGIN
+    host: "${env.IBMI_HOST}"
+    user: "${env.IBMI_USER}"
+    password: "${env.IBMI_PASS}"
+    timeout: 30000
+  - action: NAVIGATE
+    keystroke: "CALL INVENTRY[enter]"
+    screen: "Invoice Entry"
+    timeout: 5000
+  - action: FILL
+    fields:
+      vendor: "${data.vendor_id}"
+      amount: "${data.amount}"
+      description: "${data.description}"
+    timeout: 5000
+  - action: SUBMIT
+    key: "ENTER"
+    timeout: 5000
+  - action: ASSERT
+    text: "Invoice recorded"
+    timeout: 5000
+  - action: CAPTURE
+    name: "confirmation"
 ```
 
-### Example 3: Protocol Testing
+```bash
+i5250 run invoice_entry.yaml --data invoices.csv
+```
+
+### Example 3: EBCDIC Encoding Test
 
 ```java
-TN5250Protocol protocol = new TN5250Protocol();
+// Verify EBCDIC round-trip encoding
+ICodePage cp = CharMappings.getCodePage("37");
+byte ebcdic = cp.uni2ebcdic('A');
+char unicode = cp.ebcdic2uni(ebcdic & 0xFF);
+assertEquals('A', unicode);
 
-// Test attribute handling
-byte[] message = protocol.encodeAttributeUpdate(
-  FieldAttribute.BRIGHT | FieldAttribute.PROTECTED
-);
-
-assertTrue(protocol.validateMessage(message));
+// Verify code page 500 (International)
+ICodePage cp500 = CharMappings.getCodePage("500");
+assertNotNull(cp500);
 ```
 
 ## Architecture
 
 ```
-src/main/java/com/heymumford/tn5250j/
-├── core/           # Core 5250 protocol handling
-├── session/        # Session and pooling management
-├── protocol/       # TN5250E protocol extensions
-├── handlers/       # Field and attribute handlers
-└── util/           # Utilities and helpers
-
-src/test/java/
-├── core/           # Protocol tests
-├── session/        # Session and pool tests
-├── integration/    # Integration with real AS/400 (optional)
-└── fixtures/       # Test data and mocks
+src/org/hti5250j/
+├── framework/tn5250/  # Protocol: Screen5250, tnvt, data stream, ScreenFields
+├── interfaces/        # HeadlessSession, SessionInterface, ConfigureFactory
+├── session/           # DefaultHeadlessSession, NullRequestHandler
+├── workflow/          # YAML workflow engine (6 handlers, validators, batch executor)
+├── encoding/          # EBCDIC code pages (23+ CCSIDs via ICodePage)
+│   └── builtin/       # Built-in CCSID implementations (37, 273, 277, ...)
+├── keyboard/          # Key mnemonics, keyboard remapping
+├── framework/transport/ # Socket connector, SSL/TLS support
+├── event/             # Session, screen, keyboard event listeners
+├── tools/             # Logging, LangTool utilities
+├── Session5250.java   # Main session class
+├── SessionConfig.java # Configuration
+└── HeadlessScreenRenderer.java  # PNG screenshot generation
 ```
 
 ## Testing Strategy
@@ -260,7 +295,7 @@ open build/reports/jacoco/test/html/index.html
 
 ### Test Organization
 
-~170 test classes across four domains:
+~194 test classes across four domains:
 
 | Domain | Purpose | Tool |
 |--------|---------|------|
@@ -272,7 +307,7 @@ open build/reports/jacoco/test/html/index.html
 See **[TESTING.md](./TESTING.md)** for the four-domain testing model and how to run each category.
 
 ### Quality Metrics
-- **Coverage**: 21% baseline (legacy codebase, improving)
+- **Coverage**: 28% baseline (legacy codebase, improving)
 - **Compatibility**: Java 21+
 
 ## Configuration
@@ -289,11 +324,16 @@ See **[TESTING.md](./TESTING.md)** for the four-domain testing model and how to 
 ### Session Options
 
 ```java
-TN5250Session session = new TN5250Session("ibmi.example.com", 23);
-session.setConnectionTimeout(10000);       // 10 seconds
-session.setReadTimeout(5000);              // 5 seconds
-session.setCharacterEncoding("UTF-8");     // Character set
-session.setSSL(true, trustStore);          // TLS encryption
+Properties props = new Properties();
+props.setProperty("host", "ibmi.example.com");
+props.setProperty("port", "23");
+props.setProperty("code-page", "37");
+props.setProperty("screen-size", "24x80");
+SessionConfig config = new SessionConfig("session.properties", "my-session");
+Session5250 session = new Session5250(props, "session.properties", "my-session", config);
+
+// SSL/TLS configuration via tnvt
+session.getVT().setSSLType("TLS");
 session.connect();
 ```
 
@@ -320,7 +360,6 @@ Planning, strategy, and assessment documents have been archived in the [archive/
 |-----------|---------|-------|
 | Connect | 500-1000ms | Network-dependent |
 | Field input | 50-100ms | Rendering on AS/400 side |
-| Session borrow | <1ms | From pool (cached) |
 | Session create | 500-1000ms | First-time creation |
 | Read screen (10KB) | 1-2ms | In-memory operation |
 | Message encode | <1ms | Protocol operation |
