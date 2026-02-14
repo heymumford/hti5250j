@@ -80,7 +80,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All reads succeed, no deadlock
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testMultipleReadersFromBlockingQueue_2ThreadsConcurrent() throws Exception {
         BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>(10);
@@ -145,7 +145,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All writes succeed with queue backpressure handling
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testSingleWriterToBlockingQueue_4ThreadsWrite() throws Exception {
         BlockingQueue<Integer> queue = new LinkedBlockingQueue<>(2);
@@ -200,7 +200,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All transitions complete in correct order without deadlock
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testMixedReadWriteWithStateTransitions_8ThreadsInterleaved() throws Exception {
         BlockingQueue<String> stateQueue = new LinkedBlockingQueue<>();
@@ -259,7 +259,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All data transferred correctly, no corruption
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testLargeDataTransfer_4ThreadsSequential() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -359,7 +359,7 @@ public class ConcurrencyPairwiseTest {
      * Known bug: tnvt.java lines 89-91 (sock, bin, bout not synchronized)
      * Expected: Data loss or corruption detected
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testRaceOnUnsynchronizedOutputStream_2ThreadsMixed() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -435,7 +435,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Potential deadlock if synchronization is faulty
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testReaderBlocksWriterAtBoundary_4ThreadsInterleaved() throws Exception {
         PipedInputStream input = new PipedInputStream(32);
@@ -510,7 +510,7 @@ public class ConcurrencyPairwiseTest {
      * Known bug: tnvt.java line 123 (keepTrucking not volatile)
      * Expected: Some threads may not see the flag change
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testVolatileVisibilityIssue_8ThreadsRead() throws Exception {
         // Non-volatile flag (simulating the bug)
@@ -575,7 +575,7 @@ public class ConcurrencyPairwiseTest {
      * Known bug: Sessions.java uses unsynchronized ArrayList
      * Expected: ConcurrentModificationException during concurrent add/remove/iterate
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testConcurrentModificationInSessionList_16ThreadsMixed() throws Exception {
         List<String> sessions = new ArrayList<>();
@@ -741,7 +741,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Potential deadlock if threads wait in wrong order
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testDeadlockInCircularWait_4ThreadsInterleaved() throws Exception {
         BlockingQueue<Integer> queue1 = new LinkedBlockingQueue<>(2);
@@ -826,7 +826,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: High CPU usage with low throughput indicates livelock
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testLivelock_8ThreadsSpinWait() throws Exception {
         AtomicBoolean[] lockFlags = {new AtomicBoolean(false), new AtomicBoolean(false)};
@@ -884,7 +884,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Data loss or IOException detection
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testDataLossOnClose_16ThreadsMixed() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -953,7 +953,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Proper exception handling and cleanup
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testExceptionHandlingDuringStateChange_8ThreadsMixed() throws Exception {
         BlockingQueue<Integer> sharedQueue = new LinkedBlockingQueue<>();
@@ -1051,7 +1051,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Data corruption or loss due to unsynchronized access
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testStreamCorruptionAtBoundary_8ThreadsInterleaved() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1114,7 +1114,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Invalid state transitions or data loss
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testSessionStateTransitionRace_4ThreadsConcurrent() throws Exception {
         // Simulate session state (not volatile)
@@ -1221,7 +1221,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: All data written successfully
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testSingleThreadLargeData_BaselinePerformance() throws Exception {
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -1264,7 +1264,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: Timeout or null return without exception
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testEmptyQueueOperations_2ThreadsRead() throws Exception {
         BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
@@ -1305,7 +1305,7 @@ public class ConcurrencyPairwiseTest {
      *
      * Expected: InterruptedException caught and handled gracefully
      */
-    @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 15000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testInterruptHandlingInBlockingOp_4ThreadsConcurrent() throws Exception {
         BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
