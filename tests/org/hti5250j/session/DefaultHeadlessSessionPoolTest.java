@@ -456,8 +456,10 @@ public class DefaultHeadlessSessionPoolTest {
                     pool.returnSession(s);
                 } catch (PoolExhaustedException e) {
                     exhaustedCount.incrementAndGet();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 } catch (Exception e) {
-                    // ignore
+                    exhaustedCount.incrementAndGet(); // count unexpected errors
                 } finally {
                     doneLatch.countDown();
                 }
@@ -609,6 +611,177 @@ public class DefaultHeadlessSessionPoolTest {
     }
 
     // ========================================================================
+    // Factory failure resilience
+    // ========================================================================
+
+    @Test
+    void testFactoryExceptionLeavesPoolConsistent() throws Exception {
+        AtomicInteger callCount = new AtomicInteger(0);
+        HeadlessSessionFactory failingFactory = (name, configResource, props) -> {
+            if (callCount.incrementAndGet() == 2) {
+                throw new RuntimeException("simulated factory failure");
+            }
+            return new StubSession(name);
+        };
+
+        pool.configure(SessionPoolConfig.builder()
+                .sessionFactory(failingFactory)
+                .maxSize(5)
+                .build());
+
+        // First borrow succeeds
+        HeadlessSession s1 = pool.borrowSession();
+        assertNotNull(s1);
+        pool.returnSession(s1);
+
+        // Second borrow triggers the factory exception
+        assertThrows(RuntimeException.class, () -> {
+            // Exhaust idle then trigger factory failure on create
+            HeadlessSession a = pool.borrowSession(); // reuses s1
+            pool.borrowSession(); // factory call #2 throws
+        });
+
+        // Pool should still be usable — factory recovers on call #3
+        HeadlessSession s3 = pool.borrowSession();
+        assertNotNull(s3, "Pool should recover after factory failure");
+    }
+
+    // ========================================================================
+    // Double-return safety
+    // ========================================================================
+
+    @Test
+    void testDoubleReturnDoesNotCorruptPool() throws Exception {
+        pool.configure(baseConfig().maxSize(1).build());
+
+        HeadlessSession session = pool.borrowSession();
+        pool.returnSession(session);
+        pool.returnSession(session); // second return should be treated as foreign
+
+        assertEquals(1, pool.getIdleCount(), "Idle count should be 1, not 2");
+        assertEquals(1, pool.getPoolSize(), "Pool size should remain 1");
+
+        // Borrow the session and verify pool is exhausted after one borrow
+        HeadlessSession borrowed = pool.borrowSession();
+        assertNotNull(borrowed);
+        assertThrows(PoolExhaustedException.class, () -> pool.borrowSession());
+    }
+
+    // ========================================================================
+    // Validation exhaustion at capacity
+    // ========================================================================
+
+    @Test
+    void testValidateOnBorrowExhaustsWhenAllInvalidAndAtCapacity() throws Exception {
+        pool.configure(baseConfig()
+                .maxSize(2)
+                .validationStrategy(SessionPoolConfig.ValidationStrategy.ON_BORROW)
+                .build());
+
+        // Borrow both, hold one, mark other invalid and return
+        HeadlessSession held = pool.borrowSession();
+        HeadlessSession toInvalidate = pool.borrowSession();
+        ((StubSession) toInvalidate).setConnected(false);
+        pool.returnSession(toInvalidate);
+
+        // Pool has maxSize=2: 1 active (held) + 1 idle (invalid).
+        // Borrow should evict invalid, then create a replacement (capacity allows 1 more)
+        HeadlessSession replacement = pool.borrowSession();
+        assertNotNull(replacement);
+        assertNotSame(toInvalidate, replacement);
+
+        // Now pool is at capacity (2 active, 0 idle). Next borrow should fail.
+        assertThrows(PoolExhaustedException.class, () -> pool.borrowSession());
+
+        pool.returnSession(held);
+        pool.returnSession(replacement);
+    }
+
+    // ========================================================================
+    // Reconfigure while sessions borrowed
+    // ========================================================================
+
+    @Test
+    void testReconfigureWhileSessionsBorrowed() throws Exception {
+        pool.configure(baseConfig().maxSize(5).build());
+
+        HeadlessSession borrowed = pool.borrowSession();
+        assertTrue(borrowed.isConnected());
+
+        // Reconfigure disconnects all sessions (idle and borrowed)
+        pool.configure(baseConfig().maxSize(5).build());
+
+        assertFalse(((StubSession) borrowed).isConnected(),
+                "Borrowed session should be disconnected after reconfigure");
+
+        // Returning the disconnected session should be treated as foreign
+        pool.returnSession(borrowed);
+        assertEquals(0, pool.getIdleCount(), "Disconnected session should not re-enter pool");
+
+        // Pool should be fully functional with new config
+        HeadlessSession fresh = pool.borrowSession();
+        assertNotNull(fresh);
+        pool.returnSession(fresh);
+    }
+
+    // ========================================================================
+    // Shutdown unblocks QUEUED borrowers
+    // ========================================================================
+
+    @Test
+    void testShutdownUnblocksQueuedBorrower() throws Exception {
+        pool.configure(baseConfig()
+                .maxSize(1)
+                .acquisitionMode(SessionPoolConfig.AcquisitionMode.QUEUED)
+                .build());
+
+        pool.borrowSession(); // exhaust
+
+        AtomicReference<Exception> caught = new AtomicReference<>();
+        Thread borrower = Thread.ofVirtual().start(() -> {
+            try {
+                pool.borrowSession(); // will block
+            } catch (Exception e) {
+                caught.set(e);
+            }
+        });
+
+        Thread.sleep(200); // let borrower block
+        pool.shutdown();
+        borrower.join(5000);
+
+        assertFalse(borrower.isAlive(), "Borrower thread should have been unblocked by shutdown");
+        assertInstanceOf(PoolExhaustedException.class, caught.get(),
+                "Should throw PoolExhaustedException on shutdown");
+    }
+
+    // ========================================================================
+    // Builder null guard tests
+    // ========================================================================
+
+    @Test
+    void testBuilderRejectsNullEnums() {
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().acquisitionMode(null));
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().validationStrategy(null));
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().evictionPolicy(null));
+    }
+
+    @Test
+    void testBuilderRejectsNullConnectionProps() {
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().connectionProps(null));
+    }
+
+    @Test
+    void testBuilderRejectsNullConfigResource() {
+        assertThrows(IllegalArgumentException.class, () ->
+                baseConfig().configResource(null));
+    }
+
+    // ========================================================================
     // Stub implementations
     // ========================================================================
 
@@ -619,7 +792,7 @@ public class DefaultHeadlessSessionPoolTest {
     }
 
     /**
-     * Stub factory that creates lightweight mock sessions (no real TN5250 connections).
+     * Stub factory that creates lightweight stub sessions (no real TN5250 connections).
      */
     private static class StubSessionFactory implements HeadlessSessionFactory {
         private final AtomicInteger counter = new AtomicInteger(0);
@@ -632,7 +805,7 @@ public class DefaultHeadlessSessionPoolTest {
 
     /**
      * Minimal HeadlessSession stub for pool testing.
-     * Tracks connected state; all other methods are no-ops.
+     * Tracks connected state; all other methods return defaults (null, empty, or no-op).
      */
     private static class StubSession implements HeadlessSession {
         private final String name;

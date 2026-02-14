@@ -23,7 +23,8 @@ import java.util.logging.Logger;
  * to track which sessions are currently borrowed, and a
  * {@link ScheduledExecutorService} for periodic validation and eviction.
  * <p>
- * All public methods are thread-safe.
+ * All public methods are thread-safe. {@link #configure(SessionPoolConfig)}
+ * must not be called concurrently with borrow or return operations.
  *
  * @since 1.1.0
  */
@@ -31,18 +32,18 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
 
     private static final Logger LOG = Logger.getLogger(DefaultHeadlessSessionPool.class.getName());
 
-    private SessionPoolConfig config;
+    private volatile SessionPoolConfig config;
 
     // Idle sessions ready to be borrowed
     private final BlockingQueue<HeadlessSession> idleQueue = new LinkedBlockingQueue<>();
 
-    // Currently borrowed sessions → their creation instant (serves as membership set)
+    // Currently borrowed sessions (membership set; values unused)
     private final ConcurrentHashMap<HeadlessSession, Instant> borrowedSessions = new ConcurrentHashMap<>();
 
     // All sessions → creation instant (idle + borrowed)
     private final ConcurrentHashMap<HeadlessSession, Instant> allSessions = new ConcurrentHashMap<>();
 
-    // Idle sessions → time they were last returned to the pool (for idle-time eviction)
+    // Idle sessions → time they became idle (via return or initial creation; for idle-time eviction)
     private final ConcurrentHashMap<HeadlessSession, Instant> lastReturnedTime = new ConcurrentHashMap<>();
 
     // Metrics
@@ -73,9 +74,17 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         // Reset shutdown state so a pool can be reconfigured after shutdown
         shutdownFlag.set(false);
 
-        // Shut down any existing scheduler
+        // Shut down any existing scheduler and await termination
         if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdownNow();
+            try {
+                if (!scheduler.awaitTermination(2, TimeUnit.SECONDS)) {
+                    LOG.log(Level.WARNING,
+                            "Previous scheduler did not terminate within 2s during reconfiguration");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
         // Disconnect and clear existing sessions before reconfiguration
@@ -94,15 +103,21 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         allSessions.clear();
         lastReturnedTime.clear();
 
-        // Pre-create minIdle sessions
+        // Pre-create minIdle sessions (failures are logged but do not prevent scheduler startup)
         int preCreate = config.getMinIdle();
         if (config.getMaxSize() > 0 && preCreate > config.getMaxSize()) {
             preCreate = config.getMaxSize();
         }
         for (int i = 0; i < preCreate; i++) {
-            HeadlessSession session = createNewSession();
-            lastReturnedTime.put(session, Instant.now());
-            idleQueue.offer(session);
+            try {
+                HeadlessSession session = createNewSession();
+                lastReturnedTime.put(session, Instant.now());
+                idleQueue.offer(session);
+            } catch (RuntimeException e) {
+                LOG.log(Level.SEVERE,
+                        "Failed to pre-create session " + (i + 1) + " of " + preCreate
+                                + " during pool configuration", e);
+            }
         }
 
         // Start background maintenance
@@ -155,6 +170,10 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     @Override
     public void returnSession(HeadlessSession session) {
         if (session == null) return;
+        if (config == null) {
+            disconnectQuietly(session);
+            return;
+        }
 
         // Guard: only accept sessions that were borrowed from this pool
         if (borrowedSessions.remove(session) == null) {
@@ -271,9 +290,14 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             return finalizeBorrow(session);
         }
 
-        // Block waiting for a returned session
-        session = idleQueue.take();
-        return finalizeBorrow(session);
+        // Poll in a loop so we can detect shutdown rather than blocking forever
+        while (!shutdownFlag.get()) {
+            session = idleQueue.poll(1, TimeUnit.SECONDS);
+            if (session != null) {
+                return finalizeBorrow(session);
+            }
+        }
+        throw new PoolExhaustedException("Pool has been shut down");
     }
 
     private HeadlessSession borrowWithTimeout(long timeout, TimeUnit unit)
@@ -359,8 +383,14 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     /** Must be called while holding poolLock. */
     private HeadlessSession createSessionUnderLock() {
         String name = "pool-session-" + sessionCounter.incrementAndGet();
-        HeadlessSession session = config.getSessionFactory()
-                .createSession(name, config.getConfigResource(), config.getConnectionProps());
+        HeadlessSession session;
+        try {
+            session = config.getSessionFactory()
+                    .createSession(name, config.getConfigResource(), config.getConnectionProps());
+        } catch (RuntimeException e) {
+            LOG.log(Level.SEVERE, "SessionFactory failed to create session '" + name + "'", e);
+            throw e;
+        }
         if (session == null) {
             throw new IllegalStateException(
                     "SessionFactory.createSession() returned null for '" + name + "'");
@@ -373,8 +403,8 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         try {
             return session.isConnected();
         } catch (Exception e) {
-            LOG.log(Level.WARNING, "Session validation failed for ''{0}''; treating as invalid",
-                    new Object[]{session.getSessionName(), e});
+            LOG.log(Level.WARNING,
+                    "Session validation failed for '" + session.getSessionName() + "'; treating as invalid", e);
             return false;
         }
     }
@@ -383,8 +413,8 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         try {
             session.disconnect();
         } catch (Exception e) {
-            LOG.log(Level.WARNING, "Failed to disconnect session ''{0}''; resource may not be released",
-                    new Object[]{session.getSessionName(), e});
+            LOG.log(Level.WARNING,
+                    "Failed to disconnect session '" + session.getSessionName() + "'; resource may not be released", e);
         }
     }
 

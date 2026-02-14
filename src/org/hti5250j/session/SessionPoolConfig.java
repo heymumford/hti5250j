@@ -129,16 +129,19 @@ public final class SessionPoolConfig {
         }
 
         public Builder acquisitionMode(AcquisitionMode acquisitionMode) {
+            if (acquisitionMode == null) throw new IllegalArgumentException("acquisitionMode must not be null");
             this.acquisitionMode = acquisitionMode;
             return this;
         }
 
         public Builder validationStrategy(ValidationStrategy validationStrategy) {
+            if (validationStrategy == null) throw new IllegalArgumentException("validationStrategy must not be null");
             this.validationStrategy = validationStrategy;
             return this;
         }
 
         public Builder evictionPolicy(EvictionPolicy evictionPolicy) {
+            if (evictionPolicy == null) throw new IllegalArgumentException("evictionPolicy must not be null");
             this.evictionPolicy = evictionPolicy;
             return this;
         }
@@ -173,11 +176,13 @@ public final class SessionPoolConfig {
         }
 
         public Builder connectionProps(Properties connectionProps) {
+            if (connectionProps == null) throw new IllegalArgumentException("connectionProps must not be null");
             this.connectionProps = connectionProps;
             return this;
         }
 
         public Builder configResource(String configResource) {
+            if (configResource == null) throw new IllegalArgumentException("configResource must not be null");
             this.configResource = configResource;
             return this;
         }
