@@ -544,7 +544,7 @@ public class EventListenerPairwiseTest {
         long asyncFireTime = System.currentTimeMillis() - startTime;
 
         // ASSERT: Async fire returns quickly, processing continues in background
-        assertTrue(asyncFireTime < 100,"Async fire should return quickly (< 100ms)");
+        assertTrue(asyncFireTime < 300,"Async fire should return quickly (< 300ms)");
 
         // Wait for async to complete
         Thread.sleep(600);

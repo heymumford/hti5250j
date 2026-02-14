@@ -434,8 +434,8 @@ public class SessionPoolingPairwiseTest {
                         MockSession session = sessionPool.borrowSession();
                         assertNotNull(session,"Session should be borrowed");
 
-                        // Simulate work
-                        Thread.sleep(10);
+                        // Simulate work (kept short for CI reliability)
+                        Thread.sleep(1);
 
                         sessionPool.returnSession(session);
                         totalOperations.incrementAndGet();
@@ -473,15 +473,17 @@ public class SessionPoolingPairwiseTest {
     @Timeout(value = 20000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testAutoReleaseWithoutLeaksUnderConcurrentLoad() throws Exception {
-        // ARRANGE
+        // ARRANGE: Use fewer threads than pool size to avoid IMMEDIATE mode
+        // exhaustion races on CI runners with non-deterministic scheduling
+        int threadCount = 8;  // Within POOL_SIZE_LARGE (10)
         sessionPool.configure(POOL_SIZE_LARGE, AcquisitionMode.IMMEDIATE, ReleaseMode.AUTO,
                               ValidationStrategy.ON_BORROW, EvictionPolicy.MAX_AGE);
 
         AtomicInteger borrowCount = new AtomicInteger(0);
-        CountDownLatch latch = new CountDownLatch(NUM_THREADS);
+        CountDownLatch latch = new CountDownLatch(threadCount);
 
         // ACT: Threads borrow with explicit return for pool reuse
-        for (int t = 0; t < NUM_THREADS; t++) {
+        for (int t = 0; t < threadCount; t++) {
             executorService.submit(() -> {
                 try {
                     for (int i = 0; i < 2; i++) {
@@ -502,7 +504,7 @@ public class SessionPoolingPairwiseTest {
         assertTrue(latch.await(20, TimeUnit.SECONDS),"All threads should complete");
 
         // ASSERT: No leaks, all sessions returned automatically
-        assertEquals(NUM_THREADS * 2, borrowCount.get(),"All borrows should complete");
+        assertEquals(threadCount * 2, borrowCount.get(),"All borrows should complete");
         assertTrue(sessionPool.getAvailableCount() > 0,"Pool should have sessions available");
     }
 

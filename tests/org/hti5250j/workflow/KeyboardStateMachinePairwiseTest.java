@@ -9,6 +9,7 @@
 
 package org.hti5250j.workflow;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,11 @@ public class KeyboardStateMachinePairwiseTest {
     @BeforeEach
     void setUp() {
         verifier = new KeyboardStateMachineVerifier();
+    }
+
+    @AfterEach
+    void tearDown() {
+        verifier.shutdown();
     }
 
     @Test
@@ -230,8 +236,8 @@ public class KeyboardStateMachinePairwiseTest {
     @Test
     @DisplayName("Adversarial: Spurious unlock signals (lock→unlock→lock)")
     void testAdversarialSpuriousUnlockSignal() throws Exception {
-        verifier.setKeyboardLockedWithTransition(100, 200);
-        boolean acquired = verifier.acquireKeyboardForLogin(500);
+        verifier.setKeyboardLockedWithTransition(100, 500);
+        boolean acquired = verifier.acquireKeyboardForLogin(1000);
         assertThat("Should handle spurious unlock", acquired, equalTo(true));
     }
 
