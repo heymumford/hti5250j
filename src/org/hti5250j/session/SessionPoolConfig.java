@@ -16,11 +16,11 @@ import java.util.Properties;
  * Use the {@link Builder} for construction:
  * <pre>
  * SessionPoolConfig config = SessionPoolConfig.builder()
+ *     .sessionFactory(factory) // required
  *     .maxSize(10)
  *     .validationStrategy(ValidationStrategy.ON_BORROW)
  *     .evictionPolicy(EvictionPolicy.IDLE_TIME)
  *     .maxIdleTime(Duration.ofMinutes(5))
- *     .sessionFactory(factory)
  *     .connectionProps(props)
  *     .build();
  * </pre>

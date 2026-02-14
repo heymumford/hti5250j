@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Unit tests for {@link DefaultHeadlessSessionPool}.
  *
- * Uses a stub HeadlessSessionFactory that creates lightweight mock sessions
+ * Uses a stub HeadlessSessionFactory that creates lightweight stub sessions
  * (no real TN5250 connections) to test pool lifecycle, exhaustion, validation,
  * eviction, concurrency, and metrics.
  */

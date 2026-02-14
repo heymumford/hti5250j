@@ -28,10 +28,13 @@ public interface HeadlessSessionPool extends AutoCloseable {
     void configure(SessionPoolConfig config);
 
     /**
-     * Borrow a session from the pool (blocking or immediate depending on config).
+     * Borrow a session from the pool. Behavior depends on the configured acquisition mode:
+     * IMMEDIATE fails fast, QUEUED blocks indefinitely, TIMEOUT_ON_FULL blocks up to
+     * the configured timeout.
      *
-     * @return a validated HeadlessSession
-     * @throws PoolExhaustedException if pool is exhausted and acquisition mode is IMMEDIATE
+     * @return a HeadlessSession (validated if ON_BORROW strategy is configured)
+     * @throws PoolExhaustedException if no session is available (IMMEDIATE), timeout
+     *         expires (TIMEOUT_ON_FULL), or pool is shut down
      * @throws InterruptedException if interrupted while waiting
      */
     HeadlessSession borrowSession() throws PoolExhaustedException, InterruptedException;
@@ -41,8 +44,8 @@ public interface HeadlessSessionPool extends AutoCloseable {
      *
      * @param timeout maximum time to wait
      * @param unit time unit
-     * @return a validated HeadlessSession
-     * @throws PoolExhaustedException if timeout expires without acquiring a session
+     * @return a HeadlessSession (validated if ON_BORROW strategy is configured)
+     * @throws PoolExhaustedException if timeout expires without acquiring a session, or pool is shut down
      * @throws InterruptedException if interrupted while waiting
      */
     HeadlessSession borrowSession(long timeout, TimeUnit unit)

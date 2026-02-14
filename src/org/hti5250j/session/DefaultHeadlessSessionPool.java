@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  * Default implementation of {@link HeadlessSessionPool}.
  * <p>
  * Uses a {@link BlockingQueue} for idle sessions, a {@link ConcurrentHashMap}
- * to track borrowed sessions and their creation times, and a
+ * to track which sessions are currently borrowed, and a
  * {@link ScheduledExecutorService} for periodic validation and eviction.
  * <p>
  * All public methods are thread-safe.
@@ -36,7 +36,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     // Idle sessions ready to be borrowed
     private final BlockingQueue<HeadlessSession> idleQueue = new LinkedBlockingQueue<>();
 
-    // Borrowed sessions → creation instant
+    // Currently borrowed sessions → their creation instant (serves as membership set)
     private final ConcurrentHashMap<HeadlessSession, Instant> borrowedSessions = new ConcurrentHashMap<>();
 
     // All sessions → creation instant (idle + borrowed)
