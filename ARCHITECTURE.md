@@ -32,7 +32,7 @@ HTI5250J sits at the boundary between client automation (test frameworks, CLI to
 │  │  Session Management (5250 terminal lifecycle)  │  │
 │  │  Screen Emulation (display buffer + state)     │  │
 │  │  Protocol Handlers (TN5250E translation)       │  │
-│  │  Plugin System (extensibility points)          │  │
+│  │  EBCDIC Encoding (23+ code pages)               │  │
 │  └────────────────────────────────────────────────┘  │
 └────────────┬──────────────────────────────────────────┘
              │ TN5250E Protocol (TCP, port 23 or 992)
@@ -226,10 +226,10 @@ Screen5250 {
 **EBCDIC Handling:** Screen5250 stores EBCDIC bytes internally; conversion to UTF-8 happens at `getText()` boundary.
 
 **Files:**
-- `src/org/hti5250j/Screen5250.java` (1200+ lines, display buffer)
-- `src/org/hti5250j/ScreenField.java` (field attributes)
-- `src/org/hti5250j/ScreenOIA.java` (OIA state)
-- `tests/org/hti5250j/Screen5250ContractTest.java` (15 contract tests)
+- `src/org/hti5250j/framework/tn5250/Screen5250.java` (1200+ lines, display buffer)
+- `src/org/hti5250j/framework/tn5250/ScreenField.java` (field attributes)
+- `src/org/hti5250j/framework/tn5250/ScreenOIA.java` (OIA state)
+- `tests/org/hti5250j/contracts/Screen5250ContractTest.java` (15 contract tests)
 
 **External Dependency:** Updated by `tnvt.parseDataStream()`, read by `Session5250`, `WorkflowRunner`
 
@@ -280,48 +280,32 @@ Client                              Server (IBM i)
 ```
 
 **Files:**
-- `src/org/hti5250j/tnvt.java` (1600+ lines, protocol + I/O)
-- `src/org/hti5250j/DataStreamProducer.java` (queue-based outgoing stream)
-- `tests/org/hti5250j/TnvtContractTest.java` (12 contract tests)
+- `src/org/hti5250j/framework/tn5250/tnvt.java` (1600+ lines, protocol + I/O)
+- `src/org/hti5250j/framework/tn5250/DataStreamProducer.java` (queue-based outgoing stream)
+- `tests/org/hti5250j/contracts/TnvtContractTest.java` (12 contract tests)
+- `tests/org/hti5250j/framework/tn5250/TnvtProtocolContractTest.java` (13 protocol tests)
 
 **External Dependency:** Calls `Screen5250.setText()`, uses `DataStreamProducer` for outgoing queue
 
 ---
 
-### 5. EBCDIC Codec (Character Encoding)
+### 5. EBCDIC Encoding (Character Encoding)
 
-**Purpose:** Convert between EBCDIC (IBM i wire format) and UTF-8 (Java string representation).
-
-**Key Operations:**
-- `ebcdicToString(byte[] buffer)` -- EBCDIC 037 (US) to UTF-8 string
-- `stringToEbcdic(String s)` -- UTF-8 string to EBCDIC bytes
-- Handle attribute bytes (not character data) in planes[1] and planes[2]
-
-**Files:**
-- `src/org/hti5250j/codec/EBCDICCodec.java`
-- Tests included in Domain 1 (unit tests)
-
----
-
-### 6. Plugin System (PluginManager / HTI5250jPlugin)
-
-**Purpose:** Allow extensibility without modifying core.
+**Purpose:** Convert between EBCDIC (IBM i wire format) and Unicode (Java string representation).
 
 **Key Operations:**
-- `registerPlugin(HTI5250jPlugin)` → Register custom protocol handler
-- `load()` → Initialize plugin
-- `activate()` → Plugin becomes active in protocol pipeline
-- `deactivate()` / `unload()` → Cleanup
+- `ICodePage.ebcdic2uni(int)` — EBCDIC byte to Unicode character
+- `ICodePage.uni2ebcdic(char)` — Unicode character to EBCDIC byte
+- `CharMappings.getCodePage(String ccsid)` — Factory for code page instances
+- `JavaCodePageFactory` — Fallback using Java Charset for unsupported CCSIDs
 
-**Example Use Cases:**
-- Custom AID key definitions
-- Logging/monitoring hooks
-- Protocol extensions (future: WebSocket transport)
+**Supported Code Pages:** 23+ built-in CCSIDs including 37 (US), 273 (German), 277 (Danish/Norwegian), 278 (Finnish/Swedish), 280 (Italian), 284 (Spanish), 285 (UK), 297 (French), 424 (Hebrew), 500 (International), 870 (Polish/Slovak), 871 (Icelandic), 875 (Greek), 930 (Japanese), 1025 (Cyrillic), 1026 (Turkish), 1112 (Baltic), 1122 (Estonian), plus Euro variants (1140, 1141, 1147, 1148).
 
 **Files:**
-- `src/org/hti5250j/plugin/PluginManager.java`
-- `src/org/hti5250j/plugin/HTI5250jPlugin.java` (interface)
-- `tests/org/hti5250j/PluginManagerContractTest.java` (10 contract tests)
+- `src/org/hti5250j/encoding/ICodePage.java` (interface)
+- `src/org/hti5250j/encoding/CharMappings.java` (factory)
+- `src/org/hti5250j/encoding/builtin/CCSID*.java` (23+ implementations)
+- `tests/org/hti5250j/encoding/builtin/CCSID*Test.java` (round-trip encoding tests)
 
 ---
 
@@ -454,11 +438,16 @@ artifacts/
 ### Client Library Usage
 
 ```java
-// Explicit API (Session5250)
-Session5250 session = new Session5250("ibmi.example.com", 23);
+// Explicit API (Session5250 + HeadlessSession)
+Properties props = new Properties();
+props.setProperty("host", "ibmi.example.com");
+props.setProperty("port", "23");
+SessionConfig config = new SessionConfig("session.properties", "my-session");
+Session5250 session = new Session5250(props, "session.properties", "my-session", config);
 session.connect();
-session.sendString("CALL PGM(MYAPP)");
-String screen = session.getScreenText();
+HeadlessSession headless = session.asHeadlessSession();
+headless.sendKeys("CALL PGM(MYAPP)[enter]");
+String screen = headless.getScreenAsText();
 session.disconnect();
 
 // Workflow API (WorkflowCLI)
@@ -471,9 +460,10 @@ cli.runWorkflow("payment.yaml", "payment_data.csv");
 
 | Domain | Tests | Focus | Dependency |
 |--------|-------|-------|-----------|
-| Domain 1 | Unit (53 existing) | EBCDIC codec, field parsing | No i5 required |
+| Domain 1 | Unit (60+) | EBCDIC encoding, field parsing, contracts | No i5 required |
 | Domain 3 | Surface (100+) | Handler correctness, boundary conditions | Mock Screen5250 |
 | Domain 4 | Scenario (28) | Business workflow end-to-end | Mock or real i5 |
+| Reliability | Property-based (10+) | Property testing, chaos injection | jqwik, resilience4j |
 
 ---
 
@@ -615,5 +605,5 @@ HTI5250J is designed headless-first. Core session APIs have no GUI dependencies 
 
 ---
 
-**Document Version:** 2.1
+**Document Version:** 2.2
 **Last Updated:** February 2026

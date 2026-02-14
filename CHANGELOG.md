@@ -5,41 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] — v1.0.0 Release Candidate
 
 ### Added
-- GuiGraphicBuffer extraction (5 classes)
-- Headless architecture interfaces and implementations
-- 67 new tests for headless components (SessionsHeadlessTest, KeyMapperHeadlessTest, etc.)
-- Integration tests for extracted components (ColorPaletteIntegrationTest, CursorManagerIntegrationTest, etc.)
-- Comprehensive README with quick start and navigation
-- Documentation index (`docs/INDEX.md`) for easy reference navigation
+- **HeadlessSession API**: `DefaultHeadlessSession` wrapper with `sendKeys()`, `getScreenAsText()`, `captureScreenshot()`, `waitForKeyboardUnlock()`
+- **YAML Workflow Engine**: 6 action handlers (LOGIN, NAVIGATE, FILL, SUBMIT, ASSERT, CAPTURE) with CSV data-driven execution and virtual thread batch processing
+- **Protocol contract tests**: `TnvtProtocolContractTest` covering `setCodePage`, `setProxy`, `disconnect`, `sendHeartBeat`, `sendAidKey`, and Screen5250 operations (13 tests)
+- **V1 definition document**: `V1_DEFINITION.md` defining scope, quality gates, and gap analysis for v1.0 release
+- **EBCDIC code pages**: 23+ built-in CCSIDs (37, 273, 277, 278, 280, 284, 285, 297, 424, 500, 870, 871, 875, 930, 1025, 1026, 1112, 1122, 1140, 1141, 1147, 1148) with round-trip encoding tests
+- **HeadlessSession abstractions**: `HeadlessSession` interface, `RequestHandler` interface, `NullRequestHandler`, `HeadlessSessionFactory`
+- **183 test classes** across 4 domains (unit, surface, scenario, reliability)
+- Documentation index (`docs/INDEX.md`) and comprehensive 5250 protocol reference (`docs/5250_COMPLETE_REFERENCE.md`)
+
+### Changed
+- **README rewrite**: Replaced all fictional API classes (`TN5250Session`, `SessionPool`, `TN5250Protocol`) with real classes (`Session5250`, `HeadlessSession`, `ICodePage`); corrected architecture tree to actual `org.hti5250j` package structure
+- **Dependency management**: Removed vendored JARs (`tn5250j.jar`, `itext.jar`, `jt400.jar`), replaced with Gradle dependency declarations
+- **SSL/TLS security**: Deprecated SSLv2 and SSLv3 protocols; only TLSv1.2+ accepted
+- **Empty catch remediation**: Fixed critical swallowed exceptions across protocol and transport code; all catch blocks now log full exception objects
+- **Exception handling**: All CCSID converters throw `CharacterConversionException` instead of returning `?` for unmappable characters
+- **Documentation consolidation**: Merged 5 separate 5250 reference documents into single comprehensive reference; archived 19 planning documents to `archive/`
+- **Project positioning**: Removed fictional session pooling claims; focused on actual capabilities (headless API, workflow engine, EBCDIC encoding)
 
 ### Fixed
 - **Build System**: Fixed 3 P0 compilation errors
-- **Character Encoding**: Fixed CharacterConversionException handling in 6 CCSID codepages (37, 273, 280, 284, 297, 500)
-- **Test Assertions**: Updated CharsetConversionPairwiseTest to expect proper exception types (29 tests fixed)
-- **CCSID870**: Fixed unmappable character handling in 4 tests with proper try-catch and success counting
+- **Character Encoding**: Fixed `CharacterConversionException` handling in 6 CCSID codepages (37, 273, 280, 284, 297, 500)
+- **Test Assertions**: Updated `CharsetConversionPairwiseTest` to expect proper exception types (29 tests fixed)
+- **Javadoc**: Corrected `@throws` annotations across event classes
 - **Copyright Compliance**: Removed all unlicensed JavaPro magazine references from 6 source files
 
-### Changed
-- **Test Pass Rate**: Improved from 99.34% to 99.55% (29 tests fixed)
-- **Exception Handling**: All CCSID converters now throw CharacterConversionException instead of returning '?' for unmappable characters
-- **Documentation consolidation**: Merged 5 separate 5250 reference documents into single comprehensive reference (`docs/5250_COMPLETE_REFERENCE.md`)
-  - Eliminated redundancy while preserving all unique technical information
-  - Improved navigation with comprehensive table of contents and internal cross-references
-- **Repository cleanup**: Archived 19 planning and strategy documents to `archive/planning/`
-  - Removed clutter from root directory while preserving historical planning artifacts
-  - Created comprehensive documentation indices: `docs/INDEX.md`, `archive/README.md`, `archive/planning/README.md`
-  - Updated main README.md with protocol documentation references
-  - Result: Professional, clean repository structure focused on shipping code
-  - Retained all technical review corrections and changelogs
-
 ### Removed
+- **Dead GUI code**: Deleted `SessionsDataModel.java` (unused Swing TableModel), `CopyrightComplianceTest.java` (referenced non-existent files), `FontMetricsIntegrationTest.java` (tested fictional API)
+- **Vendored JARs**: Removed `lib/tn5250j.jar`, `lib/itext.jar`, `lib/jt400.jar`
 - Archived planning and strategy documents to `archive/` directory
 - Removed temporary review artifacts (`review_findings/`, `review_sources/`)
-- Deleted backup files from 2026-02-13 technical review
-- Cleaned root directory to industry-standard files only
+
+---
+
+## [0.13.0] - 2026-02-12
+
+### Summary
+Comprehensive testing infrastructure release with virtual thread batch processing and reliability testing.
+
+### Highlights
+- Virtual thread batch workflow processing
+- GitHub Packages publishing configuration
+- 27 TDD GREEN tests enabled across event classes
+- Compilation error fixes and pre-existing TDD RED test isolation
 
 ---
 
@@ -53,9 +64,9 @@ Extracted GuiGraphicBuffer responsibilities, implemented headless architecture, 
 - GuiGraphicBuffer extraction complete (5 classes)
 - Headless architecture validated
 - Exception handling improved (CharacterConversionException)
-- 99.55% test pass rate (13,576 passing / 13,637 total)
 
 ---
 
-*For detailed test results, see `TEST_RESULTS_SUMMARY.md`*
 *For architecture decisions, see `ARCHITECTURE.md`*
+*For testing strategy, see `TESTING.md`*
+*For v1.0 scope and gates, see `V1_DEFINITION.md`*
