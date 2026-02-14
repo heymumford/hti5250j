@@ -11,6 +11,8 @@
 
 package org.hti5250j.interfaces;
 
+import org.hti5250j.tools.logging.HTI5250jLogFactory;
+import org.hti5250j.tools.logging.HTI5250jLogger;
 
 /**
  * An interface defining objects that can create OptionAccess
@@ -18,6 +20,7 @@ package org.hti5250j.interfaces;
  */
 public abstract class OptionAccessFactory {
 
+    private static final HTI5250jLogger log = HTI5250jLogFactory.getLogger(OptionAccessFactory.class);
     private static OptionAccessFactory factory;
 
     /**
@@ -40,6 +43,7 @@ public abstract class OptionAccessFactory {
                     }
                 }
             } catch (Exception ex) {
+                log.warn("Failed to load custom OptionAccessFactory: " + ex.getMessage());
             }
             if (OptionAccessFactory.factory == null) {
                 OptionAccessFactory.factory = new org.hti5250j.OptionAccess();
