@@ -49,7 +49,7 @@ public abstract class ConfigureFactory {
                     }
                 }
             } catch (Exception ex) {
-                log.warn("Failed to load custom ConfigureFactory: " + ex.getMessage());
+                log.warn("Failed to load custom ConfigureFactory", ex);
             }
             if (ConfigureFactory.factory == null) {
                 ConfigureFactory.factory = new GlobalConfigure();

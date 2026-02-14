@@ -43,7 +43,7 @@ public abstract class OptionAccessFactory {
                     }
                 }
             } catch (Exception ex) {
-                log.warn("Failed to load custom OptionAccessFactory: " + ex.getMessage());
+                log.warn("Failed to load custom OptionAccessFactory", ex);
             }
             if (OptionAccessFactory.factory == null) {
                 OptionAccessFactory.factory = new org.hti5250j.OptionAccess();
