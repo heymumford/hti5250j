@@ -10,8 +10,7 @@ package org.hti5250j.test.property;
 
 import net.jqwik.api.*;
 import net.jqwik.api.arbitraries.StringArbitrary;
-import net.jqwik.api.arbitraries.IntegerArbitrary;
-import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.Assertions;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
@@ -93,6 +92,7 @@ public class EncodingPropertyTests {
         @ForAll("bufferSizes") int size,
         @ForAll("asciiStrings") String content
     ) {
+        if (content.isEmpty()) return;
         // Prepare consistent buffer
         String buffer = content.repeat((size / content.length()) + 1).substring(0, size);
         byte[] first = buffer.getBytes(StandardCharsets.US_ASCII);
@@ -184,21 +184,20 @@ public class EncodingPropertyTests {
     }
 
     @Provide
-    CharacterArbitrary printableAscii() {
-        return Arbitraries.characters()
+    Arbitrary<Character> printableAscii() {
+        return Arbitraries.chars()
             .range('\u0020', '\u007E');  // Space to ~
     }
 
     @Provide
-    IntegerArbitrary switchCount() {
+    Arbitrary<Integer> switchCount() {
         return Arbitraries.integers().between(1, 100);
     }
 
     @Provide
-    IntegerArbitrary bufferSizes() {
+    Arbitrary<Integer> bufferSizes() {
         return Arbitraries.integers()
-            .between(1, 10000)
-            .filter(size -> size > 0);
+            .between(1, 10000);
     }
 
     @Provide

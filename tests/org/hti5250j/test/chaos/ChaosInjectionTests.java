@@ -8,7 +8,6 @@
 
 package org.hti5250j.test.chaos;
 
-import io.github.resilience4j.core.registry.EntryAddedEvent;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.timelimiter.TimeLimiter;
@@ -20,6 +19,8 @@ import org.junit.jupiter.api.Timeout;
 
 import java.time.Duration;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -131,11 +132,8 @@ public class ChaosInjectionTests {
             return "SHOULD_NOT_REACH";
         };
 
-        // Execute with time limiter
-        Callable<String> limited = TimeLimiter.decorateCallable(timeLimiter, slow);
-
-        // Should timeout
-        assertThatThrownBy(limited::call)
+        // Execute with time limiter - should timeout
+        assertThatThrownBy(() -> callWithTimeout(slow))
             .isInstanceOf(TimeoutException.class);
     }
 
@@ -160,13 +158,12 @@ public class ChaosInjectionTests {
         };
 
         // First call: timeout
-        assertThatThrownBy(() ->
-            TimeLimiter.decorateCallable(timeLimiter, sometimesSlow).call()
-        ).isInstanceOf(TimeoutException.class);
+        assertThatThrownBy(() -> callWithTimeout(sometimesSlow))
+            .isInstanceOf(TimeoutException.class);
 
         // Second call: should succeed
         assertThatCode(() -> {
-            String result = TimeLimiter.decorateCallable(timeLimiter, sometimesSlow).call();
+            String result = callWithTimeout(sometimesSlow);
             assertThat(result).isEqualTo("SUCCESS");
         }).doesNotThrowAnyException();
     }
@@ -192,7 +189,7 @@ public class ChaosInjectionTests {
 
         // Decorate with both retry and timeout
         Callable<String> decorated = Retry.decorateCallable(retryPolicy,
-            TimeLimiter.decorateCallable(timeLimiter, flakyFast)
+            () -> callWithTimeout(flakyFast)
         );
 
         // Should succeed after retries
@@ -285,14 +282,9 @@ public class ChaosInjectionTests {
             return "RECOVERED";
         };
 
-        // Measure recovery time
+        // Measure recovery time (retry will fail once, then succeed)
         long startTime = System.currentTimeMillis();
 
-        assertThatThrownBy(() ->
-            Retry.decorateCallable(retryPolicy, transientFail).call()
-        ).isInstanceOf(RuntimeException.class);  // First attempt fails
-
-        // Retry should recover
         assertThatCode(() -> {
             String result = Retry.decorateCallable(retryPolicy, transientFail).call();
             assertThat(result).isEqualTo("RECOVERED");
@@ -305,6 +297,27 @@ public class ChaosInjectionTests {
     }
 
     // ========== HELPERS ==========
+
+    private <T> T callWithTimeout(Callable<T> callable) throws Exception {
+        try {
+            return timeLimiter.executeFutureSupplier(() ->
+                CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return callable.call();
+                    } catch (RuntimeException e) {
+                        throw e;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+            );
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof TimeoutException) {
+                throw (TimeoutException) e.getCause();
+            }
+            throw e;
+        }
+    }
 
     private boolean executeWithFallback(Callable<String> operation) {
         try {

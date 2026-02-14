@@ -4,6 +4,7 @@
 
 plugins {
     id 'java'
+    id 'maven-publish'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.0.27'
     id 'jacoco'
@@ -11,7 +12,7 @@ plugins {
 }
 
 group = 'org.hti5250j'
-version = findProperty('version') ?: '0.13.0'
+version = findProperty('version') ?: { throw new GradleException("version not set in gradle.properties") }()
 
 def runtimeLibs = fileTree(dir: 'lib/runtime', include: ['*.jar', '*.zip'])
 def devLibs = fileTree(dir: 'lib/development', include: ['*.jar', '*.zip'])
@@ -81,9 +82,6 @@ test {
     def parallelModeClasses = (findProperty('test.junit.parallel.mode.classes') ?: 'concurrent').toString()
 
     maxParallelForks = Math.max(1, maxForks)
-    if (forkEvery > 0) {
-        forkEvery = forkEvery
-    }
 
     systemProperty 'junit.jupiter.execution.parallel.enabled', parallelEnabled
     systemProperty 'junit.jupiter.execution.parallel.mode.default', parallelMode
@@ -93,8 +91,7 @@ test {
         events 'failed', 'skipped'
     }
 
-    // Generate coverage report regardless of test failures
-    ignoreFailures = findProperty('test.ignoreFailures') == 'true' ? true : false
+    ignoreFailures = false
     finalizedBy jacocoTestReport
 }
 
@@ -137,29 +134,21 @@ jacocoTestCoverageVerification {
                 minimum = 0.90
             }
         }
-        rule {
-            element = 'CLASS'
-            includes = ['org.hti5250j.security.*']
-            limit {
-                counter = 'BRANCH'
-                value = 'COVEREDRATIO'
-                minimum = 0.95
-            }
-        }
+        // Security coverage rule removed: no source code exists in org.hti5250j.security package
     }
 }
 
 checkstyle {
     toolVersion = '10.21.4'
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
-    ignoreFailures = true
+    ignoreFailures = true // TODO: set to false and ratchet down maxWarnings over time
 }
 
 spotbugs {
     toolVersion = '4.8.6'
-    effort = 'default'
-    reportLevel = 'high'
-    ignoreFailures = true
+    effort = 'max'
+    reportLevel = 'medium'
+    ignoreFailures = true // TODO: set to false once baseline violations are addressed
 }
 
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
@@ -180,65 +169,66 @@ jmh {
     includes = ['.*Benchmark']          // Only run classes ending in 'Benchmark'
     threads = 4                         // Use 4 threads for throughput tests
 
-    // Performance baseline thresholds
-    // These are measured and stored, failures trigger SLA verification
 }
 
-// Performance baseline task (runs benchmarks and stores results)
-tasks.register('perfBaseline') {
-    group = 'verification'
-    description = 'Establish performance baseline from JMH benchmarks'
-    dependsOn jmhJar
+// Publishing configuration for artifact distribution
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
 
-    doLast {
-        println("📊 Performance baseline established")
-        println("  Benchmarks: ${file('build/libs/jmh-benchmarks.jar').exists() ? 'Ready' : 'Not found'}")
-        println("  Results: build/reports/jmh/")
-        println("  SLA enforcement: Enabled in CI")
+            pom {
+                name = 'tn5250j-headless'
+                description = 'Headless TN5250 terminal emulator library for IBM i (AS/400) automation and testing'
+                url = 'https://github.com/heymumford/hti5250j'
+
+                licenses {
+                    license {
+                        name = 'GNU General Public License v2.0 or later'
+                        url = 'https://www.gnu.org/licenses/gpl-2.0.html'
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'heymumford'
+                        name = 'Eric C. Mumford'
+                        email = 'ericmumford@outlook.com'
+                    }
+                }
+
+                issueManagement {
+                    system = 'GitHub Issues'
+                    url = 'https://github.com/heymumford/hti5250j/issues'
+                }
+
+                scm {
+                    url = 'https://github.com/heymumford/hti5250j.git'
+                    connection = 'scm:git:git://github.com/heymumford/hti5250j.git'
+                    developerConnection = 'scm:git:git@github.com:heymumford/hti5250j.git'
+                }
+            }
+        }
     }
-}
 
-// Performance verification task (checks against baseline)
-tasks.register('perfVerify') {
-    group = 'verification'
-    description = 'Verify performance against baseline (SLA enforcement)'
-    dependsOn jmhJar
-
-    doLast {
-        def resultsFile = file('build/reports/jmh/results.json')
-        if (resultsFile.exists()) {
-            println("✓ Performance verification passed")
-            println("  Results file: ${resultsFile.absolutePath}")
-        } else {
-            println("⚠️ Performance results not found - run 'gradle jmh' first")
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/heymumford/hti5250j")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") ?: ""
+                // Note: empty credentials will cause publish to fail at runtime.
+                // Set GITHUB_ACTOR and GITHUB_TOKEN environment variables before publishing.
+            }
         }
     }
 }
 
-// Reliability testing task (property-based + chaos injection)
-tasks.register('reliabilityTest') {
-    group = 'verification'
-    description = 'Run reliability tests (property-based + chaos injection)'
-    dependsOn test
-
-    doLast {
-        println("✓ Reliability testing completed")
-        println("  Property-based tests: jqwik")
-        println("  Chaos injection: resilience4j")
-        println("  Results: build/test-results/")
-    }
-}
-
-// Quality gate task (combines all verification)
+// Quality gate: runs tests with coverage verification
 tasks.register('qualityGate') {
     group = 'verification'
-    description = 'Run all quality gates: coverage, performance, reliability'
-    dependsOn jacocoTestCoverageVerification, perfVerify, reliabilityTest
-
-    doLast {
-        println("✅ All quality gates passed")
-        println("  Coverage: JaCoCo verified")
-        println("  Performance: SLA verified")
-        println("  Reliability: Fuzz + chaos verified")
-    }
+    description = 'Run tests and verify coverage thresholds'
+    dependsOn test, jacocoTestCoverageVerification
 }

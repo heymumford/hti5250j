@@ -12,8 +12,8 @@ Headless-first fork of [TN5250J](https://github.com/tn5250j/tn5250j), a 5250 ter
 ## Quick Start
 
 ### Prerequisites
-- Java 11 or higher
-- Gradle 7.x or higher
+- Java 21 or higher
+- Gradle 8.x or higher
 - Linux, macOS, or Windows
 
 ### Building
@@ -46,7 +46,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'com.heymumford:tn5250j-headless:0.12.0'
+  implementation 'org.hti5250j:tn5250j-headless:0.13.0'
 }
 ```
 
@@ -240,30 +240,19 @@ src/test/java/
 
 ## Testing Strategy
 
-hti5250j implements **architecture-grade testing** with three quality dimensions:
+The test suite covers protocol correctness, encoding, workflow execution, and resilience.
 
-### Quality Dimensions
-
-| Dimension | Tool | Scope | SLA |
-|-----------|------|-------|-----|
-| **Code Coverage** | JaCoCo | Branch-level metrics (80-95% targets) | Required |
-| **Performance** | JMH + k6 | Micro-benchmarks + load testing | Required |
-| **Reliability** | jqwik + resilience4j | Property-based + chaos injection | Required |
-
-### Quick Start
+### Running Tests
 
 ```bash
-# Run all quality gates (coverage + performance + reliability)
-./gradlew qualityGate
+# Run all tests
+./gradlew test
 
-# Run just coverage
+# Tests + coverage report
 ./gradlew test jacocoTestReport
 
-# Run just performance
-./gradlew jmhJar jmh
-
-# Run just reliability
-./gradlew test --tests "*Property*" --tests "*Chaos*"
+# Run JMH benchmarks
+./gradlew jmh
 
 # View coverage report
 open build/reports/jacoco/test/html/index.html
@@ -271,46 +260,20 @@ open build/reports/jacoco/test/html/index.html
 
 ### Test Organization
 
-**Test Inventory**: 184 test classes • 13,270 unit tests • 56,000 property-based cases • 8 chaos scenarios
+~170 test classes across four domains:
 
-| Tier | Count | Purpose | Tool |
-|------|-------|---------|------|
-| Unit Tests | 80 classes | Protocol, session, field handling | JUnit 5 |
-| Integration Tests | 40 classes | Component interaction, workflows | JUnit 5 |
-| Scenario Tests | 5 classes | End-to-end workflows | JUnit 5 |
-| Pairwise Tests | 110 classes | Protocol edge cases | JUnit 5 |
-| Property-Based | 7 properties | Automatic edge case discovery | jqwik |
-| Chaos Injection | 8 scenarios | Resilience under failure | resilience4j |
-| Micro-benchmarks | 17 suites | Performance profiling | JMH |
-| Load Testing | 5 scenarios | System-level throughput | k6 |
+| Domain | Purpose | Tool |
+|--------|---------|------|
+| Unit | Protocol, encoding, field handling | JUnit 5 |
+| Surface | Boundary correctness, pairwise edge cases | JUnit 5 |
+| Scenario | End-to-end workflows, stress, error recovery | JUnit 5 |
+| Reliability | Property-based testing, chaos injection | jqwik, resilience4j |
 
-### Detailed Testing Documentation
-
-See **[TESTING.md](./TESTING.md)** for:
-- Complete testing architecture
-- How to run each test type
-- SLA definitions and enforcement
-- Failure investigation runbooks
-- CI/CD pipeline details
-
-### Test Tiers (Traditional)
-
-1. **Unit tests** — Protocol encoding/decoding, field parsing
-2. **Session tests** — Connection, session lifecycle, pooling
-3. **Integration tests** — Real AS/400 system (optional, requires `IBMI_HOST` env var)
-4. **Pairwise tests** — 25+ protocol edge cases
-
-Run specific tier:
-```bash
-./gradlew test --tests "*SessionTest"  # Session tier
-./gradlew test --tests "*ProtocolTest" # Protocol tier
-```
+See **[TESTING.md](./TESTING.md)** for the four-domain testing model and how to run each category.
 
 ### Quality Metrics
-- **Coverage**: 80%+ for core protocol
-- **Test count**: 499 tests across all tiers
-- **Performance**: All unit tests complete in under 30 seconds
-- **Compatibility**: Java 11-21, GraalVM native-image compatible
+- **Coverage**: 21% baseline (legacy codebase, improving)
+- **Compatibility**: Java 21+
 
 ## Configuration
 
@@ -337,11 +300,11 @@ session.connect();
 ## Documentation
 
 ### Project Documentation
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — System models, containers, components, workflow pipeline
-- [TESTING.md](./TESTING.md) — Test framework (Unit, Continuous Contracts, Surface, Scenario)
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — System design and workflow pipeline
+- [TESTING.md](./TESTING.md) — Four-domain testing model
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — Contributing guidelines
 - [CHANGELOG.md](./CHANGELOG.md) — Release history
-- [SECURITY.md](./SECURITY.md) — Security considerations and best practices
+- [SECURITY.md](./SECURITY.md) — Security considerations
 
 ### Protocol & Technical Reference
 - [docs/5250_COMPLETE_REFERENCE.md](./docs/5250_COMPLETE_REFERENCE.md) — **Comprehensive 5250 protocol reference** covering Telnet, GDS records, operations, commands, structured fields, attributes, and TN5250E extensions. Authoritative source based on RFC 1205, RFC 2877, RFC 4777, and IBM documentation.

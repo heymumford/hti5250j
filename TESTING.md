@@ -101,7 +101,7 @@ Domain 2 is not run in CI (requires real i5). Instead, deploy as background job:
 | `ConcurrencySurfaceTest` | 42 | Race conditions, operation ordering, 1000-session stress | Mock |
 | Integration tests | 10 | Full workflow via mocked Session5250 | Mock |
 
-**Total Domain 3: ~110 tests, 5-30 seconds per test**
+**Domain 3 tests run in 5-30 seconds each.**
 
 ### Running Domain 3 Tests
 
@@ -142,7 +142,7 @@ Domain 2 is not run in CI (requires real i5). Instead, deploy as background job:
 | `ErrorRecoveryScenarioTest` | 9 | Failure modes and recovery paths | Timeout → retry → success |
 | `StressScenarioTest` | 6 | 1000 concurrent sessions, 10K+ operations | Virtual thread pool performance baseline |
 
-**Total Domain 4: ~28 tests, 10-60 seconds per test**
+**Domain 4 tests run in 10-60 seconds each.**
 
 ### Running Domain 4 Tests
 
