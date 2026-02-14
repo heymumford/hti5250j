@@ -130,14 +130,14 @@ public class ColorPalette {
 
     public Color getForegroundColor(char colorConstant) {
         switch (colorConstant) {
-            case 0: return colorBlack;
-            case 1: return colorRed;
-            case 2: return colorGreen;
-            case 3: return colorYellow;
-            case 4: return colorBlue;
-            case 5: return colorTurquoise;
-            case 6: return colorWhite;
-            case 7: return colorPink;
+            case 0: return colorBlack;      // COLOR_FG_BLACK
+            case 1: return colorBlue;       // COLOR_FG_BLUE
+            case 2: return colorGreen;      // COLOR_FG_GREEN
+            case 3: return colorTurquoise;  // COLOR_FG_CYAN
+            case 4: return colorRed;        // COLOR_FG_RED
+            case 5: return colorPink;       // COLOR_FG_MAGENTA
+            case 6: return colorYellow;     // COLOR_FG_YELLOW
+            case 7: return colorWhite;      // COLOR_FG_WHITE
             default: return new Color(255, 165, 0); // orange for unknown
         }
     }
