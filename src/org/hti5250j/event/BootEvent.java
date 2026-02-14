@@ -27,7 +27,7 @@ public class BootEvent extends EventObject {
      * Initializes boot options and message to empty strings.
      *
      * @param source The event source (must not be null per EventObject contract)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public BootEvent(Object source) {
         this(source, "", "");
@@ -39,7 +39,7 @@ public class BootEvent extends EventObject {
      *
      * @param source The event source (must not be null)
      * @param bootOptions Session boot options (may be null, normalized to empty)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public BootEvent(Object source, String bootOptions) {
         this(source, bootOptions, "");
@@ -55,13 +55,10 @@ public class BootEvent extends EventObject {
      * @param source The event source (must not be null per EventObject contract)
      * @param bootOptions Session boot options (may be null, converted to empty string)
      * @param message Bootstrap message (may be null, converted to empty string)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public BootEvent(Object source, String bootOptions, String message) {
-        super(source);
-        if (source == null) {
-            throw new NullPointerException("Event source cannot be null");
-        }
+        super(source); // EventObject validates source is non-null
         // Normalize null values to empty strings for consistent access patterns
         this.bootOptions = bootOptions != null ? bootOptions : "";
         this.message = message != null ? message : "";

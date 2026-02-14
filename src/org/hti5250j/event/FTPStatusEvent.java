@@ -32,7 +32,7 @@ public class FTPStatusEvent extends EventObject {
      * Message type defaults to OK (0).
      *
      * @param obj The source object (required)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public FTPStatusEvent(Object obj) {
         this(obj, null, 0, 0, OK);
@@ -44,7 +44,7 @@ public class FTPStatusEvent extends EventObject {
      *
      * @param obj The source object (required)
      * @param s The status message (may be null)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public FTPStatusEvent(Object obj, String s) {
         this(obj, s, 0, 0, OK);
@@ -57,7 +57,7 @@ public class FTPStatusEvent extends EventObject {
      * @param obj The source object (required)
      * @param s The status message (may be null)
      * @param type The message type (OK, ERROR, ERROR_NULLS_ALLOWED)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public FTPStatusEvent(Object obj, String s, int type) {
         this(obj, s, 0, 0, type);
@@ -71,7 +71,7 @@ public class FTPStatusEvent extends EventObject {
      * @param fileLength Total file length in bytes
      * @param currentRecord Current record being processed
      * @param messageType Type of message (OK, ERROR, ERROR_NULLS_ALLOWED)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public FTPStatusEvent(Object obj, String message, int fileLength, int currentRecord, int messageType) {
         super(obj);

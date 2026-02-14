@@ -25,7 +25,7 @@ public class SessionJumpEvent extends EventObject implements java.io.Serializabl
      * @param source the object on which the Event initially occurred
      * @param jumpDirection the direction to jump (typically JUMP_NEXT or JUMP_PREVIOUS)
      * @param message optional message associated with the jump event (may be null)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public SessionJumpEvent(Object source, int jumpDirection, String message) {
         super(source);

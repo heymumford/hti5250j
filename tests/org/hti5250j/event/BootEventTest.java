@@ -117,16 +117,14 @@ public class BootEventTest {
         /**
          * POSITIVE #3: Create BootEvent with source and message
          */
-        @Disabled("TDD RED phase")
         @Test
-        @DisplayName("BootEvent message can be set after construction")
+        @DisplayName("BootEvent message can be set via constructor")
         public void testBootEventMessageCanBeSet() {
             // ARRANGE
             String message = "Bootstrap initiated";
-            BootEvent event = new BootEvent(eventSource);
 
             // ACT
-            event.setMessage(message);
+            BootEvent event = new BootEvent(eventSource, "", message);
 
             // ASSERT
             assertEquals(message, event.getMessage(), "Message should be retrievable");
@@ -153,14 +151,12 @@ public class BootEventTest {
         /**
          * POSITIVE #5: Get message via getter
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("getMessage returns configured message")
         public void testGetMessageReturnsConfiguredMessage() {
             // ARRANGE
             String message = "Connected";
-            BootEvent event = new BootEvent(eventSource);
-            event.setMessage(message);
+            BootEvent event = new BootEvent(eventSource, "", message);
 
             // ACT
             String retrieved = event.getMessage();
@@ -221,7 +217,6 @@ public class BootEventTest {
         /**
          * POSITIVE #8: Listener receives event with both message and options
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("BootListener receives event with message and options")
         public void testBootListenerReceivesEventWithMessageAndOptions() {
@@ -233,8 +228,7 @@ public class BootEventTest {
             String options = "mode=5250";
 
             // ACT
-            BootEvent event = new BootEvent(eventSource, options);
-            event.setMessage(message);
+            BootEvent event = new BootEvent(eventSource, options, message);
             manager.fireBootEvent(event);
 
             // ASSERT
@@ -263,23 +257,25 @@ public class BootEventTest {
         }
 
         /**
-         * POSITIVE #10: Event data accessible after construction
+         * POSITIVE #10: Event data accessible after construction (immutable)
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("Event data remains accessible after construction")
         public void testEventDataAccessibleAfterConstruction() {
             // ARRANGE
-            String options1 = "initial_options";
-            BootEvent event = new BootEvent(eventSource, options1);
+            String options = "initial_options";
+            String message = "initial_message";
 
             // ACT
-            event.setMessage("new message");
-            event.setNewSessionOptions("modified_options");
+            BootEvent event = new BootEvent(eventSource, options, message);
 
-            // ASSERT
-            assertEquals("new message", event.getMessage(), "Modified message should be accessible");
-            assertEquals("modified_options", event.getNewSessionOptions(), "Modified options should be accessible");
+            // Deprecated setters are no-ops on immutable class
+            event.setMessage("ignored");
+            event.setNewSessionOptions("ignored");
+
+            // ASSERT - original values preserved (immutable)
+            assertEquals(message, event.getMessage(), "Message should remain unchanged (immutable)");
+            assertEquals(options, event.getNewSessionOptions(), "Options should remain unchanged (immutable)");
         }
 
         /**
@@ -312,18 +308,16 @@ public class BootEventTest {
         }
 
         /**
-         * POSITIVE #13: Null boot options allowed (current implementation)
+         * POSITIVE #13: Null boot options normalized to empty string
          */
-        @Disabled("TDD RED phase")
         @Test
-        @DisplayName("BootEvent allows null boot options")
+        @DisplayName("BootEvent normalizes null boot options to empty string")
         public void testBootEventAllowsNullBootOptions() {
-            // ARRANGE & ACT
-            BootEvent event = new BootEvent(eventSource);
-            event.setNewSessionOptions(null);
+            // ARRANGE & ACT - constructor normalizes null to ""
+            BootEvent event = new BootEvent(eventSource, null);
 
             // ASSERT
-            assertNull(event.getNewSessionOptions(), "Null options should be allowed (currently)");
+            assertEquals("", event.getNewSessionOptions(), "Null options should be normalized to empty string");
         }
 
         /**
@@ -343,7 +337,6 @@ public class BootEventTest {
         /**
          * POSITIVE #15: Bootstrap sequence complete
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("Complete bootstrap sequence: create event, notify listeners")
         public void testCompleteBootstrapSequence() {
@@ -355,16 +348,16 @@ public class BootEventTest {
             String hostName = "HOSTSERVER";
             String port = "23";
             String bootOptions = "host=" + hostName + " port=" + port;
+            String message = "Connecting to " + hostName;
 
-            // ACT: Simulate BootStrapper flow
-            BootEvent event = new BootEvent(manager, bootOptions);
-            event.setMessage("Connecting to " + hostName);
+            // ACT: Simulate BootStrapper flow (immutable - set all at construction)
+            BootEvent event = new BootEvent(manager, bootOptions, message);
             manager.fireBootEvent(event);
 
             // ASSERT
             assertEquals(1, listener.eventCount, "Listener should be notified");
             assertEquals(bootOptions, listener.lastEvent.getNewSessionOptions(), "Options preserved");
-            assertEquals("Connecting to " + hostName, listener.lastEvent.getMessage(), "Message preserved");
+            assertEquals(message, listener.lastEvent.getMessage(), "Message preserved");
         }
     }
 
@@ -388,53 +381,77 @@ public class BootEventTest {
         }
 
         /**
-         * ADVERSARIAL #2: Mutability - setting message after construction
+         * ADVERSARIAL #2: Immutability - setMessage is a no-op
          */
-        @Disabled("TDD RED phase")
         @Test
-        @DisplayName("Message can be modified after construction (current mutability)")
+        @DisplayName("setMessage is a no-op on immutable BootEvent")
         public void testMessageMutabilityAfterConstruction() {
             // ARRANGE
-            BootEvent event = new BootEvent(eventSource);
-            event.setMessage("original");
+            BootEvent event = new BootEvent(eventSource, "", "original");
 
-            // ACT
+            // ACT - deprecated setter is a no-op
             event.setMessage("modified");
 
-            // ASSERT
-            assertEquals("modified", event.getMessage(), "Message should be mutable");
+            // ASSERT - original value preserved
+            assertEquals("original", event.getMessage(), "Message should be immutable (setter is no-op)");
         }
 
         /**
-         * ADVERSARIAL #3: Mutability - setting boot options
+         * ADVERSARIAL #3: Immutability - setNewSessionOptions is a no-op
          */
-        @Disabled("TDD RED phase")
         @Test
-        @DisplayName("Boot options can be modified after construction (current mutability)")
+        @DisplayName("setNewSessionOptions is a no-op on immutable BootEvent")
         public void testBootOptionsMutabilityAfterConstruction() {
             // ARRANGE
             BootEvent event = new BootEvent(eventSource, "original_options");
 
-            // ACT
+            // ACT - deprecated setter is a no-op
             event.setNewSessionOptions("modified_options");
 
-            // ASSERT
-            assertEquals("modified_options", event.getNewSessionOptions(), "Options should be mutable");
+            // ASSERT - original value preserved
+            assertEquals("original_options", event.getNewSessionOptions(), "Options should be immutable (setter is no-op)");
         }
 
         /**
-         * ADVERSARIAL #4: Events with same data are not equal (current implementation)
+         * ADVERSARIAL #4: Events with same data are equal (value-based equality)
          */
-        @Disabled("TDD RED phase")
         @Test
-        @DisplayName("Two events with same data are not equal (reference equality)")
+        @DisplayName("Two events with same data are equal (value-based equality)")
         public void testEventReferenceEquality() {
             // ARRANGE
             BootEvent event1 = new BootEvent(eventSource, "same_options");
             BootEvent event2 = new BootEvent(eventSource, "same_options");
 
+            // ACT & ASSERT - BootEvent has value-based equals()
+            assertEquals(event1, event2, "Events with same source and options should be equal");
+        }
+
+        /**
+         * ADVERSARIAL #4b: Different bootOptions makes events unequal
+         */
+        @Test
+        @DisplayName("Events with different bootOptions are not equal")
+        public void testEventInequalityDifferentOptions() {
+            // ARRANGE
+            BootEvent event1 = new BootEvent(eventSource, "options_a");
+            BootEvent event2 = new BootEvent(eventSource, "options_b");
+
             // ACT & ASSERT
-            assertNotEquals(event1, event2, "Different instances should not be equal (reference equality)");
+            assertNotEquals(event1, event2, "Events with different bootOptions should not be equal");
+        }
+
+        /**
+         * ADVERSARIAL #4c: Different message makes events unequal
+         */
+        @Test
+        @DisplayName("Events with different message are not equal")
+        public void testEventInequalityDifferentMessage() {
+            // ARRANGE
+            BootEvent event1 = new BootEvent(eventSource, "same", "message_a");
+            BootEvent event2 = new BootEvent(eventSource, "same", "message_b");
+
+            // ACT & ASSERT
+            assertNotEquals(event1, event2, "Events with different message should not be equal");
         }
 
         /**
@@ -456,16 +473,14 @@ public class BootEventTest {
         /**
          * ADVERSARIAL #6: Event with special characters in message
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("BootEvent handles special characters in message")
         public void testSpecialCharactersInMessage() {
             // ARRANGE
             String specialMessage = "Error: Connection failed! @ 192.168.1.1:23 (timeout)";
-            BootEvent event = new BootEvent(eventSource);
 
             // ACT
-            event.setMessage(specialMessage);
+            BootEvent event = new BootEvent(eventSource, "", specialMessage);
 
             // ASSERT
             assertEquals(specialMessage, event.getMessage(), "Special characters should be preserved");
@@ -516,7 +531,6 @@ public class BootEventTest {
         /**
          * ADVERSARIAL #9: Very long message string
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("BootEvent handles very long message string")
         public void testVeryLongMessageString() {
@@ -526,10 +540,9 @@ public class BootEventTest {
                 sb.append("This is line ").append(i).append(" of the bootstrap log.\n");
             }
             String longMessage = sb.toString();
-            BootEvent event = new BootEvent(eventSource);
 
             // ACT
-            event.setMessage(longMessage);
+            BootEvent event = new BootEvent(eventSource, "", longMessage);
 
             // ASSERT
             assertEquals(longMessage, event.getMessage(), "Long message should be preserved");
@@ -608,7 +621,6 @@ public class BootEventTest {
         /**
          * Verify Record canonical constructor
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("Record: canonical constructor validation")
         public void testRecordCanonicalConstructor() {
@@ -618,7 +630,7 @@ public class BootEventTest {
             // ASSERT
             assertEquals(eventSource, event.source(), "Canonical constructor should set source");
             assertEquals("test_options", event.bootOptions(), "Canonical constructor should set bootOptions");
-            assertEquals("message", event.message(), "Canonical constructor should set message");
+            assertEquals("test_message", event.message(), "Canonical constructor should set message");
         }
     }
 
@@ -633,13 +645,12 @@ public class BootEventTest {
         /**
          * Verify compact constructor validation
          */
-        @Disabled("TDD RED phase")
         @Test
         @DisplayName("Record: compact constructor validates non-null source")
         public void testRecordCompactConstructorValidatesSource() {
-            assertThrows(NullPointerException.class, () -> {
+            assertThrows(IllegalArgumentException.class, () -> {
                 new BootEvent(null, "options", "message");
-            }, "Compact constructor should validate source");
+            }, "Constructor should reject null source per EventObject contract");
         }
 
         /**

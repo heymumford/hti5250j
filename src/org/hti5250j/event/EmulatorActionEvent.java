@@ -43,7 +43,7 @@ public final class EmulatorActionEvent extends EventObject {
      * Constructs an EmulatorActionEvent with source only.
      *
      * @param source the object on which the event initially occurred (typically a SessionPanel)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public EmulatorActionEvent(Object source) {
         this(source, null, 0);
@@ -54,7 +54,7 @@ public final class EmulatorActionEvent extends EventObject {
      *
      * @param source the object on which the event initially occurred (typically a SessionPanel)
      * @param message optional message associated with the event (may be null)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public EmulatorActionEvent(Object source, String message) {
         this(source, message, 0);
@@ -67,7 +67,7 @@ public final class EmulatorActionEvent extends EventObject {
      * @param source the object on which the event initially occurred (typically a SessionPanel)
      * @param message optional message associated with the event (may be null)
      * @param action the action code (e.g., CLOSE_SESSION, START_NEW_SESSION)
-     * @throws NullPointerException if source is null (from EventObject)
+     * @throws IllegalArgumentException if source is null (from EventObject)
      */
     public EmulatorActionEvent(Object source, String message, int action) {
         super(source);

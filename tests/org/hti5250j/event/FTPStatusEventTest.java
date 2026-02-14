@@ -187,14 +187,12 @@ public class FTPStatusEventTest {
      * POSITIVE #6: getFileLength() returns stored file length
      * Verifies file length is properly tracked
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: getFileLength() returns stored file length")
     public void testGetFileLengthReturnsStoredValue() {
-        // ARRANGE: Create event and set file length
-        FTPStatusEvent event = new FTPStatusEvent(testSource, "Transfer");
+        // ARRANGE: Create event with file length via canonical constructor
         int testLength = 1024;
-        event.setFileLength(testLength);
+        FTPStatusEvent event = new FTPStatusEvent(testSource, "Transfer", testLength, 0, FTPStatusEvent.OK);
 
         // ACT: Get file length
         int result = event.getFileLength();
@@ -207,14 +205,12 @@ public class FTPStatusEventTest {
      * POSITIVE #7: getCurrentRecord() returns stored record number
      * Verifies current record tracking works
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: getCurrentRecord() returns stored record number")
     public void testGetCurrentRecordReturnsStoredValue() {
-        // ARRANGE: Create event and set current record
-        FTPStatusEvent event = new FTPStatusEvent(testSource, "Transfer");
+        // ARRANGE: Create event with current record via canonical constructor
         int testRecord = 42;
-        event.setCurrentRecord(testRecord);
+        FTPStatusEvent event = new FTPStatusEvent(testSource, "Transfer", 0, testRecord, FTPStatusEvent.OK);
 
         // ACT: Get current record
         int result = event.getCurrentRecord();
@@ -245,18 +241,12 @@ public class FTPStatusEventTest {
      * POSITIVE #9: Multiple status updates preserve state
      * Verifies that independent FTPStatusEvent instances maintain state
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: Multiple status updates maintain independent state")
     public void testMultipleStatusUpdatesPreserveState() {
-        // ARRANGE: Create multiple events
-        FTPStatusEvent event1 = new FTPStatusEvent(testSource, "Message1", 0);
-        event1.setFileLength(100);
-        event1.setCurrentRecord(10);
-
-        FTPStatusEvent event2 = new FTPStatusEvent(testSource, "Message2", 1);
-        event2.setFileLength(200);
-        event2.setCurrentRecord(20);
+        // ARRANGE: Create multiple events with canonical constructors
+        FTPStatusEvent event1 = new FTPStatusEvent(testSource, "Message1", 100, 10, FTPStatusEvent.OK);
+        FTPStatusEvent event2 = new FTPStatusEvent(testSource, "Message2", 200, 20, FTPStatusEvent.ERROR);
 
         // ACT & ASSERT: Verify each event maintains its own state
         assertEquals("Message1", event1.getMessage(), "Event1 message should be independent");
@@ -291,14 +281,13 @@ public class FTPStatusEventTest {
      * ADVERSARIAL #1: Null source throws exception
      * FTPStatusEvent extends EventObject which requires non-null source
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: Null source throws exception")
     public void testNullSourceThrowsException() {
-        // ACT & ASSERT: Should throw exception for null source
-        assertThrows(NullPointerException.class, () -> {
+        // ACT & ASSERT: EventObject contract throws IllegalArgumentException for null source
+        assertThrows(IllegalArgumentException.class, () -> {
             new FTPStatusEvent(null);
-        }, "Null source should throw NullPointerException");
+        }, "Null source should throw IllegalArgumentException per EventObject contract");
     }
 
     /**
@@ -321,15 +310,11 @@ public class FTPStatusEventTest {
      * File length is an int field, negative values are technically allowed
      * but should be documented as invalid
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: Negative file length values are stored (validation needed)")
     public void testNegativeFileLengthStorage() {
-        // ARRANGE: Create event
-        FTPStatusEvent event = new FTPStatusEvent(testSource, "Test");
-
-        // ACT: Set negative file length (should store but may need validation)
-        event.setFileLength(-1);
+        // ARRANGE & ACT: Create event with negative file length via canonical constructor
+        FTPStatusEvent event = new FTPStatusEvent(testSource, "Test", -1, 0, FTPStatusEvent.OK);
 
         // ASSERT: Value is stored (validation would be done elsewhere)
         assertEquals(-1, event.getFileLength(), "Negative file length should be stored (validation in converter)");
@@ -339,15 +324,11 @@ public class FTPStatusEventTest {
      * ADVERSARIAL #4: Negative record number is stored
      * Record number is an int field, negative values are technically allowed
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: Negative record number values are stored (validation needed)")
     public void testNegativeRecordNumberStorage() {
-        // ARRANGE: Create event
-        FTPStatusEvent event = new FTPStatusEvent(testSource, "Test");
-
-        // ACT: Set negative record number
-        event.setCurrentRecord(-1);
+        // ARRANGE & ACT: Create event with negative record via canonical constructor
+        FTPStatusEvent event = new FTPStatusEvent(testSource, "Test", 0, -1, FTPStatusEvent.OK);
 
         // ASSERT: Value is stored (validation would be done elsewhere)
         assertEquals(-1, event.getCurrentRecord(), "Negative record should be stored (validation in converter)");
@@ -357,15 +338,11 @@ public class FTPStatusEventTest {
      * ADVERSARIAL #5: File length with maximum integer value
      * Tests boundary condition with Integer.MAX_VALUE
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: File length handles Integer.MAX_VALUE")
     public void testMaxIntegerFileLength() {
-        // ARRANGE: Create event
-        FTPStatusEvent event = new FTPStatusEvent(testSource, "Max test");
-
-        // ACT: Set file length to max int
-        event.setFileLength(Integer.MAX_VALUE);
+        // ARRANGE & ACT: Create event with max file length via canonical constructor
+        FTPStatusEvent event = new FTPStatusEvent(testSource, "Max test", Integer.MAX_VALUE, 0, FTPStatusEvent.OK);
 
         // ASSERT: Max value handled correctly
         assertEquals(Integer.MAX_VALUE, event.getFileLength(), "Should handle Integer.MAX_VALUE");
@@ -375,15 +352,11 @@ public class FTPStatusEventTest {
      * ADVERSARIAL #6: Record number with maximum integer value
      * Tests boundary condition with Integer.MAX_VALUE
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: Record number handles Integer.MAX_VALUE")
     public void testMaxIntegerRecordNumber() {
-        // ARRANGE: Create event
-        FTPStatusEvent event = new FTPStatusEvent(testSource, "Max test");
-
-        // ACT: Set record number to max int
-        event.setCurrentRecord(Integer.MAX_VALUE);
+        // ARRANGE & ACT: Create event with max record via canonical constructor
+        FTPStatusEvent event = new FTPStatusEvent(testSource, "Max test", 0, Integer.MAX_VALUE, FTPStatusEvent.OK);
 
         // ASSERT: Max value handled correctly
         assertEquals(Integer.MAX_VALUE, event.getCurrentRecord(), "Should handle Integer.MAX_VALUE");
@@ -458,18 +431,13 @@ public class FTPStatusEventTest {
      * ADVERSARIAL #10: Status event with maximum values works correctly
      * Tests all fields with maximum valid values
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: Status event handles max values in all fields")
     public void testStatusEventWithMaximumValues() {
-        // ARRANGE: Create event with max values
+        // ARRANGE & ACT: Create event with max values via canonical constructor
         String maxMessage = "X".repeat(1000); // Long message
         int maxType = 2; // ERROR_NULLS_ALLOWED
-        FTPStatusEvent event = new FTPStatusEvent(testSource, maxMessage, maxType);
-
-        // ACT: Set numeric maximums
-        event.setFileLength(Integer.MAX_VALUE);
-        event.setCurrentRecord(Integer.MAX_VALUE);
+        FTPStatusEvent event = new FTPStatusEvent(testSource, maxMessage, Integer.MAX_VALUE, Integer.MAX_VALUE, maxType);
 
         // ASSERT: All max values stored correctly
         assertEquals(maxMessage, event.getMessage(), "Long message should be stored");
@@ -505,14 +473,11 @@ public class FTPStatusEventTest {
     /**
      * Test FTPStatusEvent propagation through listener hierarchy
      */
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED: Status event propagates correctly through listeners")
     public void testStatusEventPropagation() {
-        // ARRANGE: Create event with all fields set
-        FTPStatusEvent event = new FTPStatusEvent(testSource, "Propagation test", 0);
-        event.setFileLength(512);
-        event.setCurrentRecord(25);
+        // ARRANGE: Create event with all fields set via canonical constructor
+        FTPStatusEvent event = new FTPStatusEvent(testSource, "Propagation test", 512, 25, FTPStatusEvent.OK);
 
         // ACT: Propagate through listener
         captureListener.statusReceived(event);
@@ -520,7 +485,7 @@ public class FTPStatusEventTest {
         // ASSERT: All event data propagates
         FTPStatusEvent received = capturedEvents.get(0);
         assertEquals("Propagation test", received.getMessage(), "Message propagates");
-        assertEquals(0, received.getMessageType(), "Type propagates");
+        assertEquals(FTPStatusEvent.OK, received.getMessageType(), "Type propagates");
         assertEquals(512, received.getFileLength(), "File length propagates");
         assertEquals(25, received.getCurrentRecord(), "Record number propagates");
     }

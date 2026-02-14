@@ -26,7 +26,7 @@ public class SessionChangeEvent extends EventObject implements java.io.Serializa
      * This constructor creates an event with default values for message and state.
      *
      * @param source the object on which the Event initially occurred
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public SessionChangeEvent(Object source) {
         this(source, null, 0);
@@ -37,7 +37,7 @@ public class SessionChangeEvent extends EventObject implements java.io.Serializa
      *
      * @param source the object on which the Event initially occurred
      * @param message the message describing the change (may be null)
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public SessionChangeEvent(Object source, String message) {
         this(source, message, 0);
@@ -53,7 +53,7 @@ public class SessionChangeEvent extends EventObject implements java.io.Serializa
      * @param source the object on which the Event initially occurred
      * @param message the message describing the change (may be null)
      * @param state the session state value
-     * @throws NullPointerException if source is null
+     * @throws IllegalArgumentException if source is null
      */
     public SessionChangeEvent(Object source, String message, int state) {
         super(source);
