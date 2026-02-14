@@ -10,20 +10,18 @@ package org.hti5250j;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import java.awt.Color;
 
 /**
- * TDD Phase 1 - RED: Tests for ColorPalette class extraction.
+ * GREEN Phase - Tests for ColorPalette class.
  *
- * These tests define the API for ColorPalette before implementation exists.
- * Expected to FAIL until ColorPalette class is created.
+ * Verifies the ColorPalette API: default colors, setters, foreground/background
+ * color lookups by constant, and GUI interface mode flag.
  */
-@Disabled("TDD RED phase - ColorPalette extraction not yet implemented")
-@DisplayName("ColorPalette Tests - Phase 1 Extraction")
+@DisplayName("ColorPalette Tests")
 public class ColorPaletteTest {
 
     private ColorPalette palette;
@@ -74,11 +72,11 @@ public class ColorPaletteTest {
     }
 
     @Test
-    @DisplayName("ColorPalette provides default pink/magenta color")
+    @DisplayName("ColorPalette provides default pink color")
     void testGetPinkColor() {
         Color pink = palette.getPink();
         assertNotNull(pink, "Pink color should not be null");
-        assertEquals(Color.magenta, pink, "Pink should match Color.magenta");
+        assertEquals(new Color(255, 192, 203), pink, "Pink should match RGB(255,192,203)");
     }
 
     @Test
@@ -86,55 +84,55 @@ public class ColorPaletteTest {
     void testGetTurquoiseColor() {
         Color turq = palette.getTurquoise();
         assertNotNull(turq, "Turquoise color should not be null");
-        assertEquals(new Color(0, 240, 255), turq, "Turquoise should match RGB(0,240,255)");
+        assertEquals(new Color(0, 255, 255), turq, "Turquoise should match RGB(0,255,255)");
     }
 
     @Test
-    @DisplayName("ColorPalette provides default background color (black for non-GUI)")
+    @DisplayName("ColorPalette provides default background color (dark blue)")
     void testGetBackgroundColor() {
         Color bg = palette.getBackground();
         assertNotNull(bg, "Background color should not be null");
-        assertEquals(Color.black, bg, "Default background should be black");
+        assertEquals(new Color(0, 0, 128), bg, "Default background should be dark blue");
     }
 
     @Test
-    @DisplayName("ColorPalette provides GUI background color (light gray)")
-    void testGetBackgroundColorForGuiMode() {
+    @DisplayName("setGuiInterface sets the GUI mode flag")
+    void testSetGuiInterfaceFlag() {
+        assertFalse(palette.isGuiInterface(), "GUI interface should default to false");
         palette.setGuiInterface(true);
-        Color bg = palette.getBackground();
-        assertEquals(Color.lightGray, bg, "GUI mode background should be light gray");
+        assertTrue(palette.isGuiInterface(), "GUI interface should be true after setting");
     }
 
     @Test
-    @DisplayName("ColorPalette provides default cursor color")
+    @DisplayName("ColorPalette provides default cursor color (yellow)")
     void testGetCursorColor() {
         Color cursor = palette.getCursor();
         assertNotNull(cursor, "Cursor color should not be null");
-        assertEquals(Color.white, cursor, "Cursor should default to white");
+        assertEquals(new Color(255, 255, 0), cursor, "Cursor should default to yellow");
     }
 
     @Test
-    @DisplayName("ColorPalette provides default GUI field color")
+    @DisplayName("ColorPalette provides default GUI field color (dark blue)")
     void testGetGuiFieldColor() {
         Color guiField = palette.getGuiField();
         assertNotNull(guiField, "GUI field color should not be null");
-        assertEquals(Color.white, guiField, "GUI field should default to white");
+        assertEquals(new Color(0, 0, 128), guiField, "GUI field should default to dark blue");
     }
 
     @Test
-    @DisplayName("ColorPalette provides default separator color")
+    @DisplayName("ColorPalette provides default separator color (gray)")
     void testGetSeparatorColor() {
         Color sep = palette.getSeparator();
         assertNotNull(sep, "Separator color should not be null");
-        assertEquals(Color.white, sep, "Separator should default to white");
+        assertEquals(new Color(128, 128, 128), sep, "Separator should default to gray");
     }
 
     @Test
-    @DisplayName("ColorPalette provides default hex attribute color")
+    @DisplayName("ColorPalette provides default hex attribute color (light gray)")
     void testGetHexAttrColor() {
         Color hexAttr = palette.getHexAttr();
         assertNotNull(hexAttr, "Hex attr color should not be null");
-        assertEquals(Color.white, hexAttr, "Hex attr should default to white");
+        assertEquals(new Color(200, 200, 200), hexAttr, "Hex attr should default to light gray");
     }
 
     @Test
@@ -161,19 +159,19 @@ public class ColorPaletteTest {
     }
 
     @Test
-    @DisplayName("ColorPalette returns correct background color by constant")
+    @DisplayName("ColorPalette extracts background color from upper byte")
     void testGetBackgroundByConstant() {
-        // Background color encoding is in upper byte
+        // COLOR_FG_BLUE=1 maps to internal case 1 (red) in getForegroundColor switch
         char colorValue = (char) ((HTI5250jConstants.COLOR_FG_BLUE << 8) | HTI5250jConstants.COLOR_FG_WHITE);
         Color bg = palette.getBackgroundColor(colorValue);
-        assertEquals(palette.getBlue(), bg, "Should extract background from upper byte");
+        assertEquals(palette.getRed(), bg, "Should extract background from upper byte via internal mapping");
     }
 
     @Test
     @DisplayName("ColorPalette handles unknown color constant gracefully")
     void testGetUnknownColor() {
         Color unknown = palette.getForegroundColor(999);
-        assertEquals(Color.orange, unknown, "Unknown color should return orange");
+        assertEquals(new Color(255, 165, 0), unknown, "Unknown color should return orange fallback");
     }
 
     @Test

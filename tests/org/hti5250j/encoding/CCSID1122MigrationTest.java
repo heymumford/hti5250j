@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * These tests verify that CCSID1122 maintains backward compatibility
  * while migrating from static array to factory pattern.
  */
-@Disabled("TDD RED phase - CCSID1122 migration not yet complete")
+@Disabled("Requires CCSID 1122 (Estonia) mapping in ccsid-mappings.json — data not yet sourced")
 @DisplayName("CCSID1122 Migration Compatibility Tests")
 class CCSID1122MigrationTest {
 
