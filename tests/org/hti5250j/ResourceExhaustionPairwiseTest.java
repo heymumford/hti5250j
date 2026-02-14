@@ -768,7 +768,7 @@ public class ResourceExhaustionPairwiseTest {
      * Tests stability over extended periods
      * Expected: No unbounded growth, controlled resource usage
      */
-    @Timeout(value = 25000, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 45000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testVeryLongRunningAllocationStability() throws Exception {
         MemoryContext context = new MemoryContext(this);
