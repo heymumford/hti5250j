@@ -78,8 +78,18 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             scheduler.shutdownNow();
         }
 
-        // Clear existing state
-        idleQueue.clear();
+        // Disconnect and clear existing sessions before reconfiguration
+        if (!idleQueue.isEmpty() || !borrowedSessions.isEmpty()) {
+            LOG.log(Level.WARNING, "Reconfiguring pool with {0} idle and {1} borrowed sessions; all will be disconnected",
+                    new Object[]{idleQueue.size(), borrowedSessions.size()});
+        }
+        HeadlessSession existing;
+        while ((existing = idleQueue.poll()) != null) {
+            disconnectQuietly(existing);
+        }
+        for (HeadlessSession borrowed : borrowedSessions.keySet()) {
+            disconnectQuietly(borrowed);
+        }
         borrowedSessions.clear();
         allSessions.clear();
         lastReturnedTime.clear();
@@ -328,11 +338,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
             if (max > 0 && allSessions.size() >= max) {
                 return null; // at capacity
             }
-            String name = "pool-session-" + sessionCounter.incrementAndGet();
-            HeadlessSession session = config.getSessionFactory()
-                    .createSession(name, config.getConfigResource(), config.getConnectionProps());
-            allSessions.put(session, Instant.now());
-            return session;
+            return createSessionUnderLock();
         } finally {
             poolLock.unlock();
         }
@@ -344,21 +350,31 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     private HeadlessSession createNewSession() {
         poolLock.lock();
         try {
-            String name = "pool-session-" + sessionCounter.incrementAndGet();
-            HeadlessSession session = config.getSessionFactory()
-                    .createSession(name, config.getConfigResource(), config.getConnectionProps());
-            allSessions.put(session, Instant.now());
-            return session;
+            return createSessionUnderLock();
         } finally {
             poolLock.unlock();
         }
+    }
+
+    /** Must be called while holding poolLock. */
+    private HeadlessSession createSessionUnderLock() {
+        String name = "pool-session-" + sessionCounter.incrementAndGet();
+        HeadlessSession session = config.getSessionFactory()
+                .createSession(name, config.getConfigResource(), config.getConnectionProps());
+        if (session == null) {
+            throw new IllegalStateException(
+                    "SessionFactory.createSession() returned null for '" + name + "'");
+        }
+        allSessions.put(session, Instant.now());
+        return session;
     }
 
     private boolean isSessionValid(HeadlessSession session) {
         try {
             return session.isConnected();
         } catch (Exception e) {
-            LOG.log(Level.FINE, "Session validation failed", e);
+            LOG.log(Level.WARNING, "Session validation failed for ''{0}''; treating as invalid",
+                    new Object[]{session.getSessionName(), e});
             return false;
         }
     }
@@ -367,7 +383,8 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         try {
             session.disconnect();
         } catch (Exception e) {
-            LOG.log(Level.FINE, "Error disconnecting session", e);
+            LOG.log(Level.WARNING, "Failed to disconnect session ''{0}''; resource may not be released",
+                    new Object[]{session.getSessionName(), e});
         }
     }
 
@@ -376,55 +393,67 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     // ========================================================================
 
     private void evictIdleSessions() {
-        if (shutdownFlag.get()) return;
+        try {
+            if (shutdownFlag.get()) return;
 
-        long maxIdleMs = config.getMaxIdleTime().toMillis();
-        Instant cutoff = Instant.now().minusMillis(maxIdleMs);
+            long maxIdleMs = config.getMaxIdleTime().toMillis();
+            Instant cutoff = Instant.now().minusMillis(maxIdleMs);
 
-        for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
-            Instant returnedAt = lastReturnedTime.get(session);
-            if (returnedAt != null && returnedAt.isBefore(cutoff)) {
-                if (idleQueue.remove(session)) {
-                    allSessions.remove(session);
-                    lastReturnedTime.remove(session);
-                    disconnectQuietly(session);
-                    evictionCount.incrementAndGet();
+            for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
+                Instant returnedAt = lastReturnedTime.get(session);
+                if (returnedAt != null && returnedAt.isBefore(cutoff)) {
+                    if (idleQueue.remove(session)) {
+                        allSessions.remove(session);
+                        lastReturnedTime.remove(session);
+                        disconnectQuietly(session);
+                        evictionCount.incrementAndGet();
+                    }
                 }
             }
+        } catch (Throwable t) {
+            LOG.log(Level.SEVERE, "Uncaught exception in idle eviction task", t);
         }
     }
 
     private void evictAgedSessions() {
-        if (shutdownFlag.get()) return;
+        try {
+            if (shutdownFlag.get()) return;
 
-        long maxAgeMs = config.getMaxAge().toMillis();
-        Instant cutoff = Instant.now().minusMillis(maxAgeMs);
+            long maxAgeMs = config.getMaxAge().toMillis();
+            Instant cutoff = Instant.now().minusMillis(maxAgeMs);
 
-        for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
-            Instant created = allSessions.get(session);
-            if (created != null && created.isBefore(cutoff)) {
-                if (idleQueue.remove(session)) {
-                    allSessions.remove(session);
-                    lastReturnedTime.remove(session);
-                    disconnectQuietly(session);
-                    evictionCount.incrementAndGet();
+            for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
+                Instant created = allSessions.get(session);
+                if (created != null && created.isBefore(cutoff)) {
+                    if (idleQueue.remove(session)) {
+                        allSessions.remove(session);
+                        lastReturnedTime.remove(session);
+                        disconnectQuietly(session);
+                        evictionCount.incrementAndGet();
+                    }
                 }
             }
+        } catch (Throwable t) {
+            LOG.log(Level.SEVERE, "Uncaught exception in age eviction task", t);
         }
     }
 
     private void validateIdleSessions() {
-        if (shutdownFlag.get()) return;
+        try {
+            if (shutdownFlag.get()) return;
 
-        for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
-            if (!isSessionValid(session)) {
-                if (idleQueue.remove(session)) {
-                    allSessions.remove(session);
-                    lastReturnedTime.remove(session);
-                    disconnectQuietly(session);
-                    evictionCount.incrementAndGet();
+            for (HeadlessSession session : idleQueue.toArray(new HeadlessSession[0])) {
+                if (!isSessionValid(session)) {
+                    if (idleQueue.remove(session)) {
+                        allSessions.remove(session);
+                        lastReturnedTime.remove(session);
+                        disconnectQuietly(session);
+                        evictionCount.incrementAndGet();
+                    }
                 }
             }
+        } catch (Throwable t) {
+            LOG.log(Level.SEVERE, "Uncaught exception in periodic validation task", t);
         }
     }
 
