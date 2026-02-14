@@ -427,6 +427,34 @@ public class BootEventTest {
         }
 
         /**
+         * ADVERSARIAL #4b: Different bootOptions makes events unequal
+         */
+        @Test
+        @DisplayName("Events with different bootOptions are not equal")
+        public void testEventInequalityDifferentOptions() {
+            // ARRANGE
+            BootEvent event1 = new BootEvent(eventSource, "options_a");
+            BootEvent event2 = new BootEvent(eventSource, "options_b");
+
+            // ACT & ASSERT
+            assertNotEquals(event1, event2, "Events with different bootOptions should not be equal");
+        }
+
+        /**
+         * ADVERSARIAL #4c: Different message makes events unequal
+         */
+        @Test
+        @DisplayName("Events with different message are not equal")
+        public void testEventInequalityDifferentMessage() {
+            // ARRANGE
+            BootEvent event1 = new BootEvent(eventSource, "same", "message_a");
+            BootEvent event2 = new BootEvent(eventSource, "same", "message_b");
+
+            // ACT & ASSERT
+            assertNotEquals(event1, event2, "Events with different message should not be equal");
+        }
+
+        /**
          * ADVERSARIAL #5: Event with special characters in options
          */
         @Test
