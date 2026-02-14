@@ -38,9 +38,13 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Build, Test, and Analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Build and Test
         run: |
           chmod +x ./gradlew
-          ./gradlew test jacocoTestReport sonar --no-daemon --info
+          ./gradlew test jacocoTestReport --no-daemon
+
+      - name: SonarCloud Analysis
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --no-daemon --info
