@@ -4,6 +4,7 @@
 
 plugins {
     id 'java'
+    id 'maven-publish'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.0.27'
     id 'jacoco'
@@ -182,6 +183,38 @@ jmh {
 
     // Performance baseline thresholds
     // These are measured and stored, failures trigger SLA verification
+}
+
+// Publishing configuration for artifact distribution
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'tn5250j-headless'
+                description = 'TN5250J - Headless mode for terminal emulation'
+                url = 'https://github.com/heymumford/hti5250j'
+
+                scm {
+                    url = 'https://github.com/heymumford/hti5250j.git'
+                    connection = 'scm:git:git://github.com/heymumford/hti5250j.git'
+                    developerConnection = 'scm:git:git@github.com:heymumford/hti5250j.git'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/heymumford/hti5250j")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user") ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.key") ?: ""
+            }
+        }
+    }
 }
 
 // Performance baseline task (runs benchmarks and stores results)
