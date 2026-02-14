@@ -430,6 +430,9 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     }
 
     private void checkNotShutdown() throws PoolExhaustedException {
+        if (config == null) {
+            throw new IllegalStateException("Pool not configured — call configure() before borrowing");
+        }
         if (shutdownFlag.get()) {
             throw new PoolExhaustedException("Pool has been shut down");
         }

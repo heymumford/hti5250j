@@ -501,6 +501,104 @@ public class DefaultHeadlessSessionPoolTest {
     }
 
     @Test
+    void testBorrowBeforeConfigureThrows() {
+        DefaultHeadlessSessionPool unconfigured = new DefaultHeadlessSessionPool();
+        assertThrows(IllegalStateException.class, () -> unconfigured.borrowSession());
+    }
+
+    @Test
+    void testBuilderRejectsNullFactory() {
+        assertThrows(IllegalStateException.class, () ->
+                SessionPoolConfig.builder().build());
+    }
+
+    @Test
+    void testBuilderRejectsNegativeMaxSize() {
+        assertThrows(IllegalArgumentException.class, () ->
+                SessionPoolConfig.builder().sessionFactory(factory).maxSize(-1).build());
+    }
+
+    @Test
+    void testBuilderRejectsMinIdleGreaterThanMaxSize() {
+        assertThrows(IllegalArgumentException.class, () ->
+                SessionPoolConfig.builder().sessionFactory(factory).maxSize(5).minIdle(6).build());
+    }
+
+    @Test
+    void testValidateOnBorrowReplacesAllInvalidWithFresh() throws Exception {
+        pool.configure(baseConfig()
+                .maxSize(2)
+                .validationStrategy(SessionPoolConfig.ValidationStrategy.ON_BORROW)
+                .build());
+
+        // Borrow both, mark invalid, return both
+        HeadlessSession s1 = pool.borrowSession();
+        HeadlessSession s2 = pool.borrowSession();
+        ((StubSession) s1).setConnected(false);
+        ((StubSession) s2).setConnected(false);
+        pool.returnSession(s1);
+        pool.returnSession(s2);
+
+        // Pool should evict invalid sessions and create fresh replacements
+        HeadlessSession fresh = pool.borrowSession();
+        assertNotNull(fresh);
+        assertNotSame(s1, fresh);
+        assertNotSame(s2, fresh);
+        assertTrue(fresh.isConnected(), "Fresh session should be connected");
+        assertTrue(pool.getEvictionCount() >= 1, "Should have evicted at least one invalid session");
+    }
+
+    @Test
+    void testReturnNullIsNoOp() throws Exception {
+        pool.configure(baseConfig().maxSize(5).build());
+        HeadlessSession session = pool.borrowSession();
+
+        pool.returnSession(null); // should not throw or change state
+
+        assertEquals(1, pool.getActiveCount());
+        assertEquals(0, pool.getIdleCount());
+        assertEquals(1, pool.getPoolSize());
+
+        pool.returnSession(session);
+    }
+
+    @Test
+    void testEvictionCountMetricIncremented() throws Exception {
+        pool.configure(baseConfig()
+                .maxSize(5)
+                .evictionPolicy(SessionPoolConfig.EvictionPolicy.IDLE_TIME)
+                .maxIdleTime(Duration.ofMillis(500))
+                .build());
+
+        HeadlessSession session = pool.borrowSession();
+        pool.returnSession(session);
+
+        Thread.sleep(1200);
+
+        assertTrue(pool.getEvictionCount() >= 1,
+                "Eviction count should be at least 1 after idle eviction");
+    }
+
+    @Test
+    void testQueuedBorrowInterrupted() throws Exception {
+        pool.configure(baseConfig()
+                .maxSize(1)
+                .acquisitionMode(SessionPoolConfig.AcquisitionMode.QUEUED)
+                .build());
+
+        pool.borrowSession(); // exhaust pool
+
+        Thread borrowThread = Thread.ofVirtual().start(() -> {
+            assertThrows(InterruptedException.class, () -> pool.borrowSession());
+        });
+
+        Thread.sleep(100); // let the thread block
+        borrowThread.interrupt();
+        borrowThread.join(2000);
+        assertFalse(borrowThread.isAlive(), "Thread should have completed after interrupt");
+    }
+
+    @Test
     void testAutoCloseableShutdown() throws Exception {
         DefaultHeadlessSessionPool autoPool = new DefaultHeadlessSessionPool();
         autoPool.configure(baseConfig().maxSize(1).build());
