@@ -20,7 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.CharMappings;
 import org.hti5250j.encoding.ICodePage;
-import org.hti5250j.encoding.builtin.CCSID37;
+import org.hti5250j.encoding.CCSIDFactory;
+import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 
 /**
  * Testing the correctness of {@link CCSID37Ex} and comparing with existing implementation.
@@ -61,7 +62,7 @@ public class CCSID37Test {
      */
     @Test
     public void testNewConverter37() {
-        CCSID37 cp = new CCSID37();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("37");
         cp.init();
         assertNotNull(cp,"At least an ASCII Codepage should be available.");
 
@@ -79,7 +80,7 @@ public class CCSID37Test {
     @Test
     public void testBoth() {
         final ICodePage cp = CharMappings.getCodePage("37");
-        final CCSID37 cpex = new CCSID37();
+        final CodepageConverterAdapter cpex = CCSIDFactory.getConverter("37");
         cpex.init();
         assertNotNull(cpex,"At least an ASCII Codepage should be available.");
 
@@ -100,7 +101,7 @@ public class CCSID37Test {
      */
     @Test
     public void uni2ebcdic_withInvalidCodepoint_throwsConversionException() {
-        CCSID37 codec = new CCSID37();
+        CodepageConverterAdapter codec = CCSIDFactory.getConverter("37");
         codec.init();
         assertThatThrownBy(() -> codec.uni2ebcdic((char) 0xFFFF))
             .isInstanceOf(CharacterConversionException.class)
@@ -113,7 +114,7 @@ public class CCSID37Test {
      */
     @Test
     public void uni2ebcdic_withOutOfRangeCodepoint_throwsExceptionWithContext() {
-        CCSID37 codec = new CCSID37();
+        CodepageConverterAdapter codec = CCSIDFactory.getConverter("37");
         codec.init();
         assertThatThrownBy(() -> codec.uni2ebcdic((char) 0xDEAD))
             .isInstanceOf(CharacterConversionException.class)

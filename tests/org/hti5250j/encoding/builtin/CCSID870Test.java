@@ -21,7 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.CharacterConversionException;
 import org.hti5250j.encoding.CharMappings;
 import org.hti5250j.encoding.ICodePage;
-import org.hti5250j.encoding.builtin.CCSID870;
+import org.hti5250j.encoding.CCSIDFactory;
+import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 
 /**
  * Testing the correctness of {@link CCSID870} and comparing with existing implementation.
@@ -78,7 +79,7 @@ public class CCSID870Test {
      */
     @Test
     public void testNewConverter870() {
-        CCSID870 cp = new CCSID870();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("870");
         cp.init();
         assertNotNull(cp,"At least an ASCII Codepage should be available.");
 
@@ -108,7 +109,7 @@ public class CCSID870Test {
     @Test
     public void testBoth() {
         final ICodePage cp = CharMappings.getCodePage("870");
-        final CCSID870 cpex = new CCSID870();
+        final CodepageConverterAdapter cpex = CCSIDFactory.getConverter("870");
         cpex.init();
         assertNotNull(cpex,"At least an ASCII Codepage should be available.");
 
@@ -139,7 +140,7 @@ public class CCSID870Test {
      */
     @Test
     public void testSilentFailureOnConversion_CurrentBehavior() {
-        CCSID870 cp = new CCSID870();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("870");
         cp.init();
 
         // Test character that doesn't exist in codepage 870's reverse mapping
@@ -157,7 +158,7 @@ public class CCSID870Test {
      */
     @Test
     public void testExceptionOnOutOfBoundsConversion() {
-        CCSID870 cp = new CCSID870();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("870");
         cp.init();
 
         // Character that doesn't exist in reverse_codepage
@@ -174,7 +175,7 @@ public class CCSID870Test {
      */
     @Test
     public void testExceptionMessageContainsContext() {
-        CCSID870 cp = new CCSID870();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("870");
         cp.init();
 
         char unmappedChar = '\u0999'; // Hindi digit
@@ -196,7 +197,7 @@ public class CCSID870Test {
      */
     @Test
     public void testValidConversionsStillWork() {
-        CCSID870 cp = new CCSID870();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("870");
         cp.init();
 
         // Test valid ASCII character that should exist in codepage 870

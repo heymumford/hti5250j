@@ -18,7 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.CharMappings;
 import org.hti5250j.encoding.ICodePage;
-import org.hti5250j.encoding.builtin.CCSID500;
+import org.hti5250j.encoding.CCSIDFactory;
+import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 
 /**
  * Testing the correctness of {@link CCSID500Ex} and comparing with existing implementation.
@@ -59,7 +60,7 @@ public class CCSID500Test {
      */
     @Test
     public void testNewConverter500() {
-        CCSID500 cp = new CCSID500();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("500");
         cp.init();
         assertNotNull(cp,"At least an ASCII Codepage should be available.");
 
