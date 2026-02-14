@@ -287,25 +287,24 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     }
 
     private HeadlessSession finalizeBorrow(HeadlessSession session) throws PoolExhaustedException {
-        // Validate on borrow
-        if (config.getValidationStrategy() == SessionPoolConfig.ValidationStrategy.ON_BORROW) {
-            if (!isSessionValid(session)) {
-                allSessions.remove(session);
-                lastReturnedTime.remove(session);
-                disconnectQuietly(session);
-                evictionCount.incrementAndGet();
+        // Iterative validation-on-borrow: evict invalid sessions until a valid one is found
+        while (config.getValidationStrategy() == SessionPoolConfig.ValidationStrategy.ON_BORROW
+                && !isSessionValid(session)) {
+            allSessions.remove(session);
+            lastReturnedTime.remove(session);
+            disconnectQuietly(session);
+            evictionCount.incrementAndGet();
 
-                // Try to get or create a replacement
-                HeadlessSession replacement = idleQueue.poll();
-                if (replacement != null) {
-                    return finalizeBorrow(replacement);
-                }
-                replacement = tryCreateNewSession();
-                if (replacement != null) {
-                    return finalizeBorrow(replacement);
-                }
-                throw new PoolExhaustedException("No valid sessions available after validation failure");
+            // Try to get or create a replacement
+            session = idleQueue.poll();
+            if (session != null) {
+                continue;
             }
+            session = tryCreateNewSession();
+            if (session != null) {
+                continue;
+            }
+            throw new PoolExhaustedException("No valid sessions available after validation failure");
         }
 
         lastReturnedTime.remove(session); // no longer idle

@@ -75,8 +75,10 @@ public final class SessionPoolConfig {
         this.validationInterval = builder.validationInterval;
         this.acquisitionTimeout = builder.acquisitionTimeout;
         this.sessionFactory = builder.sessionFactory;
-        this.connectionProps = builder.connectionProps;
         this.configResource = builder.configResource;
+        // Defensive copy — Properties is mutable
+        this.connectionProps = new Properties();
+        this.connectionProps.putAll(builder.connectionProps);
     }
 
     public static Builder builder() {
@@ -93,7 +95,11 @@ public final class SessionPoolConfig {
     public Duration getValidationInterval() { return validationInterval; }
     public Duration getAcquisitionTimeout() { return acquisitionTimeout; }
     public HeadlessSessionFactory getSessionFactory() { return sessionFactory; }
-    public Properties getConnectionProps() { return connectionProps; }
+    public Properties getConnectionProps() {
+        Properties copy = new Properties();
+        copy.putAll(connectionProps);
+        return copy;
+    }
     public String getConfigResource() { return configResource; }
 
     public static final class Builder {
@@ -185,6 +191,24 @@ public final class SessionPoolConfig {
             }
             if (minIdle < 0 || (maxSize > 0 && minIdle > maxSize)) {
                 throw new IllegalArgumentException("minIdle must be >= 0 and <= maxSize");
+            }
+            if (acquisitionMode == AcquisitionMode.TIMEOUT_ON_FULL
+                    && !acquisitionTimeout.isPositive()) {
+                throw new IllegalArgumentException(
+                        "acquisitionTimeout must be positive for TIMEOUT_ON_FULL mode");
+            }
+            if (evictionPolicy == EvictionPolicy.IDLE_TIME && !maxIdleTime.isPositive()) {
+                throw new IllegalArgumentException(
+                        "maxIdleTime must be positive for IDLE_TIME eviction");
+            }
+            if (evictionPolicy == EvictionPolicy.MAX_AGE && !maxAge.isPositive()) {
+                throw new IllegalArgumentException(
+                        "maxAge must be positive for MAX_AGE eviction");
+            }
+            if (validationStrategy == ValidationStrategy.PERIODIC
+                    && !validationInterval.isPositive()) {
+                throw new IllegalArgumentException(
+                        "validationInterval must be positive for PERIODIC validation");
             }
             return new SessionPoolConfig(this);
         }
