@@ -11,7 +11,7 @@ plugins {
 }
 
 group = 'org.hti5250j'
-version = findProperty('version') ?: '0.12.0'
+version = findProperty('version') ?: '0.13.0'
 
 def runtimeLibs = fileTree(dir: 'lib/runtime', include: ['*.jar', '*.zip'])
 def devLibs = fileTree(dir: 'lib/development', include: ['*.jar', '*.zip'])
@@ -177,7 +177,7 @@ jmh {
     iterations = 10                     // Take 10 measurement iterations
     timeUnit = 'ms'                     // Results in milliseconds
     benchmarkMode = ['thrpt']           // Throughput: ops/time
-    include = ['.*Benchmark']           // Only run classes ending in 'Benchmark'
+    includes = ['.*Benchmark']          // Only run classes ending in 'Benchmark'
     threads = 4                         // Use 4 threads for throughput tests
 
     // Performance baseline thresholds
