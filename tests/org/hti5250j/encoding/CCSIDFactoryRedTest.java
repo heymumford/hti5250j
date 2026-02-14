@@ -5,42 +5,32 @@
 
 package org.hti5250j.encoding;
 
-import org.junit.jupiter.api.Disabled;
+import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * RED Phase Tests for CCSID Factory Pattern.
+ * GREEN Phase Tests for CCSID Factory Pattern.
  *
- * Tests verify that CCSIDFactory class does not exist yet.
- * These tests will FAIL until factory is implemented.
+ * Verifies that CCSIDFactory and ConfigurableCodepageConverter
+ * exist and produce valid converters for known CCSIDs.
  */
-@Disabled("TDD RED phase - factory not yet implemented")
-@DisplayName("CCSID Factory - RED Phase Tests (Expecting Failure)")
+@DisplayName("CCSID Factory - GREEN Phase Tests")
 class CCSIDFactoryRedTest {
 
     @Test
-    @DisplayName("RED: CCSIDFactory class does not exist yet")
-    void testFactoryClassDoesNotExist() {
-        try {
-            Class.forName("org.hti5250j.encoding.CCSIDFactory");
-            fail("CCSIDFactory should not exist yet in RED phase");
-        } catch (ClassNotFoundException e) {
-            // Expected - this is RED phase
-            assertTrue(true, "CCSIDFactory not found as expected in RED phase");
-        }
+    @DisplayName("GREEN: CCSIDFactory creates converter for known CCSID")
+    void testFactoryCreatesConverterForKnownCCSID() {
+        CodepageConverterAdapter converter = CCSIDFactory.getConverter("37");
+        assertNotNull(converter, "CCSIDFactory should produce converter for CCSID 37");
+        assertEquals("37", converter.getName());
     }
 
     @Test
-    @DisplayName("RED: ConfigurableCodepageConverter class does not exist yet")
-    void testConverterClassDoesNotExist() {
-        try {
-            Class.forName("org.hti5250j.encoding.ConfigurableCodepageConverter");
-            fail("ConfigurableCodepageConverter should not exist yet");
-        } catch (ClassNotFoundException e) {
-            // Expected - this is RED phase
-            assertTrue(true, "ConfigurableCodepageConverter not found as expected");
-        }
+    @DisplayName("GREEN: CCSIDFactory returns null for unknown CCSID")
+    void testFactoryReturnsNullForUnknownCCSID() {
+        CodepageConverterAdapter converter = CCSIDFactory.getConverter("99999");
+        assertNull(converter, "CCSIDFactory should return null for unknown CCSID");
     }
 }
