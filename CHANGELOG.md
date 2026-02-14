@@ -5,21 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — v1.1.0
+## [1.1.0] — 2026-02-14
 
 ### Added
 - **Session pooling**: `HeadlessSessionPool` interface and `DefaultHeadlessSessionPool` implementation with configurable acquisition modes (IMMEDIATE, QUEUED, TIMEOUT_ON_FULL), validation strategies (ON_BORROW, ON_RETURN, PERIODIC), and eviction policies (IDLE_TIME, MAX_AGE)
-- **SessionPoolConfig**: Builder-pattern configuration for pool size, timeouts, validation, and eviction
+- **SessionPoolConfig**: Builder-pattern configuration with null-safe builder (rejects null enums, properties, and config resource)
 - **PoolExhaustedException**: Checked exception for pool exhaustion scenarios
-- 22 unit tests (`DefaultHeadlessSessionPoolTest`) and 7 real-pool pairwise integration tests
+- 42 unit tests (`DefaultHeadlessSessionPoolTest`) and 7 real-pool pairwise integration tests
 
 ### Fixed
-- **CI reliability**: Reduced `testVeryLongRunningAllocationStability` workload from 20s to 10s (45s timeout now has 35s headroom on GitHub Actions runners)
-- **Semgrep SARIF**: Replaced `returntocorp/semgrep-action@v1` with direct `semgrep ci --sarif` invocation in both `ci.yml` and `semgrep.yml` to fix broken SARIF upload
+- **Thread safety**: Made `SessionPoolConfig` volatile for cross-thread visibility; added `config == null` guard in `returnSession()`
+- **Error handling**: All `LOG.log()` calls use 3-arg `(Level, String, Throwable)` overload to preserve stack traces; factory exceptions logged at SEVERE with pool state recovery
+- **Pool liveness**: `QUEUED` mode uses poll-loop with shutdown check instead of indefinite `take()`; scheduler termination awaited during reconfiguration
+- **CI reliability**: Reduced `testVeryLongRunningAllocationStability` to 5s/3 threads with 100MB threshold; fixed `@Timeout` vs latch-wait mismatch in 17 `ConcurrencyPairwiseTest` tests (5s timeout with 10s latch wait raised to 15s)
+- **Semgrep SARIF**: Replaced `returntocorp/semgrep-action@v1` with direct `semgrep ci --sarif` invocation in both `ci.yml` and `semgrep.yml`
 
 ---
 
-## [Unreleased] — v1.0.0 Release Candidate
+## [1.0.0] — 2026-02-14
 
 ### Added
 - **HeadlessSession API**: `DefaultHeadlessSession` wrapper with `sendKeys()`, `getScreenAsText()`, `captureScreenshot()`, `waitForKeyboardUnlock()`
