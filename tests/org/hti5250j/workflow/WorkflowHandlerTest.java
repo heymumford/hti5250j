@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.api.Disabled;
+
 import org.hti5250j.event.SessionListener;
 import org.hti5250j.framework.tn5250.Screen5250;
 import org.hti5250j.framework.tn5250.ScreenOIA;
@@ -153,11 +153,11 @@ class WorkflowHandlerTest {
     }
 
     /**
-     * Test handleCapture() saves screen content to file.
-     * DISABLED: Requires proper artifact directory setup in temp directory.
+     * Test handleCapture() saves screen content to file via text fallback.
+     * PNG generation requires Session5250 config; MockSessionAdapter triggers
+     * fallback to text-only capture in the artifact directory.
      */
     @Test
-    @Disabled("File system artifact creation needs temp directory isolation")
     void testHandleCaptureCreatesScreenshotFile(@TempDir File tempDir) throws Exception {
         Screen5250 mockScreen = mock(Screen5250.class);
         char[] screenContent = "Screen Line 1\n".toCharArray();
@@ -174,16 +174,9 @@ class WorkflowHandlerTest {
         WorkflowRunner runner = new WorkflowRunner(mockSession, loader, collector);
         runner.executeStep(step, Map.of());
 
-        // Verify artifact was created
-        File artifactDir = new File("artifacts");
-        File[] files = artifactDir.listFiles((dir, name) -> name.startsWith("test_screenshot"));
+        // Verify text artifact was created in tempDir (text fallback, not PNG)
+        File[] files = tempDir.listFiles((dir, name) -> name.startsWith("test_screenshot"));
         assertThat(files).isNotNull().isNotEmpty();
-
-        // Cleanup
-        for (File f : files) {
-            f.delete();
-        }
-        artifactDir.delete();
     }
 
     /**
@@ -216,10 +209,9 @@ class WorkflowHandlerTest {
 
     /**
      * Test handleFill() populates fields with HOME + Tab pattern.
-     * DISABLED: Requires Spy setup to verify mock interactions on both SessionInterface and ScreenProvider.
+     * Verifies on the Mockito mock Screen5250, not the session adapter.
      */
     @Test
-    @Disabled("Mock setup requires Spy on SessionInterface + ScreenProvider interface impl")
     void testHandleFillSendsHomeAndTabSequence(@TempDir File tempDir) throws Exception {
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
@@ -239,19 +231,18 @@ class WorkflowHandlerTest {
 
         // Verify HOME key sent first
         verify(mockScreen).sendKeys("[home]");
-        // Verify field values and tabs sent
+        // Verify both field values sent
         verify(mockScreen).sendKeys("12345");
-        verify(mockScreen).sendKeys("[tab]");
         verify(mockScreen).sendKeys("100.00");
-        verify(mockScreen).sendKeys("[tab]");
+        // Verify tab sent once per field (2 fields = 2 tabs)
+        verify(mockScreen, times(2)).sendKeys("[tab]");
     }
 
     /**
      * Test handleFill() substitutes parameters from data row.
-     * DISABLED: Requires Spy setup for mock verification.
+     * Verifies ${data.xxx} placeholders are replaced with actual values.
      */
     @Test
-    @Disabled("Mock setup requires Spy to verify SessionInterface + ScreenProvider")
     void testHandleFillSubstitutesParameters(@TempDir File tempDir) throws Exception {
         Screen5250 mockScreen = mock(Screen5250.class);
         ScreenOIA mockOIA = mock(ScreenOIA.class);
@@ -273,9 +264,9 @@ class WorkflowHandlerTest {
         // Verify substituted values sent
         verify(mockScreen).sendKeys("[home]");
         verify(mockScreen).sendKeys("ACC-123");
-        verify(mockScreen).sendKeys("[tab]");
         verify(mockScreen).sendKeys("500.00");
-        verify(mockScreen).sendKeys("[tab]");
+        // Verify tab sent once per field (2 fields = 2 tabs)
+        verify(mockScreen, times(2)).sendKeys("[tab]");
     }
 
     /**
