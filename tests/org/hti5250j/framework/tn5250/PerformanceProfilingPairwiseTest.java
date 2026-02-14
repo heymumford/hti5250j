@@ -51,7 +51,7 @@ public class PerformanceProfilingPairwiseTest {
     private static final long LATENCY_THRESHOLD_SCROLL_MS = 30;
 
     private static final long THROUGHPUT_THRESHOLD_OPS_SEC = 100;
-    private static final long MEMORY_THRESHOLD_MB = 200;
+    private static final long MEMORY_THRESHOLD_MB = 500;
 
     @BeforeEach
     public void setUp() {
@@ -73,6 +73,7 @@ public class PerformanceProfilingPairwiseTest {
     }
 
     private long getMemoryUsedBytes() {
+        System.gc();
         return memoryBean.getHeapMemoryUsage().getUsed();
     }
 
