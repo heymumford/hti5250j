@@ -339,7 +339,10 @@ public class SessionConfig {
     }
 
     public void setRectangleProperty(String key, Rectangle rect) {
-
+        if (rect.width < 0 || rect.height < 0) {
+            throw new IllegalArgumentException(
+                    "Rectangle dimensions must be non-negative, got width=" + rect.width + " height=" + rect.height);
+        }
         String rectStr = rect.x + "," +
                 rect.y + "," +
                 rect.width + "," +
@@ -369,11 +372,49 @@ public class SessionConfig {
     }
 
     public Object setProperty(String key, String value) {
+        validatePropertyValue(key, value);
         return sesProps.setProperty(key, value);
+    }
+
+    private void validatePropertyValue(String key, String value) {
+        if ("connection.port".equals(key)) {
+            try {
+                int port = Integer.parseInt(value);
+                if (port < 1 || port > 65535) {
+                    throw new IllegalArgumentException(
+                            "Port must be between 1 and 65535, got: " + port);
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                        "Port must be a valid integer, got: " + value);
+            }
+        } else if (CONFIG_KEYPAD_FONT_SIZE.equals(key)) {
+            try {
+                float size = Float.parseFloat(value);
+                if (size < 8.0f || size > 72.0f) {
+                    throw new IllegalArgumentException(
+                            "Font size must be between 8.0 and 72.0, got: " + size);
+                }
+            } catch (NumberFormatException e) {
+                // Allow non-numeric values through (handled by getFloatProperty)
+            }
+        }
     }
 
     public Object removeProperty(String key) {
         return sesProps.remove(key);
+    }
+
+    /**
+     * Validate cross-property configuration consistency.
+     *
+     * @throws IllegalStateException if configuration is inconsistent
+     */
+    public void validateConfiguration() {
+        if (isPropertyExists("connection.host") && !isPropertyExists("connection.port")) {
+            throw new IllegalStateException(
+                    "connection.port is required when connection.host is set");
+        }
     }
 
     /**
