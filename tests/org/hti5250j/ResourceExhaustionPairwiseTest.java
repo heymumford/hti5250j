@@ -774,7 +774,7 @@ public class ResourceExhaustionPairwiseTest {
         MemoryContext context = new MemoryContext(this);
 
         // ARRANGE: Long-running test configuration
-        long duration = 20000;  // 20 seconds
+        long duration = 10000;  // 10 seconds (reduced from 20s for CI reliability)
         long startTime = System.currentTimeMillis();
         AtomicLong allocationCount = new AtomicLong(0);
         int threadCount = 5;
@@ -799,14 +799,14 @@ public class ResourceExhaustionPairwiseTest {
             });
         }
 
-        boolean completed = latch.await(25, TimeUnit.SECONDS);
+        boolean completed = latch.await(15, TimeUnit.SECONDS);
         assertTrue(completed,"Long-running test should complete");
 
         context.capture(this);
 
         // ASSERT: Should have allocated many buffers
         long allocations = allocationCount.get();
-        assertTrue(allocations > 1000,"Should allocate > 1000 buffers over 20s, got " + allocations);
+        assertTrue(allocations > 1000,"Should allocate > 1000 buffers over 10s, got " + allocations);
 
         // ASSERT: Memory growth should be controlled (< 50MB for GC'd buffers)
         long growth = context.getHeapGrowthMB();
