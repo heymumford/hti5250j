@@ -11,13 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Session pooling**: `HeadlessSessionPool` interface and `DefaultHeadlessSessionPool` implementation with configurable acquisition modes (IMMEDIATE, QUEUED, TIMEOUT_ON_FULL), validation strategies (ON_BORROW, ON_RETURN, PERIODIC), and eviction policies (IDLE_TIME, MAX_AGE)
 - **SessionPoolConfig**: Builder-pattern configuration with null-safe builder (rejects null enums, properties, and config resource)
 - **PoolExhaustedException**: Checked exception for pool exhaustion scenarios
-- 42 unit tests (`DefaultHeadlessSessionPoolTest`) and 7 real-pool pairwise integration tests
+- 45 unit tests (`DefaultHeadlessSessionPoolTest`) and 7 real-pool pairwise integration tests
+- **TDD GREEN**: Enabled 20 previously @Disabled tests — 18 `ColorPaletteTest` (color defaults, setters, lookups), 2 `CCSIDFactoryRedTest` (factory creates converters)
 
 ### Fixed
-- **Thread safety**: Made `SessionPoolConfig` volatile for cross-thread visibility; added `config == null` guard in `returnSession()`
-- **Error handling**: All `LOG.log()` calls use 3-arg `(Level, String, Throwable)` overload to preserve stack traces; factory exceptions logged at SEVERE with pool state recovery
-- **Pool liveness**: `QUEUED` mode uses poll-loop with shutdown check instead of indefinite `take()`; scheduler termination awaited during reconfiguration
-- **CI reliability**: Reduced `testVeryLongRunningAllocationStability` to 5s/3 threads with 100MB threshold; fixed `@Timeout` vs latch-wait mismatch in 17 `ConcurrencyPairwiseTest` tests (5s timeout with 10s latch wait raised to 15s)
+- **Thread safety**: Made `SessionPoolConfig` volatile for cross-thread visibility; added `config == null` guard with warning log in `returnSession()`
+- **Error handling**: All `LOG.log()` calls use 3-arg `(Level, String, Throwable)` overload; background tasks use `catch(Exception)` + rethrow `Error`; factory exceptions logged at SEVERE with pool state recovery; pre-creation logs summary when incomplete
+- **Pool liveness**: `QUEUED` mode uses poll-loop with shutdown check; `shutdown()` and `configure()` both await scheduler termination (2s); `borrowedSessions` simplified to `Set` via `newKeySet()`
+- **CI reliability**: Reduced `testVeryLongRunningAllocationStability` to 5s/3 threads with extracted `STABILITY_MEMORY_THRESHOLD_MB` constant; fixed `@Timeout` vs latch-wait mismatch in 17 `ConcurrencyPairwiseTest` tests; fixed deadlock test race condition
 - **Semgrep SARIF**: Replaced `returntocorp/semgrep-action@v1` with direct `semgrep ci --sarif` invocation in both `ci.yml` and `semgrep.yml`
 
 ---
