@@ -46,26 +46,32 @@ public class UIDispatcherFactory {
     }
 
     /**
-     * Create a headless dispatcher (reflection to avoid loading headless classes).
+     * Create a headless dispatcher that executes tasks directly on the calling thread.
      */
     private static IUIDispatcher createHeadlessDispatcher() {
-        try {
-            Class<?> clazz = Class.forName("org.hti5250j.headless.HeadlessUIDispatcher");
-            return (IUIDispatcher) clazz.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create HeadlessUIDispatcher", e);
-        }
+        return new IUIDispatcher() {
+            @Override
+            public void invokeAndWait(Runnable task) throws Exception {
+                task.run();
+            }
+
+            @Override
+            public void invokeLater(Runnable task) {
+                task.run();
+            }
+        };
     }
 
     /**
      * Create a Swing dispatcher (reflection to avoid loading Swing classes in headless mode).
+     * Falls back to headless dispatcher if Swing classes are not available.
      */
     private static IUIDispatcher createSwingDispatcher() {
         try {
             Class<?> clazz = Class.forName("org.hti5250j.gui.adapters.SwingUIDispatcher");
             return (IUIDispatcher) clazz.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create SwingUIDispatcher", e);
+            return createHeadlessDispatcher();
         }
     }
 }

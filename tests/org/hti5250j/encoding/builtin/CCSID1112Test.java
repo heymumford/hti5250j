@@ -17,7 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.CharMappings;
 import org.hti5250j.encoding.ICodePage;
-import org.hti5250j.encoding.builtin.CCSID1112;
+import org.hti5250j.encoding.CCSIDFactory;
+import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 
 /**
  * Testing the correctness of {@link CCSID1112} and comparing with existing implementation.
@@ -51,7 +52,7 @@ public class CCSID1112Test {
      */
     @Test
     public void testNewConverter1112() {
-        CCSID1112 cp = new CCSID1112();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("1112");
         cp.init();
         assertNotNull(cp,"At least an ASCII Codepage should be available.");
 
@@ -70,7 +71,7 @@ public class CCSID1112Test {
     @Test
     public void testBoth() {
         final ICodePage cp = CharMappings.getCodePage("1112");
-        final CCSID1112 cpex = new CCSID1112();
+        final CodepageConverterAdapter cpex = CCSIDFactory.getConverter("1112");
         cpex.init();
         assertNotNull(cpex,"At least an ASCII Codepage should be available.");
 

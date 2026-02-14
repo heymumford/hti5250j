@@ -18,7 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.hti5250j.encoding.CharMappings;
 import org.hti5250j.encoding.ICodePage;
-import org.hti5250j.encoding.builtin.CCSID273;
+import org.hti5250j.encoding.CCSIDFactory;
+import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
 
 /**
  * Testing the correctness of {@link CCSID273Ex} and comparing with existing implementation.
@@ -59,7 +60,7 @@ public class CCSID273Test {
      */
     @Test
     public void testNewConverter273() {
-        CCSID273 cp = new CCSID273();
+        CodepageConverterAdapter cp = CCSIDFactory.getConverter("273");
         cp.init();
         assertNotNull(cp,"At least an ASCII Codepage should be available.");
 
@@ -77,7 +78,7 @@ public class CCSID273Test {
     @Test
     public void testBoth() {
         final ICodePage cp = CharMappings.getCodePage("273");
-        final CCSID273 cpex = new CCSID273();
+        final CodepageConverterAdapter cpex = CCSIDFactory.getConverter("273");
         cpex.init();
         assertNotNull(cpex,"At least an ASCII Codepage should be available.");
 

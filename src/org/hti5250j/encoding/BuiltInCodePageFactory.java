@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.hti5250j.encoding.builtin.*;
+import org.hti5250j.encoding.builtin.CCSID930;
+import org.hti5250j.encoding.builtin.CodepageConverterAdapter;
+import org.hti5250j.encoding.builtin.ICodepageConverter;
 import org.hti5250j.tools.logging.HTI5250jLogFactory;
 import org.hti5250j.tools.logging.HTI5250jLogger;
 
@@ -42,27 +44,7 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
     }
 
     private void register() {
-        clazzes.add(CCSID37.class);
-        clazzes.add(CCSID273.class);
-        clazzes.add(CCSID277.class);
-        clazzes.add(CCSID278.class);
-        clazzes.add(CCSID280.class);
-        clazzes.add(CCSID284.class);
-        clazzes.add(CCSID285.class);
-        clazzes.add(CCSID297.class);
-        clazzes.add(CCSID424.class);
-        clazzes.add(CCSID500.class);
-        clazzes.add(CCSID870.class);
-        clazzes.add(CCSID871.class);
-        clazzes.add(CCSID875.class);
-        clazzes.add(CCSID930.class);
-        clazzes.add(CCSID1025.class);
-        clazzes.add(CCSID1026.class);
-        clazzes.add(CCSID1112.class);
-        clazzes.add(CCSID1140.class);
-        clazzes.add(CCSID1141.class);
-        clazzes.add(CCSID1147.class);
-        clazzes.add(CCSID1148.class);
+        clazzes.add(CCSID930.class); // DBCS (double-byte) — not handled by JSON factory
     }
 
     /**
@@ -70,6 +52,9 @@ import org.hti5250j.tools.logging.HTI5250jLogger;
      */
     public String[] getAvailableCodePages() {
         HashSet<String> cpset = new HashSet<String>();
+        for (String ccsid : CCSIDMappingLoader.getAvailableCCSIDs()) {
+            cpset.add(ccsid);
+        }
         for (Class<?> clazz : clazzes) {
             final ICodepageConverter converter = getConverterFromClassName(clazz);
             if (converter != null) {
