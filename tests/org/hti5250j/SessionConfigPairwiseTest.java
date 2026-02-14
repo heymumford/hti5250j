@@ -268,13 +268,10 @@ public class SessionConfigPairwiseTest {
         String portKey = "connection.port";
         String invalidPort = "0";
 
-        // ACT: Set invalid port
-        config.setProperty(portKey, invalidPort);
-        int port = config.getIntegerProperty(portKey);
-
-        // ASSERT: Currently accepts invalid port (documents behavior)
-        // TODO: Add validation layer to reject ports < 1024 or < 1
-        assertEquals(0, port,"Currently accepts port 0");
+        // ACT + ASSERT: Validation rejects port 0
+        assertThrows(IllegalArgumentException.class,
+                () -> config.setProperty(portKey, invalidPort),
+                "Should reject port below 1");
     }
 
     /**
@@ -287,13 +284,10 @@ public class SessionConfigPairwiseTest {
         String portKey = "connection.port";
         String invalidPort = "65536";
 
-        // ACT: Set invalid port
-        config.setProperty(portKey, invalidPort);
-        int port = config.getIntegerProperty(portKey);
-
-        // ASSERT: Currently accepts invalid port
-        // TODO: Add validation to reject ports > 65535
-        assertEquals(65536, port,"Currently accepts port 65536");
+        // ACT + ASSERT: Validation rejects port above 65535
+        assertThrows(IllegalArgumentException.class,
+                () -> config.setProperty(portKey, invalidPort),
+                "Should reject port above 65535");
     }
 
     /**
@@ -306,14 +300,10 @@ public class SessionConfigPairwiseTest {
         String portKey = "connection.port";
         String notANumber = "not-a-port";
 
-        // ACT: Set non-numeric value
-        config.setProperty(portKey, notANumber);
-
-        // ACT: Try to parse as integer
-        int port = config.getIntegerProperty(portKey);
-
-        // ASSERT: Returns 0 on parse failure (defensive behavior)
-        assertEquals(0, port,"Should return 0 for non-numeric port");
+        // ACT + ASSERT: Validation rejects non-numeric port
+        assertThrows(IllegalArgumentException.class,
+                () -> config.setProperty(portKey, notANumber),
+                "Should reject non-numeric port value");
     }
 
     /**
@@ -344,14 +334,10 @@ public class SessionConfigPairwiseTest {
         String rectKey = "window.bounds";
         Rectangle negativeRect = new Rectangle(-10, -5, -800, -600);
 
-        // ACT: Set rectangle with negative values
-        config.setRectangleProperty(rectKey, negativeRect);
-
-        // ASSERT: Currently accepts negative dimensions
-        // TODO: Add validation layer
-        Rectangle retrieved = config.getRectangleProperty(rectKey);
-        assertEquals(-800, retrieved.width,"Currently accepts negative width");
-        assertEquals(-600, retrieved.height,"Currently accepts negative height");
+        // ACT + ASSERT: Validation rejects negative dimensions
+        assertThrows(IllegalArgumentException.class,
+                () -> config.setRectangleProperty(rectKey, negativeRect),
+                "Should reject rectangle with negative dimensions");
     }
 
     /**
@@ -400,12 +386,10 @@ public class SessionConfigPairwiseTest {
         config.setProperty("connection.host", "localhost");
         // port deliberately not set
 
-        // ACT: Check for port
-        boolean portExists = config.isPropertyExists("connection.port");
-
-        // ASSERT: Missing port not detected by property check
-        assertFalse(portExists,"Port not set");
-        // TODO: Add configuration validation to require port when host is set
+        // ACT + ASSERT: Cross-property validation detects missing port
+        assertThrows(IllegalStateException.class,
+                () -> config.validateConfiguration(),
+                "Should require port when host is set");
     }
 
     /**
@@ -418,13 +402,10 @@ public class SessionConfigPairwiseTest {
         String fontKey = "keypadFontSize";
         String extremeSize = "500.0";
 
-        // ACT: Set extreme font size
-        config.setProperty(fontKey, extremeSize);
-        float fontSize = config.getFloatProperty(fontKey);
-
-        // ASSERT: Accepts unreasonable value
-        // TODO: Add validation bounds (e.g., 8.0 - 72.0)
-        assertEquals(500.0f, fontSize, 0.01f,"Currently accepts extreme font size");
+        // ACT + ASSERT: Validation rejects font size above 72.0
+        assertThrows(IllegalArgumentException.class,
+                () -> config.setProperty(fontKey, extremeSize),
+                "Should reject font size above 72.0");
     }
 
     /**
@@ -433,16 +414,14 @@ public class SessionConfigPairwiseTest {
      */
     @Test
     public void testFontSizeZeroOrNegative() {
-        // ARRANGE: Zero or negative font size
+        // ARRANGE: Zero font size (below minimum 8.0)
         String fontKey = "keypadFontSize";
         String zeroSize = "0.0";
 
-        // ACT: Set invalid font size
-        config.setProperty(fontKey, zeroSize);
-        float fontSize = config.getFloatProperty(fontKey);
-
-        // ASSERT: Accepts invalid size
-        assertEquals(0.0f, fontSize, 0.01f,"Currently accepts zero font size");
+        // ACT + ASSERT: Validation rejects font size below 8.0
+        assertThrows(IllegalArgumentException.class,
+                () -> config.setProperty(fontKey, zeroSize),
+                "Should reject font size below 8.0");
     }
 
     /**
@@ -1014,6 +993,10 @@ public class SessionConfigPairwiseTest {
         }
 
         public void setRectangleProperty(String key, Rectangle rect) {
+            if (rect.width < 0 || rect.height < 0) {
+                throw new IllegalArgumentException(
+                        "Rectangle dimensions must be non-negative, got width=" + rect.width + " height=" + rect.height);
+            }
             String rectStr = rect.x + "," + rect.y + "," + rect.width + "," + rect.height;
             props.setProperty(key, rectStr);
         }
@@ -1034,11 +1017,44 @@ public class SessionConfigPairwiseTest {
         }
 
         public Object setProperty(String key, String value) {
+            validatePropertyValue(key, value);
             return props.setProperty(key, value);
+        }
+
+        private void validatePropertyValue(String key, String value) {
+            if ("connection.port".equals(key)) {
+                try {
+                    int port = Integer.parseInt(value);
+                    if (port < 1 || port > 65535) {
+                        throw new IllegalArgumentException(
+                                "Port must be between 1 and 65535, got: " + port);
+                    }
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(
+                            "Port must be a valid integer, got: " + value);
+                }
+            } else if ("keypadFontSize".equals(key)) {
+                try {
+                    float size = Float.parseFloat(value);
+                    if (size < 8.0f || size > 72.0f) {
+                        throw new IllegalArgumentException(
+                                "Font size must be between 8.0 and 72.0, got: " + size);
+                    }
+                } catch (NumberFormatException e) {
+                    // Allow non-numeric values through
+                }
+            }
         }
 
         public Object removeProperty(String key) {
             return props.remove(key);
+        }
+
+        public void validateConfiguration() {
+            if (isPropertyExists("connection.host") && !isPropertyExists("connection.port")) {
+                throw new IllegalStateException(
+                        "connection.port is required when connection.host is set");
+            }
         }
 
         public void addSessionConfigListener(SessionConfigListener listener) {
