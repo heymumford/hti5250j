@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error handling**: All `LOG.log()` calls use 3-arg `(Level, String, Throwable)` overload; background tasks use `catch(Exception)` + rethrow `Error`; factory exceptions logged at SEVERE with pool state recovery; pre-creation logs summary when incomplete
 - **Pool liveness**: `QUEUED` mode uses poll-loop with shutdown check; `shutdown()` and `configure()` both await scheduler termination (2s); `borrowedSessions` simplified to `Set` via `newKeySet()`
 - **CI reliability**: Reduced `testVeryLongRunningAllocationStability` to 5s/3 threads with extracted `STABILITY_MEMORY_THRESHOLD_MB` constant; fixed `@Timeout` vs latch-wait mismatch in 17 `ConcurrencyPairwiseTest` tests; fixed deadlock test race condition
+- **CI flaky timing tests**: Added `@AfterEach` scheduler teardown in `KeyboardStateMachinePairwiseTest` (prevents thread pool leak across 23 tests); widened spurious-unlock transition window; relaxed async fire assertion in `EventListenerPairwiseTest` from <100ms to <300ms; reduced contention parameters in `SessionPoolingPairwiseTest` concurrent load tests
 - **Semgrep SARIF**: Replaced `returntocorp/semgrep-action@v1` with direct `semgrep ci --sarif` invocation in both `ci.yml` and `semgrep.yml`
 
 ---
