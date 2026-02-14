@@ -33,12 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created comprehensive documentation indices: `docs/INDEX.md`, `archive/README.md`, `archive/planning/README.md`
   - Updated main README.md with protocol documentation references
   - Result: Professional, clean repository structure focused on shipping code
-  - Retained all adversarial review corrections and changelogs
+  - Retained all technical review corrections and changelogs
 
 ### Removed
 - Archived planning and strategy documents to `archive/` directory
 - Removed temporary review artifacts (`review_findings/`, `review_sources/`)
-- Deleted backup files from 2026-02-13 adversarial review
+- Deleted backup files from 2026-02-13 technical review
 - Cleaned root directory to industry-standard files only
 
 ---

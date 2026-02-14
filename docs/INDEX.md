@@ -187,7 +187,7 @@ cp archive/planning/DOCUMENT.md ./
 See [../CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines on updating documentation.
 
 ### Known Limitations
-None. The 5250_COMPLETE_REFERENCE.md is authoritative and has undergone a 32-agent adversarial review (Feb 2026) covering 5 reference documents, 3 rounds of corrections, and verification against primary standards.
+None. The 5250_COMPLETE_REFERENCE.md is authoritative and has been technically reviewed (Feb 2026) covering 5 reference documents, corrections, and verification against RFC 1205, RFC 2877, and RFC 4777.
 
 ---
 
