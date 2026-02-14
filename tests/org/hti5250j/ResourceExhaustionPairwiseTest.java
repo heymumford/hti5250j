@@ -44,6 +44,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class ResourceExhaustionPairwiseTest {
 
+    /** Maximum acceptable heap growth (MB) for non-leaking stability tests. */
+    private static final long STABILITY_MEMORY_THRESHOLD_MB = 100;
+
     // ============================================================================
     // CONFIGURATION & TEST FIXTURES
     // ============================================================================
@@ -812,9 +815,10 @@ public class ResourceExhaustionPairwiseTest {
         long allocations = allocationCount.get();
         assertTrue(allocations > 500,"Should allocate > 500 buffers over 5s, got " + allocations);
 
-        // ASSERT: Memory growth should be controlled (< 100MB allows GC variance on shared runners)
+        // ASSERT: Memory growth should be controlled (allows GC variance on shared runners)
         long growth = context.getHeapGrowthMB();
-        assertTrue(growth < 100,"Memory growth should be controlled for non-leaking allocations, was " + growth + "MB");
+        assertTrue(growth < STABILITY_MEMORY_THRESHOLD_MB,
+                "Memory growth should be controlled for non-leaking allocations, was " + growth + "MB");
 
         System.out.println("Long-running stability: allocated " + allocations + " buffers in " + duration + "ms, " +
                            "heap growth " + growth + "MB");

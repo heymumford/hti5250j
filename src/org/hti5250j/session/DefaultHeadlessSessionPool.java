@@ -9,6 +9,7 @@ import org.hti5250j.interfaces.HeadlessSession;
 import org.hti5250j.interfaces.HeadlessSessionPool;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,8 +38,8 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     // Idle sessions ready to be borrowed
     private final BlockingQueue<HeadlessSession> idleQueue = new LinkedBlockingQueue<>();
 
-    // Currently borrowed sessions (membership set; values unused)
-    private final ConcurrentHashMap<HeadlessSession, Instant> borrowedSessions = new ConcurrentHashMap<>();
+    // Currently borrowed sessions
+    private final Set<HeadlessSession> borrowedSessions = ConcurrentHashMap.newKeySet();
 
     // All sessions → creation instant (idle + borrowed)
     private final ConcurrentHashMap<HeadlessSession, Instant> allSessions = new ConcurrentHashMap<>();
@@ -83,6 +84,8 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
                             "Previous scheduler did not terminate within 2s during reconfiguration");
                 }
             } catch (InterruptedException e) {
+                LOG.log(Level.WARNING,
+                        "Interrupted while awaiting scheduler termination during reconfiguration", e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -96,7 +99,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         while ((existing = idleQueue.poll()) != null) {
             disconnectQuietly(existing);
         }
-        for (HeadlessSession borrowed : borrowedSessions.keySet()) {
+        for (HeadlessSession borrowed : borrowedSessions) {
             disconnectQuietly(borrowed);
         }
         borrowedSessions.clear();
@@ -108,16 +111,22 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         if (config.getMaxSize() > 0 && preCreate > config.getMaxSize()) {
             preCreate = config.getMaxSize();
         }
+        int preCreated = 0;
         for (int i = 0; i < preCreate; i++) {
             try {
                 HeadlessSession session = createNewSession();
                 lastReturnedTime.put(session, Instant.now());
                 idleQueue.offer(session);
+                preCreated++;
             } catch (RuntimeException e) {
                 LOG.log(Level.SEVERE,
                         "Failed to pre-create session " + (i + 1) + " of " + preCreate
                                 + " during pool configuration", e);
             }
+        }
+        if (preCreated < preCreate) {
+            LOG.log(Level.WARNING, "Pre-creation incomplete: created {0} of {1} requested sessions",
+                    new Object[]{preCreated, preCreate});
         }
 
         // Start background maintenance
@@ -171,12 +180,15 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
     public void returnSession(HeadlessSession session) {
         if (session == null) return;
         if (config == null) {
+            LOG.log(Level.WARNING,
+                    "returnSession() called on unconfigured pool; disconnecting session ''{0}''",
+                    session.getSessionName());
             disconnectQuietly(session);
             return;
         }
 
         // Guard: only accept sessions that were borrowed from this pool
-        if (borrowedSessions.remove(session) == null) {
+        if (!borrowedSessions.remove(session)) {
             LOG.log(Level.WARNING, "Attempted to return a session not borrowed from this pool: {0}",
                     session.getSessionName());
             return;
@@ -214,6 +226,14 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
 
         if (scheduler != null) {
             scheduler.shutdownNow();
+            try {
+                if (!scheduler.awaitTermination(2, TimeUnit.SECONDS)) {
+                    LOG.log(Level.WARNING,
+                            "Scheduler did not terminate within 2s during shutdown");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
         // Disconnect all idle sessions
@@ -225,7 +245,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         }
 
         // Disconnect all borrowed sessions
-        for (HeadlessSession borrowed : borrowedSessions.keySet()) {
+        for (HeadlessSession borrowed : borrowedSessions) {
             disconnectQuietly(borrowed);
             allSessions.remove(borrowed);
         }
@@ -342,7 +362,7 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
         }
 
         lastReturnedTime.remove(session); // no longer idle
-        borrowedSessions.put(session, allSessions.getOrDefault(session, Instant.now()));
+        borrowedSessions.add(session);
         borrowCount.incrementAndGet();
         return session;
     }
@@ -440,8 +460,11 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
                     }
                 }
             }
-        } catch (Throwable t) {
-            LOG.log(Level.SEVERE, "Uncaught exception in idle eviction task", t);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Uncaught exception in idle eviction task", e);
+        } catch (Error err) {
+            LOG.log(Level.SEVERE, "Fatal error in idle eviction task", err);
+            throw err;
         }
     }
 
@@ -463,8 +486,11 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
                     }
                 }
             }
-        } catch (Throwable t) {
-            LOG.log(Level.SEVERE, "Uncaught exception in age eviction task", t);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Uncaught exception in age eviction task", e);
+        } catch (Error err) {
+            LOG.log(Level.SEVERE, "Fatal error in age eviction task", err);
+            throw err;
         }
     }
 
@@ -482,8 +508,11 @@ public class DefaultHeadlessSessionPool implements HeadlessSessionPool {
                     }
                 }
             }
-        } catch (Throwable t) {
-            LOG.log(Level.SEVERE, "Uncaught exception in periodic validation task", t);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Uncaught exception in periodic validation task", e);
+        } catch (Error err) {
+            LOG.log(Level.SEVERE, "Fatal error in periodic validation task", err);
+            throw err;
         }
     }
 
