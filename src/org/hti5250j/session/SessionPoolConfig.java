@@ -32,7 +32,7 @@ public final class SessionPoolConfig {
     public enum AcquisitionMode {
         /** Fail immediately if no session available. */
         IMMEDIATE,
-        /** Block indefinitely until a session is available. */
+        /** Block until a session is available or the pool shuts down. */
         QUEUED,
         /** Block up to a configured timeout, then fail. */
         TIMEOUT_ON_FULL
@@ -171,6 +171,7 @@ public final class SessionPoolConfig {
         }
 
         public Builder sessionFactory(HeadlessSessionFactory sessionFactory) {
+            if (sessionFactory == null) throw new IllegalArgumentException("sessionFactory must not be null");
             this.sessionFactory = sessionFactory;
             return this;
         }

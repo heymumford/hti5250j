@@ -315,7 +315,7 @@ public class DefaultHeadlessSessionPoolTest {
         int opsPerThread = 100;
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threadCount);
-        AtomicInteger errors = new AtomicInteger(0);
+        ConcurrentLinkedQueue<Exception> errors = new ConcurrentLinkedQueue<>();
 
         for (int t = 0; t < threadCount; t++) {
             Thread.ofVirtual().start(() -> {
@@ -327,7 +327,7 @@ public class DefaultHeadlessSessionPoolTest {
                         pool.returnSession(s);
                     }
                 } catch (Exception e) {
-                    errors.incrementAndGet();
+                    errors.add(e);
                 } finally {
                     doneLatch.countDown();
                 }
@@ -336,7 +336,9 @@ public class DefaultHeadlessSessionPoolTest {
 
         startLatch.countDown();
         assertTrue(doneLatch.await(12, TimeUnit.SECONDS), "All threads should complete");
-        assertEquals(0, errors.get(), "No errors during concurrent operations");
+        if (!errors.isEmpty()) {
+            fail("Concurrent operations produced " + errors.size() + " error(s); first: " + errors.peek());
+        }
 
         // Pool should be consistent
         assertEquals(0, pool.getActiveCount(), "No sessions should be borrowed");
@@ -634,12 +636,11 @@ public class DefaultHeadlessSessionPoolTest {
         assertNotNull(s1);
         pool.returnSession(s1);
 
-        // Second borrow triggers the factory exception
-        assertThrows(RuntimeException.class, () -> {
-            // Exhaust idle then trigger factory failure on create
-            HeadlessSession a = pool.borrowSession(); // reuses s1
-            pool.borrowSession(); // factory call #2 throws
-        });
+        // Reuse s1 from idle, then trigger factory failure on the second create
+        HeadlessSession reused = pool.borrowSession(); // reuses s1 from idle
+        assertNotNull(reused);
+        assertThrows(RuntimeException.class, () -> pool.borrowSession()); // factory call #2 throws
+        pool.returnSession(reused); // return the reused session
 
         // Pool should still be usable — factory recovers on call #3
         HeadlessSession s3 = pool.borrowSession();
@@ -779,6 +780,59 @@ public class DefaultHeadlessSessionPoolTest {
     void testBuilderRejectsNullConfigResource() {
         assertThrows(IllegalArgumentException.class, () ->
                 baseConfig().configResource(null));
+    }
+
+    // ========================================================================
+    // Unconfigured pool edge case
+    // ========================================================================
+
+    @Test
+    void testReturnSessionOnUnconfiguredPoolDisconnectsSession() {
+        DefaultHeadlessSessionPool unconfigured = new DefaultHeadlessSessionPool();
+        StubSession orphan = new StubSession("orphan");
+        assertTrue(orphan.isConnected());
+
+        unconfigured.returnSession(orphan);
+        assertFalse(orphan.isConnected(), "Session should be disconnected when returned to unconfigured pool");
+    }
+
+    // ========================================================================
+    // Factory failure during pre-creation
+    // ========================================================================
+
+    @Test
+    void testFactoryFailureDuringPreCreationDoesNotPreventPoolStartup() throws Exception {
+        AtomicInteger callCount = new AtomicInteger(0);
+        HeadlessSessionFactory partialFactory = (name, configResource, props) -> {
+            if (callCount.incrementAndGet() == 2) {
+                throw new RuntimeException("simulated pre-creation failure");
+            }
+            return new StubSession(name);
+        };
+
+        pool.configure(SessionPoolConfig.builder()
+                .sessionFactory(partialFactory)
+                .maxSize(5)
+                .minIdle(3) // requests 3, but #2 will fail
+                .build());
+
+        // Should have pre-created 2 of 3 (1 succeeded, 1 failed, 1 succeeded)
+        assertEquals(2, pool.getIdleCount(), "Should have 2 pre-created sessions (1 failure)");
+
+        // Pool should still be functional for on-demand borrows
+        HeadlessSession s = pool.borrowSession();
+        assertNotNull(s, "Pool should work despite partial pre-creation failure");
+        pool.returnSession(s);
+    }
+
+    // ========================================================================
+    // Builder null guard for sessionFactory
+    // ========================================================================
+
+    @Test
+    void testBuilderRejectsNullSessionFactory() {
+        assertThrows(IllegalArgumentException.class,
+                () -> SessionPoolConfig.builder().sessionFactory(null));
     }
 
     // ========================================================================
