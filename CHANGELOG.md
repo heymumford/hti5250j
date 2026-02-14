@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — v1.1.0
+
+### Added
+- **Session pooling**: `HeadlessSessionPool` interface and `DefaultHeadlessSessionPool` implementation with configurable acquisition modes (IMMEDIATE, QUEUED, TIMEOUT_ON_FULL), validation strategies (ON_BORROW, ON_RETURN, PERIODIC), and eviction policies (IDLE_TIME, MAX_AGE)
+- **SessionPoolConfig**: Builder-pattern configuration for pool size, timeouts, validation, and eviction
+- **PoolExhaustedException**: Checked exception for pool exhaustion scenarios
+- 22 unit tests (`DefaultHeadlessSessionPoolTest`) and 7 real-pool pairwise integration tests
+
+### Fixed
+- **CI reliability**: Reduced `testVeryLongRunningAllocationStability` workload from 20s to 10s (45s timeout now has 35s headroom on GitHub Actions runners)
+- **Semgrep SARIF**: Replaced `returntocorp/semgrep-action@v1` with direct `semgrep ci --sarif` invocation in both `ci.yml` and `semgrep.yml` to fix broken SARIF upload
+
+---
+
 ## [Unreleased] — v1.0.0 Release Candidate
 
 ### Added

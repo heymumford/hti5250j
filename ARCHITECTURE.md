@@ -29,6 +29,7 @@ HTI5250J sits at the boundary between client automation (test frameworks, CLI to
 │          HTI5250J System Boundary                      │
 │  ┌────────────────────────────────────────────────┐  │
 │  │  Workflow Engine (validation, execution)       │  │
+│  │  Session Pool (borrow/return, eviction)        │  │
 │  │  Session Management (5250 terminal lifecycle)  │  │
 │  │  Screen Emulation (display buffer + state)     │  │
 │  │  Protocol Handlers (TN5250E translation)       │  │
@@ -131,6 +132,34 @@ HTI5250J is decomposed into 6 logical containers, each handling a specific respo
 - `src/org/hti5250j/workflow/AssertionException.java` (error handling)
 
 **External Dependency:** Calls `Session5250.sendString()`, `Session5250.getScreenText()`
+
+---
+
+### 1b. Session Pool (Concurrent Session Management) — v1.1.0
+
+**Purpose:** Manage a pool of reusable `HeadlessSession` instances for concurrent workloads.
+
+**Key Classes:**
+- `HeadlessSessionPool` (interface) — pool contract with `borrowSession()`, `returnSession()`, `shutdown()`
+- `DefaultHeadlessSessionPool` — thread-safe implementation using `BlockingQueue` + `ConcurrentHashMap`
+- `SessionPoolConfig` — builder-pattern configuration (max size, acquisition mode, validation, eviction)
+- `PoolExhaustedException` — thrown when pool cannot provide a session
+
+**Key Operations:**
+- `borrowSession()` → Acquire idle session or create new (IMMEDIATE / QUEUED / TIMEOUT_ON_FULL)
+- `returnSession(session)` → Return to idle queue, optionally validate on return
+- `shutdown()` → Disconnect all sessions, reject new borrows
+
+**Configuration Dimensions:**
+- Acquisition: IMMEDIATE (fail-fast), QUEUED (block), TIMEOUT_ON_FULL (block with timeout)
+- Validation: NONE, ON_BORROW, ON_RETURN, PERIODIC (background thread)
+- Eviction: NONE, IDLE_TIME (stale sessions), MAX_AGE (old sessions)
+
+**Source Files:**
+- `src/org/hti5250j/interfaces/HeadlessSessionPool.java`
+- `src/org/hti5250j/session/DefaultHeadlessSessionPool.java`
+- `src/org/hti5250j/session/SessionPoolConfig.java`
+- `src/org/hti5250j/session/PoolExhaustedException.java`
 
 ---
 

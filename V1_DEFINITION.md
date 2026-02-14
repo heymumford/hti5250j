@@ -35,12 +35,22 @@ A stable, documented, headless-first TN5250E library suitable for production aut
 
 ## Out of Scope for v1.0
 
-- **Session pooling** — no pool exists; single-session usage only
 - **GUI / Swing components** — removed; headless-only
 - **Plugin system** — no plugin architecture
 - **Distributed sessions** — single-process, single-host
 - **Double-byte character set (DBCS) production support** — CCSID 930 exists but is lightly tested
 - **Windows-specific terminal emulation** — cross-platform Java only
+
+## v1.1.0 — Session Pooling
+
+- **Session pooling** — `HeadlessSessionPool` interface + `DefaultHeadlessSessionPool` implementation
+  - Configurable pool size (fixed or unlimited)
+  - Acquisition modes: IMMEDIATE, QUEUED, TIMEOUT_ON_FULL
+  - Validation strategies: NONE, ON_BORROW, ON_RETURN, PERIODIC
+  - Eviction policies: NONE, IDLE_TIME, MAX_AGE
+  - Thread-safe concurrent borrow/return with `BlockingQueue` + `ConcurrentHashMap`
+  - Background maintenance via `ScheduledExecutorService`
+  - 22 unit tests + 7 real-pool pairwise integration tests
 
 ## Quality Gates
 
