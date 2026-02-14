@@ -47,11 +47,10 @@ class SessionJumpEventRecordTest {
         assertNotNull(event);
     }
 
-    @Disabled("TDD RED phase")
     @Test
-    @DisplayName("should throw NullPointerException when source is null")
+    @DisplayName("should throw when source is null")
     void testConstructorNullSource() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new SessionJumpEvent(null, JUMP_NEXT, "message"));
     }
 

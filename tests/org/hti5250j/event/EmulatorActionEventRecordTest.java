@@ -85,13 +85,12 @@ public class EmulatorActionEventRecordTest {
      * RED #3: Constructor with null source should throw NullPointerException
      * Expected: EventObject behavior inherited from parent class
      */
-    @Disabled("TDD RED phase")
     @Test
     public void testConstructorWithNullSourceThrows() {
-        // ACT & ASSERT
-        assertThrows(NullPointerException.class, () -> {
+        // ACT & ASSERT: EventObject contract throws IllegalArgumentException for null source
+        assertThrows(IllegalArgumentException.class, () -> {
             new EmulatorActionEvent(null);
-        }, "Null source should throw NullPointerException");
+        }, "Null source should throw IllegalArgumentException per EventObject contract");
     }
 
     /**

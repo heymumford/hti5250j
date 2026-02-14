@@ -56,19 +56,17 @@ class SessionChangeEventRecordTest {
         assertNotNull(event);
     }
 
-    @Disabled("TDD RED phase")
     @Test
-    @DisplayName("should throw NullPointerException when source is null")
+    @DisplayName("should throw when source is null")
     void testConstructorNullSource() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new SessionChangeEvent(null));
     }
 
-    @Disabled("TDD RED phase")
     @Test
-    @DisplayName("should throw NullPointerException when source is null with message")
+    @DisplayName("should throw when source is null with message")
     void testConstructorNullSourceWithMessage() {
-        assertThrows(NullPointerException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> new SessionChangeEvent(null, "message"));
     }
 

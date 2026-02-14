@@ -58,10 +58,7 @@ public class BootEvent extends EventObject {
      * @throws NullPointerException if source is null
      */
     public BootEvent(Object source, String bootOptions, String message) {
-        super(source);
-        if (source == null) {
-            throw new NullPointerException("Event source cannot be null");
-        }
+        super(source); // EventObject validates source is non-null
         // Normalize null values to empty strings for consistent access patterns
         this.bootOptions = bootOptions != null ? bootOptions : "";
         this.message = message != null ? message : "";

@@ -120,12 +120,11 @@ public class WizardEventRecordTest {
         assertFalse(event.getAllowChange(), "allowChange should be set from constructor");
     }
 
-    @Disabled("TDD RED phase")
     @Test
     @DisplayName("RED.7: Constructor rejects null source")
     public void testConstructorRejectsNullSource() {
-        // ACT & ASSERT: Null source should throw NullPointerException (EventObject requirement)
-        assertThrows(NullPointerException.class,
+        // ACT & ASSERT: Null source throws IllegalArgumentException (EventObject contract)
+        assertThrows(IllegalArgumentException.class,
                 () -> new WizardEvent(null, currentPage, newPage, isLastPage, allowChange),
                 "Constructor should reject null source");
     }
