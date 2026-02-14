@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-02-14
+
+### Added
+- **SessionConfig input validation**: Port bounds (1-65535), font size bounds (8.0-72.0), rectangle dimension validation (non-negative), and cross-property consistency check (`validateConfiguration()` requires port when host is set)
+
+### Fixed
+- **ColorPalette foreground mapping**: Corrected `getForegroundColor()` switch to match `HTI5250jConstants.COLOR_FG_*` constants — 6 of 8 color mappings were wrong (e.g., `COLOR_FG_BLUE=1` returned red instead of blue)
+- **Flaky PerformanceProfilingPairwiseTest**: Widened `MEMORY_THRESHOLD_MB` from 200 to 500 and added `System.gc()` hint before heap measurements to stabilize JVM memory snapshots
+
+### Changed
+- 7 `SessionConfigPairwiseTest` tests upgraded from documenting-behavior to asserting-validation (TDD RED→GREEN)
+- New `testGetForegroundAllConstants` test verifying all 8 `COLOR_FG_*` → color mappings
+
+### Removed
+- 5 stale remote branches (2 merged, 3 superseded by work already in main)
+
+---
+
 ## [1.1.0] — 2026-02-14
 
 ### Added
