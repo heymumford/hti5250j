@@ -159,12 +159,32 @@ public class ColorPaletteTest {
     }
 
     @Test
+    @DisplayName("getForegroundColor maps all COLOR_FG constants correctly")
+    void testGetForegroundAllConstants() {
+        assertEquals(palette.getBlack(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_BLACK),
+                "COLOR_FG_BLACK should map to black");
+        assertEquals(palette.getBlue(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_BLUE),
+                "COLOR_FG_BLUE should map to blue");
+        assertEquals(palette.getGreen(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_GREEN),
+                "COLOR_FG_GREEN should map to green");
+        assertEquals(palette.getTurquoise(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_CYAN),
+                "COLOR_FG_CYAN should map to turquoise");
+        assertEquals(palette.getRed(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_RED),
+                "COLOR_FG_RED should map to red");
+        assertEquals(palette.getPink(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_MAGENTA),
+                "COLOR_FG_MAGENTA should map to pink");
+        assertEquals(palette.getYellow(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_YELLOW),
+                "COLOR_FG_YELLOW should map to yellow");
+        assertEquals(palette.getWhite(), palette.getForegroundColor(HTI5250jConstants.COLOR_FG_WHITE),
+                "COLOR_FG_WHITE should map to white");
+    }
+
+    @Test
     @DisplayName("ColorPalette extracts background color from upper byte")
     void testGetBackgroundByConstant() {
-        // COLOR_FG_BLUE=1 maps to internal case 1 (red) in getForegroundColor switch
         char colorValue = (char) ((HTI5250jConstants.COLOR_FG_BLUE << 8) | HTI5250jConstants.COLOR_FG_WHITE);
         Color bg = palette.getBackgroundColor(colorValue);
-        assertEquals(palette.getRed(), bg, "Should extract background from upper byte via internal mapping");
+        assertEquals(palette.getBlue(), bg, "COLOR_FG_BLUE in upper byte should resolve to blue");
     }
 
     @Test
