@@ -69,6 +69,36 @@ String screen = headless.getScreenAsText();
 session.disconnect();
 ```
 
+### Session Pooling
+
+For concurrent workloads, use the built-in session pool:
+```java
+// Configure pool
+SessionPoolConfig config = SessionPoolConfig.builder()
+    .maxSize(10)
+    .acquisitionMode(SessionPoolConfig.AcquisitionMode.QUEUED)
+    .validationStrategy(SessionPoolConfig.ValidationStrategy.ON_BORROW)
+    .evictionPolicy(SessionPoolConfig.EvictionPolicy.IDLE_TIME)
+    .maxIdleTime(Duration.ofMinutes(5))
+    .sessionFactory(new DefaultHeadlessSessionFactory())
+    .connectionProps(props)
+    .build();
+
+// Create and use pool
+try (DefaultHeadlessSessionPool pool = new DefaultHeadlessSessionPool()) {
+    pool.configure(config);
+
+    HeadlessSession session = pool.borrowSession();
+    try {
+        session.sendKeys("WRKSYSVAL[enter]");
+        session.waitForKeyboardUnlock(5000);
+        String screen = session.getScreenAsText();
+    } finally {
+        pool.returnSession(session);
+    }
+}
+```
+
 ## Workflow Execution
 
 YAML-based workflow automation with six execution handlers for end-to-end terminal operations.

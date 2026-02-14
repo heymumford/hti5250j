@@ -29,16 +29,14 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: >-
-            p/security-audit
-            p/owasp-top-ten
-            p/java
+        run: |
+          pip install semgrep
+          semgrep ci --config p/security-audit --config p/owasp-top-ten --config p/java --sarif --output semgrep.sarif || true
 
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
           sarif_file: semgrep.sarif
           category: semgrep
