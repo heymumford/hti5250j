@@ -47,8 +47,8 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 
     // Property-based testing (Week 5-6)
-    testImplementation 'net.jqwik:jqwik:1.8.3'
-    testImplementation 'net.jqwik:jqwik-api:1.8.3'
+    testImplementation 'net.jqwik:jqwik:1.9.3'
+    testImplementation 'net.jqwik:jqwik-api:1.9.3'
 
     // Chaos injection & resilience testing (Week 5-6)
     testImplementation 'io.github.resilience4j:resilience4j-core:2.1.0'
