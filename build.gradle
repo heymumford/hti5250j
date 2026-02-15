@@ -30,7 +30,7 @@ repositories {
 dependencies {
     implementation runtimeLibs
     // Development JARs removed - all test deps managed via Maven Central
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.google.code.gson:gson:2.13.2'
 
     testImplementation runtimeLibs
     // Development JARs removed - all test deps managed via Maven Central
