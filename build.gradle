@@ -51,9 +51,9 @@ dependencies {
     testImplementation 'net.jqwik:jqwik-api:1.8.3'
 
     // Chaos injection & resilience testing (Week 5-6)
-    testImplementation 'io.github.resilience4j:resilience4j-core:2.1.0'
-    testImplementation 'io.github.resilience4j:resilience4j-timelimiter:2.1.0'
-    testImplementation 'io.github.resilience4j:resilience4j-retry:2.1.0'
+    testImplementation 'io.github.resilience4j:resilience4j-core:2.3.0'
+    testImplementation 'io.github.resilience4j:resilience4j-timelimiter:2.3.0'
+    testImplementation 'io.github.resilience4j:resilience4j-retry:2.3.0'
 
     // JMH performance benchmarking
     jmhImplementation 'org.openjdk.jmh:jmh-core:1.37'
